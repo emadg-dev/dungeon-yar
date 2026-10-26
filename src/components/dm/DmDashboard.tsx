@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { Character, CharacterNote } from '../../types';
+import { Campaign, Character, CharacterNote } from '../../types';
 import { 
   Users, Heart, Shield, Zap, Sparkles, Moon, Sun, 
-  Calendar, Award, Plus, Eye, Dices, ChevronRight 
+  Calendar, Award, Plus, Eye, Dices, ChevronRight, CheckCircle2 
 } from 'lucide-react';
 import { HPBar } from '../common/HPBar';
 
 interface DmDashboardProps {
   characters: Character[];
   sharedNotes?: CharacterNote[];
+  activeCampaign?: Campaign | null;
+  onOpenSetupChecklist?: () => void;
   onUpdateCharacter: (char: Character) => void;
   onApplyGroupRest: (type: 'short' | 'long' | 'special') => void;
   onUpdateGroupResources: (delta: { rations?: number; lanternOil?: number }) => void;
@@ -19,6 +21,8 @@ interface DmDashboardProps {
 export const DmDashboard: React.FC<DmDashboardProps> = ({
   characters,
   sharedNotes = [],
+  activeCampaign,
+  onOpenSetupChecklist,
   onUpdateCharacter,
   onApplyGroupRest,
   onUpdateGroupResources,
@@ -83,6 +87,37 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           <span>روز بعد</span>
           <ChevronRight className="w-4 h-4" />
         </button>
+      </div>
+
+      {/* Campaign Setup Checklist (Progress Ring / Shortcut) */}
+      <div className="surface-card rounded-[14px] p-3.5 flex items-center justify-between gap-3 border border-[#2F2A23] hover:border-amber-500/40 transition">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-xs text-[#EDE6D8]">چک‌لیست راه‌اندازی و آمادگی کمپین</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">
+                {activeCampaign?.wizardState?.completed?.length || 8}/۸ گام
+              </span>
+            </div>
+            <p className="text-[11px] text-[#A39A89] mt-0.5">
+              مشخصات، قوانین ۵e، تقویم، جناح‌ها، هیولاها، لوت و جلسه‌ی صفر
+            </p>
+          </div>
+        </div>
+
+        {onOpenSetupChecklist && (
+          <button
+            type="button"
+            onClick={onOpenSetupChecklist}
+            className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold transition flex items-center gap-1 min-h-[36px]"
+          >
+            <span>بازبینی چک‌لیست</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
       {/* Quick-Action Bar: Award Inspiration, Add XP, Roll Secret Check, Group Rest */}

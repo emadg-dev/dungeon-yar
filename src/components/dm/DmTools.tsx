@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate, LocationEntry } from '../../types';
+import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate, LocationEntry, Campaign } from '../../types';
 import { DmDashboard } from './DmDashboard';
 import { DmEncounterRunner } from './DmEncounterRunner';
+import { DmLibrary } from './DmLibrary';
 import { DmNpcManager } from './DmNpcManager';
 import { DmItemVault } from './DmItemVault';
 import { DmLocationManager } from './DmLocationManager';
@@ -27,6 +28,10 @@ interface DmToolsProps {
   savedEncounters: Encounter[];
   users: User[];
   weaponTemplates: WeaponTemplate[];
+  activeCampaign?: Campaign | null;
+  currentUser?: User | null;
+  myCampaigns?: Campaign[];
+  onOpenSetupChecklist?: () => void;
   onUpdateCharacter: (char: Character) => void;
   onApplyGroupRest: (type: 'short' | 'long' | 'special') => void;
   onUpdateGroupResources: (delta: { rations?: number; lanternOil?: number }) => void;
@@ -67,6 +72,10 @@ export const DmTools: React.FC<DmToolsProps> = ({
   savedEncounters,
   users,
   weaponTemplates,
+  activeCampaign,
+  currentUser,
+  myCampaigns = [],
+  onOpenSetupChecklist,
   onUpdateCharacter,
   onApplyGroupRest,
   onUpdateGroupResources,
@@ -96,7 +105,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
   onRefreshCharacters
 }) => {
   const [internalDmTab, setInternalDmTab] = useState<'dashboard' | 'encounters' | 'library' | 'narrative' | 'more'>('dashboard');
-  const [librarySubTab, setLibrarySubTab] = useState<'npcs' | 'items' | 'locations' | 'rewards'>('npcs');
+  const [librarySubTab, setLibrarySubTab] = useState<'library_hub' | 'npcs' | 'items' | 'locations'>('library_hub');
   const [narrativeSubTab, setNarrativeSubTab] = useState<'notes' | 'endings'>('notes');
   const [moreSubTab, setMoreSubTab] = useState<'users' | 'invites' | 'audit' | 'settings'>('users');
 
@@ -155,6 +164,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
       {activeTab === 'dashboard' && (
         <DmDashboard
           characters={characters}
+          activeCampaign={activeCampaign}
+          onOpenSetupChecklist={onOpenSetupChecklist}
           onUpdateCharacter={onUpdateCharacter}
           onApplyGroupRest={onApplyGroupRest}
           onUpdateGroupResources={onUpdateGroupResources}
@@ -176,14 +187,26 @@ export const DmTools: React.FC<DmToolsProps> = ({
         />
       )}
 
-      {/* 3. Library (NPCs / Items / Locations / Rewards) */}
+      {/* 3. Library (DM Library Hub & Entity Managers) */}
       {activeTab === 'library' && (
         <div className="space-y-4">
-          <div className="surface-card rounded-[12px] p-1 border border-[#2F2A23] flex items-center gap-1">
+          <div className="surface-card rounded-[12px] p-1 border border-[#2F2A23] flex items-center gap-1 overflow-x-auto scrollbar-none">
+            <button
+              type="button"
+              onClick={() => setLibrarySubTab('library_hub')}
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
+                librarySubTab === 'library_hub'
+                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              }`}
+            >
+              <Library className="w-3.5 h-3.5" />
+              <span>مخزن کلان کتابخانه</span>
+            </button>
             <button
               type="button"
               onClick={() => setLibrarySubTab('npcs')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
                 librarySubTab === 'npcs'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -195,7 +218,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setLibrarySubTab('items')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
                 librarySubTab === 'items'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -207,7 +230,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setLibrarySubTab('locations')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
                 librarySubTab === 'locations'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -217,6 +240,16 @@ export const DmTools: React.FC<DmToolsProps> = ({
               <span>مکان‌ها ({locations.length})</span>
             </button>
           </div>
+
+          {librarySubTab === 'library_hub' && (
+            <DmLibrary
+              currentCampaignId={activeCampaign?.id || 'zorvania-c1'}
+              currentUser={currentUser || null}
+              myCampaigns={myCampaigns}
+              onRollDice={onRollDice}
+              onRefreshCampaignData={onRefreshCharacters}
+            />
+          )}
 
           {librarySubTab === 'npcs' && (
             <DmNpcManager
