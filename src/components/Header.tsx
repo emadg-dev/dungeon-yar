@@ -74,7 +74,7 @@ export const Header: React.FC<HeaderProps> = ({
   const isDm = activeCampaignRole === 'owner' || activeCampaignRole === 'co_dm' || currentUser?.role === 'dm';
 
   return (
-    <header className="sticky top-0 z-20 w-full max-w-full bg-[#171513]/95 backdrop-blur-md border-b border-[#2F2A23] shadow-md">
+    <header className="sticky top-0 z-20 w-full max-w-full glass-panel border-b border-[#2F2A23] shadow-md">
       <div className="max-w-7xl mx-auto px-2.5 sm:px-4 py-2 flex items-center justify-between gap-2">
         {/* Brand & Campaign Switcher / Breadcrumb */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -153,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenCampaignApprovals}
-              className="flex items-center gap-1 px-2 py-1 rounded-[10px] text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition touch-target animate-pulse"
+              className="flex items-center gap-1 px-2 py-1 rounded-[10px] text-xs font-black bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/40 hover:bg-[#E0A030]/30 transition touch-target animate-pulse"
               title={`${pendingApprovalsCount} درخواست در انتظار بررسی`}
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -268,7 +268,7 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
-            className="w-72 max-w-[85vw] h-full bg-[#171513] border-s border-[#2F2A23] p-4 flex flex-col justify-between shadow-2xl"
+            className="w-72 max-w-[85vw] h-full glass-panel border-s border-[#2F2A23] p-4 flex flex-col justify-between shadow-2xl"
             onClick={(e) => e.stopPropagation()}
             dir="rtl"
           >
@@ -375,7 +375,7 @@ export const Header: React.FC<HeaderProps> = ({
                       >
                         <span>تأیید کاراکترها و ارتقای لول</span>
                         {pendingApprovalsCount > 0 && (
-                          <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold">
+                          <span className="px-1.5 py-0.2 rounded-full bg-[#E0A030]/20 text-[#F2C265] text-[10px] font-bold">
                             {pendingApprovalsCount}
                           </span>
                         )}

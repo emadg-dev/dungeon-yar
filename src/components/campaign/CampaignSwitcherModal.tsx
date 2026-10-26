@@ -31,10 +31,10 @@ export const CampaignSwitcherModal: React.FC<CampaignSwitcherModalProps> = ({
             onGoHome();
             onClose();
           }}
-          className="w-full p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-200 font-bold text-sm flex items-center justify-between transition-colors min-h-[48px]"
+          className="w-full p-3.5 rounded-2xl bg-[#E0A030]/10 border border-[#E0A030]/30 hover:bg-[#E0A030]/20 text-[#F2C265] font-bold text-sm flex items-center justify-between transition-colors min-h-[48px]"
         >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400">
+            <div className="w-8 h-8 rounded-xl bg-[#E0A030]/20 flex items-center justify-center text-[#F2C265]">
               <Home className="w-4 h-4" />
             </div>
             <span>صفحه اصلی (داشبورد کمپین‌ها)</span>
@@ -44,13 +44,13 @@ export const CampaignSwitcherModal: React.FC<CampaignSwitcherModalProps> = ({
 
         <div className="border-t border-[#2F2A23] pt-3">
           <div className="flex items-center justify-between mb-2 px-1">
-            <span className="text-xs font-bold text-slate-400">کمپین‌های من ({campaigns.length})</span>
+            <span className="text-xs font-bold text-[#A39A89]">کمپین‌های من ({campaigns.length})</span>
             <button
               onClick={() => {
                 onClose();
                 onOpenCreateCampaign();
               }}
-              className="text-xs text-amber-400 font-bold hover:underline flex items-center gap-1"
+              className="text-xs text-[#F2C265] font-bold hover:underline flex items-center gap-1"
             >
               <Plus className="w-3.5 h-3.5" />
               کمپین جدید
@@ -69,23 +69,23 @@ export const CampaignSwitcherModal: React.FC<CampaignSwitcherModalProps> = ({
                   }}
                   className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between min-h-[48px] ${
                     isActive
-                      ? 'bg-amber-500/20 border-amber-500/50 text-amber-200'
-                      : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 text-slate-300'
+                      ? 'bg-[#E0A030]/20 border-[#E0A030]/50 text-[#F2C265]'
+                      : 'bg-[#131110]/60 border-[#2F2A23] hover:border-[#3A342B] text-[#C9C0AE]'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isActive ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-400'}`}>
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isActive ? 'bg-[#E0A030] text-[#0E0D0C] font-bold' : 'bg-[#201D19] text-[#A39A89]'}`}>
                       <Shield className="w-4 h-4" />
                     </div>
                     <div>
                       <h4 className="text-sm font-bold">{camp.name}</h4>
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-[#A39A89]">
                         نقش: {camp.myRole === 'owner' ? 'مالک' : camp.myRole === 'co_dm' ? 'دستیار DM' : 'بازیکن'}
                       </p>
                     </div>
                   </div>
                   {isActive && (
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500 text-slate-950">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#E0A030] text-[#0E0D0C]">
                       فعال
                     </span>
                   )}

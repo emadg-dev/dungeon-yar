@@ -21,6 +21,11 @@ interface BottomNavProps {
   onOpenActiveEncounter?: () => void;
 }
 
+/**
+ * Liquid Dock bottom navigation (Jib-be-jib §5 pattern):
+ * floating glass track with backdrop-blur, inner top glow,
+ * and an amber gradient pill on the active item.
+ */
 export const BottomNav: React.FC<BottomNavProps> = ({
   isHomeView = false,
   homeTab = 'home',
@@ -40,7 +45,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   // Hide bottom nav while on-screen keyboard is open to avoid covering inputs
   if (isKeyboardOpen) return null;
 
-  // Home Navigation (Section 5: خانه / شخصیتها / کمپینها / حساب)
+  // Home Navigation (Section 5: خانه / شخصیت‌ها / کمپین‌ها / حساب)
   if (isHomeView) {
     const homeItems = [
       { id: 'home', label: 'خانه', icon: Compass },
@@ -52,10 +57,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     return (
       <nav 
         aria-label="منوی ناوبری اصلی"
-        className="fixed bottom-0 inset-x-0 z-[30] bg-[#171513]/95 backdrop-blur-md border-t border-[#2F2A23] pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_25px_rgba(0,0,0,0.8)]"
+        className="liquid-dock"
         dir="rtl"
       >
-        <div className="max-w-md mx-auto grid grid-cols-4 h-16 px-2">
+        <div className="liquid-dock__track grid grid-cols-4">
           {homeItems.map(item => {
             const Icon = item.icon;
             const isActive = homeTab === item.id;
@@ -63,18 +68,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               <button
                 type="button"
                 key={item.id}
+                aria-label={item.label}
+                aria-pressed={isActive}
                 onClick={() => onSelectHomeTab?.(item.id)}
-                className={`flex flex-col items-center justify-center gap-1 touch-target transition-all duration-150 relative ${
-                  isActive
-                    ? 'text-[#E0A030] font-extrabold'
-                    : 'text-[#A39A89] hover:text-[#EDE6D8]'
-                }`}
+                className={`liquid-dock__item mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
-                <span className="text-xs leading-none font-semibold truncate">{item.label}</span>
-                {isActive && (
-                  <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-[#E0A030] shadow-[0_0_6px_#E0A030]" />
-                )}
+                <span className="dock-label truncate max-w-[3.5rem]">{item.label}</span>
               </button>
             );
           })}
@@ -95,10 +95,21 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     return (
       <nav 
         aria-label="منوی ناوبری دانجن مستر"
-        className="fixed bottom-0 inset-x-0 z-[30] bg-[#171513]/95 backdrop-blur-md border-t border-[#2F2A23] pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_25px_rgba(0,0,0,0.8)]"
+        className="liquid-dock"
         dir="rtl"
       >
-        <div className="max-w-md mx-auto grid grid-cols-5 h-16 px-1">
+        {/* Active Encounter Quick Join Bar on BottomNav */}
+        {hasActiveEncounter && onOpenActiveEncounter && (
+          <button
+            type="button"
+            onClick={onOpenActiveEncounter}
+            className="liquid-dock__banner w-full flex items-center justify-center gap-2 mb-2 py-1.5 rounded-2xl bg-gradient-to-r from-[#C2512B] via-[#E0A030] to-[#C2512B] text-[11px] font-black text-[#0E0D0C] shadow-[0_4px_16px_rgba(194,81,43,0.35)] hover:opacity-95 transition pointer-events-auto"
+          >
+            <Swords className="w-3.5 h-3.5 animate-bounce shrink-0" />
+            <span>مبارزه زنده در جریان است — لمس جهت مشاهده</span>
+          </button>
+        )}
+        <div className="liquid-dock__track grid grid-cols-5">
           {dmItems.map(item => {
             const Icon = item.icon;
             // Map sub-tabs to 5 primary DM items
@@ -112,18 +123,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               <button
                 type="button"
                 key={item.id}
+                aria-label={item.label}
+                aria-pressed={isActive}
                 onClick={() => onSelectDmTab(item.id)}
-                className={`flex flex-col items-center justify-center gap-1 touch-target transition-all duration-150 relative ${
-                  isActive
-                    ? 'text-[#E0A030] font-extrabold'
-                    : 'text-[#A39A89] hover:text-[#EDE6D8]'
-                }`}
+                className={`liquid-dock__item mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
-                <span className="text-xs leading-none font-semibold truncate">{item.label}</span>
-                {isActive && (
-                  <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-[#E0A030] shadow-[0_0_6px_#E0A030]" />
-                )}
+                <span className="dock-label truncate max-w-[3.5rem]">{item.label}</span>
               </button>
             );
           })}
@@ -138,32 +144,28 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   return (
     <nav 
       aria-label="منوی ناوبری بازیکن"
-      className="fixed bottom-0 inset-x-0 z-[30] bg-[#171513]/95 backdrop-blur-md border-t border-[#2F2A23] pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_25px_rgba(0,0,0,0.8)]"
+      className="liquid-dock"
       dir="rtl"
     >
       {/* Active Encounter Quick Join Bar on BottomNav */}
       {hasActiveEncounter && onOpenActiveEncounter && (
-        <div className="bg-gradient-to-r from-[#C2512B] via-[#E0A030] to-[#C2512B] border-b border-[#F2C265]/40 px-3 py-1 text-center shadow-lg">
-          <button
-            type="button"
-            onClick={onOpenActiveEncounter}
-            className="w-full flex items-center justify-center gap-2 text-[11px] font-black text-[#0E0D0C] hover:opacity-95 transition"
-          >
-            <Swords className="w-3.5 h-3.5 animate-bounce shrink-0" />
-            <span>مبارزه زنده در جریان است — لمس جهت مشاهده</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={onOpenActiveEncounter}
+          className="liquid-dock__banner w-full flex items-center justify-center gap-2 mb-2 py-1.5 rounded-2xl bg-gradient-to-r from-[#C2512B] via-[#E0A030] to-[#C2512B] text-[11px] font-black text-[#0E0D0C] shadow-[0_4px_16px_rgba(194,81,43,0.35)] hover:opacity-95 transition pointer-events-auto"
+        >
+          <Swords className="w-3.5 h-3.5 animate-bounce shrink-0" />
+          <span>مبارزه زنده در جریان است — لمس جهت مشاهده</span>
+        </button>
       )}
-      <div className="max-w-md mx-auto grid grid-cols-5 h-16 px-1 items-center">
+      <div className="liquid-dock__track grid grid-cols-5 items-center">
         {/* 1. Sheet */}
         <button
           type="button"
+          aria-label="شیت شخصیت"
+          aria-pressed={isSheetTab}
           onClick={() => onSelectPlayerTab('overview')}
-          className={`flex flex-col items-center justify-center gap-1 touch-target transition-all duration-150 relative ${
-            isSheetTab
-              ? 'text-[#E0A030] font-extrabold'
-              : 'text-[#A39A89] hover:text-[#EDE6D8]'
-          }`}
+          className={`liquid-dock__item mx-auto relative ${isSheetTab ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
         >
           <div className="relative">
             <Heart className={`w-5 h-5 ${isSheetTab ? 'stroke-[2.5]' : 'stroke-2'}`} />
@@ -182,34 +184,26 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               </span>
             )}
           </div>
-          <span className="text-xs leading-none font-semibold truncate">شیت</span>
-          {isSheetTab && (
-            <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-[#E0A030] shadow-[0_0_6px_#E0A030]" />
-          )}
+          <span className="dock-label truncate">شیت</span>
         </button>
 
         {/* 2. Inventory */}
         <button
           type="button"
+          aria-label="کوله‌پشتی"
+          aria-pressed={playerTab === 'inventory'}
           onClick={() => onSelectPlayerTab('inventory')}
-          className={`flex flex-col items-center justify-center gap-1 touch-target transition-all duration-150 relative ${
-            playerTab === 'inventory'
-              ? 'text-[#E0A030] font-extrabold'
-              : 'text-[#A39A89] hover:text-[#EDE6D8]'
-          }`}
+          className={`liquid-dock__item mx-auto relative ${playerTab === 'inventory' ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
         >
           <div className="relative">
             <Package className={`w-5 h-5 ${playerTab === 'inventory' ? 'stroke-[2.5]' : 'stroke-2'}`} />
             {inventoryBadge > 0 && (
-              <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-[#E0A030] text-[#0E0D0C] text-[9px] font-black px-0.5">
+              <span className="absolute -top-1 -end-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-[#E0A030] text-[#0E0D0C] text-[9px] font-black px-0.5 border border-[#171513]">
                 {inventoryBadge > 99 ? '99+' : inventoryBadge}
               </span>
             )}
           </div>
-          <span className="text-xs leading-none font-semibold truncate">کوله</span>
-          {playerTab === 'inventory' && (
-            <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-[#E0A030] shadow-[0_0_6px_#E0A030]" />
-          )}
+          <span className="dock-label truncate">کوله</span>
         </button>
 
         {/* 3. Center Raised Dice Button (FAB) */}
@@ -217,7 +211,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <button
             type="button"
             onClick={onOpenDice}
-            className="w-13 h-13 -mt-5 rounded-full bg-gradient-to-tr from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] flex flex-col items-center justify-center shadow-[0_0_18px_rgba(224,160,48,0.45)] active:scale-95 transition-transform duration-150 border-2 border-[#171513] touch-target z-[35]"
+            className="w-13 h-13 -mt-6 rounded-full bg-gradient-to-tr from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] flex flex-col items-center justify-center shadow-[0_0_20px_rgba(224,160,48,0.5),0_4px_12px_rgba(0,0,0,0.4)] hover:scale-105 active:scale-95 transition-transform duration-200 border-2 border-[#171513] touch-target z-[35]"
             title="پرتاب سریع تاس"
             aria-label="باز کردن پنجره پرتاب تاس"
           >
@@ -228,42 +222,32 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         {/* 4. Notes */}
         <button
           type="button"
+          aria-label="یادداشت‌ها"
+          aria-pressed={playerTab === 'notes'}
           onClick={() => onSelectPlayerTab('notes')}
-          className={`flex flex-col items-center justify-center gap-1 touch-target transition-all duration-150 relative ${
-            playerTab === 'notes'
-              ? 'text-[#E0A030] font-extrabold'
-              : 'text-[#A39A89] hover:text-[#EDE6D8]'
-          }`}
+          className={`liquid-dock__item mx-auto relative ${playerTab === 'notes' ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
         >
           <div className="relative">
             <FileText className={`w-5 h-5 ${playerTab === 'notes' ? 'stroke-[2.5]' : 'stroke-2'}`} />
             {notesBadge > 0 && (
-              <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-[#E0A030] text-[#0E0D0C] text-[9px] font-black px-0.5">
+              <span className="absolute -top-1 -end-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-[#E0A030] text-[#0E0D0C] text-[9px] font-black px-0.5 border border-[#171513]">
                 {notesBadge > 99 ? '99+' : notesBadge}
               </span>
             )}
           </div>
-          <span className="text-xs leading-none font-semibold truncate">یادداشت</span>
-          {playerTab === 'notes' && (
-            <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-[#E0A030] shadow-[0_0_6px_#E0A030]" />
-          )}
+          <span className="dock-label truncate">یادداشت</span>
         </button>
 
         {/* 5. Codex */}
         <button
           type="button"
+          aria-label="دانشنامه"
+          aria-pressed={playerTab === 'codex'}
           onClick={() => onSelectPlayerTab('codex')}
-          className={`flex flex-col items-center justify-center gap-1 touch-target transition-all duration-150 relative ${
-            playerTab === 'codex'
-              ? 'text-[#E0A030] font-extrabold'
-              : 'text-[#A39A89] hover:text-[#EDE6D8]'
-          }`}
+          className={`liquid-dock__item mx-auto ${playerTab === 'codex' ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
         >
           <Compass className={`w-5 h-5 ${playerTab === 'codex' ? 'stroke-[2.5]' : 'stroke-2'}`} />
-          <span className="text-xs leading-none font-semibold truncate">دانشنامه</span>
-          {playerTab === 'codex' && (
-            <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-[#E0A030] shadow-[0_0_6px_#E0A030]" />
-          )}
+          <span className="dock-label truncate">دانشنامه</span>
         </button>
       </div>
     </nav>

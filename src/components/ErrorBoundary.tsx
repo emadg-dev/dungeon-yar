@@ -31,24 +31,24 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-[#0c0e12] text-slate-100 flex items-center justify-center p-4" dir="rtl">
-          <div className="max-w-md w-full bg-[#141824] border border-amber-500/40 rounded-2xl p-6 shadow-2xl text-center space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
+        <div className="min-h-screen bg-[#0E0D0C] text-[#EDE6D8] flex items-center justify-center p-4" dir="rtl">
+          <div className="max-w-md w-full bg-[#171513] border border-[#E0A030]/40 rounded-2xl p-6 shadow-2xl text-center space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#E0A030]/10 border border-[#E0A030]/30 flex items-center justify-center mx-auto text-[#F2C265]">
               <AlertTriangle className="w-6 h-6" />
             </div>
-            <h2 className="text-lg font-black text-amber-200">خطایی رخ داد</h2>
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <h2 className="text-lg font-black text-[#F2C265]">خطایی رخ داد</h2>
+            <p className="text-xs text-[#C9C0AE] leading-relaxed">
               متأسفانه خطایی در بارگذاری این بخش رخ داد. اطلاعات شما در حافظه ذخیره است و نیازی به بارگذاری مجدد کل صفحه نیست.
             </p>
             {this.state.error?.message && (
-              <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-red-300 font-mono overflow-x-auto text-start">
+              <div className="p-2.5 rounded-xl bg-[#131110] border border-[#2F2A23] text-[11px] text-[#E8836B] font-mono overflow-x-auto text-start">
                 {this.state.error.message}
               </div>
             )}
             <button
               type="button"
               onClick={this.handleReset}
-              className="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-95"
+              className="w-full py-2.5 px-4 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-95"
             >
               <RefreshCw className="w-4 h-4" />
               <span>تلاش دوباره</span>

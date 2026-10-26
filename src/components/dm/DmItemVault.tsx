@@ -127,13 +127,13 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
   return (
     <div className="space-y-6">
       {/* Vault Subtab switcher */}
-      <div className="flex border-b border-slate-800 pb-2 gap-4">
+      <div className="flex border-b border-[#2F2A23] pb-2 gap-4">
         <button
           onClick={() => setSubTab('items')}
           className={`pb-2 text-xs font-bold transition border-b-2 ${
             subTab === 'items'
-              ? 'border-amber-400 text-amber-300'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-[#F2C265] text-[#F2C265]'
+              : 'border-transparent text-[#A39A89] hover:text-[#EDE6D8]'
           }`}
         >
           گنجینه اشیاء و آرتیفکت‌ها ({items.length})
@@ -142,8 +142,8 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
           onClick={() => setSubTab('rewards')}
           className={`pb-2 text-xs font-bold transition border-b-2 ${
             subTab === 'rewards'
-              ? 'border-amber-400 text-amber-300'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-[#F2C265] text-[#F2C265]'
+              : 'border-transparent text-[#A39A89] hover:text-[#EDE6D8]'
           }`}
         >
           بسته‌های پاداش و غنایم ({rewards.length})
@@ -153,22 +153,22 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
       {subTab === 'items' ? (
         <>
           {/* Header & Controls */}
-          <div className="bg-[#12151e] border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-800">
+          <div className="bg-[#171513] border border-[#2F2A23] rounded-2xl p-4 sm:p-5 shadow-lg">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-[#2F2A23]">
               <div className="relative flex-1">
-                <Search className="absolute right-3 top-2.5 w-4 h-4 text-slate-500" />
+                <Search className="absolute right-3 top-2.5 w-4 h-4 text-[#8A8374]" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="جستجو در آرتیفکت‌ها، سلاح‌ها و پاداش‌ها..."
-                  className="w-full py-2 pr-9 pl-3 rounded-xl bg-[#161a26] border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+                  className="w-full py-2 pr-9 pl-3 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
                 />
               </div>
 
               <button
                 onClick={handleStartCreate}
-                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition"
+                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-bold text-xs transition"
               >
                 <Plus className="w-4 h-4" />
                 افزودن شیء / آرتیفکت تازه
@@ -181,8 +181,8 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                 onClick={() => setSelectedCat('all')}
                 className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition border ${
                   selectedCat === 'all'
-                    ? 'bg-amber-500 text-slate-950 border-amber-400'
-                    : 'bg-[#161a26] text-slate-400 border-slate-800 hover:text-white'
+                    ? 'bg-[#E0A030] text-[#0E0D0C] border-[#F2C265]'
+                    : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
                 }`}
               >
                 همه ({items.length})
@@ -195,8 +195,8 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                     onClick={() => setSelectedCat(cat)}
                     className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition border ${
                       selectedCat === cat
-                        ? 'bg-amber-500 text-slate-950 border-amber-400'
-                        : 'bg-[#161a26] text-slate-400 border-slate-800 hover:text-white'
+                        ? 'bg-[#E0A030] text-[#0E0D0C] border-[#F2C265]'
+                        : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
                     }`}
                   >
                     {categoryLabels[cat]} ({count})
@@ -216,22 +216,22 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
             <form onSubmit={handleSubmitItem} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="text-xs text-slate-300 block mb-1">نام شیء:</label>
+                  <label className="text-xs text-[#C9C0AE] block mb-1">نام شیء:</label>
                   <input
                     type="text"
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="مثلاً: خنجر ایستایی زروان"
-                    className="w-full py-2 px-3 rounded-xl bg-[#10131c] border border-slate-700 text-sm text-slate-200"
+                    className="w-full py-2 px-3 rounded-xl bg-[#131110] border border-[#3A342B] text-sm text-[#EDE6D8]"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 block mb-1">دسته‌بندی:</label>
+                  <label className="text-xs text-[#C9C0AE] block mb-1">دسته‌بندی:</label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value as ItemLibraryCategory })}
-                    className="w-full py-2 px-3 rounded-xl bg-[#10131c] border border-slate-700 text-sm text-slate-200"
+                    className="w-full py-2 px-3 rounded-xl bg-[#131110] border border-[#3A342B] text-sm text-[#EDE6D8]"
                   >
                     {(Object.keys(categoryLabels) as ItemLibraryCategory[]).map(c => (
                       <option key={c} value={c}>{categoryLabels[c]}</option>
@@ -239,11 +239,11 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 block mb-1">کمیابی:</label>
+                  <label className="text-xs text-[#C9C0AE] block mb-1">کمیابی:</label>
                   <select
                     value={formData.rarity}
                     onChange={(e) => setFormData({ ...formData, rarity: e.target.value as any })}
-                    className="w-full py-2 px-3 rounded-xl bg-[#10131c] border border-slate-700 text-sm text-slate-200"
+                    className="w-full py-2 px-3 rounded-xl bg-[#131110] border border-[#3A342B] text-sm text-[#EDE6D8]"
                   >
                     <option value="معمولی">معمولی</option>
                     <option value="کمیاب">کمیاب</option>
@@ -255,49 +255,49 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 block mb-1">شرح و ظاهر:</label>
+                <label className="text-xs text-[#C9C0AE] block mb-1">شرح و ظاهر:</label>
                 <textarea
                   rows={2}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-[#10131c] border border-slate-700 text-sm text-slate-200"
+                  className="w-full p-2.5 rounded-xl bg-[#131110] border border-[#3A342B] text-sm text-[#EDE6D8]"
                 />
               </div>
 
               <div>
-                <label className="text-xs text-slate-300 block mb-1">اثر مکانیکی و قوانین بازی:</label>
+                <label className="text-xs text-[#C9C0AE] block mb-1">اثر مکانیکی و قوانین بازی:</label>
                 <textarea
                   rows={2}
                   value={formData.mechanicalEffect}
                   onChange={(e) => setFormData({ ...formData, mechanicalEffect: e.target.value })}
-                  className="w-full p-2.5 rounded-xl bg-[#10131c] border border-slate-700 text-sm text-slate-200"
+                  className="w-full p-2.5 rounded-xl bg-[#131110] border border-[#3A342B] text-sm text-[#EDE6D8]"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-slate-300 block mb-1">مناسب برای (تگ بازیکن):</label>
+                  <label className="text-xs text-[#C9C0AE] block mb-1">مناسب برای (تگ بازیکن):</label>
                   <input
                     type="text"
                     value={formData.whoItsFor}
                     onChange={(e) => setFormData({ ...formData, whoItsFor: e.target.value })}
                     placeholder="سامان یا پردیس"
-                    className="w-full py-2 px-3 rounded-xl bg-[#10131c] border border-slate-700 text-sm text-slate-200"
+                    className="w-full py-2 px-3 rounded-xl bg-[#131110] border border-[#3A342B] text-sm text-[#EDE6D8]"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-300 block mb-1">یادداشت محرمانه DM:</label>
+                  <label className="text-xs text-[#C9C0AE] block mb-1">یادداشت محرمانه DM:</label>
                   <input
                     type="text"
                     value={formData.secretNotes}
                     onChange={(e) => setFormData({ ...formData, secretNotes: e.target.value })}
                     placeholder="عوارض جانبی یا راز پشت پرده..."
-                    className="w-full py-2 px-3 rounded-xl bg-[#10131c] border border-slate-700 text-sm text-slate-200"
+                    className="w-full py-2 px-3 rounded-xl bg-[#131110] border border-[#3A342B] text-sm text-[#EDE6D8]"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-[#141824] border border-slate-800">
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-[#171513] border border-[#2F2A23]">
                 <input
                   type="checkbox"
                   id="revealedItemCheck"
@@ -305,7 +305,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                   onChange={(e) => setFormData({ ...formData, isRevealed: e.target.checked })}
                   className="w-4 h-4 rounded text-amber-500 accent-amber-500"
                 />
-                <label htmlFor="revealedItemCheck" className="text-xs text-slate-300 font-bold cursor-pointer">
+                <label htmlFor="revealedItemCheck" className="text-xs text-[#C9C0AE] font-bold cursor-pointer">
                   آشکار برای بازیکنان (در دانشنامه بازیکنان نمایش داده شود)
                 </label>
               </div>
@@ -314,13 +314,13 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsCreating(false)}
-                  className="py-2.5 px-4 rounded-xl text-xs text-slate-400 touch-target"
+                  className="py-2.5 px-4 rounded-xl text-xs text-[#A39A89] touch-target"
                 >
                   انصراف
                 </button>
                 <button
                   type="submit"
-                  className="py-2.5 px-5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs touch-target"
+                  className="py-2.5 px-5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs touch-target"
                 >
                   ذخیره در گنجینه
                 </button>
@@ -333,13 +333,13 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
             {filteredItems.map(item => (
               <div
                 key={item.id}
-                className="bg-[#141824] border border-slate-800 hover:border-amber-500/30 rounded-2xl p-4 shadow-lg flex flex-col justify-between"
+                className="bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030]/30 rounded-2xl p-4 shadow-lg flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-sm text-amber-200">{item.name}</h4>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">
+                      <h4 className="font-bold text-sm text-[#F2C265]">{item.name}</h4>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#E0A030]/15 text-[#F2C265] border border-[#E0A030]/30 font-bold">
                         {item.rarity}
                       </span>
                     </div>
@@ -350,37 +350,37 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                         title={item.isRevealed ? 'آشکار برای بازیکنان' : 'پنهان از بازیکنان'}
                         className={`p-1.5 rounded-lg text-xs transition border ${
                           item.isRevealed
-                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                            : 'bg-slate-800 text-slate-500 border-slate-700'
+                            ? 'bg-[#E0A030]/20 text-[#F2C265] border-[#E0A030]/30'
+                            : 'bg-[#201D19] text-[#8A8374] border-[#3A342B]'
                         }`}
                       >
                         {item.isRevealed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                       </button>
                       <button
                         onClick={() => onDeleteItem(item.id)}
-                        className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-red-400"
+                        className="p-1.5 rounded-lg bg-[#201D19] text-[#A39A89] hover:text-red-400"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
 
-                  <span className="text-[10px] text-slate-500 block mb-2">
+                  <span className="text-[10px] text-[#8A8374] block mb-2">
                     دسته‌بندی: {categoryLabels[item.category]} • اختصاصی: {item.whoItsFor || 'نامشخص'}
                   </span>
 
-                  <p className="text-xs text-slate-300 leading-relaxed mb-3">
+                  <p className="text-xs text-[#C9C0AE] leading-relaxed mb-3">
                     {item.description}
                   </p>
 
                   {item.mechanicalEffect && (
-                    <div className="p-2.5 rounded-xl bg-[#0e1118] border border-slate-800 text-xs text-amber-300/90 mb-3">
+                    <div className="p-2.5 rounded-xl bg-[#131110] border border-[#2F2A23] text-xs text-[#F2C265]/90 mb-3">
                       <strong>اثر مکانیکی:</strong> {item.mechanicalEffect}
                     </div>
                   )}
 
                   {item.secretNotes && (
-                    <div className="p-2.5 rounded-xl bg-red-950/20 border border-red-500/30 text-xs text-red-300 mb-3">
+                    <div className="p-2.5 rounded-xl bg-red-950/20 border border-red-500/30 text-xs text-[#E8836B] mb-3">
                       <strong>راز DM:</strong> {item.secretNotes}
                     </div>
                   )}
@@ -389,7 +389,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                 {/* Give to Player Button */}
                 <button
                   onClick={() => handleOpenGive(item)}
-                  className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 text-xs font-bold transition flex items-center justify-center gap-1.5"
+                  className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] text-xs font-bold transition flex items-center justify-center gap-1.5"
                 >
                   <Gift className="w-4 h-4" />
                   اهدای این شیء به یکی از ماجراجویان
@@ -403,28 +403,28 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {rewards.map(rew => (
-              <div key={rew.id} className="p-4 rounded-2xl bg-[#141824] border border-amber-500/25 shadow-lg flex flex-col justify-between">
+              <div key={rew.id} className="p-4 rounded-2xl bg-[#171513] border border-[#E0A030]/25 shadow-lg flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-bold text-sm text-amber-200">{rew.title}</h4>
-                    <span className="text-[10px] text-slate-500 font-mono">
+                    <h4 className="font-bold text-sm text-[#F2C265]">{rew.title}</h4>
+                    <span className="text-[10px] text-[#8A8374] font-mono">
                       {new Date(rew.createdAt).toLocaleDateString('fa-IR')}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-300 mb-3">{rew.description}</p>
+                  <p className="text-xs text-[#C9C0AE] mb-3">{rew.description}</p>
 
-                  <div className="flex items-center gap-4 text-xs font-mono bg-[#0e1118] p-2.5 rounded-xl border border-slate-800 mb-3">
-                    <span className="text-amber-300 font-bold">{rew.gold} سکه طلا</span>
-                    <span className="text-slate-300">{rew.silver} سکه نقره</span>
-                    <span className="text-amber-400 font-bold">{rew.skillPoints} امتیاز مهارت</span>
+                  <div className="flex items-center gap-4 text-xs font-mono bg-[#131110] p-2.5 rounded-xl border border-[#2F2A23] mb-3">
+                    <span className="text-[#F2C265] font-bold">{rew.gold} سکه طلا</span>
+                    <span className="text-[#C9C0AE]">{rew.silver} سکه نقره</span>
+                    <span className="text-[#F2C265] font-bold">{rew.skillPoints} امتیاز مهارت</span>
                   </div>
 
                   {rew.items?.length > 0 && (
                     <div className="space-y-1 mb-3">
-                      <span className="text-[11px] text-slate-400 block font-semibold">اقلام همراه بسته:</span>
+                      <span className="text-[11px] text-[#A39A89] block font-semibold">اقلام همراه بسته:</span>
                       {rew.items.map((it, idx) => (
-                        <div key={idx} className="text-xs text-slate-300 flex items-center gap-1.5">
-                          <Package className="w-3.5 h-3.5 text-amber-400" />
+                        <div key={idx} className="text-xs text-[#C9C0AE] flex items-center gap-1.5">
+                          <Package className="w-3.5 h-3.5 text-[#F2C265]" />
                           <span>{it.name} (x{it.quantity})</span>
                         </div>
                       ))}
@@ -434,7 +434,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
 
                 <button
                   onClick={() => handleDistributeAll(rew)}
-                  className="w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-2"
+                  className="w-full py-2 px-3 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-bold text-xs transition flex items-center justify-center gap-2"
                 >
                   <Gift className="w-4 h-4" />
                   توزیع این بسته بین تمام اعضای گروه
@@ -454,7 +454,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
       >
         {giveModalItem && (
           <div className="space-y-4">
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#A39A89]">
               شیء در کوله‌پشتی بازیکن با نشان «جدید» قرار خواهد گرفت و در صورت سلاح بودن، خودکار به تب مبارزه افزوده می‌شود.
             </p>
 
@@ -466,11 +466,11 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
             ) : (
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs text-slate-300 block mb-1">انتخاب بازیکن:</label>
+                  <label className="text-xs text-[#C9C0AE] block mb-1">انتخاب بازیکن:</label>
                   <select
                     value={selectedCharacterId}
                     onChange={(e) => setSelectedCharacterId(e.target.value)}
-                    className="w-full py-2.5 px-3 rounded-xl bg-[#181c28] border border-slate-700 text-sm text-slate-200 focus:outline-none focus:border-amber-500"
+                    className="w-full py-2.5 px-3 rounded-xl bg-[#181c28] border border-[#3A342B] text-sm text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
                   >
                     {characters.map(c => (
                       <option key={c.id} value={c.id}>{c.name} ({c.className})</option>
@@ -482,14 +482,14 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                   <button
                     type="button"
                     onClick={() => setGiveModalItem(null)}
-                    className="py-2.5 px-4 rounded-xl text-xs text-slate-400 hover:text-white touch-target"
+                    className="py-2.5 px-4 rounded-xl text-xs text-[#A39A89] hover:text-[#EDE6D8] touch-target"
                   >
                     انصراف
                   </button>
                   <button
                     type="button"
                     onClick={handleConfirmGive}
-                    className="py-2.5 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition touch-target"
+                    className="py-2.5 px-5 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-bold text-xs shadow-md transition touch-target"
                   >
                     تأیید و ارسال به ماجراجو
                   </button>

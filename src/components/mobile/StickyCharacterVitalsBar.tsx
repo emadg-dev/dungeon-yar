@@ -44,7 +44,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
   ];
 
   return (
-    <div className="sticky top-[49px] sm:top-[53px] z-20 bg-[#0e1118]/95 backdrop-blur-md border-b border-amber-500/20 px-2.5 sm:px-4 py-1.5 sm:py-2 shadow-md">
+    <div className="sticky top-[49px] sm:top-[53px] z-20 bg-[#131110]/95 backdrop-blur-md border-b border-[#E0A030]/20 px-2.5 sm:px-4 py-1.5 sm:py-2 shadow-md">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-3">
         {/* Top / Left: Identity & HP Controls */}
         <div className="flex items-center justify-between sm:justify-start gap-2 min-w-0">
@@ -54,18 +54,18 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
               src={character.portraitUrl || 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=120&q=80'}
               alt={character.name}
               loading="lazy"
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover border border-amber-500/30 shrink-0"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover border border-[#E0A030]/30 shrink-0"
             />
             <div className="min-w-0">
               <div className="flex items-center gap-1 truncate">
-                <span className="font-black text-xs text-amber-200 truncate">{character.name}</span>
-                <span className="text-[10px] px-1 py-0.2 rounded bg-amber-500/15 text-amber-300 font-bold shrink-0">
+                <span className="font-black text-xs text-[#F2C265] truncate">{character.name}</span>
+                <span className="text-[10px] px-1 py-0.2 rounded bg-[#E0A030]/15 text-[#F2C265] font-bold shrink-0">
                   L{character.level}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+              <div className="flex items-center gap-1.5 text-[10px] text-[#A39A89]">
                 <span className="flex items-center gap-0.5">
-                  <Shield className="w-2.5 h-2.5 text-amber-400" /> AC {character.ac}
+                  <Shield className="w-2.5 h-2.5 text-[#F2C265]" /> AC {character.ac}
                 </span>
                 {character.exhaustion > 0 && (
                   <span className="flex items-center gap-0.5 text-red-400 font-bold">
@@ -81,24 +81,24 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
             <button
               type="button"
               onClick={() => adjustHp(-1)}
-              className="w-12 h-12 flex items-center justify-center rounded-xl bg-red-950/60 active:bg-red-900 border border-red-500/40 text-red-300 font-black text-sm touch-target-lg select-none"
+              className="w-12 h-12 flex items-center justify-center rounded-xl bg-red-950/60 active:bg-red-900 border border-red-500/40 text-[#E8836B] font-black text-sm touch-target-lg select-none"
               title="کاهش ۱ جان"
             >
               -۱
             </button>
 
             {/* Current / Max HP Badge */}
-            <div className="flex flex-col items-center justify-center px-2 py-1 rounded-xl bg-[#141824] border border-slate-700 min-w-[58px] sm:min-w-[66px] min-h-[48px]">
+            <div className="flex flex-col items-center justify-center px-2 py-1 rounded-xl bg-[#171513] border border-[#3A342B] min-w-[58px] sm:min-w-[66px] min-h-[48px]">
               <div className="flex items-center gap-1">
                 <Heart className="w-3 h-3 text-red-400 fill-red-500/30" />
-                <span className="font-mono font-black text-sm text-slate-100 num-ltr">
+                <span className="font-mono font-black text-sm text-[#EDE6D8] num-ltr">
                   {character.hp.current}/{character.hp.max}
                 </span>
               </div>
-              <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden mt-1">
+              <div className="w-full h-1 bg-[#201D19] rounded-full overflow-hidden mt-1">
                 <div
                   className={`h-full rounded-full transition-all ${
-                    hpPercent > 50 ? 'bg-emerald-500' : hpPercent > 20 ? 'bg-amber-500' : 'bg-red-500'
+                    hpPercent > 50 ? 'bg-emerald-500' : hpPercent > 20 ? 'bg-[#E0A030]' : 'bg-red-500'
                   }`}
                   style={{ width: `${hpPercent}%` }}
                 />
@@ -120,25 +120,25 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
             <button
               type="button"
               onClick={() => onOpenRest('short')}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold touch-target"
+              className="p-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] text-[#C9C0AE] text-xs font-bold touch-target"
               title="استراحت کوتاه"
             >
-              <Moon className="w-4 h-4 text-amber-400" />
+              <Moon className="w-4 h-4 text-[#F2C265]" />
             </button>
             <button
               type="button"
               onClick={() => onOpenRest('long')}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold touch-target"
+              className="p-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] text-[#C9C0AE] text-xs font-bold touch-target"
               title="استراحت بلند"
             >
-              <Sun className="w-4 h-4 text-amber-400" />
+              <Sun className="w-4 h-4 text-[#F2C265]" />
             </button>
           </div>
         </div>
 
         {/* Sub-Tabs: Never wraps to two lines, scrolls horizontally, smooth and clean */}
         {onSelectSheetTab && (
-          <div className="bg-[#12151e] border border-slate-800/80 rounded-xl p-1 flex items-center gap-1 overflow-x-auto flex-nowrap scrollbar-none w-full sm:w-auto shrink-0">
+          <div className="bg-[#171513] border border-[#2F2A23]/80 rounded-xl p-1 flex items-center gap-1 overflow-x-auto flex-nowrap scrollbar-none w-full sm:w-auto shrink-0">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeSheetTab === tab.id;
@@ -149,14 +149,14 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
                   onClick={() => onSelectSheetTab(tab.id)}
                   className={`flex-1 sm:flex-initial py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
                     isActive
-                      ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
+                      : 'text-[#A39A89] hover:text-[#EDE6D8]'
                   }`}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
                   <span className="truncate">{tab.label}</span>
                   {tab.badge !== undefined && (
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${isActive ? 'bg-slate-950 text-amber-300' : 'bg-slate-800 text-slate-400'}`}>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${isActive ? 'bg-[#0E0D0C] text-[#F2C265]' : 'bg-[#201D19] text-[#A39A89]'}`}>
                       {tab.badge}
                     </span>
                   )}

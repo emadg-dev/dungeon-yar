@@ -205,7 +205,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
                 <button
                   type="button"
                   onClick={() => onUpdateCharacterHp(Math.max(0, activeCharacter.hp.current - 1))}
-                  className="w-8 h-8 rounded-[8px] bg-[#201D19] hover:bg-rose-500/20 text-rose-300 font-black text-sm transition touch-target border border-[#2F2A23] flex items-center justify-center"
+                  className="w-8 h-8 rounded-[8px] bg-[#201D19] hover:bg-[#C2512B]/20 text-rose-300 font-black text-sm transition touch-target border border-[#2F2A23] flex items-center justify-center"
                   title="کاهش ۱ سلامت"
                 >
                   -۱
@@ -309,7 +309,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
                           )}
 
                           {isDefeated && (
-                            <span className="text-[10px] bg-rose-500/20 text-rose-400 px-1.5 py-0.2 rounded-full">
+                            <span className="text-[10px] bg-[#C2512B]/20 text-[#D66138] px-1.5 py-0.2 rounded-full">
                               شکست‌خورده
                             </span>
                           )}
@@ -321,7 +321,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
                           <span className={`font-bold ${
                             p.healthStatus === 'سالم' ? 'text-[#6F9E78]' :
                             p.healthStatus === 'زخمی' ? 'text-[#E0A030]' :
-                            p.healthStatus === 'نیمه‌جان' ? 'text-orange-400' : 'text-rose-400'
+                            p.healthStatus === 'نیمه‌جان' ? 'text-orange-400' : 'text-[#D66138]'
                           }`}>
                             {p.healthStatus}
                           </span>
@@ -345,7 +345,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
 
                     {/* Pending Initiative Indicator */}
                     {p.initiativeStatus === 'pending' && (
-                      <span className="text-[10px] text-amber-400 border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 rounded-full shrink-0">
+                      <span className="text-[10px] text-[#F2C265] border border-[#E0A030]/40 bg-[#E0A030]/10 px-2 py-0.5 rounded-full shrink-0">
                         در انتظار تایید مستر
                       </span>
                     )}
@@ -357,7 +357,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
                       {p.conditions.map((c, idx) => (
                         <span
                           key={idx}
-                          className="text-[10px] bg-rose-500/15 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded-full"
+                          className="text-[10px] bg-[#C2512B]/15 text-rose-300 border border-[#C2512B]/30 px-2 py-0.5 rounded-full"
                         >
                           {c}
                         </span>

@@ -51,14 +51,14 @@ const CampaignApprovalsModal = React.lazy(() => import('./components/campaign/Ca
 // Loading skeleton fallback for tabs
 const TabSkeleton = () => (
   <div className="space-y-4 p-2 animate-pulse" dir="rtl">
-    <div className="h-28 rounded-2xl bg-[#141824]/60 border border-amber-500/10"></div>
+    <div className="skeleton h-28" />
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div className="h-20 rounded-2xl bg-[#141824]/40 border border-slate-800"></div>
-      <div className="h-20 rounded-2xl bg-[#141824]/40 border border-slate-800"></div>
-      <div className="h-20 rounded-2xl bg-[#141824]/40 border border-slate-800"></div>
-      <div className="h-20 rounded-2xl bg-[#141824]/40 border border-slate-800"></div>
+      <div className="skeleton h-20" />
+      <div className="skeleton h-20" />
+      <div className="skeleton h-20" />
+      <div className="skeleton h-20" />
     </div>
-    <div className="h-44 rounded-2xl bg-[#141824]/30 border border-slate-800"></div>
+    <div className="skeleton h-44" />
   </div>
 );
 
@@ -581,7 +581,7 @@ export default function App() {
   const activeCharacter = characters.find(c => c.id === activeCharId) || characters[0] || null;
 
   return (
-    <div className="min-h-screen bg-[#0E0D0C] text-[#EDE6D8] flex flex-col font-sans selection:bg-[#E0A030]/25 selection:text-[#E0A030]" dir="rtl">
+    <div className="min-h-screen text-[#EDE6D8] flex flex-col font-sans selection:bg-[#E0A030]/25 selection:text-[#E0A030]" dir="rtl">
       {/* Toast notifications */}
       {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
 
@@ -640,7 +640,7 @@ export default function App() {
       )}
 
       {/* Main Body */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-4 py-3 sm:py-6 overflow-x-hidden">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-4 pt-3 sm:pt-6 pb-28 sm:pb-24 overflow-x-hidden">
         <Suspense fallback={<TabSkeleton />}>
           {/* VIEW 1: HOME DASHBOARD */}
           {viewMode === 'home' && (

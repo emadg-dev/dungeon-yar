@@ -918,7 +918,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
               <button
                 type="button"
                 onClick={handleOpenEndLoot}
-                className="bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 text-xs px-2.5 py-1.5 rounded-[8px] font-bold transition touch-target"
+                className="bg-[#C2512B]/20 text-[#D66138] hover:bg-[#C2512B]/30 text-xs px-2.5 py-1.5 rounded-[8px] font-bold transition touch-target"
               >
                 پایان نبرد
               </button>
@@ -1014,7 +1014,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                   {/* Initiative Value Badge */}
                   <div className={`w-8 h-8 rounded-[8px] flex items-center justify-center text-xs font-black shrink-0 ${
                     p.initiativeStatus === 'pending'
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 animate-pulse'
+                      ? 'bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/50 animate-pulse'
                       : isCurrentTurn
                       ? 'bg-[#E0A030] text-[#0E0D0C]'
                       : 'bg-[#201D19] text-[#EDE6D8] border border-[#2F2A23]'
@@ -1049,12 +1049,12 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                       <span>AC: <b className="text-[#EDE6D8]">{p.ac}</b></span>
                       {p.groupId && <span>• گروه سربازان</span>}
                       {p.initiativeStatus === 'pending' && (
-                        <span className="text-amber-400 font-bold flex items-center gap-1">
+                        <span className="text-[#F2C265] font-bold flex items-center gap-1">
                           (پرتاب بازیکن: {p.initiative})
                           <button
                             type="button"
                             onClick={() => handleConfirmInitiative(p)}
-                            className="bg-amber-500 text-black px-1.5 py-0.2 rounded text-[10px] font-black"
+                            className="bg-[#E0A030] text-black px-1.5 py-0.2 rounded text-[10px] font-black"
                           >
                             تایید
                           </button>
@@ -1076,7 +1076,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                     className={`p-1.5 rounded-[8px] transition touch-target ${
                       p.visibility === 'revealed' ? 'bg-[#6F9E78]/20 text-[#6F9E78]' :
                       p.visibility === 'announced' ? 'bg-[#E0A030]/20 text-[#E0A030]' :
-                      'bg-rose-500/20 text-rose-400'
+                      'bg-[#C2512B]/20 text-[#D66138]'
                     }`}
                   >
                     {p.visibility === 'revealed' ? <Eye className="w-4 h-4" /> :
@@ -1159,7 +1159,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 {(p.conditions || []).map((cond, cIdx) => (
                   <span
                     key={cIdx}
-                    className="text-[10px] bg-rose-500/15 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 font-bold"
+                    className="text-[10px] bg-[#C2512B]/15 text-rose-300 border border-[#C2512B]/30 px-2 py-0.5 rounded-full flex items-center gap-1 font-bold"
                   >
                     <span>{cond}</span>
                     <button
@@ -1241,7 +1241,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                           loadSelectedEncounter(currentEncounter.id);
                         }
                       }}
-                      className="p-1.5 rounded-[6px] bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 text-right font-semibold flex items-center gap-1.5"
+                      className="p-1.5 rounded-[6px] bg-[#C2512B]/15 hover:bg-[#C2512B]/25 text-[#D66138] text-right font-semibold flex items-center gap-1.5"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>حذف از مبارزه</span>
@@ -1574,7 +1574,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                   else setKeypadAmount(prev => (prev.length < 4 ? prev + k : prev));
                 }}
                 className={`py-3 rounded-[10px] font-black text-lg transition touch-target flex items-center justify-center ${
-                  k === 'C' ? 'bg-rose-500/20 text-rose-300' :
+                  k === 'C' ? 'bg-[#C2512B]/20 text-rose-300' :
                   k === '⌫' ? 'bg-[#201D19] text-[#A39A89]' :
                   'bg-[#201D19] text-[#EDE6D8] hover:bg-[#2F2A23]'
                 }`}
@@ -1621,12 +1621,12 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 onClick={() => conditionTarget && handleToggleCondition(conditionTarget, cond)}
                 className={`w-full p-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-between touch-target ${
                   isApplied
-                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                    ? 'bg-[#C2512B]/20 text-rose-300 border border-[#C2512B]/40'
                     : 'bg-[#171513] text-[#EDE6D8] border border-[#2F2A23] hover:bg-[#201D19]'
                 }`}
               >
                 <span>{cond}</span>
-                {isApplied && <CheckCircle2 className="w-4 h-4 text-rose-400" />}
+                {isApplied && <CheckCircle2 className="w-4 h-4 text-[#D66138]" />}
               </button>
             );
           })}
@@ -1692,7 +1692,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <button
             type="button"
             onClick={handleFinishEndAndDistribute}
-            className="w-full py-3 rounded-[10px] bg-rose-500 hover:bg-rose-600 text-white font-black text-sm transition shadow-md touch-target"
+            className="w-full py-3 rounded-[10px] bg-[#C2512B] hover:bg-rose-600 text-white font-black text-sm transition shadow-md touch-target"
           >
             تایید و ثبت نهایی پایان نبرد
           </button>

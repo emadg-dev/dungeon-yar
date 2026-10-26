@@ -62,16 +62,16 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
     <BottomSheet isOpen={isOpen} onClose={onClose} title={`پیوستن به ${campaign.name}`}>
       <form onSubmit={handleSubmit} className="space-y-4 py-2 text-right" dir="rtl">
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs">
+          <div className="p-3 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-rose-300 text-xs">
             {errorMsg}
           </div>
         )}
 
         {/* Character Selection */}
         <div>
-          <label className="block text-xs font-bold text-slate-300 mb-2">انتخاب شخصیت کلان</label>
+          <label className="block text-xs font-bold text-[#C9C0AE] mb-2">انتخاب شخصیت کلان</label>
           {myCharacters.length === 0 ? (
-            <p className="text-xs text-rose-400">ابتدا یک شخصیت در داشبورد ایجاد کنید.</p>
+            <p className="text-xs text-[#D66138]">ابتدا یک شخصیت در داشبورد ایجاد کنید.</p>
           ) : (
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {myCharacters.map(char => {
@@ -82,22 +82,22 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
                     onClick={() => setSelectedCharId(char.id)}
                     className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between min-h-[44px] ${
                       isSelected
-                        ? 'bg-amber-500/20 border-amber-500 text-amber-200'
-                        : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700'
+                        ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
+                        : 'bg-[#131110]/60 border-[#2F2A23] text-[#C9C0AE] hover:border-[#3A342B]'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <img
                         src={char.portraitUrl || 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=300&q=80'}
                         alt={char.name}
-                        className="w-8 h-8 rounded-lg object-cover border border-amber-500/20"
+                        className="w-8 h-8 rounded-lg object-cover border border-[#E0A030]/20"
                       />
                       <div>
                         <h4 className="text-xs font-bold">{char.name}</h4>
-                        <span className="text-[10px] text-slate-400">{char.race}</span>
+                        <span className="text-[10px] text-[#A39A89]">{char.race}</span>
                       </div>
                     </div>
-                    {isSelected && <CheckCircle className="w-4 h-4 text-amber-400" />}
+                    {isSelected && <CheckCircle className="w-4 h-4 text-[#F2C265]" />}
                   </div>
                 );
               })}
@@ -107,7 +107,7 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
 
         {/* Entry Mode Selection */}
         <div>
-          <label className="block text-xs font-bold text-slate-300 mb-2">نحوه ورود به کمپین (Entry Mode)</label>
+          <label className="block text-xs font-bold text-[#C9C0AE] mb-2">نحوه ورود به کمپین (Entry Mode)</label>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <button
               type="button"
@@ -117,8 +117,8 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
               }}
               className={`p-2.5 rounded-xl border text-xs font-bold transition-all min-h-[44px] ${
                 entryMode === 'campaign_start'
-                  ? 'bg-amber-500/20 border-amber-500 text-amber-200'
-                  : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                  ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
+                  : 'bg-[#131110]/60 border-[#2F2A23] text-[#A39A89] hover:border-[#3A342B]'
               }`}
             >
               شروع کمپین (سطح {startingLevel})
@@ -128,8 +128,8 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
               onClick={() => setEntryMode('same_level')}
               className={`p-2.5 rounded-xl border text-xs font-bold transition-all min-h-[44px] ${
                 entryMode === 'same_level'
-                  ? 'bg-amber-500/20 border-amber-500 text-amber-200'
-                  : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                  ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
+                  : 'bg-[#131110]/60 border-[#2F2A23] text-[#A39A89] hover:border-[#3A342B]'
               }`}
             >
               با همان سطح قبلی
@@ -139,8 +139,8 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
               onClick={() => setEntryMode('new_level')}
               className={`p-2.5 rounded-xl border text-xs font-bold transition-all min-h-[44px] ${
                 entryMode === 'new_level'
-                  ? 'bg-amber-500/20 border-amber-500 text-amber-200'
-                  : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                  ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
+                  : 'bg-[#131110]/60 border-[#2F2A23] text-[#A39A89] hover:border-[#3A342B]'
               }`}
             >
               با سطح سفارشی
@@ -150,26 +150,26 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
 
         {/* Level Stepper (if new_level or same_level) */}
         {entryMode !== 'campaign_start' && (
-          <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+          <div className="p-3.5 rounded-xl bg-[#131110] border border-[#2F2A23] flex items-center justify-between">
             <div>
-              <span className="text-xs font-bold text-slate-200 block">سطح ورود شخصیت</span>
-              <span className="text-[10px] text-slate-400">حداکثر سطح مجاز کمپین: {maxLevel}</span>
+              <span className="text-xs font-bold text-[#EDE6D8] block">سطح ورود شخصیت</span>
+              <span className="text-[10px] text-[#A39A89]">حداکثر سطح مجاز کمپین: {maxLevel}</span>
             </div>
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setLevel(prev => Math.max(1, prev - 1))}
                 disabled={level <= 1}
-                className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-40 flex items-center justify-center min-h-[44px] min-w-[44px]"
+                className="w-9 h-9 rounded-xl bg-[#201D19] hover:bg-[#2A2621] text-[#EDE6D8] disabled:opacity-40 flex items-center justify-center min-h-[44px] min-w-[44px]"
               >
                 <Minus className="w-4 h-4" />
               </button>
-              <span className="text-lg font-bold text-amber-400 min-w-8 text-center">{level}</span>
+              <span className="text-lg font-bold text-[#F2C265] min-w-8 text-center">{level}</span>
               <button
                 type="button"
                 onClick={() => setLevel(prev => Math.min(maxLevel, prev + 1))}
                 disabled={level >= maxLevel}
-                className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-40 flex items-center justify-center min-h-[44px] min-w-[44px]"
+                className="w-9 h-9 rounded-xl bg-[#201D19] hover:bg-[#2A2621] text-[#EDE6D8] disabled:opacity-40 flex items-center justify-center min-h-[44px] min-w-[44px]"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -180,12 +180,12 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
         {/* Approval Notice */}
         <div className={`p-3 rounded-xl border flex items-center gap-2.5 text-xs ${
           requiresApproval
-            ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+            ? 'bg-[#E0A030]/10 border-[#E0A030]/30 text-[#F2C265]'
             : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
         }`}>
           {requiresApproval ? (
             <>
-              <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+              <AlertCircle className="w-4 h-4 shrink-0 text-[#F2C265]" />
               <span>این کمپین نیازمند تأیید دانجن مستر است. پس از ورود، برگه شما در صف تأیید قرار می‌گیرد.</span>
             </>
           ) : (
@@ -200,14 +200,14 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-slate-200 min-h-[44px]"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] min-h-[44px]"
           >
             انصراف
           </button>
           <button
             type="submit"
             disabled={isSubmitting || !selectedCharId}
-            className="px-5 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 disabled:opacity-50 transition-colors flex items-center gap-2 min-h-[44px] shadow-lg shadow-amber-500/20"
+            className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs hover:bg-[#F2C265] disabled:opacity-50 transition-colors flex items-center gap-2 min-h-[44px] shadow-lg shadow-amber-500/20"
           >
             <Sparkles className="w-4 h-4" />
             <span>{isSubmitting ? 'در حال ورود...' : 'ورود به کمپین'}</span>

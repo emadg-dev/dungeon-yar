@@ -48,28 +48,28 @@ export const DiceToast: React.FC<DiceToastProps> = ({
       <div 
         className={`p-3.5 rounded-2xl border shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 ${
           latestRoll.isCritical
-            ? 'bg-amber-950/90 border-amber-400 text-amber-100 shadow-[0_0_25px_rgba(245,158,11,0.4)]'
+            ? 'bg-amber-950/90 border-[#F2C265] text-amber-100 shadow-[0_0_25px_rgba(245,158,11,0.4)]'
             : latestRoll.isFumble
             ? 'bg-red-950/90 border-red-500/70 text-red-100'
-            : 'bg-[#151926]/95 border-amber-500/30 text-slate-100'
+            : 'bg-[#151926]/95 border-[#E0A030]/30 text-[#EDE6D8]'
         }`}
       >
         <div className="flex items-center gap-3">
           {/* Big Total Badge */}
-          <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-[#0c0e12] border border-amber-500/40 shrink-0">
-            <span className="text-2xl font-black text-amber-300 font-mono dice-ltr">
+          <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-[#0E0D0C] border border-[#E0A030]/40 shrink-0">
+            <span className="text-2xl font-black text-[#F2C265] font-mono dice-ltr">
               {latestRoll.total}
             </span>
-            <span className="text-[9px] text-slate-400 font-mono dice-ltr">
+            <span className="text-[9px] text-[#A39A89] font-mono dice-ltr">
               {latestRoll.diceCount}d{latestRoll.diceSides}{latestRoll.modifier ? formatModifier(latestRoll.modifier) : ''}
             </span>
           </div>
 
           <div>
             <div className="flex items-center gap-1.5">
-              <h4 className="font-bold text-xs text-amber-200">{latestRoll.label}</h4>
+              <h4 className="font-bold text-xs text-[#F2C265]">{latestRoll.label}</h4>
               {latestRoll.isCritical && (
-                <span className="px-1.5 py-0.5 text-[9px] font-black bg-amber-500 text-slate-950 rounded-full flex items-center gap-0.5">
+                <span className="px-1.5 py-0.5 text-[9px] font-black bg-[#E0A030] text-[#0E0D0C] rounded-full flex items-center gap-0.5">
                   <Flame className="w-2.5 h-2.5" /> ۲۰ بحرانی!
                 </span>
               )}
@@ -80,16 +80,16 @@ export const DiceToast: React.FC<DiceToastProps> = ({
               )}
             </div>
 
-            <div className="text-[11px] text-slate-300 mt-0.5">
+            <div className="text-[11px] text-[#C9C0AE] mt-0.5">
               <span>تاس‌ها: </span>
-              <span className="font-mono text-amber-300 dice-ltr">[{latestRoll.rolls.join(', ')}]</span>
+              <span className="font-mono text-[#F2C265] dice-ltr">[{latestRoll.rolls.join(', ')}]</span>
               {latestRoll.modifier !== 0 && (
-                <span className="text-slate-400 mr-1">
+                <span className="text-[#A39A89] mr-1">
                   (مادیفایر: <strong className="dice-ltr">{formatModifier(latestRoll.modifier)}</strong>)
                 </span>
               )}
               {latestRoll.advantage && (
-                <span className="text-amber-400 mr-1 font-semibold">
+                <span className="text-[#F2C265] mr-1 font-semibold">
                   {latestRoll.advantage === 'adv' ? '• با مزیت' : '• با ضعف'}
                 </span>
               )}
@@ -101,14 +101,14 @@ export const DiceToast: React.FC<DiceToastProps> = ({
         <div className="flex items-center gap-1">
           <button
             onClick={onOpenRollerModal}
-            className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-amber-300 touch-target"
+            className="p-2 rounded-xl bg-[#201D19]/80 hover:bg-[#2A2621] text-[#F2C265] touch-target"
             title="مشاهده کیسه تاس"
           >
             <Dices className="w-4 h-4" />
           </button>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-slate-400 hover:text-white touch-target"
+            className="p-2 rounded-xl text-[#A39A89] hover:text-[#EDE6D8] touch-target"
             title="بستن"
           >
             <X className="w-4 h-4" />

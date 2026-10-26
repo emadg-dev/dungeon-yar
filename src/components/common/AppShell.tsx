@@ -19,7 +19,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 }) => {
   return (
     <div
-      className="min-h-screen min-h-[100dvh] w-full max-w-full overflow-x-hidden bg-[#0E0D0C] noise-bg text-[#EDE6D8] flex flex-col font-sans selection:bg-[#E0A030]/30 selection:text-[#F2C265] pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] sm:pb-20"
+      className="min-h-screen min-h-[100dvh] w-full max-w-full overflow-x-hidden text-[#EDE6D8] flex flex-col font-sans selection:bg-[#E0A030]/30 selection:text-[#F2C265] pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] sm:pb-24"
       dir="rtl"
     >
       {/* Toast Layer (z-index 50) */}

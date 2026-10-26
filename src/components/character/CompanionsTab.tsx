@@ -110,13 +110,13 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-black text-amber-200">یاران و سازه‌های همراه</h3>
-          <p className="text-[11px] text-slate-400">همراهان مکانیکی دیوانزاد و پیوندهای جنگلی پیمان‌بان</p>
+          <h3 className="text-sm font-black text-[#F2C265]">یاران و سازه‌های همراه</h3>
+          <p className="text-[11px] text-[#A39A89]">همراهان مکانیکی دیوانزاد و پیوندهای جنگلی پیمان‌بان</p>
         </div>
         <button
           type="button"
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold transition touch-target"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#E0A030]/20 hover:bg-[#E0A030]/30 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold transition touch-target"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>افزودن همراه</span>
@@ -124,10 +124,10 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
       </div>
 
       {companions.length === 0 ? (
-        <div className="p-8 text-center rounded-2xl bg-[#141824] border border-slate-800 space-y-2">
-          <Bot className="w-8 h-8 text-slate-500 mx-auto" />
-          <h4 className="text-xs font-bold text-slate-300">هنوز همراهی برای این شخصیت فعال نشده است</h4>
-          <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
+        <div className="p-8 text-center rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-2">
+          <Bot className="w-8 h-8 text-[#8A8374] mx-auto" />
+          <h4 className="text-xs font-bold text-[#C9C0AE]">هنوز همراهی برای این شخصیت فعال نشده است</h4>
+          <p className="text-[11px] text-[#8A8374] max-w-xs mx-auto">
             دیوانزاد در سطح ۳ به «سازه همراه» (AC 15) و پیمان‌بان در سطح ۴ به «همراه جنگل» دسترسی پیدا می‌کنند.
           </p>
         </div>
@@ -138,19 +138,19 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
             return (
               <div
                 key={comp.id}
-                className="p-4 rounded-2xl bg-[#141824] border border-amber-500/30 space-y-3 shadow-lg relative"
+                className="p-4 rounded-2xl bg-[#171513] border border-[#E0A030]/30 space-y-3 shadow-lg relative"
               >
                 {/* Header */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300">
+                    <div className="w-9 h-9 rounded-xl bg-[#E0A030]/20 border border-[#E0A030]/40 flex items-center justify-center text-[#F2C265]">
                       {comp.type === 'construct' ? <Bot className="w-5 h-5" /> : <Trees className="w-5 h-5" />}
                     </div>
                     <div>
                       <h4 className="font-black text-xs text-amber-100">{comp.name}</h4>
-                      <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                      <div className="flex items-center gap-2 text-[10px] text-[#A39A89]">
                         <span className="flex items-center gap-0.5">
-                          <Shield className="w-2.5 h-2.5 text-amber-400" /> AC {comp.ac}
+                          <Shield className="w-2.5 h-2.5 text-[#F2C265]" /> AC {comp.ac}
                         </span>
                       </div>
                     </div>
@@ -159,7 +159,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
                   <button
                     type="button"
                     onClick={() => handleDeleteCompanion(comp.id)}
-                    className="p-1 text-slate-500 hover:text-red-400 transition"
+                    className="p-1 text-[#8A8374] hover:text-red-400 transition"
                     title="حذف"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -167,21 +167,21 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
                 </div>
 
                 {/* HP Tracker with +/- */}
-                <div className="p-2.5 rounded-xl bg-[#0e111a] border border-slate-800 space-y-2">
+                <div className="p-2.5 rounded-xl bg-[#131110] border border-[#2F2A23] space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1">
+                    <span className="text-[11px] font-bold text-[#C9C0AE] flex items-center gap-1">
                       <Heart className="w-3 h-3 text-red-400" /> جان (HP)
                     </span>
-                    <span className="font-mono text-xs font-bold text-slate-200">
+                    <span className="font-mono text-xs font-bold text-[#EDE6D8]">
                       {comp.hp.current} / {comp.hp.max}
                     </span>
                   </div>
 
                   {/* HP Bar */}
-                  <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-[#201D19] rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all ${
-                        hpPercent > 50 ? 'bg-emerald-500' : hpPercent > 20 ? 'bg-amber-500' : 'bg-red-500'
+                        hpPercent > 50 ? 'bg-emerald-500' : hpPercent > 20 ? 'bg-[#E0A030]' : 'bg-red-500'
                       }`}
                       style={{ width: `${hpPercent}%` }}
                     />
@@ -192,14 +192,14 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
                     <button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, -5)}
-                      className="w-8 h-8 rounded-lg bg-red-950/50 active:bg-red-900 border border-red-500/30 text-red-300 text-xs font-bold touch-target select-none"
+                      className="w-8 h-8 rounded-lg bg-red-950/50 active:bg-red-900 border border-red-500/30 text-[#E8836B] text-xs font-bold touch-target select-none"
                     >
                       -۵
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, -1)}
-                      className="w-8 h-8 rounded-lg bg-red-950/50 active:bg-red-900 border border-red-500/30 text-red-300 text-xs font-bold touch-target select-none"
+                      className="w-8 h-8 rounded-lg bg-red-950/50 active:bg-red-900 border border-red-500/30 text-[#E8836B] text-xs font-bold touch-target select-none"
                     >
                       -۱
                     </button>
@@ -222,17 +222,17 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
 
                 {/* Attack Card */}
                 {comp.attack && (
-                  <div className="p-2.5 rounded-xl bg-[#181c28] border border-slate-700/60 flex items-center justify-between">
+                  <div className="p-2.5 rounded-xl bg-[#181c28] border border-[#3A342B]/60 flex items-center justify-between">
                     <div>
-                      <div className="text-xs font-bold text-amber-200">{comp.attack.name}</div>
-                      <div className="text-[10px] text-slate-400">
+                      <div className="text-xs font-bold text-[#F2C265]">{comp.attack.name}</div>
+                      <div className="text-[10px] text-[#A39A89]">
                         {comp.attack.toHit} برای اصابت • {comp.attack.damage}
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => onRollCheck(20, 1, 5, `حمله ${comp.name}`)}
-                      className="p-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-1 touch-target"
+                      className="p-2 rounded-lg bg-[#E0A030]/20 hover:bg-[#E0A030]/30 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold flex items-center gap-1 touch-target"
                     >
                       <Swords className="w-3.5 h-3.5" />
                       <span>تاس حمله</span>
@@ -253,54 +253,54 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
       >
         <form onSubmit={handleAddCustomCompanion} className="space-y-3.5">
           <div>
-            <label className="text-xs text-slate-300 block mb-1">نام همراه / سازه:</label>
+            <label className="text-xs text-[#C9C0AE] block mb-1">نام همراه / سازه:</label>
             <input
               type="text"
               required
               value={newCompName}
               onChange={(e) => setNewCompName(e.target.value)}
               placeholder="مثلاً: بوف سنگی شن‌شین"
-              className="w-full p-2.5 rounded-xl bg-[#161a26] border border-slate-700 text-sm text-slate-200"
+              className="w-full p-2.5 rounded-xl bg-[#201D19] border border-[#3A342B] text-sm text-[#EDE6D8]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-xs text-slate-300 block mb-1">درجه زرهی (AC):</label>
+              <label className="text-xs text-[#C9C0AE] block mb-1">درجه زرهی (AC):</label>
               <input
                 type="number"
                 inputMode="numeric"
                 value={newCompAc}
                 onChange={(e) => setNewCompAc(Number(e.target.value))}
-                className="w-full p-2.5 rounded-xl bg-[#161a26] border border-slate-700 text-sm text-slate-200"
+                className="w-full p-2.5 rounded-xl bg-[#201D19] border border-[#3A342B] text-sm text-[#EDE6D8]"
               />
             </div>
             <div>
-              <label className="text-xs text-slate-300 block mb-1">حداکثر جان (HP):</label>
+              <label className="text-xs text-[#C9C0AE] block mb-1">حداکثر جان (HP):</label>
               <input
                 type="number"
                 inputMode="numeric"
                 value={newCompHp}
                 onChange={(e) => setNewCompHp(Number(e.target.value))}
-                className="w-full p-2.5 rounded-xl bg-[#161a26] border border-slate-700 text-sm text-slate-200"
+                className="w-full p-2.5 rounded-xl bg-[#201D19] border border-[#3A342B] text-sm text-[#EDE6D8]"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs text-slate-300 block mb-1">مشخصات حمله:</label>
+            <label className="text-xs text-[#C9C0AE] block mb-1">مشخصات حمله:</label>
             <input
               type="text"
               value={newCompAtk}
               onChange={(e) => setNewCompAtk(e.target.value)}
               placeholder="+۴ برای اصابت، 1d6+2 کوبشی"
-              className="w-full p-2.5 rounded-xl bg-[#161a26] border border-slate-700 text-sm text-slate-200"
+              className="w-full p-2.5 rounded-xl bg-[#201D19] border border-[#3A342B] text-sm text-[#EDE6D8]"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full py-2.5 rounded-xl font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition cursor-pointer touch-target mt-3"
+            className="w-full py-2.5 rounded-xl font-bold bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] transition cursor-pointer touch-target mt-3"
           >
             ذخیره و ایجاد همراه
           </button>

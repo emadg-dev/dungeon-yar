@@ -248,7 +248,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
                       onDeleteLocation(loc.id);
                     }
                   }}
-                  className="p-1.5 rounded-[6px] hover:bg-rose-500/15 text-rose-400 transition touch-target"
+                  className="p-1.5 rounded-[6px] hover:bg-[#C2512B]/15 text-[#D66138] transition touch-target"
                   title="حذف مکان"
                 >
                   <Trash2 className="w-4 h-4" />

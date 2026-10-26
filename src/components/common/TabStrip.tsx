@@ -55,10 +55,10 @@ export function TabStrip<T extends string = string>({
             aria-selected={isActive}
             type="button"
             onClick={() => onSelectTab(tab.id)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-[12px] text-xs font-bold whitespace-nowrap transition-all duration-150 shrink-0 touch-target relative ${
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-[12px] text-xs font-bold whitespace-nowrap transition-all duration-200 shrink-0 touch-target relative focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#E0A030]/30 active:scale-[.98] ${
               isActive
-                ? 'bg-[#E0A030] text-[#0E0D0C] shadow-[0_0_12px_rgba(224,160,48,0.3)]'
-                : 'bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A2621] border border-[#2F2A23]'
+                ? 'bg-gradient-to-tr from-[#E0A030] to-[#F2C265] text-[#0E0D0C] shadow-[0_2px_10px_rgba(224,160,48,0.35)]'
+                : 'bg-[#201D19]/80 backdrop-blur-sm text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A2621] border border-[#2F2A23]'
             }`}
           >
             {Icon && <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#0E0D0C]' : 'text-[#A39A89]'}`} />}

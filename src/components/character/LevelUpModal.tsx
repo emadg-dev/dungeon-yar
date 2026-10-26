@@ -95,28 +95,28 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
       title={`ارتقای سطح به سطح ${nextLevel}`}
       subtitle={`${character.name} • ${character.className}`}
     >
-      <div className="space-y-4 text-slate-100">
+      <div className="space-y-4 text-[#EDE6D8]">
         {/* Level Up Banner */}
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-600/20 via-[#181c26] to-[#12151e] border border-amber-500/40 text-center space-y-1">
-          <div className="w-12 h-12 mx-auto rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300">
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-[#C97B4A]/20 via-[#181c26] to-[#171513] border border-[#E0A030]/40 text-center space-y-1">
+          <div className="w-12 h-12 mx-auto rounded-full bg-[#E0A030]/20 border border-[#E0A030]/40 flex items-center justify-center text-[#F2C265]">
             <ArrowUpCircle className="w-6 h-6" />
           </div>
-          <h3 className="text-base font-black text-amber-200">
+          <h3 className="text-base font-black text-[#F2C265]">
             صعود به سطح {nextLevel}
           </h3>
-          <p className="text-xs text-slate-400">
-            بونوس مهارت (Proficiency): <span className="font-mono text-amber-300 font-bold">+{nextProf}</span>
+          <p className="text-xs text-[#A39A89]">
+            بونوس مهارت (Proficiency): <span className="font-mono text-[#F2C265] font-bold">+{nextProf}</span>
             {nextProf > currentProf && <span className="text-emerald-400 font-bold me-1"> (+۱ افزایش!)</span>}
           </p>
         </div>
 
         {/* Fixed HP Gain */}
-        <div className="p-3.5 rounded-xl bg-[#141824] border border-slate-700/80 flex items-center justify-between">
+        <div className="p-3.5 rounded-xl bg-[#171513] border border-[#3A342B]/80 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Heart className="w-4 h-4 text-red-400 shrink-0" />
             <div>
-              <span className="text-xs font-bold text-slate-200 block">افزایش حداکثر جان (HP)</span>
-              <span className="text-[11px] text-slate-400">از جدول ثابت کتاب زروانیا</span>
+              <span className="text-xs font-bold text-[#EDE6D8] block">افزایش حداکثر جان (HP)</span>
+              <span className="text-[11px] text-[#A39A89]">از جدول ثابت کتاب زروانیا</span>
             </div>
           </div>
           <div className="text-sm font-black font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2.5 py-1 rounded-lg">
@@ -126,9 +126,9 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
 
         {/* Subclass Selection at Level 3 */}
         {isSubclassLevel && (
-          <div className="p-3.5 rounded-xl bg-amber-950/20 border border-amber-500/40 space-y-2">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300">
-              <Sparkles className="w-4 h-4 text-amber-400" />
+          <div className="p-3.5 rounded-xl bg-amber-950/20 border border-[#E0A030]/40 space-y-2">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-[#F2C265]">
+              <Sparkles className="w-4 h-4 text-[#F2C265]" />
               <span>انتخاب زیرکلاس اختصاصی (سطح ۳):</span>
             </div>
             <div className="space-y-1.5">
@@ -139,12 +139,12 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   onClick={() => setChosenSubclass(sub.name)}
                   className={`w-full text-start p-2.5 rounded-xl border transition ${
                     chosenSubclass === sub.name
-                      ? 'bg-amber-500/20 border-amber-400 text-amber-200 font-bold'
-                      : 'bg-[#161a26] border-slate-800 text-slate-300'
+                      ? 'bg-[#E0A030]/20 border-[#F2C265] text-[#F2C265] font-bold'
+                      : 'bg-[#201D19] border-[#2F2A23] text-[#C9C0AE]'
                   }`}
                 >
                   <div className="text-xs font-bold">{sub.name}</div>
-                  {sub.desc && <div className="text-[11px] text-slate-400 mt-0.5">{sub.desc}</div>}
+                  {sub.desc && <div className="text-[11px] text-[#A39A89] mt-0.5">{sub.desc}</div>}
                 </button>
               ))}
             </div>
@@ -153,17 +153,17 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
 
         {/* ASI at levels 4, 8, 12, 16, 19 */}
         {isAsiLevel && (
-          <div className="p-3.5 rounded-xl bg-[#151928] border border-amber-500/40 space-y-3">
+          <div className="p-3.5 rounded-xl bg-[#151928] border border-[#E0A030]/40 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-amber-300">بهبود ویژگی‌های بنیادین (ASI):</span>
+              <span className="text-xs font-bold text-[#F2C265]">بهبود ویژگی‌های بنیادین (ASI):</span>
               <div className="flex gap-1 text-[11px]">
                 <button
                   type="button"
                   onClick={() => setSelectedAsiMode('plus2')}
                   className={`px-2 py-0.5 rounded-lg border ${
                     selectedAsiMode === 'plus2'
-                      ? 'bg-amber-500 text-slate-950 font-bold border-amber-400'
-                      : 'bg-slate-800 text-slate-400 border-slate-700'
+                      ? 'bg-[#E0A030] text-[#0E0D0C] font-bold border-[#F2C265]'
+                      : 'bg-[#201D19] text-[#A39A89] border-[#3A342B]'
                   }`}
                 >
                   +۲ به یک ویژگی
@@ -173,8 +173,8 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   onClick={() => setSelectedAsiMode('plus1plus1')}
                   className={`px-2 py-0.5 rounded-lg border ${
                     selectedAsiMode === 'plus1plus1'
-                      ? 'bg-amber-500 text-slate-950 font-bold border-amber-400'
-                      : 'bg-slate-800 text-slate-400 border-slate-700'
+                      ? 'bg-[#E0A030] text-[#0E0D0C] font-bold border-[#F2C265]'
+                      : 'bg-[#201D19] text-[#A39A89] border-[#3A342B]'
                   }`}
                 >
                   +۱ به دو ویژگی
@@ -184,11 +184,11 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
 
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
-                <label className="block text-[11px] text-slate-400 mb-1">ویژگی اول:</label>
+                <label className="block text-[11px] text-[#A39A89] mb-1">ویژگی اول:</label>
                 <select
                   value={stat1}
                   onChange={(e) => setStat1(e.target.value as any)}
-                  className="w-full p-2 rounded-xl bg-[#10131e] border border-slate-700 text-xs text-slate-200"
+                  className="w-full p-2 rounded-xl bg-[#10131e] border border-[#3A342B] text-xs text-[#EDE6D8]"
                 >
                   {Object.entries(abilityFa).map(([k, label]) => (
                     <option key={k} value={k}>{label}</option>
@@ -198,11 +198,11 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
 
               {selectedAsiMode === 'plus1plus1' && (
                 <div>
-                  <label className="block text-[11px] text-slate-400 mb-1">ویژگی دوم:</label>
+                  <label className="block text-[11px] text-[#A39A89] mb-1">ویژگی دوم:</label>
                   <select
                     value={stat2}
                     onChange={(e) => setStat2(e.target.value as any)}
-                    className="w-full p-2 rounded-xl bg-[#10131e] border border-slate-700 text-xs text-slate-200"
+                    className="w-full p-2 rounded-xl bg-[#10131e] border border-[#3A342B] text-xs text-[#EDE6D8]"
                   >
                     {Object.entries(abilityFa).map(([k, label]) => (
                       <option key={k} value={k}>{label}</option>
@@ -216,10 +216,10 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
 
         {/* New Features unlocked */}
         {newFeatures.length > 0 && (
-          <div className="p-3 rounded-xl bg-[#141822] border border-slate-800 space-y-1.5">
-            <span className="text-xs font-bold text-amber-300 block">قابلیت‌های جدید این سطح:</span>
+          <div className="p-3 rounded-xl bg-[#141822] border border-[#2F2A23] space-y-1.5">
+            <span className="text-xs font-bold text-[#F2C265] block">قابلیت‌های جدید این سطح:</span>
             {newFeatures.map((f, i) => (
-              <div key={i} className="text-xs text-slate-200 bg-[#161a28] p-2 rounded-lg border border-slate-800">
+              <div key={i} className="text-xs text-[#EDE6D8] bg-[#161a28] p-2 rounded-lg border border-[#2F2A23]">
                 ✨ {f}
               </div>
             ))}
@@ -229,7 +229,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         <button
           type="button"
           onClick={handleApply}
-          className="w-full py-3 px-4 rounded-xl font-black bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 shadow-lg shadow-amber-900/30 transition active:scale-[0.98] cursor-pointer touch-target flex items-center justify-center gap-2 mt-4"
+          className="w-full py-3 px-4 rounded-xl font-black bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] shadow-lg shadow-[#3A2415]/30 transition active:scale-[0.98] cursor-pointer touch-target flex items-center justify-center gap-2 mt-4"
         >
           <Check className="w-4 h-4" />
           <span>تأیید و ارتقا به سطح {nextLevel}</span>

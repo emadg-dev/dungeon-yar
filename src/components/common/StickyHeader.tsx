@@ -60,7 +60,7 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
 
   return (
     <div
-      className="sticky top-[49px] sm:top-[53px] z-20 bg-[#171513]/95 backdrop-blur-md border-b border-[#2F2A23] px-2.5 sm:px-4 py-1.5 transition-all duration-150 shadow-md"
+      className="sticky top-[49px] sm:top-[53px] z-20 glass-panel border-b border-[#2F2A23] px-2.5 sm:px-4 py-1.5 transition-all duration-150"
       dir="rtl"
     >
       <div className="max-w-7xl mx-auto flex flex-col gap-1.5">
