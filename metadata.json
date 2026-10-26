@@ -1,0 +1,6 @@
+{
+  "name": "زروانیا | Zorvania TTRPG",
+  "description": "اپلیکیشن همراه نقش‌آفرینی رومیزی زروانیا: کاراکترشیت فارسی، کوله‌پشتی، ابزارهای دانجن مستر و مدیریت مبارزه",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

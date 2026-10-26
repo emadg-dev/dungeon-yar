@@ -1,0 +1,311 @@
+import React, { useState } from 'react';
+import { User, Character } from '../types';
+import { PWAInstallPrompt } from './mobile/PWAInstallPrompt';
+import { 
+  CheckCircle2, RefreshCw, Shield, BookOpen, 
+  SunMedium, Type, LogOut, ChevronDown, MoreVertical, X, Sparkles
+} from 'lucide-react';
+
+export interface HeaderProps {
+  currentUser: User | null;
+  allUsers: User[];
+  characters: Character[];
+  activeCharacterId: string | null;
+  onSelectCharacter: (id: string) => void;
+  onSwitchUser: (userId: string) => void;
+  onOpenAuth: () => void;
+  onLogout: () => void;
+  saveStatus?: 'saved' | 'saving' | 'idle';
+  isDmView?: boolean;
+  onToggleDmView?: () => void;
+  wakeLockActive?: boolean;
+  onToggleWakeLock?: () => void;
+  wakeLockSupported?: boolean;
+  fontScale?: 'normal' | 'large' | 'xlarge';
+  onToggleFontScale?: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({
+  currentUser,
+  allUsers,
+  characters,
+  activeCharacterId,
+  onSelectCharacter,
+  onSwitchUser,
+  onOpenAuth,
+  onLogout,
+  saveStatus = 'saved',
+  isDmView = false,
+  onToggleDmView,
+  wakeLockActive = false,
+  onToggleWakeLock = () => {},
+  wakeLockSupported = false,
+  fontScale = 'normal',
+  onToggleFontScale = () => {}
+}) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  return (
+    <header className="sticky top-0 z-20 w-full max-w-full bg-[#171513]/95 backdrop-blur-md border-b border-[#2F2A23] shadow-md">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-4 py-2 flex items-center justify-between gap-2">
+        {/* Brand & Character Dropdown */}
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          {/* Zorvania Seal Logo Mark */}
+          <div className="relative flex items-center justify-center w-8 h-8 rounded-[10px] bg-gradient-to-br from-[#E0A030] to-[#C2512B] border border-[#F2C265]/40 shadow-[0_0_12px_rgba(224,160,48,0.3)] shrink-0">
+            <span className="text-base font-black text-[#0E0D0C] leading-none">ز</span>
+          </div>
+
+          {/* If character is active, show compact switcher directly */}
+          {currentUser && characters.length > 0 && !isDmView ? (
+            <div className="relative min-w-0 max-w-[150px] sm:max-w-[200px]">
+              <select
+                value={activeCharacterId || ''}
+                onChange={(e) => onSelectCharacter(e.target.value)}
+                className="w-full bg-[#201D19] text-xs font-bold text-[#E0A030] py-1.5 pe-6 ps-2 rounded-[10px] border border-[#2F2A23] focus:outline-none appearance-none cursor-pointer truncate touch-target"
+                title="تغییر کاراکتر"
+              >
+                {characters.map(c => (
+                  <option key={c.id} value={c.id} className="bg-[#171513] text-[#EDE6D8]">
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-[#A39A89] absolute start-auto end-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          ) : (
+            <div className="truncate">
+              <h1 className="text-xs sm:text-sm font-black tracking-wide text-[#EDE6D8] truncate">
+                زروانیا {isDmView ? '• ابزارهای مستر' : ''}
+              </h1>
+            </div>
+          )}
+        </div>
+
+        {/* Action Controls & Utilities */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* Autosave Status Icon */}
+          <div className="flex items-center px-1" title={saveStatus === 'saving' ? 'در حال ذخیره‌سازی...' : 'ذخیره شد'}>
+            {saveStatus === 'saving' ? (
+              <RefreshCw className="w-3.5 h-3.5 text-[#E0A030] animate-spin" />
+            ) : (
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#6F9E78]" />
+            )}
+          </div>
+
+          {/* DM / Player View Switcher (if user is DM) */}
+          {currentUser?.role === 'dm' && onToggleDmView && (
+            <button
+              type="button"
+              onClick={onToggleDmView}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] text-xs font-bold transition border touch-target ${
+                isDmView
+                  ? 'bg-[#E0A030] text-[#0E0D0C] border-[#E0A030]'
+                  : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23] hover:border-[#E0A030]'
+              }`}
+              title={isDmView ? 'تغییر به کاراکترشیت' : 'تغییر به ابزارهای مستر'}
+            >
+              {isDmView ? <Shield className="w-3.5 h-3.5" /> : <BookOpen className="w-3.5 h-3.5" />}
+              <span className="hidden sm:inline">{isDmView ? 'ابزارهای مستر' : 'کاراکترشیت'}</span>
+            </button>
+          )}
+
+          {/* Desktop-only Quick Tools */}
+          <div className="hidden sm:flex items-center gap-1.5">
+            {/* Screen Wake Lock toggle */}
+            {wakeLockSupported && (
+              <button
+                type="button"
+                onClick={onToggleWakeLock}
+                className={`p-1.5 rounded-[10px] text-xs font-bold transition border touch-target ${
+                  wakeLockActive
+                    ? 'bg-[#E0A030]/20 text-[#E0A030] border-[#E0A030]/50 shadow-[0_0_10px_rgba(224,160,48,0.2)]'
+                    : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
+                }`}
+                title={wakeLockActive ? 'روشن ماندن صفحه فعال است' : 'فعال‌سازی روشن ماندن صفحه در حین بازی'}
+              >
+                <SunMedium className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Font Scale toggle */}
+            <button
+              type="button"
+              onClick={onToggleFontScale}
+              className={`p-1.5 rounded-[10px] text-xs font-bold transition border touch-target ${
+                fontScale !== 'normal'
+                  ? 'bg-[#E0A030]/20 text-[#E0A030] border-[#E0A030]/40'
+                  : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
+              }`}
+              title={fontScale === 'xlarge' ? 'فونت خیلی بزرگ' : fontScale === 'large' ? 'فونت بزرگ' : 'فونت استاندارد'}
+            >
+              <Type className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* User Account / Login Button */}
+          {currentUser ? (
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(true)}
+                className="flex items-center gap-1.5 py-1 px-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#EDE6D8] hover:border-[#E0A030] transition touch-target"
+              >
+                <span className="w-2 h-2 rounded-full bg-[#6F9E78]" />
+                <span className="truncate max-w-[80px] sm:max-w-[120px]">{currentUser.displayName}</span>
+                <MoreVertical className="w-3.5 h-3.5 text-[#A39A89]" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={onOpenAuth}
+              className="py-1.5 px-3 rounded-[10px] btn-primary-amber font-bold text-xs shadow-md transition touch-target flex items-center gap-1"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>ورود / عضویت</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Drawer / Quick Menu */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-[#0E0D0C]/80 backdrop-blur-sm flex justify-end animate-fadeIn"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <div
+            className="w-72 max-w-[85vw] h-full bg-[#171513] border-s border-[#2F2A23] p-4 flex flex-col justify-between shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+            dir="rtl"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-[#2F2A23]">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-[8px] bg-[#E0A030] text-[#0E0D0C] font-black flex items-center justify-center">
+                    {currentUser?.displayName?.[0] || 'ز'}
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-[#EDE6D8] truncate">{currentUser?.displayName}</h3>
+                    <span className="text-[10px] text-[#A39A89]">
+                      نقش: {currentUser?.role === 'dm' ? 'دانجن مستر' : 'بازیکن'}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-1.5 rounded-[8px] text-[#A39A89] hover:text-[#EDE6D8] touch-target"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Character selection if multiple */}
+              {characters.length > 0 && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-[#A39A89]">کاراکتر انتخابی شما:</label>
+                  <div className="space-y-1 max-h-40 overflow-y-auto">
+                    {characters.map(c => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          onSelectCharacter(c.id);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`w-full text-right p-2 rounded-[10px] text-xs font-bold transition flex items-center justify-between border ${
+                          activeCharacterId === c.id
+                            ? 'bg-[#E0A030]/15 text-[#E0A030] border-[#E0A030]/40'
+                            : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23]'
+                        }`}
+                      >
+                        <span className="truncate">{c.name}</span>
+                        <span className="text-[10px] text-[#A39A89]">L{c.level}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* User Switcher for playtesting */}
+              {allUsers.length > 1 && (
+                <div className="space-y-1.5 pt-2 border-t border-[#2F2A23]">
+                  <label className="text-xs font-bold text-[#A39A89]">سوئیچ کاربر برای تست بازی:</label>
+                  <div className="space-y-1 max-h-36 overflow-y-auto">
+                    {allUsers.map(u => (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onClick={() => {
+                          onSwitchUser(u.id);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`w-full text-right p-1.5 rounded-[8px] text-xs font-bold transition flex items-center justify-between ${
+                          currentUser?.id === u.id
+                            ? 'bg-[#E0A030]/10 text-[#E0A030]'
+                            : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                        }`}
+                      >
+                        <span className="truncate">{u.displayName}</span>
+                        <span className="text-[10px]">{u.role === 'dm' ? 'مستر' : 'بازیکن'}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Utility Toggles */}
+              <div className="space-y-2 pt-2 border-t border-[#2F2A23]">
+                {wakeLockSupported && (
+                  <button
+                    type="button"
+                    onClick={onToggleWakeLock}
+                    className="w-full flex items-center justify-between p-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] touch-target"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <SunMedium className="w-4 h-4 text-[#E0A030]" />
+                      روشن ماندن صفحه
+                    </span>
+                    <span className="text-[10px] font-bold text-[#E0A030]">
+                      {wakeLockActive ? 'فعال' : 'غیرفعال'}
+                    </span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={onToggleFontScale}
+                  className="w-full flex items-center justify-between p-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] touch-target"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Type className="w-4 h-4 text-[#E0A030]" />
+                    اندازه قلم
+                  </span>
+                  <span className="text-[10px] font-bold text-[#E0A030]">
+                    {fontScale === 'xlarge' ? 'خیلی بزرگ' : fontScale === 'large' ? 'بزرگ' : 'استاندارد'}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Logout Action */}
+            <div className="pt-3 border-t border-[#2F2A23]">
+              <button
+                type="button"
+                onClick={() => {
+                  onLogout();
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full py-2.5 px-3 rounded-[10px] bg-[#C2512B]/15 hover:bg-[#C2512B]/25 text-[#C2512B] border border-[#C2512B]/30 text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>خروج از حساب</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+};
