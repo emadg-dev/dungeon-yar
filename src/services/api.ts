@@ -16,7 +16,14 @@ import {
   InventoryItem,
   WorldCalendar,
   CampaignEndingState,
-  ShanshinEncounter
+  ShanshinEncounter,
+  LocationEntry,
+  LiveEncounter,
+  PlayerEncounterView,
+  LiveSyncStatus,
+  EncounterParticipant,
+  EncounterSettings,
+  EncounterEvent
 } from '../types';
 import {
   SEED_USERS,
@@ -28,7 +35,8 @@ import {
   SEED_CLASS_TEMPLATES,
   SEED_REWARD_PACKAGES,
   SEED_CAMPAIGN_NOTES,
-  SEED_ENCOUNTERS
+  SEED_ENCOUNTERS,
+  SEED_LOCATIONS
 } from '../data/seed';
 import { INITIAL_CALENDAR, advanceCalendarDays } from '../data/calendar';
 import { INITIAL_ENDING_STATE } from '../data/endings';
@@ -40,7 +48,21 @@ export interface AuthMeResponse {
   mustChangePassword: boolean;
 }
 
+export type LiveChannelCallback = (update: {
+  activeEncounterId: string | null;
+  version: number;
+  data?: any;
+}) => void;
+
+export interface LiveChannel {
+  subscribe(encounterId: string | null, cb: LiveChannelCallback): () => void;
+  notify(encounterId: string | null, version: number, data?: any): void;
+}
+
 export interface ApiClient {
+  // Live Channel Subscription
+  liveChannel: LiveChannel;
+
   // Auth
   login(email: string, password?: string): Promise<User>;
   register(email: string, password?: string, displayName?: string, inviteCode?: string): Promise<User>;
@@ -74,6 +96,35 @@ export interface ApiClient {
 
   // Audit Log (DM only)
   getAuditLog(limit?: number): Promise<AuditLogEntry[]>;
+
+  // Locations (DM CRUD, players revealed only)
+  listLocations(): Promise<LocationEntry[]>;
+  createLocation(loc: Omit<LocationEntry, 'id' | 'createdAt' | 'updatedAt'>): Promise<LocationEntry>;
+  updateLocation(loc: LocationEntry): Promise<LocationEntry>;
+  deleteLocation(id: string): Promise<void>;
+
+  // Live Sync & Player Encounter
+  getLiveStatus(): Promise<LiveSyncStatus>;
+  getActiveEncounter(): Promise<PlayerEncounterView | null>;
+  getEncounterView(id: string, since?: number): Promise<PlayerEncounterView | LiveEncounter | { notModified: true }>;
+  submitInitiative(encounterId: string, characterId: string, value: number): Promise<{ initiative: number; initiativeStatus: string }>;
+
+  // Live Encounters (DM)
+  listLiveEncounters(status?: string, locationId?: string): Promise<LiveEncounter[]>;
+  createLiveEncounter(data: { name: string; locationId?: string | null; sessionTag?: string; settings?: Partial<EncounterSettings>; dmNotes?: string }): Promise<LiveEncounter>;
+  getLiveEncounter(id: string): Promise<LiveEncounter | null>;
+  updateLiveEncounter(id: string, data: Partial<LiveEncounter>): Promise<LiveEncounter>;
+  startLiveEncounter(id: string): Promise<void>;
+  pauseLiveEncounter(id: string): Promise<void>;
+  resumeLiveEncounter(id: string): Promise<void>;
+  endLiveEncounter(id: string): Promise<void>;
+  nextEncounterTurn(id: string): Promise<{ currentParticipantId: string; round: number }>;
+  prevEncounterTurn(id: string): Promise<{ currentParticipantId: string; round: number }>;
+  addEncounterParticipants(encounterId: string, participants: any[], announce?: boolean, announcementText?: string): Promise<EncounterParticipant[]>;
+  updateEncounterParticipant(encounterId: string, participantId: string, data: Partial<EncounterParticipant>): Promise<void>;
+  deleteEncounterParticipant(encounterId: string, participantId: string): Promise<void>;
+  addEncounterEvent(encounterId: string, text: string, visibleToPlayers?: boolean): Promise<void>;
+  distributeEncounterLoot(encounterId: string, characterId: string, item: any): Promise<void>;
 
   // Campaign Settings
   getCampaignSettings(): Promise<{ allowPlayerCreateCharacter: boolean }>;

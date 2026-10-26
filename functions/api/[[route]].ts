@@ -1441,23 +1441,996 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   // ---------------------------------------------------------
-  // Encounters Routes (DM Only)
+  // Live Sync Route (Polling status, cache-free)
+  // ---------------------------------------------------------
+  if (path === '/live' && method === 'GET') {
+    if (!env.DB) {
+      return json({ activeEncounterId: null, version: 0, serverTime: Date.now() }, 200, {
+        'Cache-Control': 'no-store, no-cache, must-revalidate'
+      });
+    }
+    const row = await env.DB.prepare(
+      "SELECT id, version FROM encounters WHERE status IN ('active', 'paused') ORDER BY updated_at DESC LIMIT 1"
+    ).first();
+    return json(
+      {
+        activeEncounterId: row?.id || null,
+        version: row ? Number(row.version) : 0,
+        serverTime: Date.now()
+      },
+      200,
+      { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
+    );
+  }
+
+  // ---------------------------------------------------------
+  // Locations Routes (DM CRUD, Players revealed only)
+  // ---------------------------------------------------------
+  if (path === '/locations' && method === 'GET') {
+    if (!env.DB) return json([]);
+    if (currentUser?.role === 'dm') {
+      const res = await env.DB.prepare('SELECT * FROM locations ORDER BY created_at ASC').all();
+      const list = (res.results || []).map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        region: r.region,
+        description: r.description,
+        imageUrl: r.image_url,
+        dmNotes: r.dm_notes,
+        revealed: r.revealed === 1,
+        parentId: r.parent_id,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at
+      }));
+      return json(list);
+    } else {
+      // Players see ONLY revealed locations without dm_notes
+      const res = await env.DB.prepare(
+        'SELECT id, name, region, description, image_url, revealed, parent_id, created_at, updated_at FROM locations WHERE revealed = 1 ORDER BY name ASC'
+      ).all();
+      const list = (res.results || []).map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        region: r.region,
+        description: r.description,
+        imageUrl: r.image_url,
+        revealed: true,
+        parentId: r.parent_id,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at
+      }));
+      return json(list);
+    }
+  }
+
+  if (path === '/locations' && method === 'POST') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const data = await request.json() as any;
+    const id = `loc-${Date.now()}-${generateRandomToken(4)}`;
+    const locName = String(data.name || '').trim();
+    if (!locName) return error('نام مکان الزامی است.');
+    const region = data.region || 'ورنا';
+    const desc = data.description || '';
+    const imgUrl = data.imageUrl || '';
+    const dmNotes = data.dmNotes || '';
+    const revealed = data.revealed ? 1 : 0;
+    const parentId = data.parentId || null;
+    const t = Date.now();
+
+    await env.DB.prepare(
+      `INSERT INTO locations (id, name, region, description, image_url, dm_notes, revealed, parent_id, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(id, locName, region, desc, imgUrl, dmNotes, revealed, parentId, t, t).run();
+
+    await audit('create_location', id, { name: locName, region });
+    return json({
+      id,
+      name: locName,
+      region,
+      description: desc,
+      imageUrl: imgUrl,
+      dmNotes,
+      revealed: revealed === 1,
+      parentId,
+      createdAt: t,
+      updatedAt: t
+    }, 201);
+  }
+
+  if (path.startsWith('/locations/') && method === 'PATCH') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const locId = path.replace('/locations/', '');
+    const existing = await env.DB.prepare('SELECT * FROM locations WHERE id = ?').bind(locId).first();
+    if (!existing) return error('مکان یافت نشد.', 404);
+
+    const data = await request.json() as any;
+    const locName = data.name !== undefined ? String(data.name).trim() : existing.name;
+    const region = data.region !== undefined ? data.region : existing.region;
+    const desc = data.description !== undefined ? data.description : existing.description;
+    const imgUrl = data.imageUrl !== undefined ? data.imageUrl : existing.image_url;
+    const dmNotes = data.dmNotes !== undefined ? data.dmNotes : existing.dm_notes;
+    const revealed = data.revealed !== undefined ? (data.revealed ? 1 : 0) : existing.revealed;
+    const parentId = data.parentId !== undefined ? data.parentId : existing.parent_id;
+    const t = Date.now();
+
+    await env.DB.prepare(
+      `UPDATE locations SET name = ?, region = ?, description = ?, image_url = ?, dm_notes = ?, revealed = ?, parent_id = ?, updated_at = ? WHERE id = ?`
+    ).bind(locName, region, desc, imgUrl, dmNotes, revealed, parentId, t, locId).run();
+
+    await audit('update_location', locId, { name: locName, revealed: revealed === 1 });
+    return json({
+      id: locId,
+      name: locName,
+      region,
+      description: desc,
+      imageUrl: imgUrl,
+      dmNotes,
+      revealed: revealed === 1,
+      parentId,
+      createdAt: existing.created_at,
+      updatedAt: t
+    });
+  }
+
+  if (path.startsWith('/locations/') && method === 'DELETE') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const locId = path.replace('/locations/', '');
+    await env.DB.prepare('DELETE FROM locations WHERE id = ?').bind(locId).run();
+    await audit('delete_location', locId);
+    return json({ success: true });
+  }
+
+  // ---------------------------------------------------------
+  // Live Encounters Helper Functions
+  // ---------------------------------------------------------
+  const computeQualitativeHealth = (hp: number, maxHp: number): 'سالم' | 'زخمی' | 'نیمه‌جان' | 'رو به مرگ' => {
+    if (maxHp <= 0 || hp <= 0) return 'رو به مرگ';
+    const pct = (hp / maxHp) * 100;
+    if (pct > 75) return 'سالم';
+    if (pct >= 25) return 'زخمی';
+    return 'نیمه‌جان';
+  };
+
+  const buildPlayerEncounterSnapshot = async (encRow: any) => {
+    const encId = encRow.id;
+    let settings: any = { showExactHp: false, showAc: false, showConditions: true, showDefeated: true, playerInitiativeRolls: true };
+    try {
+      if (typeof encRow.settings === 'string') settings = JSON.parse(encRow.settings);
+      else if (encRow.settings) settings = encRow.settings;
+    } catch {}
+
+    let locData: any = null;
+    if (encRow.location_id) {
+      const locRow = await env.DB.prepare(
+        'SELECT id, name, region, description, image_url, revealed FROM locations WHERE id = ?'
+      ).bind(encRow.location_id).first();
+      if (locRow) {
+        locData = {
+          id: locRow.id,
+          name: locRow.name,
+          region: locRow.region,
+          description: locRow.revealed === 1 ? locRow.description : undefined,
+          imageUrl: locRow.revealed === 1 ? locRow.image_url : undefined
+        };
+      }
+    }
+
+    const partRows = await env.DB.prepare(
+      'SELECT * FROM encounter_participants WHERE encounter_id = ? ORDER BY initiative DESC, sort_index ASC'
+    ).bind(encId).all();
+
+    const playerParticipants: any[] = [];
+    for (const p of (partRows.results || [])) {
+      // Hidden participants are NEVER included in any player response
+      if (p.visibility === 'hidden') continue;
+
+      // Defeated visibility follows showDefeated
+      if (p.status === 'defeated' && settings.showDefeated === false) continue;
+
+      // Announced participants show as "موجود ناشناخته" with no stats
+      if (p.visibility === 'announced') {
+        playerParticipants.push({
+          id: p.id,
+          kind: p.kind,
+          displayNameForPlayers: 'موجود ناشناخته',
+          healthStatus: 'سالم',
+          status: p.status,
+          initiative: p.initiative,
+          initiativeStatus: p.initiative_status,
+          phase: null,
+          sortIndex: p.sort_index,
+          characterId: null,
+          isAlly: false
+        });
+        continue;
+      }
+
+      // Revealed participant
+      let currentHp = p.hp;
+      let maxHp = p.max_hp;
+
+      if (p.kind === 'character' && p.character_id) {
+        const charRow = await env.DB.prepare('SELECT data FROM characters WHERE id = ?').bind(p.character_id).first();
+        if (charRow?.data) {
+          try {
+            const charData = JSON.parse(charRow.data);
+            if (charData.hp) {
+              currentHp = charData.hp.current;
+              maxHp = charData.hp.max;
+            }
+          } catch {}
+        }
+      }
+
+      const healthStatus = computeQualitativeHealth(currentHp, maxHp);
+      const isAlly = p.kind === 'character';
+      const isOwnCharacter = currentUser && p.character_id && currentUser.active_character_id === p.character_id;
+
+      let conditions: string[] | undefined = undefined;
+      if (settings.showConditions !== false) {
+        try {
+          conditions = typeof p.conditions === 'string' ? JSON.parse(p.conditions) : (p.conditions || []);
+        } catch {
+          conditions = [];
+        }
+      }
+
+      let exactHp: { current: number; max: number } | undefined = undefined;
+      if (settings.showExactHp === true || isAlly || isOwnCharacter) {
+        exactHp = { current: currentHp, max: maxHp };
+      }
+
+      let exactAc: string | undefined = undefined;
+      if (settings.showAc === true || isAlly || isOwnCharacter) {
+        exactAc = p.ac;
+      }
+
+      playerParticipants.push({
+        id: p.id,
+        kind: p.kind,
+        displayNameForPlayers: p.display_name_for_players || p.instance_name,
+        healthStatus,
+        status: p.status,
+        conditions,
+        exactHp,
+        exactAc,
+        initiative: p.initiative,
+        initiativeStatus: p.initiative_status,
+        phase: p.phase,
+        sortIndex: p.sort_index,
+        characterId: p.character_id,
+        isAlly
+      });
+    }
+
+    const eventRows = await env.DB.prepare(
+      'SELECT * FROM encounter_events WHERE encounter_id = ? AND visible_to_players = 1 ORDER BY created_at ASC'
+    ).bind(encId).all();
+
+    const events = (eventRows.results || []).map((e: any) => ({
+      id: e.id,
+      encounterId: e.encounter_id,
+      round: e.round,
+      type: e.type,
+      text: e.text,
+      visibleToPlayers: true,
+      createdAt: e.created_at
+    }));
+
+    return {
+      id: encRow.id,
+      name: encRow.name,
+      locationId: encRow.location_id,
+      location: locData,
+      status: encRow.status,
+      round: encRow.round,
+      currentParticipantId: encRow.current_participant_id,
+      settings,
+      version: encRow.version,
+      participants: playerParticipants,
+      events
+    };
+  };
+
+  const buildDmEncounterSnapshot = async (encRow: any) => {
+    const encId = encRow.id;
+    let settings: any = { showExactHp: false, showAc: false, showConditions: true, showDefeated: true, playerInitiativeRolls: true };
+    try {
+      if (typeof encRow.settings === 'string') settings = JSON.parse(encRow.settings);
+      else if (encRow.settings) settings = encRow.settings;
+    } catch {}
+
+    let locData: any = null;
+    if (encRow.location_id) {
+      const locRow = await env.DB.prepare('SELECT * FROM locations WHERE id = ?').bind(encRow.location_id).first();
+      if (locRow) {
+        locData = {
+          id: locRow.id,
+          name: locRow.name,
+          region: locRow.region,
+          description: locRow.description,
+          imageUrl: locRow.image_url,
+          dmNotes: locRow.dm_notes,
+          revealed: locRow.revealed === 1,
+          parentId: locRow.parent_id,
+          createdAt: locRow.created_at,
+          updatedAt: locRow.updated_at
+        };
+      }
+    }
+
+    const partRows = await env.DB.prepare(
+      'SELECT * FROM encounter_participants WHERE encounter_id = ? ORDER BY initiative DESC, sort_index ASC'
+    ).bind(encId).all();
+
+    const participants = (partRows.results || []).map((p: any) => ({
+      id: p.id,
+      encounterId: p.encounter_id,
+      kind: p.kind,
+      npcTemplateId: p.npc_template_id,
+      characterId: p.character_id,
+      instanceName: p.instance_name,
+      displayNameForPlayers: p.display_name_for_players,
+      maxHp: p.max_hp,
+      hp: p.hp,
+      ac: p.ac,
+      acState: p.ac_state,
+      conditions: typeof p.conditions === 'string' ? JSON.parse(p.conditions) : (p.conditions || []),
+      initiative: p.initiative,
+      initiativeStatus: p.initiative_status,
+      visibility: p.visibility,
+      status: p.status,
+      phase: p.phase,
+      groupId: p.group_id,
+      sortIndex: p.sort_index,
+      addedAtRound: p.added_at_round,
+      revision: p.revision || 1,
+      notes: p.notes,
+      createdAt: p.created_at
+    }));
+
+    const eventRows = await env.DB.prepare(
+      'SELECT * FROM encounter_events WHERE encounter_id = ? ORDER BY created_at ASC'
+    ).bind(encId).all();
+
+    const events = (eventRows.results || []).map((e: any) => ({
+      id: e.id,
+      encounterId: e.encounter_id,
+      round: e.round,
+      type: e.type,
+      text: e.text,
+      visibleToPlayers: e.visible_to_players === 1,
+      createdAt: e.created_at
+    }));
+
+    return {
+      id: encRow.id,
+      name: encRow.name,
+      locationId: encRow.location_id,
+      location: locData,
+      status: encRow.status,
+      round: encRow.round,
+      currentParticipantId: encRow.current_participant_id,
+      sessionTag: encRow.session_tag,
+      settings,
+      version: encRow.version,
+      dmNotes: encRow.dm_notes,
+      startedAt: encRow.started_at,
+      endedAt: encRow.ended_at,
+      createdBy: encRow.created_by,
+      createdAt: encRow.created_at,
+      updatedAt: encRow.updated_at,
+      participants,
+      events
+    };
+  };
+
+  // ---------------------------------------------------------
+  // Live Encounter Routes (Player & View)
+  // ---------------------------------------------------------
+  if (path === '/encounters/active' && method === 'GET') {
+    if (!env.DB) return error('پایگاه داده در دسترس نیست.', 500);
+    const encRow = await env.DB.prepare(
+      "SELECT * FROM encounters WHERE status IN ('active', 'paused') ORDER BY updated_at DESC LIMIT 1"
+    ).first();
+    if (!encRow) return error('هیچ مبارزه فعالی یافت نشد.', 404);
+
+    const snapshot = await buildPlayerEncounterSnapshot(encRow);
+    return json(snapshot);
+  }
+
+  if (path.startsWith('/encounters/') && path.includes('/view') && method === 'GET') {
+    const encId = path.replace('/encounters/', '').replace('/view', '');
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    if (!encRow) return error('مبارزه یافت نشد.', 404);
+
+    // Draft encounters are invisible to players (Acceptance Test 1)
+    if (currentUser?.role !== 'dm' && encRow.status === 'draft') {
+      return error('مبارزه مورد نظر یافت نشد.', 404);
+    }
+
+    const since = url.searchParams.get('since');
+    if (since && Number(since) === Number(encRow.version)) {
+      return json({ notModified: true });
+    }
+
+    const etag = `W/"enc-${encRow.id}-${encRow.version}"`;
+    if (request.headers.get('If-None-Match') === etag) {
+      return new Response(null, { status: 304, headers: { ETag: etag, ...SECURITY_HEADERS } });
+    }
+
+    if (currentUser?.role === 'dm') {
+      const dmSnapshot = await buildDmEncounterSnapshot(encRow);
+      return json(dmSnapshot, 200, { ETag: etag });
+    } else {
+      const playerSnapshot = await buildPlayerEncounterSnapshot(encRow);
+      return json(playerSnapshot, 200, { ETag: etag });
+    }
+  }
+
+  // Player rolls / submits initiative for OWN character
+  if (path.startsWith('/encounters/') && path.endsWith('/initiative') && method === 'POST') {
+    if (!currentUser) return error('نشست نامعتبر است.', 401);
+    const encId = path.replace('/encounters/', '').replace('/initiative', '');
+    const body = await request.json() as any;
+    const { characterId, value } = body;
+
+    if (!characterId) return error('شناسه شخصیت الزامی است.');
+    const numValue = Number(value);
+    // Acceptance Test 5: Reject values outside 1-40
+    if (isNaN(numValue) || numValue < 1 || numValue > 40) {
+      return error('مقدار ابتکار عمل باید بین ۱ تا ۴۰ باشد.', 400);
+    }
+
+    // Acceptance Test 5: Player can submit initiative ONLY for their OWN character
+    if (currentUser.role !== 'dm') {
+      const charRow = await env.DB.prepare('SELECT owner_id, name FROM characters WHERE id = ?').bind(characterId).first();
+      if (!charRow || charRow.owner_id !== currentUser.id) {
+        return error('شما فقط می‌توانید برای شخصیت متعلق به خود ابتکار عمل بیندازید.', 403);
+      }
+    }
+
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    if (!encRow) return error('مبارزه یافت نشد.', 404);
+
+    const participant = await env.DB.prepare(
+      'SELECT * FROM encounter_participants WHERE encounter_id = ? AND character_id = ?'
+    ).bind(encId, characterId).first();
+    if (!participant) return error('این شخصیت در مبارزه حضور ندارد.', 404);
+
+    let settings: any = {};
+    try {
+      settings = typeof encRow.settings === 'string' ? JSON.parse(encRow.settings) : (encRow.settings || {});
+    } catch {}
+
+    const newStatus = settings.playerInitiativeRolls === false ? 'set' : 'pending';
+    const newVersion = (encRow.version || 0) + 1;
+    const t = Date.now();
+
+    await env.DB.prepare(
+      'UPDATE encounter_participants SET initiative = ?, initiative_status = ?, revision = revision + 1 WHERE id = ?'
+    ).bind(numValue, newStatus, participant.id).run();
+
+    await env.DB.prepare('UPDATE encounters SET version = ?, updated_at = ? WHERE id = ?').bind(newVersion, t, encId).run();
+
+    const charName = participant.display_name_for_players || participant.instance_name;
+    await env.DB.prepare(
+      `INSERT INTO encounter_events (id, encounter_id, round, type, text, visible_to_players, created_at)
+       VALUES (?, ?, ?, 'round', ?, 1, ?)`
+    ).bind(`evt-${t}-${generateRandomToken(4)}`, encId, encRow.round || 1, `${charName} ابتکار عمل ${numValue} را ثبت کرد.`, t).run();
+
+    return json({ success: true, initiative: numValue, initiativeStatus: newStatus });
+  }
+
+  // ---------------------------------------------------------
+  // DM Live Encounters Management
   // ---------------------------------------------------------
   if (path === '/encounters' && method === 'GET') {
-    if (currentUser.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
-    const res = await env.DB.prepare('SELECT data FROM encounters').all();
-    return json((res.results || []).map((r: any) => JSON.parse(r.data)));
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const statusFilter = url.searchParams.get('status');
+    const locFilter = url.searchParams.get('locationId');
+
+    let query = 'SELECT * FROM encounters WHERE 1=1';
+    const bindings: any[] = [];
+    if (statusFilter) {
+      query += ' AND status = ?';
+      bindings.push(statusFilter);
+    }
+    if (locFilter) {
+      query += ' AND location_id = ?';
+      bindings.push(locFilter);
+    }
+    query += ' ORDER BY updated_at DESC';
+
+    const rows = await env.DB.prepare(query).bind(...bindings).all();
+    const results = [];
+    for (const r of (rows.results || [])) {
+      const full = await buildDmEncounterSnapshot(r);
+      results.push(full);
+    }
+    return json(results);
   }
 
   if (path === '/encounters' && method === 'POST') {
-    if (currentUser.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
-    const data = await request.json() as any;
-    const id = `enc-${Date.now()}`;
-    const newEnc = { ...data, id, updatedAt: new Date().toISOString() };
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const body = await request.json() as any;
+    const id = `enc-${Date.now()}-${generateRandomToken(4)}`;
+    const encName = String(body.name || 'مبارزه جدید').trim();
+    const locationId = body.locationId || null;
+    const sessionTag = body.sessionTag || '';
+    const dmNotes = body.dmNotes || '';
+    const settings = JSON.stringify({
+      showExactHp: Boolean(body.settings?.showExactHp),
+      showAc: Boolean(body.settings?.showAc),
+      showConditions: body.settings?.showConditions !== false,
+      showDefeated: body.settings?.showDefeated !== false,
+      playerInitiativeRolls: body.settings?.playerInitiativeRolls !== false
+    });
+    const t = Date.now();
+
     await env.DB.prepare(
-      'INSERT INTO encounters (id, name, session_tag, data, updated_at) VALUES (?, ?, ?, ?, ?)'
-    ).bind(id, newEnc.name, newEnc.sessionTag || '', JSON.stringify(newEnc), now).run();
-    return json(newEnc, 201);
+      `INSERT INTO encounters (
+         id, name, location_id, status, round, current_participant_id, session_tag,
+         settings, version, dm_notes, started_at, ended_at, created_by, created_at, updated_at
+       ) VALUES (?, ?, ?, 'draft', 0, NULL, ?, ?, 1, ?, NULL, NULL, ?, ?, ?)`
+    ).bind(id, encName, locationId, sessionTag, settings, dmNotes, currentUser?.id || null, t, t).run();
+
+    const created = await buildDmEncounterSnapshot({
+      id, name: encName, location_id: locationId, status: 'draft', round: 0,
+      current_participant_id: null, session_tag: sessionTag, settings, version: 1,
+      dm_notes: dmNotes, created_by: currentUser?.id, created_at: t, updated_at: t
+    });
+    return json(created, 201);
+  }
+
+  if (path.startsWith('/encounters/') && method === 'GET' && !path.includes('/view') && !path.includes('/participants') && !path.includes('/events')) {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const encId = path.replace('/encounters/', '');
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    if (!encRow) return error('مبارزه یافت نشد.', 404);
+    const full = await buildDmEncounterSnapshot(encRow);
+    return json(full);
+  }
+
+  if (path.startsWith('/encounters/') && method === 'PATCH' && !path.includes('/participants')) {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const encId = path.replace('/encounters/', '');
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    if (!encRow) return error('مبارزه یافت نشد.', 404);
+
+    const data = await request.json() as any;
+    const newName = data.name !== undefined ? String(data.name).trim() : encRow.name;
+    const newLocId = data.locationId !== undefined ? data.locationId : encRow.location_id;
+    const newSessionTag = data.sessionTag !== undefined ? data.sessionTag : encRow.session_tag;
+    const newDmNotes = data.dmNotes !== undefined ? data.dmNotes : encRow.dm_notes;
+    const newSettings = data.settings !== undefined ? JSON.stringify(data.settings) : encRow.settings;
+    const newStatus = data.status !== undefined ? data.status : encRow.status;
+    const nextVersion = (encRow.version || 0) + 1;
+    const t = Date.now();
+
+    await env.DB.prepare(
+      `UPDATE encounters SET name = ?, location_id = ?, session_tag = ?, dm_notes = ?, settings = ?, status = ?, version = ?, updated_at = ? WHERE id = ?`
+    ).bind(newName, newLocId, newSessionTag, newDmNotes, newSettings, newStatus, nextVersion, t, encId).run();
+
+    const updatedRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    const full = await buildDmEncounterSnapshot(updatedRow);
+    return json(full);
+  }
+
+  // Start Encounter
+  if (path.startsWith('/encounters/') && path.endsWith('/start') && method === 'POST') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const encId = path.replace('/encounters/', '').replace('/start', '');
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    if (!encRow) return error('مبارزه یافت نشد.', 404);
+
+    // Pick top initiative participant
+    const partRow = await env.DB.prepare(
+      "SELECT id FROM encounter_participants WHERE encounter_id = ? AND status = 'active' ORDER BY initiative DESC, sort_index ASC LIMIT 1"
+    ).bind(encId).first();
+
+    const nextVersion = (encRow.version || 0) + 1;
+    const t = Date.now();
+
+    await env.DB.prepare(
+      `UPDATE encounters SET status = 'active', round = 1, current_participant_id = ?, started_at = ?, version = ?, updated_at = ? WHERE id = ?`
+    ).bind(partRow?.id || null, t, nextVersion, t, encId).run();
+
+    await env.DB.prepare(
+      `INSERT INTO encounter_events (id, encounter_id, round, type, text, visible_to_players, created_at)
+       VALUES (?, ?, 1, 'start', 'مبارزه آغاز شد (دور ۱)', 1, ?)`
+    ).bind(`evt-${t}-${generateRandomToken(4)}`, encId, t).run();
+
+    return json({ success: true, status: 'active', round: 1, currentParticipantId: partRow?.id || null, version: nextVersion });
+  }
+
+  // Pause Encounter
+  if (path.startsWith('/encounters/') && path.endsWith('/pause') && method === 'POST') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const encId = path.replace('/encounters/', '').replace('/pause', '');
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    if (!encRow) return error('مبارزه یافت نشد.', 404);
+
+    const nextVersion = (encRow.version || 0) + 1;
+    const t = Date.now();
+    await env.DB.prepare("UPDATE encounters SET status = 'paused', version = ?, updated_at = ? WHERE id = ?").bind(nextVersion, t, encId).run();
+
+    await env.DB.prepare(
+      `INSERT INTO encounter_events (id, encounter_id, round, type, text, visible_to_players, created_at)
+       VALUES (?, ?, ?, 'round', 'مبارزه موقتاً متوقف شد.', 1, ?)`
+    ).bind(`evt-${t}-${generateRandomToken(4)}`, encId, encRow.round || 1, t).run();
+
+    return json({ success: true, status: 'paused', version: nextVersion });
+  }
+
+  // Resume Encounter
+  if (path.startsWith('/encounters/') && path.endsWith('/resume') && method === 'POST') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const encId = path.replace('/encounters/', '').replace('/resume', '');
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    if (!encRow) return error('مبارزه یافت نشد.', 404);
+
+    const nextVersion = (encRow.version || 0) + 1;
+    const t = Date.now();
+    await env.DB.prepare("UPDATE encounters SET status = 'active', version = ?, updated_at = ? WHERE id = ?").bind(nextVersion, t, encId).run();
+
+    await env.DB.prepare(
+      `INSERT INTO encounter_events (id, encounter_id, round, type, text, visible_to_players, created_at)
+       VALUES (?, ?, ?, 'round', 'مبارزه مجدداً از سر گرفته شد.', 1, ?)`
+    ).bind(`evt-${t}-${generateRandomToken(4)}`, encId, encRow.round || 1, t).run();
+
+    return json({ success: true, status: 'active', version: nextVersion });
+  }
+
+  // End Encounter
+  if (path.startsWith('/encounters/') && path.endsWith('/end') && method === 'POST') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const encId = path.replace('/encounters/', '').replace('/end', '');
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    if (!encRow) return error('مبارزه یافت نشد.', 404);
+
+    const nextVersion = (encRow.version || 0) + 1;
+    const t = Date.now();
+    await env.DB.prepare("UPDATE encounters SET status = 'ended', ended_at = ?, version = ?, updated_at = ? WHERE id = ?").bind(t, nextVersion, t, encId).run();
+
+    await env.DB.prepare(
+      `INSERT INTO encounter_events (id, encounter_id, round, type, text, visible_to_players, created_at)
+       VALUES (?, ?, ?, 'end', 'مبارزه با پیروزی به پایان رسید.', 1, ?)`
+    ).bind(`evt-${t}-${generateRandomToken(4)}`, encId, encRow.round || 1, t).run();
+
+    return json({ success: true, status: 'ended', version: nextVersion });
+  }
+
+  // Next Turn (Defeated participants skipped automatically)
+  if (path.startsWith('/encounters/') && path.endsWith('/next-turn') && method === 'POST') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const encId = path.replace('/encounters/', '').replace('/next-turn', '');
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    if (!encRow) return error('مبارزه یافت نشد.', 404);
+
+    const partRows = await env.DB.prepare(
+      'SELECT * FROM encounter_participants WHERE encounter_id = ? AND initiative IS NOT NULL ORDER BY initiative DESC, sort_index ASC'
+    ).bind(encId).all();
+
+    // Acceptance Test 6: Defeated participants are skipped on Next turn
+    const activeParts = (partRows.results || []).filter((p: any) => p.status === 'active');
+    if (activeParts.length === 0) return error('هیچ مبارز فعالی یافت نشد.');
+
+    const currentIndex = activeParts.findIndex((p: any) => p.id === encRow.current_participant_id);
+    let nextRound = encRow.round || 1;
+    let nextIndex = 0;
+
+    if (currentIndex === -1 || currentIndex >= activeParts.length - 1) {
+      nextIndex = 0;
+      nextRound = nextRound + 1;
+    } else {
+      nextIndex = currentIndex + 1;
+    }
+
+    const nextPart = activeParts[nextIndex];
+    const nextVersion = (encRow.version || 0) + 1;
+    const t = Date.now();
+
+    await env.DB.prepare(
+      'UPDATE encounters SET current_participant_id = ?, round = ?, version = ?, updated_at = ? WHERE id = ?'
+    ).bind(nextPart.id, nextRound, nextVersion, t, encId).run();
+
+    if (nextRound > (encRow.round || 1)) {
+      await env.DB.prepare(
+        `INSERT INTO encounter_events (id, encounter_id, round, type, text, visible_to_players, created_at)
+         VALUES (?, ?, ?, 'round', ?, 1, ?)`
+      ).bind(`evt-${t}-${generateRandomToken(4)}`, encId, nextRound, `آغاز دور ${nextRound}`, t).run();
+    }
+
+    const pName = nextPart.display_name_for_players || nextPart.instance_name;
+    await env.DB.prepare(
+      `INSERT INTO encounter_events (id, encounter_id, round, type, text, visible_to_players, created_at)
+       VALUES (?, ?, ?, 'turn', ?, 1, ?)`
+    ).bind(`evt-${t + 1}-${generateRandomToken(4)}`, encId, nextRound, `نوبت به ${pName} رسید.`, t + 1).run();
+
+    return json({ success: true, currentParticipantId: nextPart.id, round: nextRound, version: nextVersion });
+  }
+
+  // Prev Turn
+  if (path.startsWith('/encounters/') && path.endsWith('/prev-turn') && method === 'POST') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const encId = path.replace('/encounters/', '').replace('/prev-turn', '');
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    if (!encRow) return error('مبارزه یافت نشد.', 404);
+
+    const partRows = await env.DB.prepare(
+      'SELECT * FROM encounter_participants WHERE encounter_id = ? AND initiative IS NOT NULL ORDER BY initiative DESC, sort_index ASC'
+    ).bind(encId).all();
+
+    const activeParts = (partRows.results || []).filter((p: any) => p.status === 'active');
+    if (activeParts.length === 0) return error('هیچ مبارز فعالی یافت نشد.');
+
+    const currentIndex = activeParts.findIndex((p: any) => p.id === encRow.current_participant_id);
+    let nextRound = encRow.round || 1;
+    let prevIndex = 0;
+
+    if (currentIndex <= 0) {
+      prevIndex = activeParts.length - 1;
+      nextRound = Math.max(1, nextRound - 1);
+    } else {
+      prevIndex = currentIndex - 1;
+    }
+
+    const prevPart = activeParts[prevIndex];
+    const nextVersion = (encRow.version || 0) + 1;
+    const t = Date.now();
+
+    await env.DB.prepare(
+      'UPDATE encounters SET current_participant_id = ?, round = ?, version = ?, updated_at = ? WHERE id = ?'
+    ).bind(prevPart.id, nextRound, nextVersion, t, encId).run();
+
+    return json({ success: true, currentParticipantId: prevPart.id, round: nextRound, version: nextVersion });
+  }
+
+  // Batch Add Participants / Reinforcements
+  if (path.startsWith('/encounters/') && path.endsWith('/participants') && method === 'POST') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const encId = path.replace('/encounters/', '').replace('/participants', '');
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    if (!encRow) return error('مبارزه یافت نشد.', 404);
+
+    const body = await request.json() as any;
+    const items = Array.isArray(body.participants) ? body.participants : [body];
+    const announceReinforcements = Boolean(body.announceReinforcements);
+    const announcementText = body.announcementText || 'نیروهای کمکی از راه رسیدند!';
+
+    const createdList: any[] = [];
+    const t = Date.now();
+
+    const maxSortRow = await env.DB.prepare('SELECT MAX(sort_index) as m FROM encounter_participants WHERE encounter_id = ?').bind(encId).first();
+    let currentSort = (maxSortRow?.m ?? 0) + 1;
+
+    for (const item of items) {
+      const pid = `part-${Date.now()}-${generateRandomToken(4)}`;
+      const kind = item.kind || 'monster';
+      const npcTemplateId = item.npcTemplateId || null;
+      const characterId = item.characterId || null;
+      const instanceName = item.instanceName || 'موجود';
+      const displayNameForPlayers = item.displayNameForPlayers || instanceName;
+      const maxHp = Number(item.maxHp || 10);
+      const hp = Number(item.hp !== undefined ? item.hp : maxHp);
+      const ac = String(item.ac || '10');
+      const acState = item.acState || null;
+      const conditions = JSON.stringify(item.conditions || []);
+      const initiative = item.initiative !== undefined && item.initiative !== null ? Number(item.initiative) : null;
+      const initiativeStatus = initiative !== null ? 'set' : 'none';
+      const visibility = item.visibility || 'revealed';
+      const status = item.status || 'active';
+      const phase = item.phase || null;
+      const groupId = item.groupId || null;
+      const notes = item.notes || '';
+      const addedAtRound = encRow.round || 0;
+
+      await env.DB.prepare(
+        `INSERT INTO encounter_participants (
+           id, encounter_id, kind, npc_template_id, character_id, instance_name,
+           display_name_for_players, max_hp, hp, ac, ac_state, conditions, initiative,
+           initiative_status, visibility, status, phase, group_id, sort_index,
+           added_at_round, revision, notes, created_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`
+      ).bind(
+        pid, encId, kind, npcTemplateId, characterId, instanceName,
+        displayNameForPlayers, maxHp, hp, ac, acState, conditions, initiative,
+        initiativeStatus, visibility, status, phase, groupId, currentSort++,
+        addedAtRound, notes, t
+      ).run();
+
+      createdList.push({
+        id: pid,
+        encounterId: encId,
+        kind,
+        npcTemplateId,
+        characterId,
+        instanceName,
+        displayNameForPlayers,
+        maxHp,
+        hp,
+        ac,
+        visibility,
+        status,
+        initiative,
+        initiativeStatus,
+        revision: 1
+      });
+    }
+
+    // Acceptance Test 2: If announced, post player-visible event
+    if (announceReinforcements) {
+      await env.DB.prepare(
+        `INSERT INTO encounter_events (id, encounter_id, round, type, text, visible_to_players, created_at)
+         VALUES (?, ?, ?, 'add', ?, 1, ?)`
+      ).bind(`evt-${t}-${generateRandomToken(4)}`, encId, encRow.round || 1, announcementText, t).run();
+    }
+
+    // Acceptance Test 2: Current turn pointer does NOT move when adding reinforcements
+    const nextVersion = (encRow.version || 0) + 1;
+    await env.DB.prepare('UPDATE encounters SET version = ?, updated_at = ? WHERE id = ?').bind(nextVersion, t, encId).run();
+
+    return json({ success: true, created: createdList, version: nextVersion }, 201);
+  }
+
+  // Update Participant (PATCH) with revision concurrency control
+  if (path.startsWith('/encounters/') && path.includes('/participants/') && method === 'PATCH') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const parts = path.split('/');
+    const encId = parts[2];
+    const pid = parts[4];
+
+    const partRow = await env.DB.prepare('SELECT * FROM encounter_participants WHERE id = ? AND encounter_id = ?').bind(pid, encId).first();
+    if (!partRow) return error('مبارز یافت نشد.', 404);
+
+    const data = await request.json() as any;
+
+    // Acceptance Test 9: Participant revision concurrency
+    if (data.revision !== undefined && Number(data.revision) !== Number(partRow.revision)) {
+      return error('تغییرات توسط تب یا کاربر دیگری به‌روزرسانی شده است.', 409);
+    }
+
+    const newHp = data.hp !== undefined ? Number(data.hp) : partRow.hp;
+    const newMaxHp = data.maxHp !== undefined ? Number(data.maxHp) : partRow.max_hp;
+    const newAc = data.ac !== undefined ? String(data.ac) : partRow.ac;
+    const newAcState = data.acState !== undefined ? data.acState : partRow.ac_state;
+    const newConditions = data.conditions !== undefined ? JSON.stringify(data.conditions) : partRow.conditions;
+    const newInit = data.initiative !== undefined ? (data.initiative === null ? null : Number(data.initiative)) : partRow.initiative;
+    const newInitStatus = data.initiativeStatus !== undefined ? data.initiativeStatus : (newInit !== null ? 'set' : partRow.initiative_status);
+    const newVisibility = data.visibility !== undefined ? data.visibility : partRow.visibility;
+    const newStatus = data.status !== undefined ? data.status : partRow.status;
+    const newPhase = data.phase !== undefined ? data.phase : partRow.phase;
+    const newName = data.instanceName !== undefined ? data.instanceName : partRow.instance_name;
+    const newDisplayName = data.displayNameForPlayers !== undefined ? data.displayNameForPlayers : partRow.display_name_for_players;
+    const newNotes = data.notes !== undefined ? data.notes : partRow.notes;
+    const newSortIndex = data.sortIndex !== undefined ? Number(data.sortIndex) : partRow.sort_index;
+    const newRevision = (partRow.revision || 1) + 1;
+    const t = Date.now();
+
+    await env.DB.prepare(
+      `UPDATE encounter_participants SET 
+         hp = ?, max_hp = ?, ac = ?, ac_state = ?, conditions = ?, initiative = ?, 
+         initiative_status = ?, visibility = ?, status = ?, phase = ?, instance_name = ?, 
+         display_name_for_players = ?, notes = ?, sort_index = ?, revision = ?
+       WHERE id = ?`
+    ).bind(
+      newHp, newMaxHp, newAc, newAcState, newConditions, newInit,
+      newInitStatus, newVisibility, newStatus, newPhase, newName,
+      newDisplayName, newNotes, newSortIndex, newRevision, pid
+    ).run();
+
+    // If character, sync HP with character sheet
+    if (partRow.kind === 'character' && partRow.character_id && data.hp !== undefined) {
+      const charRow = await env.DB.prepare('SELECT data FROM characters WHERE id = ?').bind(partRow.character_id).first();
+      if (charRow?.data) {
+        try {
+          const cData = JSON.parse(charRow.data);
+          cData.hp = { ...cData.hp, current: newHp, max: newMaxHp };
+          await env.DB.prepare('UPDATE characters SET data = ?, updated_at = ? WHERE id = ?')
+            .bind(JSON.stringify(cData), t, partRow.character_id).run();
+        } catch {}
+      }
+    }
+
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    const nextEncVersion = (encRow?.version || 0) + 1;
+    await env.DB.prepare('UPDATE encounters SET version = ?, updated_at = ? WHERE id = ?').bind(nextEncVersion, t, encId).run();
+
+    if (data.status === 'defeated' && partRow.status !== 'defeated') {
+      await env.DB.prepare(
+        `INSERT INTO encounter_events (id, encounter_id, round, type, text, visible_to_players, created_at)
+         VALUES (?, ?, ?, 'defeat', ?, 1, ?)`
+      ).bind(`evt-${t}-${generateRandomToken(4)}`, encId, encRow?.round || 1, `${partRow.display_name_for_players || partRow.instance_name} شکست خورد.`, t).run();
+    } else if (data.visibility === 'revealed' && partRow.visibility !== 'revealed') {
+      await env.DB.prepare(
+        `INSERT INTO encounter_events (id, encounter_id, round, type, text, visible_to_players, created_at)
+         VALUES (?, ?, ?, 'reveal', ?, 1, ?)`
+      ).bind(`evt-${t}-${generateRandomToken(4)}`, encId, encRow?.round || 1, `${newDisplayName || newName} آشکار شد!`, t).run();
+    }
+
+    return json({ success: true, revision: newRevision, version: nextEncVersion });
+  }
+
+  // Delete Participant
+  if (path.startsWith('/encounters/') && path.includes('/participants/') && method === 'DELETE') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const parts = path.split('/');
+    const encId = parts[2];
+    const pid = parts[4];
+
+    await env.DB.prepare('DELETE FROM encounter_participants WHERE id = ? AND encounter_id = ?').bind(pid, encId).run();
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    const nextVersion = (encRow?.version || 0) + 1;
+    const t = Date.now();
+    await env.DB.prepare('UPDATE encounters SET version = ?, updated_at = ? WHERE id = ?').bind(nextVersion, t, encId).run();
+
+    return json({ success: true, version: nextVersion });
+  }
+
+  // Add Event
+  if (path.startsWith('/encounters/') && path.endsWith('/events') && method === 'POST') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const encId = path.replace('/encounters/', '').replace('/events', '');
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    if (!encRow) return error('مبارزه یافت نشد.', 404);
+
+    const body = await request.json() as any;
+    const text = String(body.text || '').trim();
+    if (!text) return error('متن رویداد الزامی است.');
+    const visible = body.visibleToPlayers !== false ? 1 : 0;
+    const t = Date.now();
+
+    await env.DB.prepare(
+      `INSERT INTO encounter_events (id, encounter_id, round, type, text, visible_to_players, created_at)
+       VALUES (?, ?, ?, 'note', ?, ?, ?)`
+    ).bind(`evt-${t}-${generateRandomToken(4)}`, encId, encRow.round || 1, text, visible, t).run();
+
+    const nextVersion = (encRow.version || 0) + 1;
+    await env.DB.prepare('UPDATE encounters SET version = ?, updated_at = ? WHERE id = ?').bind(nextVersion, t, encId).run();
+
+    return json({ success: true, version: nextVersion });
+  }
+
+  // Distribute Loot to Character
+  if (path.startsWith('/encounters/') && path.endsWith('/loot') && method === 'POST') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const encId = path.replace('/encounters/', '').replace('/loot', '');
+    const body = await request.json() as any;
+    const { characterId, item } = body;
+    if (!characterId || !item || !item.name) return error('شناسه شخصیت و اطلاعات آیتم الزامی است.');
+
+    const charRow = await env.DB.prepare('SELECT * FROM characters WHERE id = ?').bind(characterId).first();
+    if (!charRow) return error('شخصیت یافت نشد.', 404);
+
+    const charData = JSON.parse(charRow.data);
+    const newItem = {
+      id: `item-${Date.now()}-${generateRandomToken(4)}`,
+      name: item.name,
+      category: item.category || 'loot',
+      quantity: item.quantity || 1,
+      weight: item.weight || 0.5,
+      description: item.description || '',
+      mechanicalEffect: item.mechanicalEffect || '',
+      secretNotes: item.secretNotes || '',
+      isNew: true
+    };
+    charData.inventory = [...(charData.inventory || []), newItem];
+    const t = Date.now();
+
+    await env.DB.prepare('UPDATE characters SET data = ?, updated_at = ? WHERE id = ?')
+      .bind(JSON.stringify(charData), t, characterId).run();
+
+    const encRow = await env.DB.prepare('SELECT * FROM encounters WHERE id = ?').bind(encId).first();
+    const nextVersion = (encRow?.version || 0) + 1;
+    await env.DB.prepare('UPDATE encounters SET version = ?, updated_at = ? WHERE id = ?').bind(nextVersion, t, encId).run();
+
+    await env.DB.prepare(
+      `INSERT INTO encounter_events (id, encounter_id, round, type, text, visible_to_players, created_at)
+       VALUES (?, ?, ?, 'note', ?, 1, ?)`
+    ).bind(`evt-${t}-${generateRandomToken(4)}`, encId, encRow?.round || 1, `غنیمت ${item.name} به ${charRow.name} اهدا شد.`, t).run();
+
+    return json({ success: true, version: nextVersion, item: newItem });
   }
 
   // ---------------------------------------------------------

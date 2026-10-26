@@ -10,7 +10,8 @@ import {
   Encounter,
   WeaponTemplate,
   ClassTemplate,
-  CampaignRule
+  CampaignRule,
+  LocationEntry
 } from '../types';
 
 export const DEFAULT_5E_SKILLS: SkillDefinition[] = [
@@ -2175,3 +2176,67 @@ export const SEED_ENCOUNTERS: Encounter[] = [
     updatedAt: new Date().toISOString()
   }
 ];
+
+export const SEED_LOCATIONS: LocationEntry[] = [
+  {
+    id: 'loc-caravanserai',
+    name: 'کاروانسرای ماه سرخ',
+    region: 'کویر خاموش',
+    description: 'کاروانسرایی باستانی با دیوارهای خشتی مستحکم در آستانه کویر خاموش که استراحتگاه کاوشگران فره و کاروان‌های ادویه است.',
+    imageUrl: '',
+    dmNotes: 'پناهگاهی امن برای گروه در شروع ماجراجویی؛ در زیرزمین آن یک انبار متروکه با اسناد تاریخی نوژان مخفی شده است.',
+    revealed: true,
+    parentId: null,
+    createdAt: 1700000000000,
+    updatedAt: 1700000000000
+  },
+  {
+    id: 'loc-crystal-grove',
+    name: 'بیشه بلورین ورنا',
+    region: 'ورنا',
+    description: 'جنگلی مه‌آلود و کهن که در میان درختان درهم‌تنیده آن، بلورهای زمان و جریان‌های ماورایی با نوری بنفش‌فام می‌درخشند.',
+    imageUrl: '',
+    dmNotes: 'محل زندگی موجودات زمان‌گریز و پریان کهن؛ هر دور مبارزه ممکن است طنین زمان رخ دهد.',
+    revealed: true,
+    parentId: null,
+    createdAt: 1700000000000,
+    updatedAt: 1700000000000
+  },
+  {
+    id: 'loc-silent-tower',
+    name: 'برج خاموشی سپیدارون',
+    region: 'سپیدارون',
+    description: 'برجی بلند و سنگی بر فراز صخره‌های سپیدارون که موبدان در آن آتش مقدس و کتیبه‌های پیمان را پاسداری می‌کردند.',
+    imageUrl: '',
+    dmNotes: 'نگهبان زمان‌گسسته در طبقه فوقانی این برج مستقر است.',
+    revealed: true,
+    parentId: null,
+    createdAt: 1700000000000,
+    updatedAt: 1700000000000
+  },
+  {
+    id: 'loc-sangkhab-vault',
+    name: 'دخمه سنگ‌خواب شان‌شین',
+    region: 'شانشین',
+    description: 'دخمه‌ای مرموز زیر شهر شان‌شین که رازهای مهر دوم و سنگ‌های تثبیت زمان در آن مدفون است.',
+    imageUrl: '',
+    dmNotes: 'تنها با باز کردن قفل سنگی ویژه قابل دسترس است؛ پیمانداران مراقب ورودی آن هستند.',
+    revealed: false,
+    parentId: null,
+    createdAt: 1700000000000,
+    updatedAt: 1700000000000
+  },
+  {
+    id: 'loc-seven-pacts',
+    name: 'پل هفت‌پیمان',
+    region: 'مشترک',
+    description: 'پل سنگی بزرگ و عظیمی که بر فراز دره شکاف واقعیت امتداد یافته و مرز بین سرزمین‌های باستانی زروانیا را پیوند می‌دهد.',
+    imageUrl: '',
+    dmNotes: 'محل برخورد نگهبانان و راهزنان شن‌باد.',
+    revealed: true,
+    parentId: null,
+    createdAt: 1700000000000,
+    updatedAt: 1700000000000
+  }
+];
+

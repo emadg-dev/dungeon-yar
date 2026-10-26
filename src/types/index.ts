@@ -528,6 +528,154 @@ export interface CampaignNote {
   updatedAt: string;
 }
 
+/* Location and World Points of Interest */
+export type LocationRegion = 'ورنا' | 'کویر خاموش' | 'سپیدارون' | 'مهستان' | 'شانشین' | 'مشترک' | string;
+
+export interface LocationEntry {
+  id: string;
+  name: string;
+  region: LocationRegion;
+  description: string;
+  imageUrl?: string;
+  dmNotes?: string;
+  revealed: boolean;
+  parentId?: string | null;
+  createdAt: number;
+  updatedAt: number;
+}
+
+/* Live Encounter Types */
+export type EncounterStatus = 'draft' | 'active' | 'paused' | 'ended';
+
+export interface EncounterSettings {
+  showExactHp: boolean;
+  showAc: boolean;
+  showConditions: boolean;
+  showDefeated: boolean;
+  playerInitiativeRolls: boolean;
+}
+
+export type ParticipantKind = 'monster' | 'npc' | 'character';
+export type ParticipantVisibility = 'hidden' | 'announced' | 'revealed';
+export type ParticipantStatus = 'active' | 'defeated' | 'fled';
+export type InitiativeStatus = 'none' | 'pending' | 'set';
+export type QualitativeHealth = 'سالم' | 'زخمی' | 'نیمه‌جان' | 'رو به مرگ';
+
+export interface EncounterParticipant {
+  id: string;
+  encounterId: string;
+  kind: ParticipantKind;
+  npcTemplateId?: string | null;
+  characterId?: string | null;
+  instanceName: string;
+  displayNameForPlayers?: string | null;
+  maxHp: number;
+  hp: number;
+  ac: string;
+  acState?: string | null;
+  conditions: string[];
+  initiative: number | null;
+  initiativeStatus: InitiativeStatus;
+  visibility: ParticipantVisibility;
+  status: ParticipantStatus;
+  phase?: string | null;
+  groupId?: string | null;
+  sortIndex: number;
+  addedAtRound: number;
+  revision: number;
+  notes?: string;
+  createdAt: number;
+}
+
+export interface PlayerEncounterParticipant {
+  id: string;
+  kind: ParticipantKind;
+  displayNameForPlayers: string;
+  healthStatus: QualitativeHealth;
+  status: ParticipantStatus;
+  conditions?: string[];
+  exactHp?: { current: number; max: number };
+  exactAc?: string;
+  initiative: number | null;
+  initiativeStatus: InitiativeStatus;
+  phase?: string | null;
+  sortIndex: number;
+  characterId?: string | null;
+  isAlly?: boolean;
+}
+
+export type EncounterEventType = 
+  | 'start' 
+  | 'round' 
+  | 'turn' 
+  | 'add' 
+  | 'remove' 
+  | 'defeat' 
+  | 'reveal' 
+  | 'damage' 
+  | 'heal' 
+  | 'condition' 
+  | 'end' 
+  | 'note';
+
+export interface EncounterEvent {
+  id: string;
+  encounterId: string;
+  round: number;
+  type: EncounterEventType;
+  text: string;
+  visibleToPlayers: boolean;
+  createdAt: number;
+}
+
+export interface LiveEncounter {
+  id: string;
+  name: string;
+  locationId?: string | null;
+  location?: LocationEntry | null;
+  status: EncounterStatus;
+  round: number;
+  currentParticipantId?: string | null;
+  sessionTag?: string;
+  settings: EncounterSettings;
+  version: number;
+  dmNotes?: string;
+  startedAt?: number | null;
+  endedAt?: number | null;
+  createdBy?: string;
+  createdAt: number;
+  updatedAt: number;
+  participants: EncounterParticipant[];
+  events: EncounterEvent[];
+}
+
+export interface PlayerEncounterView {
+  id: string;
+  name: string;
+  locationId?: string | null;
+  location?: {
+    id: string;
+    name: string;
+    region: string;
+    description?: string;
+    imageUrl?: string;
+  } | null;
+  status: EncounterStatus;
+  round: number;
+  currentParticipantId?: string | null;
+  settings: EncounterSettings;
+  version: number;
+  participants: PlayerEncounterParticipant[];
+  events: EncounterEvent[];
+}
+
+export interface LiveSyncStatus {
+  activeEncounterId: string | null;
+  version: number;
+  serverTime: number;
+}
+
+// Backward compatibility types
 export interface EncounterCombatant {
   id: string;
   name: string;
@@ -548,12 +696,18 @@ export interface EncounterCombatant {
 export interface Encounter {
   id: string;
   name: string;
-  sessionTag: string;
-  round: number;
-  activeCombatantIndex: number;
-  combatants: EncounterCombatant[];
-  notes: string;
-  updatedAt: string;
+  sessionTag?: string;
+  round?: number;
+  activeCombatantIndex?: number;
+  combatants?: EncounterCombatant[];
+  notes?: string;
+  updatedAt?: string;
+  locationId?: string | null;
+  status?: EncounterStatus;
+  settings?: EncounterSettings;
+  version?: number;
+  participants?: EncounterParticipant[];
+  events?: EncounterEvent[];
 }
 
 export interface DiceRollResult {

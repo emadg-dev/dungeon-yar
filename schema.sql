@@ -170,14 +170,92 @@ CREATE TABLE IF NOT EXISTS class_templates (
   updated_at INTEGER NOT NULL
 );
 
--- Encounters table (persisted combat state)
+-- Locations table (world locations & points of interest)
+CREATE TABLE IF NOT EXISTS locations (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  region TEXT NOT NULL,
+  description TEXT NOT NULL,
+  image_url TEXT,
+  dm_notes TEXT,
+  revealed INTEGER DEFAULT 0,
+  parent_id TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  FOREIGN KEY (parent_id) REFERENCES locations(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_locations_revealed ON locations(revealed);
+CREATE INDEX IF NOT EXISTS idx_locations_region ON locations(region);
+
+-- Encounters table (live, player-visible combat encounters)
 CREATE TABLE IF NOT EXISTS encounters (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  location_id TEXT,
+  status TEXT CHECK (status IN ('draft', 'active', 'paused', 'ended')) DEFAULT 'draft',
+  round INTEGER DEFAULT 0,
+  current_participant_id TEXT,
   session_tag TEXT,
-  data TEXT NOT NULL,
-  updated_at INTEGER NOT NULL
+  settings TEXT NOT NULL DEFAULT '{"showExactHp":false,"showAc":false,"showConditions":true,"showDefeated":true,"playerInitiativeRolls":true}',
+  version INTEGER DEFAULT 0,
+  dm_notes TEXT,
+  started_at INTEGER,
+  ended_at INTEGER,
+  created_by TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  FOREIGN KEY (location_id) REFERENCES locations(id) ON DELETE SET NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_encounters_status ON encounters(status);
+CREATE INDEX IF NOT EXISTS idx_encounters_location ON encounters(location_id);
+
+-- Encounter Participants table (instances of monsters, NPCs, and linked characters)
+CREATE TABLE IF NOT EXISTS encounter_participants (
+  id TEXT PRIMARY KEY,
+  encounter_id TEXT NOT NULL,
+  kind TEXT CHECK (kind IN ('monster', 'npc', 'character')) NOT NULL,
+  npc_template_id TEXT,
+  character_id TEXT,
+  instance_name TEXT NOT NULL,
+  display_name_for_players TEXT,
+  max_hp INTEGER NOT NULL,
+  hp INTEGER NOT NULL,
+  ac TEXT NOT NULL,
+  ac_state TEXT,
+  conditions TEXT NOT NULL DEFAULT '[]',
+  initiative INTEGER,
+  initiative_status TEXT CHECK (initiative_status IN ('none', 'pending', 'set')) DEFAULT 'none',
+  visibility TEXT CHECK (visibility IN ('hidden', 'announced', 'revealed')) DEFAULT 'revealed',
+  status TEXT CHECK (status IN ('active', 'defeated', 'fled')) DEFAULT 'active',
+  phase TEXT,
+  group_id TEXT,
+  sort_index INTEGER DEFAULT 0,
+  added_at_round INTEGER DEFAULT 0,
+  revision INTEGER NOT NULL DEFAULT 1,
+  notes TEXT,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY (encounter_id) REFERENCES encounters(id) ON DELETE CASCADE,
+  FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_encounter_participants_encounter ON encounter_participants(encounter_id);
+CREATE INDEX IF NOT EXISTS idx_encounter_participants_sort ON encounter_participants(encounter_id, sort_index);
+
+-- Encounter Events table (live combat log & player-visible combat feed)
+CREATE TABLE IF NOT EXISTS encounter_events (
+  id TEXT PRIMARY KEY,
+  encounter_id TEXT NOT NULL,
+  round INTEGER NOT NULL DEFAULT 0,
+  type TEXT NOT NULL,
+  text TEXT NOT NULL,
+  visible_to_players INTEGER NOT NULL DEFAULT 1,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY (encounter_id) REFERENCES encounters(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_encounter_events_encounter ON encounter_events(encounter_id, id);
 
 -- Reward Packages table
 CREATE TABLE IF NOT EXISTS rewards (
