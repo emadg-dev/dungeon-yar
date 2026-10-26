@@ -65,12 +65,17 @@ CREATE TABLE IF NOT EXISTS content_packs (
   description TEXT,
   version TEXT DEFAULT '1.0.0',
   visibility TEXT CHECK (visibility IN ('private', 'instance')) DEFAULT 'instance',
+  kind TEXT CHECK (kind IN ('library', 'pack', 'campaign_template')) DEFAULT 'pack',
+  tags TEXT DEFAULT '[]',
+  is_default_library INTEGER DEFAULT 0,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_content_packs_owner ON content_packs(owner_id);
+CREATE INDEX IF NOT EXISTS idx_content_packs_kind ON content_packs(kind);
+CREATE INDEX IF NOT EXISTS idx_content_packs_default ON content_packs(owner_id, is_default_library);
 
 -- 5. Campaigns table
 CREATE TABLE IF NOT EXISTS campaigns (
@@ -79,10 +84,11 @@ CREATE TABLE IF NOT EXISTS campaigns (
   description TEXT,
   cover_media_id TEXT,
   tone TEXT,
-  status TEXT CHECK (status IN ('active', 'paused', 'archived')) DEFAULT 'active',
+  status TEXT CHECK (status IN ('draft', 'active', 'paused', 'archived')) DEFAULT 'active',
   owner_id TEXT NOT NULL,
   source_pack_id TEXT,
   settings TEXT NOT NULL,
+  wizard_state TEXT,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   deleted_at INTEGER,
@@ -523,6 +529,7 @@ CREATE INDEX IF NOT EXISTS idx_login_attempts_key_time ON login_attempts(key, cr
 
 CREATE TABLE IF NOT EXISTS audit_log (
   id TEXT PRIMARY KEY,
+  campaign_id TEXT,
   actor_id TEXT,
   action TEXT NOT NULL,
   target_id TEXT,
@@ -531,3 +538,75 @@ CREATE TABLE IF NOT EXISTS audit_log (
 );
 
 CREATE INDEX IF NOT EXISTS idx_audit_log_created ON audit_log(created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_log_campaign ON audit_log(campaign_id);
+
+-- 14. Factions table
+CREATE TABLE IF NOT EXISTS factions (
+  id TEXT PRIMARY KEY,
+  scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
+  scope_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
+  attitude TEXT,
+  region TEXT,
+  revealed INTEGER DEFAULT 0,
+  dm_notes TEXT,
+  tags TEXT NOT NULL DEFAULT '[]',
+  source_id TEXT,
+  source_mode TEXT CHECK (source_mode IN ('copy', 'linked')) DEFAULT 'copy',
+  copied_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_factions_scope ON factions(scope_type, scope_id, updated_at);
+CREATE INDEX IF NOT EXISTS idx_factions_revealed ON factions(revealed);
+
+-- 15. Campaign Docs table (Session zero, house rules, handouts)
+CREATE TABLE IF NOT EXISTS campaign_docs (
+  id TEXT PRIMARY KEY,
+  campaign_id TEXT NOT NULL,
+  kind TEXT CHECK (kind IN ('session_zero', 'house_rules', 'handout_text', 'custom')) NOT NULL,
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  visibility TEXT CHECK (visibility IN ('dm_only', 'party')) DEFAULT 'party',
+  sort_index INTEGER DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_campaign_docs_campaign ON campaign_docs(campaign_id, kind);
+
+-- 16. Favorites table
+CREATE TABLE IF NOT EXISTS favorites (
+  user_id TEXT NOT NULL,
+  entity_type TEXT NOT NULL,
+  entity_id TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, entity_type, entity_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id, entity_type);
+
+-- 17. Clone Jobs table
+CREATE TABLE IF NOT EXISTS clone_jobs (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  source TEXT NOT NULL,
+  target_scope_type TEXT NOT NULL,
+  target_scope_id TEXT NOT NULL,
+  options TEXT NOT NULL,
+  status TEXT CHECK (status IN ('preview', 'running', 'done', 'failed', 'undone')) NOT NULL,
+  manifest TEXT,
+  warnings TEXT,
+  created_at INTEGER NOT NULL,
+  finished_at INTEGER,
+  undone_at INTEGER,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_clone_jobs_user ON clone_jobs(user_id);
+CREATE INDEX IF NOT EXISTS idx_clone_jobs_target ON clone_jobs(target_scope_type, target_scope_id);
+

@@ -64,11 +64,12 @@ export interface Campaign {
   coverMediaId?: string | null;
   coverUrl?: string;
   tone?: string;
-  status: 'active' | 'paused' | 'archived';
+  status: 'draft' | 'active' | 'paused' | 'archived';
   ownerId: string;
   ownerName?: string;
   sourcePackId?: string | null;
   settings: CampaignSettings;
+  wizardState?: WizardState | null;
   createdAt: number;
   updatedAt: number;
   deletedAt?: number | null;
@@ -109,6 +110,8 @@ export interface CampaignInvite {
   inviteLink?: string;
 }
 
+export type ContentPackKind = 'library' | 'pack' | 'campaign_template';
+
 export interface ContentPack {
   id: string;
   ownerId: string;
@@ -116,6 +119,9 @@ export interface ContentPack {
   description: string;
   version: string;
   visibility: 'private' | 'instance';
+  kind: ContentPackKind;
+  tags?: string[];
+  isDefaultLibrary?: boolean;
   createdAt: number;
   updatedAt: number;
   entityCounts?: {
@@ -124,6 +130,8 @@ export interface ContentPack {
     items: number;
     npcs: number;
     locations: number;
+    encounters?: number;
+    factions?: number;
   };
 }
 
@@ -383,6 +391,8 @@ export interface SpecialAbilityDef {
 
 export interface WeaponTemplate {
   id: string;
+  scopeType?: 'pack' | 'campaign';
+  scopeId?: string;
   name: string;
   damageDice: string;
   damageType: string;
@@ -392,6 +402,10 @@ export interface WeaponTemplate {
   specialAbility?: SpecialAbilityDef;
   description: string;
   secretNotes: string;
+  sourceId?: string | null;
+  sourceMode?: 'copy' | 'linked';
+  copiedAt?: number | null;
+  tags?: string[];
 }
 
 export interface Weapon {
@@ -415,11 +429,17 @@ export interface Weapon {
 
 export interface FeatureTemplate {
   id: string;
+  scopeType?: 'pack' | 'campaign';
+  scopeId?: string;
   name: string;
   description: string;
   source: string;
   usageType: RechargeType;
   maxUses?: number;
+  sourceId?: string | null;
+  sourceMode?: 'copy' | 'linked';
+  copiedAt?: number | null;
+  tags?: string[];
 }
 
 export interface Feature {
@@ -504,6 +524,12 @@ export interface ClassTemplate {
   startingFeatures?: FeatureTemplate[];
   level2Options?: string[];
   starterWeaponOptions?: string[];
+  scopeType?: 'pack' | 'campaign';
+  scopeId?: string;
+  sourceId?: string | null;
+  sourceMode?: 'copy' | 'linked';
+  copiedAt?: number | null;
+  tags?: string[];
   updatedAt?: string;
 }
 
@@ -775,6 +801,12 @@ export interface NPC {
   dialogueLines: string[];
   isRevealed: boolean;
   notes?: string;
+  scopeType?: 'pack' | 'campaign';
+  scopeId?: string;
+  sourceId?: string | null;
+  sourceMode?: 'copy' | 'linked';
+  copiedAt?: number | null;
+  tags?: string[];
   updatedAt: string;
 }
 
@@ -788,6 +820,8 @@ export type ItemLibraryCategory =
 
 export interface ItemLibraryEntry {
   id: string;
+  scopeType?: 'pack' | 'campaign';
+  scopeId?: string;
   name: string;
   category: ItemLibraryCategory;
   rarity: 'معمولی' | 'کمیاب' | 'بسیار کمیاب' | 'افسانه‌ای' | 'باستانی و ممنوعه';
@@ -800,17 +834,27 @@ export interface ItemLibraryEntry {
   resetType?: RechargeType;
   maxUses?: number;
   weaponData?: WeaponTemplate;
+  sourceId?: string | null;
+  sourceMode?: 'copy' | 'linked';
+  copiedAt?: number | null;
+  tags?: string[];
   updatedAt: string;
 }
 
 export interface RewardPackage {
   id: string;
+  scopeType?: 'pack' | 'campaign';
+  scopeId?: string;
   title: string;
   description: string;
   gold: number;
   silver: number;
   skillPoints: number;
   items: InventoryItem[];
+  sourceId?: string | null;
+  sourceMode?: 'copy' | 'linked';
+  copiedAt?: number | null;
+  tags?: string[];
   createdAt: string;
 }
 
@@ -832,6 +876,8 @@ export type LocationRegion = 'ورنا' | 'کویر خاموش' | 'سپیدار�
 
 export interface LocationEntry {
   id: string;
+  scopeType?: 'pack' | 'campaign';
+  scopeId?: string;
   name: string;
   region: LocationRegion;
   description: string;
@@ -839,6 +885,10 @@ export interface LocationEntry {
   dmNotes?: string;
   revealed: boolean;
   parentId?: string | null;
+  tags?: string[];
+  sourceId?: string | null;
+  sourceMode?: 'copy' | 'linked';
+  copiedAt?: number | null;
   createdAt: number;
   updatedAt: number;
 }
@@ -994,6 +1044,8 @@ export interface EncounterCombatant {
 
 export interface Encounter {
   id: string;
+  scopeType?: 'pack' | 'campaign';
+  scopeId?: string;
   name: string;
   sessionTag?: string;
   round?: number;
@@ -1007,6 +1059,10 @@ export interface Encounter {
   version?: number;
   participants?: EncounterParticipant[];
   events?: EncounterEvent[];
+  sourceId?: string | null;
+  sourceMode?: 'copy' | 'linked';
+  copiedAt?: number | null;
+  tags?: string[];
 }
 
 export interface DiceRollResult {
@@ -1107,3 +1163,267 @@ export interface ShanshinEncounter {
   mechanicsNote: string;
   dmAdvice: string;
 }
+
+/* ==============================================================
+   PHASE 2: WIZARD, LIBRARY, CLONE ENGINE, AND LINKED COPIES TYPES
+   ============================================================== */
+
+export type WizardStartMode = 'empty' | 'pack' | 'campaign' | 'template';
+
+export interface WizardAnswers {
+  // Step 1: Specs
+  name?: string;
+  description?: string;
+  premise?: string;
+  toneTags?: string[];
+  coverMediaId?: string | null;
+  coverUrl?: string;
+
+  // Step 2: Rules
+  units?: 'feet' | 'meters';
+  startingLevel?: number;
+  maxEntryLevel?: number;
+  abilityScoreMethods?: ('standard_array' | 'point_buy' | 'roll' | 'manual')[];
+  approvalOnCreate?: boolean;
+  approvalOnLevelUp?: boolean;
+  backstoryVisibility?: 'dm_only' | 'party';
+  diceVisibility?: 'table' | 'dm_only';
+  allowPlayerRollPrivate?: boolean;
+  allowPlayerCreateCharacter?: boolean;
+  restRules?: {
+    shortRestHours?: number;
+    longRestHours?: number;
+    grittyRealism?: boolean;
+  };
+  exhaustionRules?: string;
+  trackRations?: boolean;
+  trackWater?: boolean;
+  houseRules?: string;
+  allowedClassIds?: string[];
+
+  // Step 3: World
+  calendarId?: string;
+  calendarSource?: 'library' | 'scratch' | 'campaign';
+  calendarData?: any;
+  locationIds?: string[];
+  factionIds?: string[];
+
+  // Step 4: Cast
+  npcIds?: string[];
+
+  // Step 5: Loot
+  itemIds?: string[];
+  rewardIds?: string[];
+
+  // Step 6: Session Zero
+  sessionZeroDoc?: {
+    title: string;
+    expectations: string;
+    schedule: string;
+    linesAndVeils: string;
+    xCardEnabled: boolean;
+    houseRulesText: string;
+  };
+
+  // Step 7: Invites
+  invitesList?: {
+    label: string;
+    role: CampaignRole;
+    maxUses?: number;
+    note?: string;
+  }[];
+}
+
+export interface WizardState {
+  step: number; // 1 to 8
+  completed: number[];
+  startMode: WizardStartMode;
+  sourceId?: string | null;
+  answers: WizardAnswers;
+}
+
+export interface Faction {
+  id: string;
+  scopeType: 'pack' | 'campaign';
+  scopeId: string;
+  name: string;
+  description: string;
+  attitude?: string;
+  region?: string;
+  revealed: boolean;
+  dmNotes?: string;
+  tags: string[];
+  sourceId?: string | null;
+  sourceMode?: 'copy' | 'linked';
+  copiedAt?: number | null;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export type CampaignDocKind = 'session_zero' | 'house_rules' | 'handout_text' | 'custom';
+
+export interface CampaignDoc {
+  id: string;
+  campaignId: string;
+  kind: CampaignDocKind;
+  title: string;
+  body: string;
+  visibility: 'dm_only' | 'party';
+  sortIndex: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface CalendarMonth {
+  name: string;
+  days: number;
+  season?: string;
+}
+
+export interface CalendarFestival {
+  monthIndex: number;
+  day: number;
+  name: string;
+  note?: string;
+}
+
+export interface CalendarOffDay {
+  name: string;
+  note?: string;
+}
+
+export interface GenericCalendarData {
+  id?: string;
+  name: string;
+  eraLabel: string;
+  startYear: number;
+  months: CalendarMonth[];
+  festivals: CalendarFestival[];
+  offDays: CalendarOffDay[];
+  weekdays?: string[];
+  tags?: string[];
+}
+
+export interface CalendarState {
+  campaignId: string;
+  calendarId: string;
+  year: number;
+  month: number;
+  day: number;
+  isOffDay: boolean;
+  offDayIndex?: number;
+  currentFestival?: string;
+  updatedAt: number;
+}
+
+export interface Favorite {
+  userId: string;
+  entityType: string;
+  entityId: string;
+  createdAt: number;
+}
+
+export type EntityScopeType = 'pack' | 'campaign';
+
+export type CloneEntityType = 
+  | 'class_template' 
+  | 'feature_template' 
+  | 'weapon_template' 
+  | 'item' 
+  | 'reward' 
+  | 'npc' 
+  | 'location' 
+  | 'encounter' 
+  | 'calendar' 
+  | 'rule_set' 
+  | 'codex_doc' 
+  | 'faction' 
+  | 'campaign_doc';
+
+export interface EntityRef {
+  type: CloneEntityType;
+  id: string;
+}
+
+export interface CloneOptions {
+  includeDependencies?: 'auto' | 'ask' | 'none';
+  includeChildren?: boolean;
+  stripDmSecrets?: boolean;
+  resetState?: boolean;
+  visibility?: 'hidden' | 'keep';
+  nameConflict?: 'rename' | 'skip';
+  keepLink?: 'copy' | 'linked';
+  nameSuffix?: string;
+  tagAdd?: string[];
+  regionOverride?: string;
+}
+
+export interface CloneWarning {
+  code: string;
+  entityId: string;
+  entityName?: string;
+  message: string;
+}
+
+export interface CloneManifestItem {
+  type: CloneEntityType;
+  originalId: string;
+  name: string;
+  hasConflict: boolean;
+  action: 'create' | 'skip' | 'rename';
+  dependencies: EntityRef[];
+  warnings?: string[];
+  overrides?: any;
+}
+
+export interface CloneManifest {
+  totalCount: number;
+  countsByType: Record<string, number>;
+  items: CloneManifestItem[];
+  dependencyTree: Record<string, EntityRef[]>;
+  conflicts: { type: CloneEntityType; originalId: string; name: string; targetId?: string }[];
+  warnings: CloneWarning[];
+  idMap?: Record<string, string>;
+  createdIds?: Record<string, string[]>;
+}
+
+export interface CloneJob {
+  id: string;
+  userId: string;
+  source: {
+    scopeType: EntityScopeType;
+    scopeId: string;
+    entityRefs?: EntityRef[];
+  };
+  targetScopeType: EntityScopeType;
+  targetScopeId: string;
+  options: CloneOptions;
+  status: 'preview' | 'running' | 'done' | 'failed' | 'undone';
+  manifest: CloneManifest;
+  warnings: CloneWarning[];
+  createdAt: number;
+  finishedAt?: number | null;
+  undoneAt?: number | null;
+}
+
+// Part B (Linked Copies)
+export interface FieldDiff {
+  field: string;
+  labelFa: string;
+  sourceValue: any;
+  localValue: any;
+  chosenValue: 'local' | 'source';
+}
+
+export interface LinkedEntityDiff {
+  entityType: CloneEntityType;
+  entityId: string;
+  sourceId: string;
+  sourceName: string;
+  sourceUpdatedAt: number;
+  copiedAt: number;
+  sourceAvailable: boolean;
+  hasUpdates: boolean;
+  diffs: FieldDiff[];
+}
+

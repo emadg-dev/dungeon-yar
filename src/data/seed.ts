@@ -19,7 +19,10 @@ import {
   MasterCharacter,
   CharacterParticipation,
   CharacterHistoryEvent,
-  CampaignDiceRoll
+  CampaignDiceRoll,
+  Faction,
+  CampaignDoc,
+  GenericCalendarData
 } from '../types';
 
 export const DEFAULT_5E_SKILLS: SkillDefinition[] = [
@@ -2280,6 +2283,9 @@ export const SEED_CONTENT_PACKS: ContentPack[] = [
     description: 'بسته‌ی محتوای اسطوره‌ای جهان زروانیا: شامل ۶ کلاس سفارشی، سلاح‌های باستانی، آیتم‌های عهد و مهر، هیولاها، مکان‌های ورنا و تقویم ۳۶۵ روزه.',
     version: '1.0.0',
     visibility: 'instance',
+    kind: 'pack',
+    tags: ['زروانیا', 'فانتزی کهن', 'اساطیر'],
+    isDefaultLibrary: false,
     createdAt: Date.now() - 30 * 86400000,
     updatedAt: Date.now() - 86400000,
     entityCounts: {
@@ -2287,7 +2293,9 @@ export const SEED_CONTENT_PACKS: ContentPack[] = [
       weapons: 12,
       items: 15,
       npcs: 14,
-      locations: 5
+      locations: 5,
+      encounters: 3,
+      factions: 3
     }
   },
   {
@@ -2297,6 +2305,9 @@ export const SEED_CONTENT_PACKS: ContentPack[] = [
     description: 'ساختار استاندارد و خالص قوانین ویرایش پنجم D&D (خالی از هرگونه محتوای توصیفی خارج از SRD): ۶ ویژگی اصلی، ۱۸ مهارت، تاس‌های نجات، شرایط و وضعیت‌ها، انواع آسیب، جدول ضریب مهارت و آستانه سطوح.',
     version: '1.0.0',
     visibility: 'instance',
+    kind: 'pack',
+    tags: ['5e', 'SRD', 'پایه'],
+    isDefaultLibrary: false,
     createdAt: Date.now() - 30 * 86400000,
     updatedAt: Date.now() - 86400000,
     entityCounts: {
@@ -2306,6 +2317,139 @@ export const SEED_CONTENT_PACKS: ContentPack[] = [
       npcs: 0,
       locations: 0
     }
+  },
+  {
+    id: 'pack-desert-template',
+    ownerId: 'user-dm',
+    name: 'قالب ماجراجویی کویر خاموش',
+    description: 'قالب آماده کمپین ماجراجویی در بیابان و دخمه‌های کهن با تنظیمات بقا، قوانین خستگی، چند مکان کویری، هیولاهای سرگردان و سند جلسه صفر.',
+    version: '1.0.0',
+    visibility: 'instance',
+    kind: 'campaign_template',
+    tags: ['کویر', 'بقا', 'قالب', 'دخمه'],
+    isDefaultLibrary: false,
+    createdAt: Date.now() - 15 * 86400000,
+    updatedAt: Date.now() - 86400000,
+    entityCounts: {
+      classes: 1,
+      weapons: 2,
+      items: 3,
+      npcs: 3,
+      locations: 2,
+      encounters: 1,
+      factions: 1
+    }
+  }
+];
+
+export const SEED_GENERIC_CALENDAR: GenericCalendarData = {
+  id: 'cal-zorvania',
+  name: 'گاه‌شمار شاه‌روزان (زروانیا)',
+  eraLabel: 'پ.ر.ن (پس از روز نخست)',
+  startYear: 1500,
+  months: [
+    { name: 'فرورداد', days: 30, season: 'بهار' },
+    { name: 'اردی‌مهر', days: 30, season: 'بهار' },
+    { name: 'خورداد', days: 30, season: 'بهار' },
+    { name: 'تیرآذر', days: 30, season: 'تابستان' },
+    { name: 'امرداد', days: 30, season: 'تابستان' },
+    { name: 'شهریور', days: 30, season: 'تابستان' },
+    { name: 'مهرآیین', days: 30, season: 'پاییز' },
+    { name: 'آبان‌داد', days: 30, season: 'پاییز' },
+    { name: 'آذرپژواک', days: 30, season: 'پاییز' },
+    { name: 'دی‌مهر', days: 30, season: 'زمستان' },
+    { name: 'بهمن‌یار', days: 30, season: 'زمستان' },
+    { name: 'اسفندارمذ', days: 30, season: 'زمستان' }
+  ],
+  festivals: [
+    { monthIndex: 1, day: 1, name: 'جشن روز نخست (نوروز کهن)', note: 'آغاز تقویم و برافروختن اخگر' },
+    { monthIndex: 7, day: 16, name: 'مهرگان زروانیا', note: 'پیمان میان قبایل' },
+    { monthIndex: 9, day: 9, name: 'جشن آذرخش', note: 'پالایش آتشکده‌ها' }
+  ],
+  offDays: [
+    { name: 'گاه اول: اهنود', note: 'روز اول بیرون از تقویم - سکوت میان زمان‌ها' },
+    { name: 'گاه دوم: اشتود', note: 'روز دوم بیرون از تقویم - یادبود دیوان نیک‌نهاد' },
+    { name: 'گاه سوم: سپنتمد', note: 'روز سوم بیرون از تقویم - نذر آب و ریشه' },
+    { name: 'گاه چهارم: وهوخشتر', note: 'روز چهارم بیرون از تقویم - درخشش آسمان سرخ' },
+    { name: 'گاه پنجم: وهیشتوآیشت', note: 'روز پنجم بیرون از تقویم - باززایی زمان' }
+  ],
+  weekdays: ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'],
+  tags: ['زروانیا', 'گاه‌شمار', 'شاه‌روزان']
+};
+
+export const SEED_FACTIONS: Faction[] = [
+  {
+    id: 'fac-azarin',
+    scopeType: 'campaign',
+    scopeId: 'zorvania-c1',
+    name: 'موبدان آذرین',
+    description: 'پاسداران شعله ابدی و راویان اسناد کهن کویر خاموش.',
+    attitude: 'متحد',
+    region: 'کویر خاموش',
+    revealed: true,
+    dmNotes: 'موبدان نقشه برج نگهبانی را در کتیبه‌های زیر آتشکده حفظ کرده‌اند.',
+    tags: ['مذهب', 'آتش', 'اسناد'],
+    sourceId: null,
+    sourceMode: 'copy',
+    createdAt: Date.now() - 30 * 86400000,
+    updatedAt: Date.now() - 100000
+  },
+  {
+    id: 'fac-kandavaran',
+    scopeType: 'campaign',
+    scopeId: 'zorvania-c1',
+    name: 'انجمن کنداوران',
+    description: 'صنعتگران و معدن‌کاوان کوهپایه‌های سپیدارون که با بقایای ماشین‌های باستانی دیوان کار می‌کنند.',
+    attitude: 'بی‌طرف',
+    region: 'سپیدارون',
+    revealed: true,
+    dmNotes: 'کنداوران به دنبال کلید مخفی دخمه هستند.',
+    tags: ['صنعت', 'دیوان', 'آهنگری'],
+    sourceId: null,
+    sourceMode: 'copy',
+    createdAt: Date.now() - 30 * 86400000,
+    updatedAt: Date.now() - 100000
+  },
+  {
+    id: 'fac-fairies',
+    scopeType: 'campaign',
+    scopeId: 'zorvania-c1',
+    name: 'یاران پریان',
+    description: 'حافظان بیشه‌های بلورین ورنا و مرزهای مه‌آلود که نسبت به ورود غریبه‌ها محتاطند.',
+    attitude: 'مبهم',
+    region: 'ورنا',
+    revealed: false,
+    dmNotes: 'پریان کلید نفوذ به ساعت نخستین را در اختیار دارند.',
+    tags: ['طبیعت', 'مهستان', 'جادو'],
+    sourceId: null,
+    sourceMode: 'copy',
+    createdAt: Date.now() - 30 * 86400000,
+    updatedAt: Date.now() - 100000
+  }
+];
+
+export const SEED_CAMPAIGN_DOCS: CampaignDoc[] = [
+  {
+    id: 'doc-session-zero-c1',
+    campaignId: 'zorvania-c1',
+    kind: 'session_zero',
+    title: 'سند جلسه‌ی صفر زروانیا',
+    body: '## انتظارات و پیمان بازی\n- **حال و هوای بازی:** اسطوره‌ای، پر از رمز و راز زمان، چالش‌های اخلاقی و بقا در بیابان و بیشه‌ها.\n- **زمان‌بندی:** جلسات هفتگی پنج‌شنبه‌ها عصر ساعت ۱۸:۰۰.\n- **خطوط قرمز (Lines & Veils):** آزار بی‌دلیل کودکان و حیوانات بی‌پناه، خشونت بیش از حد توصیفی.\n- **کارت X:** در هر لحظه هر بازیکنی احساس ناراحتی کرد می‌تواند بدون نیاز به توضیح، توقف بازی را درخواست کند.',
+    visibility: 'party',
+    sortIndex: 0,
+    createdAt: Date.now() - 30 * 86400000,
+    updatedAt: Date.now() - 100000
+  },
+  {
+    id: 'doc-house-rules-c1',
+    campaignId: 'zorvania-c1',
+    kind: 'house_rules',
+    title: 'قوانین اختصاصی خانه (House Rules)',
+    body: '۱. **استراحت کوتاه:** ۱ ساعت زمان درون بازی می‌برد.\n۲. **استراحت طولانی:** ۸ ساعت زمان کامل در مکانی امن.\n۳. **معجون‌های التیام:** مصرف معجون به عنوان Bonus Action امکان‌پذیر است، اما خوراندن آن به دیگری Action کامل می‌خواهد.\n۴. **پرتاب‌های نجات مرگ:** برای افزایش تعلیق و کار تیمی، پرتاب‌های نجات مرگ مخفیانه و فقط در دید دانجن مستر انجام می‌شوند.',
+    visibility: 'party',
+    sortIndex: 1,
+    createdAt: Date.now() - 30 * 86400000,
+    updatedAt: Date.now() - 100000
   }
 ];
 
