@@ -1,11 +1,55 @@
 export type Role = 'dm' | 'player';
+export type UserStatus = 'active' | 'disabled';
 
 export interface User {
   id: string;
   email: string;
   name: string;
+  displayName: string;
   role: Role;
+  status?: UserStatus;
+  mustChangePassword?: boolean;
+  createdAt?: number;
+  lastLoginAt?: number | null;
+  activeCharacterId?: string | null;
   avatarUrl?: string;
+  activeSessionCount?: number;
+  characterNames?: string[];
+}
+
+export interface UserSession {
+  id: string;
+  userId: string;
+  createdAt: number;
+  lastSeenAt: number;
+  expiresAt: number;
+  absoluteExpiresAt?: number;
+  userAgent?: string;
+  isCurrent?: boolean;
+  ipHash?: string;
+}
+
+export interface Invite {
+  id: string;
+  code?: string;
+  label?: string;
+  createdBy: string;
+  createdAt: number;
+  expiresAt: number;
+  maxUses: number;
+  usedCount: number;
+  assignCharacterId?: string | null;
+  revokedAt?: number | null;
+  inviteLink?: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  actorId?: string | null;
+  action: string;
+  targetId?: string | null;
+  meta?: any;
+  createdAt: number;
 }
 
 export type AbilityName = 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha';
@@ -181,9 +225,13 @@ export interface InventoryItem {
   weight: number;
   description: string;
   category: ItemCategory;
-  equipped: boolean;
-  isQuestItem: boolean;
+  equipped?: boolean;
+  isEquipped?: boolean;
+  isQuestItem?: boolean;
+  isQuest?: boolean;
+  isArtifact?: boolean;
   isNewBadge?: boolean;
+  isNew?: boolean;
   mechanicalEffect?: string;
   secretNotes?: string;
   whoItsFor?: string;
@@ -290,8 +338,11 @@ export interface Character {
   speed: number;
   initiativeBonus: number;
   hitDice: {
-    total: string;
-    spent: number;
+    total?: string;
+    spent?: number;
+    current?: number;
+    max?: number;
+    die?: string;
   };
   exhaustion: number; // 0 to 6
   skillPoints: number; // Zorvania mechanic
@@ -385,6 +436,7 @@ export interface NPC {
   hpFormula?: string;
   speedMeters?: number;
   speedFeet?: number;
+  region?: string;
   regionTag?: string;
   senses?: string;
   languages?: string;
@@ -445,6 +497,7 @@ export interface ItemLibraryEntry {
   secretNotes: string;
   whoItsFor: string;
   isRevealed: boolean;
+  region?: string;
   resetType?: RechargeType;
   maxUses?: number;
   weaponData?: WeaponTemplate;
@@ -523,6 +576,7 @@ export interface CampaignRule {
   category: 'resources' | 'rest' | 'vision' | 'progression';
   summary: string;
   details: string;
+  description?: string;
 }
 
 /* Zorvania In-World Calendar */

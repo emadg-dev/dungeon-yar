@@ -14,6 +14,7 @@ export interface HeaderProps {
   onSelectCharacter: (id: string) => void;
   onSwitchUser: (userId: string) => void;
   onOpenAuth: () => void;
+  onOpenAccount?: () => void;
   onLogout: () => void;
   saveStatus?: 'saved' | 'saving' | 'idle';
   isDmView?: boolean;
@@ -33,6 +34,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectCharacter,
   onSwitchUser,
   onOpenAuth,
+  onOpenAccount,
   onLogout,
   saveStatus = 'saved',
   isDmView = false,
@@ -151,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className="flex items-center gap-1.5 py-1 px-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#EDE6D8] hover:border-[#E0A030] transition touch-target"
               >
                 <span className="w-2 h-2 rounded-full bg-[#6F9E78]" />
-                <span className="truncate max-w-[80px] sm:max-w-[120px]">{currentUser.displayName}</span>
+                <span className="truncate max-w-[80px] sm:max-w-[120px]">{currentUser.displayName || currentUser.name}</span>
                 <MoreVertical className="w-3.5 h-3.5 text-[#A39A89]" />
               </button>
             </div>
@@ -183,10 +185,10 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex items-center justify-between pb-3 border-b border-[#2F2A23]">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-[8px] bg-[#E0A030] text-[#0E0D0C] font-black flex items-center justify-center">
-                    {currentUser?.displayName?.[0] || 'ز'}
+                    {(currentUser?.displayName || currentUser?.name)?.[0] || 'ز'}
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-[#EDE6D8] truncate">{currentUser?.displayName}</h3>
+                    <h3 className="text-xs font-bold text-[#EDE6D8] truncate">{currentUser?.displayName || currentUser?.name}</h3>
                     <span className="text-[10px] text-[#A39A89]">
                       نقش: {currentUser?.role === 'dm' ? 'دانجن مستر' : 'بازیکن'}
                     </span>
@@ -200,6 +202,36 @@ export const Header: React.FC<HeaderProps> = ({
                   <X className="w-5 h-5" />
                 </button>
               </div>
+
+              {/* Account Management Button */}
+              {onOpenAccount && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenAccount();
+                  }}
+                  className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex items-center justify-center gap-2 touch-target"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-[#E0A030]" />
+                  <span>مدیریت حساب کاربری و نشست‌ها</span>
+                </button>
+              )}
+
+              {/* Account Management Button */}
+              {onOpenAccount && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenAccount();
+                  }}
+                  className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex items-center justify-center gap-2 touch-target"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-[#E0A030]" />
+                  <span>مدیریت حساب کاربری و نشست‌ها</span>
+                </button>
+              )}
 
               {/* Character selection if multiple */}
               {characters.length > 0 && (
@@ -247,7 +279,7 @@ export const Header: React.FC<HeaderProps> = ({
                             : 'text-[#A39A89] hover:text-[#EDE6D8]'
                         }`}
                       >
-                        <span className="truncate">{u.displayName}</span>
+                        <span className="truncate">{u.displayName || u.name}</span>
                         <span className="text-[10px]">{u.role === 'dm' ? 'مستر' : 'بازیکن'}</span>
                       </button>
                     ))}

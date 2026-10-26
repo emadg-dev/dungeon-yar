@@ -8,6 +8,7 @@ export interface ActionMenuItem {
   icon?: LucideIcon;
   onClick: () => void;
   isDestructive?: boolean;
+  destructive?: boolean;
   disabled?: boolean;
 }
 

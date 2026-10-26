@@ -8,7 +8,7 @@ import { HPBar } from '../common/HPBar';
 
 interface DmDashboardProps {
   characters: Character[];
-  sharedNotes: CharacterNote[];
+  sharedNotes?: CharacterNote[];
   onUpdateCharacter: (char: Character) => void;
   onApplyGroupRest: (type: 'short' | 'long' | 'special') => void;
   onUpdateGroupResources: (delta: { rations?: number; lanternOil?: number }) => void;
@@ -18,7 +18,7 @@ interface DmDashboardProps {
 
 export const DmDashboard: React.FC<DmDashboardProps> = ({
   characters,
-  sharedNotes,
+  sharedNotes = [],
   onUpdateCharacter,
   onApplyGroupRest,
   onUpdateGroupResources,

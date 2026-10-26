@@ -1,5 +1,8 @@
 import {
   User,
+  UserSession,
+  Invite,
+  AuditLogEntry,
   Character,
   CharacterNote,
   NPC,
@@ -31,20 +34,50 @@ import { INITIAL_CALENDAR, advanceCalendarDays } from '../data/calendar';
 import { INITIAL_ENDING_STATE } from '../data/endings';
 import { SEED_SHANSHIN_ENCOUNTERS } from '../data/shanshin';
 
-export interface AuthResponse {
-  user: User;
-  message?: string;
+export interface AuthMeResponse {
+  user: User | null;
+  activeCharacterId: string | null;
+  mustChangePassword: boolean;
 }
 
 export interface ApiClient {
   // Auth
   login(email: string, password?: string): Promise<User>;
-  register(email: string, password?: string, name?: string, campaignCode?: string): Promise<User>;
+  register(email: string, password?: string, displayName?: string, inviteCode?: string): Promise<User>;
   logout(): Promise<void>;
-  getMe(): Promise<User | null>;
-  switchUser(userId: string): Promise<User>; // Dev switcher
-  listUsers(): Promise<User[]>;
-  updateUserRole(userId: string, role: 'dm' | 'player'): Promise<User>;
+  logoutAll(): Promise<void>;
+  getMe(): Promise<AuthMeResponse>;
+  consumeResetToken(token: string, newPassword: string): Promise<User>;
+  switchUser(userId: string): Promise<User>; // Dev switcher (Preview only)
+
+  // Account (Self)
+  updateProfile(displayName: string): Promise<User>;
+  changePassword(currentPassword: string, newPassword: string): Promise<void>;
+  changeEmail(currentPassword: string, newEmail: string): Promise<User>;
+  listSessions(): Promise<UserSession[]>;
+  revokeSession(sessionId: string): Promise<void>;
+  setActiveCharacter(characterId: string | null): Promise<void>;
+  exportMyData(): Promise<any>;
+
+  // DM User Management
+  listUsers(params?: { search?: string; role?: string; status?: string }): Promise<User[]>;
+  updateUser(id: string, data: { displayName?: string; role?: 'dm' | 'player'; status?: 'active' | 'disabled' }): Promise<User>;
+  generateResetToken(userId: string): Promise<{ resetToken: string; resetLink: string; expiresAt: number }>;
+  revokeUserSessions(userId: string): Promise<void>;
+  assignCharacterToUser(userId: string, characterId: string): Promise<void>;
+  deleteUser(userId: string): Promise<void>;
+
+  // Invites (DM only)
+  createInvite(data: { label?: string; expiresInDays?: number; maxUses?: number; assignCharacterId?: string }): Promise<Invite>;
+  listInvites(): Promise<Invite[]>;
+  revokeInvite(inviteId: string): Promise<void>;
+
+  // Audit Log (DM only)
+  getAuditLog(limit?: number): Promise<AuditLogEntry[]>;
+
+  // Campaign Settings
+  getCampaignSettings(): Promise<{ allowPlayerCreateCharacter: boolean }>;
+  updateCampaignSettings(settings: { allowPlayerCreateCharacter: boolean }): Promise<{ allowPlayerCreateCharacter: boolean }>;
 
   // Characters
   listCharacters(): Promise<Character[]>;
@@ -127,7 +160,8 @@ export interface ApiClient {
 }
 
 // ----------------------------------------------------------------------
-// LocalApi Adapter (localStorage-based with full multi-user simulation)
+// LocalApi Adapter (localStorage-based preview with full simulation)
+// "Preview only — not secure"
 // ----------------------------------------------------------------------
 const STORAGE_PREFIX = 'zorvania_';
 
@@ -160,17 +194,15 @@ export class LocalApi implements ApiClient {
   }
 
   private ensureInitialized() {
-    // If users not present, seed everything
     const users = this.getItem<User[]>('users', []);
     if (!users || users.length === 0) {
       this.seedDatabase(true);
     }
 
-    // Restore active user session
     const activeUserId = this.getItem<string | null>('active_user_id', null);
     const allUsers = this.getItem<User[]>('users', SEED_USERS);
     if (activeUserId) {
-      this.currentUser = allUsers.find(u => u.id === activeUserId) || allUsers[0];
+      this.currentUser = allUsers.find(u => u.id === activeUserId && u.status !== 'disabled') || allUsers[0];
     } else {
       this.currentUser = allUsers[0]; // Default to DM
       this.setItem('active_user_id', this.currentUser.id);
@@ -192,51 +224,154 @@ export class LocalApi implements ApiClient {
     this.setItem('rewards', SEED_REWARD_PACKAGES);
     this.setItem('campaign_notes', SEED_CAMPAIGN_NOTES);
     this.setItem('encounters', SEED_ENCOUNTERS);
+    this.setItem('invites', [
+      {
+        id: 'inv-sample-1',
+        label: 'دعوت تستی بازیکن جدید',
+        code: 'zorvania-invite-test',
+        createdBy: 'user-dm',
+        createdAt: Date.now() - 3600000,
+        expiresAt: Date.now() + 30 * 86400000,
+        maxUses: 5,
+        usedCount: 1,
+        assignCharacterId: null
+      }
+    ]);
+    this.setItem('audit_log', [
+      {
+        id: 'audit-init-1',
+        actorId: 'user-dm',
+        action: 'system-seed',
+        targetId: null,
+        meta: { mode: 'preview' },
+        createdAt: Date.now()
+      }
+    ]);
+    this.setItem('campaign_settings', { allowPlayerCreateCharacter: false });
+
+    // Seed mock sessions
+    this.setItem('sessions', [
+      {
+        id: 'sess-dm-current',
+        userId: 'user-dm',
+        createdAt: Date.now() - 86400000,
+        lastSeenAt: Date.now(),
+        expiresAt: Date.now() + 14 * 86400000,
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0',
+        isCurrent: true
+      }
+    ]);
+
     this.setItem('active_user_id', SEED_USERS[0].id);
     this.currentUser = SEED_USERS[0];
 
-    return { success: true, message: 'داده‌های زروانیا با موفقیت در دیتابیس محلی بارگذاری شدند.' };
+    return { success: true, message: 'داده‌های زروانیا در دیتابیس محلی بارگذاری شدند.' };
   }
 
-  // Auth Methods
-  async login(email: string): Promise<User> {
+  // --- Auth Methods ---
+  async login(email: string, _password?: string): Promise<User> {
+    const cleanEmail = email.toLowerCase().trim();
     const users = this.getItem<User[]>('users', SEED_USERS);
-    let user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    let user = users.find(u => u.email.toLowerCase() === cleanEmail);
+
     if (!user) {
-      // Auto-register for preview if not found
+      // Auto-register for dev preview if not found
       user = {
         id: `user-${Date.now()}`,
-        email,
-        name: email.split('@')[0],
-        role: email.toLowerCase().includes('dm') ? 'dm' : 'player',
+        email: cleanEmail,
+        name: cleanEmail.split('@')[0],
+        displayName: cleanEmail.split('@')[0],
+        role: cleanEmail.includes('dm') ? 'dm' : 'player',
+        status: 'active',
+        activeCharacterId: null,
+        createdAt: Date.now(),
+        lastLoginAt: Date.now(),
         avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'
       };
       users.push(user);
       this.setItem('users', users);
     }
+
+    if (user.status === 'disabled') {
+      throw new Error('حساب کاربری شما غیرفعال شده است. لطفاً با دانجن مستر تماس بگیرید.');
+    }
+
+    user.lastLoginAt = Date.now();
+    this.setItem('users', users);
+
     this.currentUser = user;
     this.setItem('active_user_id', user.id);
+
+    // Add session
+    const sessions = this.getItem<UserSession[]>('sessions', []);
+    sessions.push({
+      id: `sess-${Date.now()}`,
+      userId: user.id,
+      createdAt: Date.now(),
+      lastSeenAt: Date.now(),
+      expiresAt: Date.now() + 14 * 86400000,
+      userAgent: navigator.userAgent || 'Web Browser',
+      isCurrent: true
+    });
+    this.setItem('sessions', sessions);
+
     return user;
   }
 
-  async register(email: string, _password?: string, name?: string, _campaignCode?: string): Promise<User> {
+  async register(email: string, _password?: string, displayName?: string, inviteCode?: string): Promise<User> {
+    const cleanEmail = email.toLowerCase().trim();
     const users = this.getItem<User[]>('users', SEED_USERS);
-    const exists = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const exists = users.find(u => u.email.toLowerCase() === cleanEmail);
     if (exists) {
+      if (exists.status === 'disabled') {
+        throw new Error('این حساب کاربری غیرفعال شده است.');
+      }
       this.currentUser = exists;
       this.setItem('active_user_id', exists.id);
       return exists;
     }
 
+    let assignedCharId: string | null = null;
+    const isDm = cleanEmail.includes('dm');
+
+    // Invite verification in LocalApi
+    if (!isDm) {
+      const invites = this.getItem<Invite[]>('invites', []);
+      if (inviteCode) {
+        const inv = invites.find(i => i.code === inviteCode || i.id === inviteCode);
+        if (inv) {
+          inv.usedCount = (inv.usedCount || 0) + 1;
+          assignedCharId = inv.assignCharacterId || null;
+          this.setItem('invites', invites);
+        }
+      }
+    }
+
     const newUser: User = {
       id: `user-${Date.now()}`,
-      email,
-      name: name || email.split('@')[0],
-      role: email.toLowerCase().includes('dm') ? 'dm' : 'player',
+      email: cleanEmail,
+      name: displayName || cleanEmail.split('@')[0],
+      displayName: displayName || cleanEmail.split('@')[0],
+      role: isDm ? 'dm' : 'player',
+      status: 'active',
+      activeCharacterId: assignedCharId,
+      createdAt: Date.now(),
+      lastLoginAt: Date.now(),
       avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'
     };
+
     users.push(newUser);
     this.setItem('users', users);
+
+    if (assignedCharId) {
+      const chars = this.getItem<Character[]>('characters', SEED_CHARACTERS);
+      const c = chars.find(x => x.id === assignedCharId);
+      if (c) {
+        c.ownerId = newUser.id;
+        this.setItem('characters', chars);
+      }
+    }
+
     this.currentUser = newUser;
     this.setItem('active_user_id', newUser.id);
     return newUser;
@@ -247,8 +382,45 @@ export class LocalApi implements ApiClient {
     this.setItem('active_user_id', null);
   }
 
-  async getMe(): Promise<User | null> {
-    return this.currentUser;
+  async logoutAll(): Promise<void> {
+    if (this.currentUser) {
+      const sessions = this.getItem<UserSession[]>('sessions', []);
+      const filtered = sessions.filter(s => s.userId !== this.currentUser!.id);
+      this.setItem('sessions', filtered);
+    }
+    this.currentUser = null;
+    this.setItem('active_user_id', null);
+  }
+
+  async getMe(): Promise<AuthMeResponse> {
+    if (!this.currentUser) {
+      return { user: null, activeCharacterId: null, mustChangePassword: false };
+    }
+    // Refresh user from store
+    const users = this.getItem<User[]>('users', SEED_USERS);
+    const fresh = users.find(u => u.id === this.currentUser!.id);
+    if (!fresh || fresh.status === 'disabled') {
+      this.currentUser = null;
+      this.setItem('active_user_id', null);
+      return { user: null, activeCharacterId: null, mustChangePassword: false };
+    }
+    this.currentUser = fresh;
+    return {
+      user: fresh,
+      activeCharacterId: fresh.activeCharacterId || null,
+      mustChangePassword: !!fresh.mustChangePassword
+    };
+  }
+
+  async consumeResetToken(_token: string, _newPassword: string): Promise<User> {
+    // In preview mode, pick target user or first player
+    const users = this.getItem<User[]>('users', SEED_USERS);
+    const user = this.currentUser || users[1];
+    user.mustChangePassword = false;
+    this.setItem('users', users);
+    this.currentUser = user;
+    this.setItem('active_user_id', user.id);
+    return user;
   }
 
   async switchUser(userId: string): Promise<User> {
@@ -260,30 +432,248 @@ export class LocalApi implements ApiClient {
     return target;
   }
 
-  async listUsers(): Promise<User[]> {
-    return this.getItem<User[]>('users', SEED_USERS);
+  // --- Account (Self) ---
+  async updateProfile(displayName: string): Promise<User> {
+    if (!this.currentUser) throw new Error('وارد سیستم نشده‌اید.');
+    const users = this.getItem<User[]>('users', SEED_USERS);
+    const user = users.find(u => u.id === this.currentUser!.id);
+    if (!user) throw new Error('کاربر یافت نشد.');
+    user.displayName = displayName;
+    user.name = displayName;
+    this.setItem('users', users);
+    this.currentUser = user;
+    return user;
   }
 
-  async updateUserRole(userId: string, role: 'dm' | 'player'): Promise<User> {
+  async changePassword(_current: string, _next: string): Promise<void> {
+    if (!this.currentUser) throw new Error('وارد سیستم نشده‌اید.');
     const users = this.getItem<User[]>('users', SEED_USERS);
-    const user = users.find(u => u.id === userId);
+    const user = users.find(u => u.id === this.currentUser!.id);
+    if (user) {
+      user.mustChangePassword = false;
+      this.setItem('users', users);
+    }
+  }
+
+  async changeEmail(_current: string, newEmail: string): Promise<User> {
+    if (!this.currentUser) throw new Error('وارد سیستم نشده‌اید.');
+    const users = this.getItem<User[]>('users', SEED_USERS);
+    const user = users.find(u => u.id === this.currentUser!.id);
     if (!user) throw new Error('کاربر یافت نشد.');
-    user.role = role;
+    user.email = newEmail.toLowerCase().trim();
     this.setItem('users', users);
-    if (this.currentUser?.id === userId) {
-      this.currentUser.role = role;
+    this.currentUser = user;
+    return user;
+  }
+
+  async listSessions(): Promise<UserSession[]> {
+    if (!this.currentUser) return [];
+    const sessions = this.getItem<UserSession[]>('sessions', []);
+    return sessions.filter(s => s.userId === this.currentUser!.id).map((s, idx) => ({
+      ...s,
+      isCurrent: idx === 0
+    }));
+  }
+
+  async revokeSession(sessionId: string): Promise<void> {
+    const sessions = this.getItem<UserSession[]>('sessions', []);
+    this.setItem('sessions', sessions.filter(s => s.id !== sessionId));
+  }
+
+  async setActiveCharacter(characterId: string | null): Promise<void> {
+    if (!this.currentUser) throw new Error('وارد سیستم نشده‌اید.');
+    const users = this.getItem<User[]>('users', SEED_USERS);
+    const user = users.find(u => u.id === this.currentUser!.id);
+    if (user) {
+      user.activeCharacterId = characterId;
+      this.setItem('users', users);
+      this.currentUser.activeCharacterId = characterId;
+    }
+  }
+
+  async exportMyData(): Promise<any> {
+    if (!this.currentUser) throw new Error('وارد سیستم نشده‌اید.');
+    const chars = await this.listCharacters();
+    const notes = await this.listNotes();
+    return {
+      user: this.currentUser,
+      characters: chars,
+      notes: notes,
+      exportedAt: new Date().toISOString()
+    };
+  }
+
+  // --- DM User Management ---
+  async listUsers(params?: { search?: string; role?: string; status?: string }): Promise<User[]> {
+    if (this.currentUser?.role !== 'dm') {
+      throw new Error('دسترسی فقط برای دانجن مستر مجاز است.');
+    }
+    let users = this.getItem<User[]>('users', SEED_USERS);
+    const chars = this.getItem<Character[]>('characters', SEED_CHARACTERS);
+
+    if (params?.role) {
+      users = users.filter(u => u.role === params.role);
+    }
+    if (params?.status) {
+      users = users.filter(u => (u.status || 'active') === params.status);
+    }
+    if (params?.search) {
+      const q = params.search.toLowerCase();
+      users = users.filter(u => u.displayName.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+    }
+
+    return users.map(u => ({
+      ...u,
+      characterNames: chars.filter(c => c.ownerId === u.id).map(c => c.name),
+      activeSessionCount: 1
+    }));
+  }
+
+  async updateUser(id: string, data: { displayName?: string; role?: 'dm' | 'player'; status?: 'active' | 'disabled' }): Promise<User> {
+    if (this.currentUser?.role !== 'dm') throw new Error('دسترسی مجاز نیست.');
+    const users = this.getItem<User[]>('users', SEED_USERS);
+    const user = users.find(u => u.id === id);
+    if (!user) throw new Error('کاربر یافت نشد.');
+
+    // Protect main DM
+    if (user.email === 'dm@zorvania.ir' && (data.role === 'player' || data.status === 'disabled')) {
+      throw new Error('امکان تغییر نقش یا غیرفعال‌سازی دانجن مستر اصلی وجود ندارد.');
+    }
+
+    if (data.displayName) {
+      user.displayName = data.displayName;
+      user.name = data.displayName;
+    }
+    if (data.role) user.role = data.role;
+    if (data.status) user.status = data.status;
+
+    this.setItem('users', users);
+    if (this.currentUser.id === id) {
+      this.currentUser = user;
     }
     return user;
   }
 
-  // Characters
+  async generateResetToken(userId: string): Promise<{ resetToken: string; resetLink: string; expiresAt: number }> {
+    if (this.currentUser?.role !== 'dm') throw new Error('دسترسی مجاز نیست.');
+    const token = `preview-reset-${Date.now()}`;
+    const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    return {
+      resetToken: token,
+      resetLink: `${origin}/#reset-password?token=${token}`,
+      expiresAt
+    };
+  }
+
+  async revokeUserSessions(userId: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('دسترسی مجاز نیست.');
+    const sessions = this.getItem<UserSession[]>('sessions', []);
+    this.setItem('sessions', sessions.filter(s => s.userId !== userId));
+  }
+
+  async assignCharacterToUser(userId: string, characterId: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('دسترسی مجاز نیست.');
+    const chars = this.getItem<Character[]>('characters', SEED_CHARACTERS);
+    const c = chars.find(x => x.id === characterId);
+    if (c) {
+      c.ownerId = userId;
+      this.setItem('characters', chars);
+    }
+    const users = this.getItem<User[]>('users', SEED_USERS);
+    const u = users.find(x => x.id === userId);
+    if (u && !u.activeCharacterId) {
+      u.activeCharacterId = characterId;
+      this.setItem('users', users);
+    }
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('دسترسی مجاز نیست.');
+    if (this.currentUser.id === userId) throw new Error('نمی‌توانید حساب خود را حذف کنید.');
+
+    const users = this.getItem<User[]>('users', SEED_USERS);
+    const target = users.find(u => u.id === userId);
+    if (!target) throw new Error('کاربر یافت نشد.');
+    if (target.email === 'dm@zorvania.ir') throw new Error('امکان حذف دانجن مستر اصلی وجود ندارد.');
+
+    // Soft delete / disable
+    target.status = 'disabled';
+    this.setItem('users', users);
+
+    // Unassign characters
+    const chars = this.getItem<Character[]>('characters', SEED_CHARACTERS);
+    chars.forEach(c => {
+      if (c.ownerId === userId) c.ownerId = '';
+    });
+    this.setItem('characters', chars);
+  }
+
+  // --- Invites ---
+  async createInvite(data: { label?: string; expiresInDays?: number; maxUses?: number; assignCharacterId?: string }): Promise<Invite> {
+    if (this.currentUser?.role !== 'dm') throw new Error('دسترسی مجاز نیست.');
+    const code = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 6);
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const newInv: Invite = {
+      id: `inv-${Date.now()}`,
+      label: data.label || 'دعوت جدید',
+      code,
+      createdBy: this.currentUser.id,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + (data.expiresInDays || 30) * 86400000,
+      maxUses: data.maxUses || 1,
+      usedCount: 0,
+      assignCharacterId: data.assignCharacterId || null,
+      inviteLink: `${origin}/#register?code=${code}`
+    };
+
+    const invites = this.getItem<Invite[]>('invites', []);
+    invites.unshift(newInv);
+    this.setItem('invites', invites);
+    return newInv;
+  }
+
+  async listInvites(): Promise<Invite[]> {
+    if (this.currentUser?.role !== 'dm') throw new Error('دسترسی مجاز نیست.');
+    return this.getItem<Invite[]>('invites', []);
+  }
+
+  async revokeInvite(inviteId: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('دسترسی مجاز نیست.');
+    const invites = this.getItem<Invite[]>('invites', []);
+    const inv = invites.find(i => i.id === inviteId);
+    if (inv) {
+      inv.revokedAt = Date.now();
+      this.setItem('invites', invites);
+    }
+  }
+
+  // --- Audit Log ---
+  async getAuditLog(limit = 100): Promise<AuditLogEntry[]> {
+    if (this.currentUser?.role !== 'dm') throw new Error('دسترسی مجاز نیست.');
+    const log = this.getItem<AuditLogEntry[]>('audit_log', []);
+    return log.slice(0, limit);
+  }
+
+  // --- Campaign Settings ---
+  async getCampaignSettings(): Promise<{ allowPlayerCreateCharacter: boolean }> {
+    return this.getItem<{ allowPlayerCreateCharacter: boolean }>('campaign_settings', { allowPlayerCreateCharacter: false });
+  }
+
+  async updateCampaignSettings(settings: { allowPlayerCreateCharacter: boolean }): Promise<{ allowPlayerCreateCharacter: boolean }> {
+    if (this.currentUser?.role !== 'dm') throw new Error('دسترسی مجاز نیست.');
+    this.setItem('campaign_settings', settings);
+    return settings;
+  }
+
+  // --- Characters ---
   async listCharacters(): Promise<Character[]> {
     const all = this.getItem<Character[]>('characters', SEED_CHARACTERS);
     if (!this.currentUser) return [];
     if (this.currentUser.role === 'dm') {
       return all;
     }
-    // Player: their characters
+    // Player sees only their owned characters
     return all.filter(c => c.ownerId === this.currentUser!.id);
   }
 
@@ -294,6 +684,7 @@ export class LocalApi implements ApiClient {
     if (this.currentUser?.role === 'dm' || char.ownerId === this.currentUser?.id) {
       return char;
     }
+    // Return null (404) for resources player may not know exist
     return null;
   }
 
@@ -301,7 +692,7 @@ export class LocalApi implements ApiClient {
     const all = this.getItem<Character[]>('characters', SEED_CHARACTERS);
     const newChar: Character = {
       id: `char-${Date.now()}`,
-      ownerId: this.currentUser?.id || 'user-player1',
+      ownerId: this.currentUser?.id || '',
       name: charData.name || 'شخصیت نو',
       race: charData.race || 'انسان‌های سرگردان',
       className: charData.className || 'شوالیه‌ی خاکستر',
@@ -335,6 +726,11 @@ export class LocalApi implements ApiClient {
     };
     all.push(newChar);
     this.setItem('characters', all);
+
+    if (this.currentUser && !this.currentUser.activeCharacterId) {
+      await this.setActiveCharacter(newChar.id);
+    }
+
     return newChar;
   }
 
@@ -342,6 +738,11 @@ export class LocalApi implements ApiClient {
     const all = this.getItem<Character[]>('characters', SEED_CHARACTERS);
     const index = all.findIndex(c => c.id === char.id);
     if (index === -1) throw new Error('شخصیت یافت نشد.');
+
+    // 404 for unowned characters
+    if (this.currentUser?.role !== 'dm' && all[index].ownerId !== this.currentUser?.id) {
+      throw new Error('شخصیت یافت نشد.');
+    }
 
     const existing = all[index];
     const newRevision = Math.max(existing.revision || 1, char.revision || 1) + 1;
@@ -358,6 +759,10 @@ export class LocalApi implements ApiClient {
 
   async deleteCharacter(id: string): Promise<void> {
     const all = this.getItem<Character[]>('characters', SEED_CHARACTERS);
+    const char = all.find(c => c.id === id);
+    if (!char || (this.currentUser?.role !== 'dm' && char.ownerId !== this.currentUser?.id)) {
+      throw new Error('شخصیت یافت نشد.');
+    }
     const filtered = all.filter(c => c.id !== id);
     this.setItem('characters', filtered);
   }
@@ -386,7 +791,6 @@ export class LocalApi implements ApiClient {
         hp.temp = 0;
         if (exhaustion > 0) exhaustion -= 1;
       } else if (type === 'special') {
-        // Fairy camp rest (شهد بهار)
         hp.current = Math.min(hp.max, hp.current + Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1 + 2);
         if (exhaustion > 0) exhaustion -= 1;
       }
@@ -427,7 +831,7 @@ export class LocalApi implements ApiClient {
     return updated;
   }
 
-  // Notes
+  // --- Notes ---
   async listNotes(characterId?: string): Promise<CharacterNote[]> {
     const all = this.getItem<CharacterNote[]>('notes', SEED_CHARACTER_NOTES);
     if (!this.currentUser) return [];
@@ -435,6 +839,8 @@ export class LocalApi implements ApiClient {
     let filtered = all;
     if (this.currentUser.role !== 'dm') {
       filtered = filtered.filter(n => n.ownerId === this.currentUser!.id);
+    } else {
+      filtered = filtered.filter(n => n.sharedWithDm || n.ownerId === this.currentUser!.id);
     }
     if (characterId) {
       filtered = filtered.filter(n => n.characterId === characterId);
@@ -444,7 +850,12 @@ export class LocalApi implements ApiClient {
 
   async getNote(id: string): Promise<CharacterNote | null> {
     const all = this.getItem<CharacterNote[]>('notes', SEED_CHARACTER_NOTES);
-    return all.find(n => n.id === id) || null;
+    const note = all.find(n => n.id === id);
+    if (!note) return null;
+    if (this.currentUser?.role === 'dm' || note.ownerId === this.currentUser?.id) {
+      return note;
+    }
+    return null;
   }
 
   async createNote(noteData: Omit<CharacterNote, 'id' | 'updatedAt'>): Promise<CharacterNote> {
@@ -463,6 +874,9 @@ export class LocalApi implements ApiClient {
     const all = this.getItem<CharacterNote[]>('notes', SEED_CHARACTER_NOTES);
     const index = all.findIndex(n => n.id === note.id);
     if (index === -1) throw new Error('یادداشت یافت نشد.');
+    if (this.currentUser?.role !== 'dm' && all[index].ownerId !== this.currentUser?.id) {
+      throw new Error('یادداشت یافت نشد.');
+    }
     const updated = { ...note, updatedAt: new Date().toISOString() };
     all[index] = updated;
     this.setItem('notes', all);
@@ -471,16 +885,17 @@ export class LocalApi implements ApiClient {
 
   async deleteNote(id: string): Promise<void> {
     const all = this.getItem<CharacterNote[]>('notes', SEED_CHARACTER_NOTES);
-    this.setItem('notes', all.filter(n => n.id !== id));
+    const n = all.find(x => x.id === id);
+    if (!n || (this.currentUser?.role !== 'dm' && n.ownerId !== this.currentUser?.id)) {
+      throw new Error('یادداشت یافت نشد.');
+    }
+    this.setItem('notes', all.filter(item => item.id !== id));
   }
 
-  // NPCs
+  // --- NPCs (revealed check) ---
   async listNpcs(): Promise<NPC[]> {
     const all = this.getItem<NPC[]>('npcs', SEED_NPCS);
-    if (this.currentUser?.role === 'dm') {
-      return all;
-    }
-    // Player only gets revealed NPCs
+    if (this.currentUser?.role === 'dm') return all;
     return all.filter(npc => npc.isRevealed);
   }
 
@@ -490,6 +905,7 @@ export class LocalApi implements ApiClient {
   }
 
   async createNpc(npcData: Omit<NPC, 'id' | 'updatedAt'>): Promise<NPC> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<NPC[]>('npcs', SEED_NPCS);
     const newNpc: NPC = {
       ...npcData,
@@ -502,9 +918,10 @@ export class LocalApi implements ApiClient {
   }
 
   async updateNpc(npc: NPC): Promise<NPC> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<NPC[]>('npcs', SEED_NPCS);
     const index = all.findIndex(n => n.id === npc.id);
-    if (index === -1) throw new Error('شخصیت غیربازیکن یافت نشد.');
+    if (index === -1) throw new Error('یافت نشد.');
     const updated = { ...npc, updatedAt: new Date().toISOString() };
     all[index] = updated;
     this.setItem('npcs', all);
@@ -512,20 +929,20 @@ export class LocalApi implements ApiClient {
   }
 
   async deleteNpc(id: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<NPC[]>('npcs', SEED_NPCS);
     this.setItem('npcs', all.filter(n => n.id !== id));
   }
 
-  // Items
+  // --- Items (revealed check) ---
   async listItems(): Promise<ItemLibraryEntry[]> {
     const all = this.getItem<ItemLibraryEntry[]>('items', SEED_ITEM_LIBRARY);
-    if (this.currentUser?.role === 'dm') {
-      return all;
-    }
+    if (this.currentUser?.role === 'dm') return all;
     return all.filter(item => item.isRevealed);
   }
 
   async createItem(itemData: Omit<ItemLibraryEntry, 'id' | 'updatedAt'>): Promise<ItemLibraryEntry> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<ItemLibraryEntry[]>('items', SEED_ITEM_LIBRARY);
     const newItem: ItemLibraryEntry = {
       ...itemData,
@@ -538,6 +955,7 @@ export class LocalApi implements ApiClient {
   }
 
   async updateItem(item: ItemLibraryEntry): Promise<ItemLibraryEntry> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<ItemLibraryEntry[]>('items', SEED_ITEM_LIBRARY);
     const index = all.findIndex(i => i.id === item.id);
     if (index === -1) throw new Error('آیتم یافت نشد.');
@@ -548,11 +966,13 @@ export class LocalApi implements ApiClient {
   }
 
   async deleteItem(id: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<ItemLibraryEntry[]>('items', SEED_ITEM_LIBRARY);
     this.setItem('items', all.filter(i => i.id !== id));
   }
 
   async giveItemToPlayer(characterId: string, item: ItemLibraryEntry): Promise<Character> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const characters = this.getItem<Character[]>('characters', SEED_CHARACTERS);
     const char = characters.find(c => c.id === characterId);
     if (!char) throw new Error('کاراکتر مورد نظر یافت نشد.');
@@ -574,7 +994,6 @@ export class LocalApi implements ApiClient {
 
     char.inventory = [invItem, ...(char.inventory || [])];
 
-    // If it's a weapon or has weaponData, also automatically create a corresponding Weapon on the Combat tab!
     if (item.category === 'weapon' || item.weaponData) {
       const wData = item.weaponData;
       const newWeapon: Weapon = {
@@ -604,12 +1023,13 @@ export class LocalApi implements ApiClient {
     return char;
   }
 
-  // Templates
+  // --- Templates ---
   async listWeaponTemplates(): Promise<WeaponTemplate[]> {
     return this.getItem<WeaponTemplate[]>('weapon_templates', SEED_WEAPON_TEMPLATES);
   }
 
   async createWeaponTemplate(tmplData: Omit<WeaponTemplate, 'id'>): Promise<WeaponTemplate> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<WeaponTemplate[]>('weapon_templates', SEED_WEAPON_TEMPLATES);
     const newTmpl: WeaponTemplate = { ...tmplData, id: `wpn-tmpl-${Date.now()}` };
     all.push(newTmpl);
@@ -618,6 +1038,7 @@ export class LocalApi implements ApiClient {
   }
 
   async updateWeaponTemplate(tmpl: WeaponTemplate): Promise<WeaponTemplate> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<WeaponTemplate[]>('weapon_templates', SEED_WEAPON_TEMPLATES);
     const idx = all.findIndex(w => w.id === tmpl.id);
     if (idx === -1) throw new Error('الگوی سلاح یافت نشد.');
@@ -627,6 +1048,7 @@ export class LocalApi implements ApiClient {
   }
 
   async deleteWeaponTemplate(id: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<WeaponTemplate[]>('weapon_templates', SEED_WEAPON_TEMPLATES);
     this.setItem('weapon_templates', all.filter(w => w.id !== id));
   }
@@ -636,6 +1058,7 @@ export class LocalApi implements ApiClient {
   }
 
   async createClassTemplate(tmplData: Omit<ClassTemplate, 'id' | 'updatedAt'>): Promise<ClassTemplate> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<ClassTemplate[]>('class_templates', SEED_CLASS_TEMPLATES);
     const newClass: ClassTemplate = {
       ...tmplData,
@@ -648,6 +1071,7 @@ export class LocalApi implements ApiClient {
   }
 
   async updateClassTemplate(tmpl: ClassTemplate): Promise<ClassTemplate> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<ClassTemplate[]>('class_templates', SEED_CLASS_TEMPLATES);
     const idx = all.findIndex(c => c.id === tmpl.id);
     if (idx === -1) throw new Error('الگوی کلاس یافت نشد.');
@@ -657,16 +1081,18 @@ export class LocalApi implements ApiClient {
   }
 
   async deleteClassTemplate(id: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<ClassTemplate[]>('class_templates', SEED_CLASS_TEMPLATES);
     this.setItem('class_templates', all.filter(c => c.id !== id));
   }
 
-  // Rewards
+  // --- Rewards ---
   async listRewards(): Promise<RewardPackage[]> {
     return this.getItem<RewardPackage[]>('rewards', SEED_REWARD_PACKAGES);
   }
 
   async createReward(rewardData: Omit<RewardPackage, 'id' | 'createdAt'>): Promise<RewardPackage> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<RewardPackage[]>('rewards', SEED_REWARD_PACKAGES);
     const newRew: RewardPackage = {
       ...rewardData,
@@ -679,6 +1105,7 @@ export class LocalApi implements ApiClient {
   }
 
   async distributeReward(rewardId: string, characterIds: string[]): Promise<Character[]> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const rewards = this.getItem<RewardPackage[]>('rewards', SEED_REWARD_PACKAGES);
     const rew = rewards.find(r => r.id === rewardId);
     if (!rew) throw new Error('بسته پاداش یافت نشد.');
@@ -713,13 +1140,14 @@ export class LocalApi implements ApiClient {
     return updated;
   }
 
-  // Campaign Notes
+  // --- Campaign Notes (DM only) ---
   async listCampaignNotes(): Promise<CampaignNote[]> {
     if (this.currentUser?.role !== 'dm') return [];
     return this.getItem<CampaignNote[]>('campaign_notes', SEED_CAMPAIGN_NOTES);
   }
 
   async createCampaignNote(noteData: Omit<CampaignNote, 'id' | 'updatedAt'>): Promise<CampaignNote> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<CampaignNote[]>('campaign_notes', SEED_CAMPAIGN_NOTES);
     const newNote: CampaignNote = {
       ...noteData,
@@ -732,6 +1160,7 @@ export class LocalApi implements ApiClient {
   }
 
   async updateCampaignNote(note: CampaignNote): Promise<CampaignNote> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<CampaignNote[]>('campaign_notes', SEED_CAMPAIGN_NOTES);
     const idx = all.findIndex(c => c.id === note.id);
     if (idx === -1) throw new Error('یادداشت کمپین یافت نشد.');
@@ -741,21 +1170,25 @@ export class LocalApi implements ApiClient {
   }
 
   async deleteCampaignNote(id: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<CampaignNote[]>('campaign_notes', SEED_CAMPAIGN_NOTES);
     this.setItem('campaign_notes', all.filter(c => c.id !== id));
   }
 
-  // Encounters
+  // --- Encounters (DM only) ---
   async listEncounters(): Promise<Encounter[]> {
+    if (this.currentUser?.role !== 'dm') return [];
     return this.getItem<Encounter[]>('encounters', SEED_ENCOUNTERS);
   }
 
   async getEncounter(id: string): Promise<Encounter | null> {
+    if (this.currentUser?.role !== 'dm') return null;
     const all = this.getItem<Encounter[]>('encounters', SEED_ENCOUNTERS);
     return all.find(e => e.id === id) || null;
   }
 
   async createEncounter(encData: Omit<Encounter, 'id' | 'updatedAt'>): Promise<Encounter> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<Encounter[]>('encounters', SEED_ENCOUNTERS);
     const newEnc: Encounter = {
       ...encData,
@@ -768,6 +1201,7 @@ export class LocalApi implements ApiClient {
   }
 
   async updateEncounter(enc: Encounter): Promise<Encounter> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<Encounter[]>('encounters', SEED_ENCOUNTERS);
     const idx = all.findIndex(e => e.id === enc.id);
     if (idx === -1) throw new Error('مواجهه یافت نشد.');
@@ -777,12 +1211,14 @@ export class LocalApi implements ApiClient {
   }
 
   async deleteEncounter(id: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<Encounter[]>('encounters', SEED_ENCOUNTERS);
     this.setItem('encounters', all.filter(e => e.id !== id));
   }
 
-  // Recharges & Group Management
+  // --- Recharges & Group Management ---
   async resetGroupRecharges(type: 'session' | 'season'): Promise<Character[]> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const chars = this.getItem<Character[]>('characters', SEED_CHARACTERS);
     const updated = chars.map(c => {
       const weapons = (c.weapons || []).map(w => {
@@ -816,12 +1252,13 @@ export class LocalApi implements ApiClient {
     return updated;
   }
 
-  // Calendar
+  // --- Calendar ---
   async getCalendar(): Promise<WorldCalendar> {
     return this.getItem<WorldCalendar>('calendar', INITIAL_CALENDAR);
   }
 
   async updateCalendar(cal: Partial<WorldCalendar>): Promise<WorldCalendar> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const current = await this.getCalendar();
     const updated: WorldCalendar = {
       ...current,
@@ -833,18 +1270,21 @@ export class LocalApi implements ApiClient {
   }
 
   async advanceCalendar(days: number): Promise<WorldCalendar> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const current = await this.getCalendar();
     const next = advanceCalendarDays(current, days);
     this.setItem('calendar', next);
     return next;
   }
 
-  // Ending Tracker
+  // --- Ending Tracker (DM only) ---
   async getEndingState(): Promise<CampaignEndingState> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     return this.getItem<CampaignEndingState>('endings', INITIAL_ENDING_STATE);
   }
 
   async updateEndingState(state: Partial<CampaignEndingState>): Promise<CampaignEndingState> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const current = await this.getEndingState();
     const updated: CampaignEndingState = {
       ...current,
@@ -855,12 +1295,13 @@ export class LocalApi implements ApiClient {
     return updated;
   }
 
-  // Shanshin Encounters
+  // --- Shanshin Encounters ---
   async listShanshinEncounters(): Promise<ShanshinEncounter[]> {
     return this.getItem<ShanshinEncounter[]>('shanshin_encounters', SEED_SHANSHIN_ENCOUNTERS);
   }
 
   async updateShanshinEncounter(enc: ShanshinEncounter): Promise<ShanshinEncounter> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = await this.listShanshinEncounters();
     const updated = all.map(e => e.id === enc.id ? enc : e);
     this.setItem('shanshin_encounters', updated);
@@ -876,19 +1317,26 @@ export class LocalApi implements ApiClient {
 }
 
 // ----------------------------------------------------------------------
-// HttpApi Adapter (Calls REST endpoints under /api/* with credentials: 'include')
+// HttpApi Adapter (Calls REST endpoints under /api/* with CSRF header)
 // ----------------------------------------------------------------------
 export class HttpApi implements ApiClient {
   private baseUrl = '/api';
 
   private async fetchJson<T>(url: string, options: RequestInit = {}): Promise<T> {
+    const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method?.toUpperCase() || '');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options.headers as Record<string, string> || {})
+    };
+
+    if (isStateChanging) {
+      headers['X-Requested-With'] = 'zorvania';
+    }
+
     const res = await fetch(`${this.baseUrl}${url}`, {
       ...options,
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers || {})
-      }
+      headers
     });
 
     if (!res.ok) {
@@ -899,7 +1347,9 @@ export class HttpApi implements ApiClient {
       } catch {
         errText = `HTTP Error ${res.status}`;
       }
-      throw new Error(errText);
+      const err = new Error(errText);
+      (err as any).status = res.status;
+      throw err;
     }
 
     return res.json();
@@ -913,10 +1363,10 @@ export class HttpApi implements ApiClient {
     return res.user;
   }
 
-  async register(email: string, password?: string, name?: string, campaignCode?: string): Promise<User> {
+  async register(email: string, password?: string, displayName?: string, inviteCode?: string): Promise<User> {
     const res = await this.fetchJson<{ user: User }>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password, name, campaignCode })
+      body: JSON.stringify({ email, password, displayName, inviteCode })
     });
     return res.user;
   }
@@ -925,35 +1375,150 @@ export class HttpApi implements ApiClient {
     await this.fetchJson('/auth/logout', { method: 'POST' });
   }
 
-  async getMe(): Promise<User | null> {
+  async logoutAll(): Promise<void> {
+    await this.fetchJson('/auth/logout-all', { method: 'POST' });
+  }
+
+  async getMe(): Promise<AuthMeResponse> {
     try {
-      const res = await this.fetchJson<{ user: User }>('/auth/me');
-      return res.user;
+      return await this.fetchJson<AuthMeResponse>('/auth/me');
     } catch {
-      return null;
+      return { user: null, activeCharacterId: null, mustChangePassword: false };
     }
   }
 
-  async switchUser(userId: string): Promise<User> {
-    // In HTTP mode, dev switch can call a debug endpoint or re-login
-    const res = await this.fetchJson<{ user: User }>('/admin/switch-user', {
+  async consumeResetToken(token: string, newPassword: string): Promise<User> {
+    const res = await this.fetchJson<{ user: User }>('/auth/reset', {
       method: 'POST',
-      body: JSON.stringify({ userId })
+      body: JSON.stringify({ token, newPassword })
     });
     return res.user;
   }
 
-  async listUsers(): Promise<User[]> {
-    return this.fetchJson<User[]>('/admin/users');
+  async switchUser(userId: string): Promise<User> {
+    // In production HTTP mode, switchUser is not directly permitted without credentials
+    // We fetch user info or call preview switcher
+    return this.fetchJson<User>(`/users/${userId}`);
   }
 
-  async updateUserRole(userId: string, role: 'dm' | 'player'): Promise<User> {
-    return this.fetchJson<User>(`/admin/users/${userId}/role`, {
-      method: 'PUT',
-      body: JSON.stringify({ role })
+  // Account (Self)
+  async updateProfile(displayName: string): Promise<User> {
+    return this.fetchJson<User>('/me', {
+      method: 'PATCH',
+      body: JSON.stringify({ displayName })
     });
   }
 
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    await this.fetchJson('/me/password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+  }
+
+  async changeEmail(currentPassword: string, newEmail: string): Promise<User> {
+    return this.fetchJson<User>('/me/email', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newEmail })
+    });
+  }
+
+  async listSessions(): Promise<UserSession[]> {
+    return this.fetchJson<UserSession[]>('/me/sessions');
+  }
+
+  async revokeSession(sessionId: string): Promise<void> {
+    await this.fetchJson(`/me/sessions/${sessionId}`, { method: 'DELETE' });
+  }
+
+  async setActiveCharacter(characterId: string | null): Promise<void> {
+    await this.fetchJson('/me/active-character', {
+      method: 'PUT',
+      body: JSON.stringify({ characterId })
+    });
+  }
+
+  async exportMyData(): Promise<any> {
+    return this.fetchJson<any>('/me/export');
+  }
+
+  // DM User Management
+  async listUsers(params?: { search?: string; role?: string; status?: string }): Promise<User[]> {
+    const searchParams = new URLSearchParams();
+    if (params?.search) searchParams.set('search', params.search);
+    if (params?.role) searchParams.set('role', params.role);
+    if (params?.status) searchParams.set('status', params.status);
+    const q = searchParams.toString();
+    return this.fetchJson<User[]>(`/users${q ? `?${q}` : ''}`);
+  }
+
+  async updateUser(id: string, data: { displayName?: string; role?: 'dm' | 'player'; status?: 'active' | 'disabled' }): Promise<User> {
+    return this.fetchJson<User>(`/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async generateResetToken(userId: string): Promise<{ resetToken: string; resetLink: string; expiresAt: number }> {
+    return this.fetchJson<{ resetToken: string; resetLink: string; expiresAt: number }>(`/users/${userId}/reset-token`, {
+      method: 'POST'
+    });
+  }
+
+  async revokeUserSessions(userId: string): Promise<void> {
+    await this.fetchJson(`/users/${userId}/revoke-sessions`, { method: 'POST' });
+  }
+
+  async assignCharacterToUser(userId: string, characterId: string): Promise<void> {
+    await this.fetchJson(`/users/${userId}/assign-character`, {
+      method: 'POST',
+      body: JSON.stringify({ characterId })
+    });
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    await this.fetchJson(`/users/${userId}`, { method: 'DELETE' });
+  }
+
+  // Invites
+  async createInvite(data: { label?: string; expiresInDays?: number; maxUses?: number; assignCharacterId?: string }): Promise<Invite> {
+    const res = await this.fetchJson<{ invite: Invite }>('/invites', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+    return res.invite;
+  }
+
+  async listInvites(): Promise<Invite[]> {
+    return this.fetchJson<Invite[]>('/invites');
+  }
+
+  async revokeInvite(inviteId: string): Promise<void> {
+    await this.fetchJson(`/invites/${inviteId}`, { method: 'DELETE' });
+  }
+
+  // Audit
+  async getAuditLog(limit = 100): Promise<AuditLogEntry[]> {
+    return this.fetchJson<AuditLogEntry[]>(`/audit?limit=${limit}`);
+  }
+
+  // Campaign Settings
+  async getCampaignSettings(): Promise<{ allowPlayerCreateCharacter: boolean }> {
+    try {
+      return await this.fetchJson<{ allowPlayerCreateCharacter: boolean }>('/settings/campaign');
+    } catch {
+      return { allowPlayerCreateCharacter: false };
+    }
+  }
+
+  async updateCampaignSettings(settings: { allowPlayerCreateCharacter: boolean }): Promise<{ allowPlayerCreateCharacter: boolean }> {
+    return this.fetchJson<{ allowPlayerCreateCharacter: boolean }>('/settings/campaign', {
+      method: 'PUT',
+      body: JSON.stringify(settings)
+    });
+  }
+
+  // Characters
   async listCharacters(): Promise<Character[]> {
     return this.fetchJson<Character[]>('/characters');
   }
@@ -994,6 +1559,7 @@ export class HttpApi implements ApiClient {
     });
   }
 
+  // Notes
   async listNotes(characterId?: string): Promise<CharacterNote[]> {
     const q = characterId ? `?characterId=${characterId}` : '';
     return this.fetchJson<CharacterNote[]>(`/notes${q}`);
@@ -1021,6 +1587,7 @@ export class HttpApi implements ApiClient {
     await this.fetchJson(`/notes/${id}`, { method: 'DELETE' });
   }
 
+  // NPCs
   async listNpcs(): Promise<NPC[]> {
     return this.fetchJson<NPC[]>('/npcs');
   }
@@ -1047,6 +1614,7 @@ export class HttpApi implements ApiClient {
     await this.fetchJson(`/npcs/${id}`, { method: 'DELETE' });
   }
 
+  // Items
   async listItems(): Promise<ItemLibraryEntry[]> {
     return this.fetchJson<ItemLibraryEntry[]>('/items');
   }
@@ -1076,6 +1644,7 @@ export class HttpApi implements ApiClient {
     });
   }
 
+  // Templates
   async listWeaponTemplates(): Promise<WeaponTemplate[]> {
     return this.fetchJson<WeaponTemplate[]>('/weapon-templates');
   }
@@ -1120,6 +1689,7 @@ export class HttpApi implements ApiClient {
     await this.fetchJson(`/class-templates/${id}`, { method: 'DELETE' });
   }
 
+  // Rewards
   async listRewards(): Promise<RewardPackage[]> {
     return this.fetchJson<RewardPackage[]>('/rewards');
   }
@@ -1138,6 +1708,7 @@ export class HttpApi implements ApiClient {
     });
   }
 
+  // Campaign Notes
   async listCampaignNotes(): Promise<CampaignNote[]> {
     return this.fetchJson<CampaignNote[]>('/campaign-notes');
   }
@@ -1160,6 +1731,7 @@ export class HttpApi implements ApiClient {
     await this.fetchJson(`/campaign-notes/${id}`, { method: 'DELETE' });
   }
 
+  // Encounters
   async listEncounters(): Promise<Encounter[]> {
     return this.fetchJson<Encounter[]>('/encounters');
   }
@@ -1184,13 +1756,6 @@ export class HttpApi implements ApiClient {
 
   async deleteEncounter(id: string): Promise<void> {
     await this.fetchJson(`/encounters/${id}`, { method: 'DELETE' });
-  }
-
-  async seedDatabase(force?: boolean): Promise<{ success: boolean; message: string }> {
-    return this.fetchJson<{ success: boolean; message: string }>('/admin/seed', {
-      method: 'POST',
-      body: JSON.stringify({ force })
-    });
   }
 
   async resetGroupRecharges(type: 'session' | 'season'): Promise<Character[]> {
@@ -1243,6 +1808,13 @@ export class HttpApi implements ApiClient {
   async rollShanshinEncounter(): Promise<{ result: ShanshinEncounter; roll: number }> {
     return this.fetchJson<{ result: ShanshinEncounter; roll: number }>('/shanshin-encounters/roll', {
       method: 'POST'
+    });
+  }
+
+  async seedDatabase(force?: boolean): Promise<{ success: boolean; message: string }> {
+    return this.fetchJson<{ success: boolean; message: string }>('/admin/seed', {
+      method: 'POST',
+      body: JSON.stringify({ force })
     });
   }
 }

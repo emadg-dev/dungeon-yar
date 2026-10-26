@@ -7,10 +7,14 @@ interface ConfirmSheetProps {
   onClose: () => void;
   onConfirm: () => void;
   title: string;
-  message: string;
+  message?: string;
+  description?: string;
   confirmLabel?: string;
+  confirmText?: string;
   cancelLabel?: string;
+  cancelText?: string;
   isDestructive?: boolean;
+  destructive?: boolean;
 }
 
 export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
@@ -19,10 +23,18 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
   onConfirm,
   title,
   message,
-  confirmLabel = 'تأیید و حذف',
-  cancelLabel = 'انصراف',
-  isDestructive = true,
+  description,
+  confirmLabel,
+  confirmText,
+  cancelLabel,
+  cancelText,
+  isDestructive,
+  destructive,
 }) => {
+  const displayMessage = description || message || '';
+  const finalConfirmLabel = confirmText || confirmLabel || 'تأیید و حذف';
+  const finalCancelLabel = cancelText || cancelLabel || 'انصراف';
+  const isDanger = destructive ?? isDestructive ?? true;
   if (!isOpen) return null;
 
   return (
@@ -38,7 +50,7 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
             <AlertTriangle className="w-5 h-5 text-amber-400" />
           </div>
           <p className="text-xs sm:text-sm text-slate-300 leading-relaxed selectable-text">
-            {message}
+            {displayMessage}
           </p>
         </div>
 
@@ -50,7 +62,7 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
             onClick={onClose}
             className="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition touch-target"
           >
-            {cancelLabel}
+            {finalCancelLabel}
           </button>
 
           {/* Confirm/Destructive button on thumb side (in RTL, left is outer thumb side for right-handed or right for one-handed) */}
@@ -61,12 +73,12 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
               onClose();
             }}
             className={`py-3 px-4 rounded-xl text-xs font-black shadow-lg transition touch-target ${
-              isDestructive
+              isDanger
                 ? 'bg-gradient-to-r from-red-700 to-amber-700 hover:from-red-600 hover:to-amber-600 text-white border border-red-500/50 shadow-red-950/50'
                 : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-950/50'
             }`}
           >
-            {confirmLabel}
+            {finalConfirmLabel}
           </button>
         </div>
       </div>

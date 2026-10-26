@@ -469,50 +469,85 @@ export const SEED_USERS: User[] = [
     id: 'user-dm',
     email: 'dm@zorvania.ir',
     name: 'دانجن مستر زروانیا (راوی)',
+    displayName: 'دانجن مستر زروانیا (راوی)',
     role: 'dm',
-    avatarUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=200&q=80'
+    status: 'active',
+    activeCharacterId: null,
+    avatarUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=200&q=80',
+    createdAt: Date.now() - 30 * 86400000,
+    lastLoginAt: Date.now() - 3600000
   },
   {
     id: 'user-saman',
     email: 'saman@zorvania.ir',
     name: 'سامان (دیوانزاد)',
+    displayName: 'سامان (دیوانزاد)',
     role: 'player',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
+    status: 'active',
+    activeCharacterId: 'char-saman',
+    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+    createdAt: Date.now() - 25 * 86400000,
+    lastLoginAt: Date.now() - 7200000
   },
   {
     id: 'user-pardis',
     email: 'pardis@zorvania.ir',
     name: 'پردیس (فرهدار)',
+    displayName: 'پردیس (فرهدار)',
     role: 'player',
-    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80'
+    status: 'active',
+    activeCharacterId: 'char-pardis',
+    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80',
+    createdAt: Date.now() - 24 * 86400000,
+    lastLoginAt: Date.now() - 14400000
   },
   {
     id: 'user-shideh',
     email: 'shideh@zorvania.ir',
     name: 'شیده (سایهخوان)',
+    displayName: 'شیده (سایهخوان)',
     role: 'player',
-    avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80'
+    status: 'active',
+    activeCharacterId: 'char-shideh',
+    avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80',
+    createdAt: Date.now() - 22 * 86400000,
+    lastLoginAt: Date.now() - 28800000
   },
   {
     id: 'user-mana',
     email: 'mana@zorvania.ir',
     name: 'مانا (پیمانبان)',
+    displayName: 'مانا (پیمانبان)',
     role: 'player',
-    avatarUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80'
+    status: 'active',
+    activeCharacterId: 'char-mana',
+    avatarUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80',
+    createdAt: Date.now() - 20 * 86400000,
+    lastLoginAt: Date.now() - 43200000
   },
   {
     id: 'user-hamoun',
     email: 'hamoun@zorvania.ir',
     name: 'هامون (موبد آذرین)',
+    displayName: 'هامون (موبد آذرین)',
     role: 'player',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80'
+    status: 'active',
+    activeCharacterId: 'char-hamoun',
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+    createdAt: Date.now() - 18 * 86400000,
+    lastLoginAt: Date.now() - 86400000
   },
   {
     id: 'user-siavash',
     email: 'siavash@zorvania.ir',
     name: 'سیاوش (مهآشنا)',
+    displayName: 'سیاوش (مهآشنا)',
     role: 'player',
-    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80'
+    status: 'active',
+    activeCharacterId: 'char-siavash',
+    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
+    createdAt: Date.now() - 15 * 86400000,
+    lastLoginAt: Date.now() - 172800000
   }
 ];
 

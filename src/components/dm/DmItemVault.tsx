@@ -9,27 +9,29 @@ import {
 interface DmItemVaultProps {
   items: ItemLibraryEntry[];
   characters: Character[];
-  rewards: RewardPackage[];
+  rewards?: RewardPackage[];
   weaponTemplates: WeaponTemplate[];
   onCreateItem: (item: Omit<ItemLibraryEntry, 'id' | 'updatedAt'>) => void;
   onUpdateItem: (item: ItemLibraryEntry) => void;
   onDeleteItem: (id: string) => void;
-  onGiveItemToPlayer: (characterId: string, item: ItemLibraryEntry) => void;
-  onDistributeReward: (rewardId: string, characterIds: string[]) => void;
-  onCreateReward: (reward: Omit<RewardPackage, 'id' | 'createdAt'>) => void;
+  onGiveItem?: (characterId: string, item: ItemLibraryEntry) => void;
+  onGiveItemToPlayer?: (characterId: string, item: ItemLibraryEntry) => void;
+  onDistributeReward?: (rewardId: string, characterIds: string[]) => void;
+  onCreateReward?: (reward: Omit<RewardPackage, 'id' | 'createdAt'>) => void;
 }
 
 export const DmItemVault: React.FC<DmItemVaultProps> = ({
   items,
   characters,
-  rewards,
+  rewards = [],
   weaponTemplates,
   onCreateItem,
   onUpdateItem,
   onDeleteItem,
-  onGiveItemToPlayer,
-  onDistributeReward,
-  onCreateReward
+  onGiveItem,
+  onGiveItemToPlayer = onGiveItem || (() => {}),
+  onDistributeReward = () => {},
+  onCreateReward = () => {}
 }) => {
   const [subTab, setSubTab] = useState<'items' | 'rewards'>('items');
   const [searchQuery, setSearchQuery] = useState('');

@@ -11,6 +11,7 @@ interface DmNpcManagerProps {
   onCreateNpc: (npc: Omit<NPC, 'id' | 'updatedAt'>) => void;
   onUpdateNpc: (npc: NPC) => void;
   onDeleteNpc: (id: string) => void;
+  onRollDice?: (sides: number, count: number, modifier: number, label: string) => void;
 }
 
 export const DmNpcManager: React.FC<DmNpcManagerProps> = ({

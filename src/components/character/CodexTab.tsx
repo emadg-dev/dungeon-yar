@@ -59,7 +59,7 @@ export const CodexTab: React.FC<CodexTabProps> = ({ revealedNpcs, revealedItems 
 
   const filteredRules = SEED_RULES.filter(rule =>
     !searchQuery || rule.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    rule.description.toLowerCase().includes(searchQuery.toLowerCase())
+    (rule.description || rule.details || rule.summary || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -211,7 +211,7 @@ export const CodexTab: React.FC<CodexTabProps> = ({ revealedNpcs, revealedItems 
             <div key={rule.id} className="surface-card rounded-[14px] p-3.5 border border-[#2F2A23] card-gold-top">
               <h4 className="font-extrabold text-xs text-[#E0A030] mb-1.5">{rule.title}</h4>
               <p className="text-xs text-[#EDE6D8]/80 leading-relaxed select-text">
-                {rule.description}
+                {rule.description || rule.details || rule.summary}
               </p>
             </div>
           ))}

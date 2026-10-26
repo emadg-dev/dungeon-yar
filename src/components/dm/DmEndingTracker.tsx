@@ -1,25 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CampaignEndingState } from '../../types';
 import {
   calculateTruthCount,
   calculateAryamanState,
   calculateChaosScore,
-  evaluateEndings
+  evaluateEndings,
+  INITIAL_ENDING_STATE
 } from '../../data/endings';
+import { api } from '../../services/api';
 import { 
   Compass, Shield, AlertTriangle, Flame, Key, Sparkles, 
   CheckCircle2, Lock, Unlock, Eye, Check, RefreshCw 
 } from 'lucide-react';
 
 interface DmEndingTrackerProps {
-  state: CampaignEndingState;
-  onUpdateState: (updated: CampaignEndingState) => Promise<void>;
+  state?: CampaignEndingState;
+  onUpdateState?: (updated: CampaignEndingState) => Promise<void>;
 }
 
 export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
-  state,
-  onUpdateState,
+  state: propState,
+  onUpdateState: propOnUpdateState,
 }) => {
+  const [internalState, setInternalState] = useState<CampaignEndingState>(propState || INITIAL_ENDING_STATE);
+
+  useEffect(() => {
+    if (propState) {
+      setInternalState(propState);
+    } else {
+      api.getEndingState().then(setInternalState).catch(() => {});
+    }
+  }, [propState]);
+
+  const state = propState || internalState;
+
+  const onUpdateState = async (updated: CampaignEndingState) => {
+    if (propOnUpdateState) {
+      await propOnUpdateState(updated);
+    } else {
+      setInternalState(updated);
+      await api.updateEndingState(updated);
+    }
+  };
   const truthCount = calculateTruthCount(state.truthSources);
   const aryaman = calculateAryamanState(state.aryamanTriggers);
   const chaosScore = calculateChaosScore(state.chaos);

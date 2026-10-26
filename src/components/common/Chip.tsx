@@ -2,7 +2,7 @@ import React from 'react';
 import { LucideIcon } from 'lucide-react';
 
 interface ChipProps {
-  label: string;
+  label?: string;
   icon?: LucideIcon;
   count?: number;
   isActive?: boolean;
@@ -22,6 +22,8 @@ export const Chip: React.FC<ChipProps> = ({
   region,
   className = '',
 }) => {
+  const displayLabel = label ?? region ?? '';
+
   // Region palette mapping
   const regionStyles: Record<string, string> = {
     varna: 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/35',
@@ -36,7 +38,7 @@ export const Chip: React.FC<ChipProps> = ({
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[8px] bg-[#E0A030]/20 text-[#E0A030] border border-[#E0A030]/40 text-[11px] font-bold shrink-0">
         {Icon && <Icon className="w-3 h-3" />}
-        <span>{label}</span>
+        <span>{displayLabel}</span>
       </span>
     );
   }
@@ -45,7 +47,7 @@ export const Chip: React.FC<ChipProps> = ({
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[8px] bg-[#2F2A23] text-[#A39A89] border border-[#2F2A23] text-[11px] font-bold shrink-0">
         {Icon && <Icon className="w-3 h-3" />}
-        <span>{label}</span>
+        <span>{displayLabel}</span>
       </span>
     );
   }
@@ -56,7 +58,7 @@ export const Chip: React.FC<ChipProps> = ({
     return (
       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[8px] border text-[11px] font-bold shrink-0 ${style} ${className}`}>
         {Icon && <Icon className="w-3 h-3" />}
-        <span>{label}</span>
+        <span>{displayLabel}</span>
       </span>
     );
   }
@@ -65,7 +67,7 @@ export const Chip: React.FC<ChipProps> = ({
     return (
       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] text-[11px] font-medium shrink-0 ${className}`}>
         {Icon && <Icon className="w-3 h-3" />}
-        <span>{label}</span>
+        <span>{displayLabel}</span>
         {typeof count === 'number' && <span className="font-mono text-[10px] text-[#A39A89]">({count})</span>}
       </span>
     );
