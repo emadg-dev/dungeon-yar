@@ -42,6 +42,7 @@ const HomeScreen = React.lazy(() => import('./components/home/HomeScreen').then(
 const MasterCharacterScreen = React.lazy(() => import('./components/character/MasterCharacterScreen').then(m => ({ default: m.MasterCharacterScreen })));
 const CampaignSwitcherModal = React.lazy(() => import('./components/campaign/CampaignSwitcherModal').then(m => ({ default: m.CampaignSwitcherModal })));
 const CreateCampaignModal = React.lazy(() => import('./components/campaign/CreateCampaignModal').then(m => ({ default: m.CreateCampaignModal })));
+const CampaignWizardModal = React.lazy(() => import('./components/campaign/CampaignWizardModal').then(m => ({ default: m.CampaignWizardModal })));
 const JoinCampaignModal = React.lazy(() => import('./components/campaign/JoinCampaignModal').then(m => ({ default: m.JoinCampaignModal })));
 const CampaignSettingsModal = React.lazy(() => import('./components/campaign/CampaignSettingsModal').then(m => ({ default: m.CampaignSettingsModal })));
 const CampaignMembersModal = React.lazy(() => import('./components/campaign/CampaignMembersModal').then(m => ({ default: m.CampaignMembersModal })));
@@ -125,6 +126,7 @@ export default function App() {
   // Multi-campaign Modals
   const [campaignSwitcherOpen, setCampaignSwitcherOpen] = useState(false);
   const [createCampaignOpen, setCreateCampaignOpen] = useState(false);
+  const [wizardDraftCampaign, setWizardDraftCampaign] = useState<Campaign | null>(null);
   const [joinCampaignModal, setJoinCampaignModal] = useState<{
     isOpen: boolean;
     campaign: Campaign | null;
@@ -532,6 +534,12 @@ export default function App() {
 
   // Multi-Campaign Actions
   const handleSelectCampaign = (campaignId: string) => {
+    const draft = myCampaigns.find(c => c.id === campaignId);
+    if (draft && draft.status === 'draft') {
+      setWizardDraftCampaign(draft);
+      setCreateCampaignOpen(true);
+      return;
+    }
     window.location.hash = `#c/${campaignId}/overview`;
   };
 
@@ -651,7 +659,10 @@ export default function App() {
               pendingInvites={pendingInvites}
               pendingApprovals={pendingApprovals}
               onSelectCampaign={handleSelectCampaign}
-              onOpenCreateCampaign={() => setCreateCampaignOpen(true)}
+              onOpenCreateCampaign={() => {
+                setWizardDraftCampaign(null);
+                setCreateCampaignOpen(true);
+              }}
               onOpenCharacterMaster={(charId) => {
                 window.location.hash = `#/characters/${charId}`;
               }}
@@ -709,6 +720,13 @@ export default function App() {
                   savedEncounters={encounters}
                   users={allUsers}
                   weaponTemplates={weaponTemplates}
+                  activeCampaign={activeCampaign}
+                  currentUser={currentUser}
+                  myCampaigns={myCampaigns}
+                  onOpenSetupChecklist={() => {
+                    setWizardDraftCampaign(activeCampaign);
+                    setCreateCampaignOpen(true);
+                  }}
                   onUpdateCharacter={handleUpdateCharacter}
                   onApplyGroupRest={handleConfirmRest}
                   onUpdateGroupResources={async (delta) => {
@@ -990,12 +1008,24 @@ export default function App() {
           />
         )}
 
-        {/* Create Campaign Modal */}
+        {/* Campaign Wizard Modal (Phase 2 Wizard) */}
         {createCampaignOpen && (
-          <CreateCampaignModal
+          <CampaignWizardModal
             isOpen={createCampaignOpen}
-            onClose={() => setCreateCampaignOpen(false)}
-            onCreateCampaign={handleCreateCampaignSubmit}
+            onClose={() => {
+              setCreateCampaignOpen(false);
+              setWizardDraftCampaign(null);
+            }}
+            onLaunchSuccess={async (launched) => {
+              showToast(`کمپین «${launched.name}» با موفقیت راه‌اندازی شد!`);
+              await loadHomeData();
+              setCreateCampaignOpen(false);
+              setWizardDraftCampaign(null);
+              window.location.hash = `#c/${launched.id}/overview`;
+            }}
+            currentUser={currentUser}
+            existingDraftCampaign={wizardDraftCampaign}
+            myCampaigns={myCampaigns}
           />
         )}
 
