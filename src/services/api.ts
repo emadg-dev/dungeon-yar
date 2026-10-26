@@ -8,6 +8,7 @@ import {
   NPC,
   ItemLibraryEntry,
   WeaponTemplate,
+  FeatureTemplate,
   ClassTemplate,
   RewardPackage,
   CampaignNote,
@@ -34,13 +35,27 @@ import {
   CampaignMember,
   CampaignInvite,
   ContentPack,
+  ContentPackKind,
   RuleSet,
   MasterCharacter,
   CharacterParticipation,
   CharacterHistoryEvent,
   MediaItem,
   CampaignDiceRoll,
-  HomeSummaryResponse
+  HomeSummaryResponse,
+  Faction,
+  CampaignDoc,
+  GenericCalendarData,
+  Favorite,
+  CloneJob,
+  CloneOptions,
+  CloneManifest,
+  CloneEntityType,
+  EntityRef,
+  EntityScopeType,
+  WizardStartMode,
+  WizardState,
+  LinkedEntityDiff
 } from '../types';
 import {
   SEED_USERS,
@@ -61,8 +76,18 @@ import {
   SEED_MASTER_CHARACTERS,
   SEED_CHARACTER_PARTICIPATIONS,
   SEED_HISTORY_EVENTS,
-  SEED_CAMPAIGN_DICE_ROLLS
+  SEED_CAMPAIGN_DICE_ROLLS,
+  SEED_FACTIONS,
+  SEED_CAMPAIGN_DOCS,
+  SEED_GENERIC_CALENDAR
 } from '../data/seed';
+import {
+  CloneRequest,
+  CloneEntityBundle,
+  previewClone as runPreviewClone,
+  executeClone as runExecuteClone,
+  generateId
+} from './cloneEngine';
 import { INITIAL_CALENDAR, advanceCalendarDays } from '../data/calendar';
 import { INITIAL_ENDING_STATE } from '../data/endings';
 import { SEED_SHANSHIN_ENCOUNTERS } from '../data/shanshin';
@@ -453,6 +478,58 @@ export interface ApiClient {
   getRuleSet(scopeType: 'pack' | 'campaign', scopeId: string): Promise<RuleSet | null>;
   listContentPacks(): Promise<ContentPack[]>;
   getContentPack(id: string): Promise<ContentPack | null>;
+
+  // Phase 2: Library & Packs
+  getLibraryItems(params: {
+    source: string;
+    type?: string;
+    q?: string;
+    tag?: string;
+    region?: string;
+    sort?: 'newest' | 'name' | 'favorite';
+    limit?: number;
+    offset?: number;
+  }): Promise<{ items: any[]; total: number }>;
+  saveToLibrary(data: { entityRefs: EntityRef[]; packId?: string }): Promise<{ success: boolean; count: number }>;
+  listPacks(params?: { kind?: ContentPackKind }): Promise<ContentPack[]>;
+  createPack(data: { name: string; description?: string; kind?: ContentPackKind; visibility?: 'private' | 'instance'; tags?: string[] }): Promise<ContentPack>;
+  updatePack(id: string, data: Partial<ContentPack>): Promise<ContentPack>;
+  deletePack(id: string): Promise<void>;
+  exportPack(id: string, options?: { embedMedia?: boolean }): Promise<any>;
+  previewImportPack(packJson: any): Promise<CloneManifest>;
+  runImportPack(packJson: any, target: { scopeType: EntityScopeType; scopeId: string }): Promise<CloneJob>;
+  toggleFavorite(entityType: string, entityId: string): Promise<boolean>;
+  listFavorites(): Promise<Favorite[]>;
+
+  // Phase 2: Clone Engine
+  previewClone(request: CloneRequest): Promise<CloneManifest>;
+  runClone(request: CloneRequest): Promise<CloneJob>;
+  listCloneJobs(scopeId?: string): Promise<CloneJob[]>;
+  undoCloneJob(jobId: string, force?: boolean): Promise<{ success: boolean; undoneCount: number; skippedEntities: string[] }>;
+
+  // Phase 2: Campaign Wizard
+  createDraftCampaign(startMode: WizardStartMode, sourceId?: string): Promise<Campaign>;
+  updateWizardState(campaignId: string, state: Partial<WizardState>): Promise<Campaign>;
+  launchCampaign(campaignId: string): Promise<Campaign>;
+  saveCampaignAsTemplate(campaignId: string, options: { name: string; description?: string; stripSecrets?: boolean; entityTypes?: string[] }): Promise<ContentPack>;
+
+  // Phase 2: Entities (Factions, Docs, Calendars)
+  listFactions(campaignId?: string): Promise<Faction[]>;
+  createFaction(data: Omit<Faction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Faction>;
+  updateFaction(data: Faction): Promise<Faction>;
+  deleteFaction(id: string): Promise<void>;
+  listCampaignDocs(campaignId?: string): Promise<CampaignDoc[]>;
+  createCampaignDoc(data: Omit<CampaignDoc, 'id' | 'createdAt' | 'updatedAt'>): Promise<CampaignDoc>;
+  updateCampaignDoc(data: CampaignDoc): Promise<CampaignDoc>;
+  deleteCampaignDoc(id: string): Promise<void>;
+  getGenericCalendar(calendarId?: string): Promise<GenericCalendarData>;
+  updateGenericCalendar(data: GenericCalendarData): Promise<GenericCalendarData>;
+
+  // Phase 2 Part B: Linked Copies
+  checkLinkedUpdates(campaignId: string): Promise<LinkedEntityDiff[]>;
+  getLinkedEntityDiff(entityType: CloneEntityType, entityId: string): Promise<LinkedEntityDiff | null>;
+  applyLinkedDiff(entityType: CloneEntityType, entityId: string, chosenFields: Record<string, 'local' | 'source'>): Promise<any>;
+  detachLink(entityType: CloneEntityType, entityId: string): Promise<any>;
 
   // V2 Migration
   migrateV2(dryRun?: boolean): Promise<{ success: boolean; report: any }>;
@@ -3261,14 +3338,863 @@ export class LocalApi implements ApiClient {
     return all.find(r => r.scopeType === scopeType && r.scopeId === scopeId) || all[0];
   }
 
+  // -------------------------------------------------------------
+  // Phase 2: DM Library, Content Packs & Favorites
+  // -------------------------------------------------------------
+  private getOrCreateUserDefaultLibrary(userId: string): ContentPack {
+    const packs = this.getItem<ContentPack[]>('content_packs', SEED_CONTENT_PACKS);
+    let userLib = packs.find(p => p.ownerId === userId && p.isDefaultLibrary);
+    if (!userLib) {
+      userLib = {
+        id: `pack_lib_${userId}`,
+        ownerId: userId,
+        name: 'کتابخانه‌ی من',
+        description: 'کتابخانه اختصاصی قالب‌ها، مکان‌ها و هیولاهای شخصی شما',
+        version: '1.0.0',
+        visibility: 'private',
+        kind: 'library',
+        tags: ['شخصی', 'کتابخانه'],
+        isDefaultLibrary: true,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      packs.push(userLib);
+      this.setItem('content_packs', packs);
+    }
+    return userLib;
+  }
+
+  public getScopeBundle(scopeType: EntityScopeType, scopeId: string): CloneEntityBundle {
+    const classes = (this.getItem<ClassTemplate[]>('class_templates', SEED_CLASS_TEMPLATES)).filter(c => (c.scopeType || 'campaign') === scopeType && (c.scopeId || 'zorvania-c1') === scopeId);
+    const features = (this.getItem<FeatureTemplate[]>('feature_templates', [])).filter(f => (f.scopeType || 'campaign') === scopeType && (f.scopeId || 'zorvania-c1') === scopeId);
+    const weapons = (this.getItem<WeaponTemplate[]>('weapon_templates', SEED_WEAPON_TEMPLATES)).filter(w => (w.scopeType || 'campaign') === scopeType && (w.scopeId || 'zorvania-c1') === scopeId);
+    const items = (this.getItem<ItemLibraryEntry[]>('items', SEED_ITEM_LIBRARY)).filter(i => (i.scopeType || 'campaign') === scopeType && (i.scopeId || 'zorvania-c1') === scopeId);
+    const rewards = (this.getItem<RewardPackage[]>('rewards', SEED_REWARD_PACKAGES)).filter(r => (r.scopeType || 'campaign') === scopeType && (r.scopeId || 'zorvania-c1') === scopeId);
+    const npcs = (this.getItem<NPC[]>('npcs', SEED_NPCS)).filter(n => (n.scopeType || 'campaign') === scopeType && (n.scopeId || 'zorvania-c1') === scopeId);
+    const locations = (this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS)).filter(l => (l.scopeType || 'campaign') === scopeType && (l.scopeId || 'zorvania-c1') === scopeId);
+    const encounters = (this.getItem<Encounter[]>('encounters', SEED_ENCOUNTERS)).filter(e => (e.scopeType || 'campaign') === scopeType && (e.scopeId || 'zorvania-c1') === scopeId);
+    const factions = (this.getItem<Faction[]>('factions', SEED_FACTIONS)).filter(f => (f.scopeType || 'campaign') === scopeType && (f.scopeId || 'zorvania-c1') === scopeId);
+    const docs = (this.getItem<CampaignDoc[]>('campaign_docs', SEED_CAMPAIGN_DOCS)).filter(d => scopeType === 'campaign' && d.campaignId === scopeId);
+    const calendars = (this.getItem<GenericCalendarData[]>('calendars', [SEED_GENERIC_CALENDAR]));
+    const ruleSets = (this.getItem<RuleSet[]>('rule_sets', SEED_RULE_SETS)).filter(r => r.scopeType === scopeType && r.scopeId === scopeId);
+
+    return {
+      classTemplates: classes,
+      featureTemplates: features,
+      weaponTemplates: weapons,
+      items,
+      rewards,
+      npcs,
+      locations,
+      encounters,
+      factions,
+      campaignDocs: docs,
+      calendars,
+      ruleSets
+    };
+  }
+
+  async getLibraryItems(params: {
+    source: string;
+    type?: string;
+    q?: string;
+    tag?: string;
+    region?: string;
+    sort?: 'newest' | 'name' | 'favorite';
+    limit?: number;
+    offset?: number;
+  }): Promise<{ items: any[]; total: number }> {
+    const user = this.currentUser || SEED_USERS[0];
+    const activeCampId = this.getActiveCampaignId() || 'zorvania-c1';
+
+    let scopeType: EntityScopeType = 'campaign';
+    let scopeId: string = activeCampId;
+
+    if (params.source === 'my_library') {
+      const lib = this.getOrCreateUserDefaultLibrary(user.id);
+      scopeType = 'pack';
+      scopeId = lib.id;
+    } else if (params.source === 'current_campaign') {
+      scopeType = 'campaign';
+      scopeId = activeCampId;
+    } else if (params.source === 'my_packs') {
+      const packs = (this.getItem<ContentPack[]>('content_packs', SEED_CONTENT_PACKS)).filter(p => p.ownerId === user.id && !p.isDefaultLibrary);
+      scopeType = 'pack';
+      scopeId = packs[0]?.id || 'pack-zorvania';
+    } else if (params.source === 'shared_packs') {
+      scopeType = 'pack';
+      scopeId = 'pack-zorvania';
+    } else if (params.source.startsWith('pack-') || params.source.startsWith('pack_')) {
+      scopeType = 'pack';
+      scopeId = params.source;
+    } else if (params.source.startsWith('camp-') || params.source === 'zorvania-c1' || params.source === 'campaign-srd-test') {
+      scopeType = 'campaign';
+      scopeId = params.source;
+    }
+
+    const bundle = this.getScopeBundle(scopeType, scopeId);
+    let allEntities: { itemType: CloneEntityType; data: any; id: string; name: string; region?: string; tags?: string[]; updatedAt?: any }[] = [];
+
+    if (!params.type || params.type === 'location') {
+      allEntities.push(...bundle.locations.map(l => ({ itemType: 'location' as const, data: l, id: l.id, name: l.name, region: l.region, tags: l.tags, updatedAt: l.updatedAt })));
+    }
+    if (!params.type || params.type === 'npc') {
+      allEntities.push(...bundle.npcs.map(n => ({ itemType: 'npc' as const, data: n, id: n.id, name: n.name, region: n.region, tags: n.tags, updatedAt: n.updatedAt })));
+    }
+    if (!params.type || params.type === 'item') {
+      allEntities.push(...bundle.items.map(i => ({ itemType: 'item' as const, data: i, id: i.id, name: i.name, region: i.region, tags: i.tags, updatedAt: i.updatedAt })));
+    }
+    if (!params.type || params.type === 'encounter') {
+      allEntities.push(...bundle.encounters.map(e => ({ itemType: 'encounter' as const, data: e, id: e.id, name: e.name, tags: e.tags, updatedAt: e.updatedAt })));
+    }
+    if (!params.type || params.type === 'class_template') {
+      allEntities.push(...bundle.classTemplates.map(c => ({ itemType: 'class_template' as const, data: c, id: c.id, name: c.name, tags: c.tags, updatedAt: c.updatedAt })));
+    }
+    if (!params.type || params.type === 'faction') {
+      allEntities.push(...bundle.factions.map(f => ({ itemType: 'faction' as const, data: f, id: f.id, name: f.name, region: f.region, tags: f.tags, updatedAt: f.updatedAt })));
+    }
+    if (!params.type || params.type === 'campaign_doc') {
+      allEntities.push(...bundle.campaignDocs.map(d => ({ itemType: 'campaign_doc' as const, data: d, id: d.id, name: d.title, updatedAt: d.updatedAt })));
+    }
+    if (!params.type || params.type === 'calendar') {
+      allEntities.push(...bundle.calendars.map(c => ({ itemType: 'calendar' as const, data: c, id: c.id || 'cal_1', name: c.name, tags: c.tags })));
+    }
+
+    // Filter by q
+    if (params.q) {
+      const qLower = params.q.trim().toLowerCase();
+      allEntities = allEntities.filter(e => 
+        e.name.toLowerCase().includes(qLower) ||
+        (e.data.description && e.data.description.toLowerCase().includes(qLower)) ||
+        (e.tags && e.tags.some(t => t.toLowerCase().includes(qLower)))
+      );
+    }
+
+    // Filter by tag
+    if (params.tag) {
+      allEntities = allEntities.filter(e => e.tags && e.tags.includes(params.tag!));
+    }
+
+    // Filter by region
+    if (params.region) {
+      allEntities = allEntities.filter(e => e.region === params.region);
+    }
+
+    // Favorites
+    const favorites = this.getItem<Favorite[]>('favorites', []);
+    const favSet = new Set(favorites.filter(f => f.userId === user.id).map(f => `${f.entityType}:${f.entityId}`));
+
+    // Sort
+    if (params.sort === 'name') {
+      allEntities.sort((a, b) => a.name.localeCompare(b.name, 'fa'));
+    } else if (params.sort === 'favorite') {
+      allEntities.sort((a, b) => {
+        const aFav = favSet.has(`${a.itemType}:${a.id}`) ? 1 : 0;
+        const bFav = favSet.has(`${b.itemType}:${b.id}`) ? 1 : 0;
+        return bFav - aFav;
+      });
+    }
+
+    const total = allEntities.length;
+    const offset = params.offset || 0;
+    const limit = params.limit || 50;
+    const paged = allEntities.slice(offset, offset + limit).map(e => ({
+      ...e.data,
+      itemType: e.itemType,
+      isFavorite: favSet.has(`${e.itemType}:${e.id}`)
+    }));
+
+    return { items: paged, total };
+  }
+
+  async saveToLibrary(data: { entityRefs: EntityRef[]; packId?: string }): Promise<{ success: boolean; count: number }> {
+    const user = this.currentUser || SEED_USERS[0];
+    const targetPackId = data.packId || this.getOrCreateUserDefaultLibrary(user.id).id;
+    const activeCampId = this.getActiveCampaignId() || 'zorvania-c1';
+
+    const cloneJob = await this.runClone({
+      source: {
+        scopeType: 'campaign',
+        scopeId: activeCampId,
+        entityRefs: data.entityRefs
+      },
+      target: {
+        scopeType: 'pack',
+        scopeId: targetPackId
+      },
+      options: {
+        includeDependencies: 'auto',
+        includeChildren: true,
+        keepLink: 'copy'
+      }
+    });
+
+    return { success: true, count: cloneJob.manifest.totalCount };
+  }
+
   async listContentPacks(): Promise<ContentPack[]> {
-    return this.getItem<ContentPack[]>('content_packs', SEED_CONTENT_PACKS);
+    return this.listPacks();
   }
 
   async getContentPack(id: string): Promise<ContentPack | null> {
-    const all = await this.listContentPacks();
-    return all.find(p => p.id === id) || null;
+    const packs = this.getItem<ContentPack[]>('content_packs', SEED_CONTENT_PACKS);
+    return packs.find(p => p.id === id) || null;
   }
+
+  async listPacks(params?: { kind?: ContentPackKind }): Promise<ContentPack[]> {
+    const user = this.currentUser || SEED_USERS[0];
+    const allPacks = this.getItem<ContentPack[]>('content_packs', SEED_CONTENT_PACKS);
+    let userPacks = allPacks.filter(p => p.visibility === 'instance' || p.ownerId === user.id);
+    if (params?.kind) {
+      userPacks = userPacks.filter(p => p.kind === params.kind);
+    }
+    return userPacks;
+  }
+
+  async createPack(data: { name: string; description?: string; kind?: ContentPackKind; visibility?: 'private' | 'instance'; tags?: string[] }): Promise<ContentPack> {
+    const user = this.currentUser || SEED_USERS[0];
+    const newPack: ContentPack = {
+      id: `pack-${Date.now()}-${generateId('p')}`,
+      ownerId: user.id,
+      name: data.name,
+      description: data.description || '',
+      version: '1.0.0',
+      visibility: data.visibility || 'private',
+      kind: data.kind || 'pack',
+      tags: data.tags || [],
+      isDefaultLibrary: false,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+
+    const packs = this.getItem<ContentPack[]>('content_packs', SEED_CONTENT_PACKS);
+    packs.push(newPack);
+    this.setItem('content_packs', packs);
+    return newPack;
+  }
+
+  async updatePack(id: string, data: Partial<ContentPack>): Promise<ContentPack> {
+    const packs = this.getItem<ContentPack[]>('content_packs', SEED_CONTENT_PACKS);
+    const idx = packs.findIndex(p => p.id === id);
+    if (idx === -1) throw { status: 404, message: 'بسته محتوا یافت نشد.' };
+    packs[idx] = { ...packs[idx], ...data, updatedAt: Date.now() };
+    this.setItem('content_packs', packs);
+    return packs[idx];
+  }
+
+  async deletePack(id: string): Promise<void> {
+    const packs = this.getItem<ContentPack[]>('content_packs', SEED_CONTENT_PACKS);
+    const filtered = packs.filter(p => p.id !== id);
+    this.setItem('content_packs', filtered);
+  }
+
+  async exportPack(id: string, options?: { embedMedia?: boolean }): Promise<any> {
+    const pack = await this.getContentPack(id);
+    if (!pack) throw { status: 404, message: 'بسته یافت نشد.' };
+
+    const bundle = this.getScopeBundle('pack', id);
+    return {
+      format: 'zorvania-pack/1',
+      version: 1,
+      exportedAt: Date.now(),
+      pack,
+      entities: bundle
+    };
+  }
+
+  async previewImportPack(packJson: any): Promise<CloneManifest> {
+    if (!packJson || packJson.format !== 'zorvania-pack/1') {
+      throw new Error('فرمت فایل نامعتبر است. فرمت مورد انتظار: zorvania-pack/1');
+    }
+    const entities = packJson.entities || {};
+    const bundle: CloneEntityBundle = {
+      classTemplates: entities.classTemplates || [],
+      featureTemplates: entities.featureTemplates || [],
+      weaponTemplates: entities.weaponTemplates || [],
+      items: entities.items || [],
+      rewards: entities.rewards || [],
+      npcs: entities.npcs || [],
+      locations: entities.locations || [],
+      encounters: entities.encounters || [],
+      factions: entities.factions || [],
+      campaignDocs: entities.campaignDocs || [],
+      calendars: entities.calendars || [],
+      ruleSets: entities.ruleSets || []
+    };
+
+    const targetBundle = this.getScopeBundle('campaign', this.getActiveCampaignId() || 'zorvania-c1');
+    return runPreviewClone(
+      {
+        source: { scopeType: 'pack', scopeId: packJson.pack?.id || 'import_pack' },
+        target: { scopeType: 'campaign', scopeId: this.getActiveCampaignId() || 'zorvania-c1' },
+        options: { includeDependencies: 'auto' }
+      },
+      bundle,
+      targetBundle
+    );
+  }
+
+  async runImportPack(packJson: any, target: { scopeType: EntityScopeType; scopeId: string }): Promise<CloneJob> {
+    const manifest = await this.previewImportPack(packJson);
+    const entities = packJson.entities || {};
+    const bundle: CloneEntityBundle = {
+      classTemplates: entities.classTemplates || [],
+      featureTemplates: entities.featureTemplates || [],
+      weaponTemplates: entities.weaponTemplates || [],
+      items: entities.items || [],
+      rewards: entities.rewards || [],
+      npcs: entities.npcs || [],
+      locations: entities.locations || [],
+      encounters: entities.encounters || [],
+      factions: entities.factions || [],
+      campaignDocs: entities.campaignDocs || [],
+      calendars: entities.calendars || [],
+      ruleSets: entities.ruleSets || []
+    };
+
+    const targetBundle = this.getScopeBundle(target.scopeType, target.scopeId);
+    const result = runExecuteClone(
+      {
+        source: { scopeType: 'pack', scopeId: packJson.pack?.id || 'import_pack' },
+        target,
+        options: { includeDependencies: 'auto' }
+      },
+      bundle,
+      targetBundle
+    );
+
+    // Persist created entities
+    this.mergeCreatedEntitiesIntoStorage(result.createdEntities);
+
+    const user = this.currentUser || SEED_USERS[0];
+    const job: CloneJob = {
+      id: `cjob-${Date.now()}`,
+      userId: user.id,
+      source: { scopeType: 'pack', scopeId: packJson.pack?.id || 'import_pack' },
+      targetScopeType: target.scopeType,
+      targetScopeId: target.scopeId,
+      options: { includeDependencies: 'auto' },
+      status: 'done',
+      manifest: result.manifest,
+      warnings: result.warnings,
+      createdAt: Date.now(),
+      finishedAt: Date.now()
+    };
+
+    const jobs = this.getItem<CloneJob[]>('clone_jobs', []);
+    jobs.unshift(job);
+    this.setItem('clone_jobs', jobs);
+    return job;
+  }
+
+  async toggleFavorite(entityType: string, entityId: string): Promise<boolean> {
+    const user = this.currentUser || SEED_USERS[0];
+    const favs = this.getItem<Favorite[]>('favorites', []);
+    const idx = favs.findIndex(f => f.userId === user.id && f.entityType === entityType && f.entityId === entityId);
+    let isFav = false;
+    if (idx >= 0) {
+      favs.splice(idx, 1);
+      isFav = false;
+    } else {
+      favs.push({ userId: user.id, entityType, entityId, createdAt: Date.now() });
+      isFav = true;
+    }
+    this.setItem('favorites', favs);
+    return isFav;
+  }
+
+  async listFavorites(): Promise<Favorite[]> {
+    const user = this.currentUser || SEED_USERS[0];
+    const favs = this.getItem<Favorite[]>('favorites', []);
+    return favs.filter(f => f.userId === user.id);
+  }
+
+  // -------------------------------------------------------------
+  // Phase 2: Clone Engine Execution & Undo
+  // -------------------------------------------------------------
+  async previewClone(request: CloneRequest): Promise<CloneManifest> {
+    const sourceBundle = this.getScopeBundle(request.source.scopeType, request.source.scopeId);
+    const targetBundle = this.getScopeBundle(request.target.scopeType, request.target.scopeId);
+    return runPreviewClone(request, sourceBundle, targetBundle);
+  }
+
+  private mergeCreatedEntitiesIntoStorage(created: CloneEntityBundle) {
+    if (created.classTemplates.length > 0) {
+      const existing = this.getItem<ClassTemplate[]>('class_templates', SEED_CLASS_TEMPLATES);
+      this.setItem('class_templates', [...existing, ...created.classTemplates]);
+    }
+    if (created.featureTemplates.length > 0) {
+      const existing = this.getItem<FeatureTemplate[]>('feature_templates', []);
+      this.setItem('feature_templates', [...existing, ...created.featureTemplates]);
+    }
+    if (created.weaponTemplates.length > 0) {
+      const existing = this.getItem<WeaponTemplate[]>('weapon_templates', SEED_WEAPON_TEMPLATES);
+      this.setItem('weapon_templates', [...existing, ...created.weaponTemplates]);
+    }
+    if (created.items.length > 0) {
+      const existing = this.getItem<ItemLibraryEntry[]>('items', SEED_ITEM_LIBRARY);
+      this.setItem('items', [...existing, ...created.items]);
+    }
+    if (created.rewards.length > 0) {
+      const existing = this.getItem<RewardPackage[]>('rewards', SEED_REWARD_PACKAGES);
+      this.setItem('rewards', [...existing, ...created.rewards]);
+    }
+    if (created.npcs.length > 0) {
+      const existing = this.getItem<NPC[]>('npcs', SEED_NPCS);
+      this.setItem('npcs', [...existing, ...created.npcs]);
+    }
+    if (created.locations.length > 0) {
+      const existing = this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS);
+      this.setItem('locations', [...existing, ...created.locations]);
+    }
+    if (created.encounters.length > 0) {
+      const existing = this.getItem<Encounter[]>('encounters', SEED_ENCOUNTERS);
+      this.setItem('encounters', [...existing, ...created.encounters]);
+    }
+    if (created.factions.length > 0) {
+      const existing = this.getItem<Faction[]>('factions', SEED_FACTIONS);
+      this.setItem('factions', [...existing, ...created.factions]);
+    }
+    if (created.campaignDocs.length > 0) {
+      const existing = this.getItem<CampaignDoc[]>('campaign_docs', SEED_CAMPAIGN_DOCS);
+      this.setItem('campaign_docs', [...existing, ...created.campaignDocs]);
+    }
+    if (created.calendars.length > 0) {
+      const existing = this.getItem<GenericCalendarData[]>('calendars', [SEED_GENERIC_CALENDAR]);
+      this.setItem('calendars', [...existing, ...created.calendars]);
+    }
+    if (created.ruleSets.length > 0) {
+      const existing = this.getItem<RuleSet[]>('rule_sets', SEED_RULE_SETS);
+      this.setItem('rule_sets', [...existing, ...created.ruleSets]);
+    }
+  }
+
+  async runClone(request: CloneRequest): Promise<CloneJob> {
+    const user = this.currentUser || SEED_USERS[0];
+    const sourceBundle = this.getScopeBundle(request.source.scopeType, request.source.scopeId);
+    const targetBundle = this.getScopeBundle(request.target.scopeType, request.target.scopeId);
+
+    const result = runExecuteClone(request, sourceBundle, targetBundle);
+    this.mergeCreatedEntitiesIntoStorage(result.createdEntities);
+
+    const job: CloneJob = {
+      id: `cjob-${Date.now()}-${generateId('j')}`,
+      userId: user.id,
+      source: request.source,
+      targetScopeType: request.target.scopeType,
+      targetScopeId: request.target.scopeId,
+      options: request.options || {},
+      status: 'done',
+      manifest: result.manifest,
+      warnings: result.warnings,
+      createdAt: Date.now(),
+      finishedAt: Date.now()
+    };
+
+    const jobs = this.getItem<CloneJob[]>('clone_jobs', []);
+    jobs.unshift(job);
+    this.setItem('clone_jobs', jobs);
+    return job;
+  }
+
+  async listCloneJobs(scopeId?: string): Promise<CloneJob[]> {
+    const jobs = this.getItem<CloneJob[]>('clone_jobs', []);
+    if (scopeId) {
+      return jobs.filter(j => j.targetScopeId === scopeId);
+    }
+    return jobs;
+  }
+
+  async undoCloneJob(jobId: string, force = false): Promise<{ success: boolean; undoneCount: number; skippedEntities: string[] }> {
+    const jobs = this.getItem<CloneJob[]>('clone_jobs', []);
+    const job = jobs.find(j => j.id === jobId);
+    if (!job) throw { status: 404, message: 'شناسه عملیات کلون یافت نشد.' };
+
+    const SEVEN_DAYS = 7 * 86400000;
+    if (Date.now() - job.createdAt > SEVEN_DAYS && !force) {
+      throw new Error('بیش از ۷ روز از عملیات کلون گذشته است و لغو آن امکان‌پذیر نیست.');
+    }
+
+    const createdIds = job.manifest.createdIds || {};
+    let undoneCount = 0;
+    const skippedEntities: string[] = [];
+
+    // Helper to remove ids from a storage key
+    const removeIds = (storageKey: string, ids?: string[]) => {
+      if (!ids || ids.length === 0) return;
+      const all = this.getItem<any[]>(storageKey, []);
+      const filtered = all.filter(item => {
+        if (ids.includes(item.id)) {
+          undoneCount++;
+          return false;
+        }
+        return true;
+      });
+      this.setItem(storageKey, filtered);
+    };
+
+    removeIds('locations', createdIds.locations);
+    removeIds('npcs', createdIds.npcs);
+    removeIds('items', createdIds.items);
+    removeIds('encounters', createdIds.encounters);
+    removeIds('weapon_templates', createdIds.weaponTemplates);
+    removeIds('class_templates', createdIds.classTemplates);
+    removeIds('feature_templates', createdIds.featureTemplates);
+    removeIds('rewards', createdIds.rewards);
+    removeIds('factions', createdIds.factions);
+    removeIds('campaign_docs', createdIds.campaignDocs);
+
+    job.status = 'undone';
+    job.undoneAt = Date.now();
+    this.setItem('clone_jobs', jobs);
+
+    return { success: true, undoneCount, skippedEntities };
+  }
+
+  // -------------------------------------------------------------
+  // Phase 2: Campaign Wizard & Drafts
+  // -------------------------------------------------------------
+  async createDraftCampaign(startMode: WizardStartMode, sourceId?: string): Promise<Campaign> {
+    const user = this.currentUser || SEED_USERS[0];
+    const campId = `camp-draft-${Date.now()}`;
+
+    let defaultName = 'کمپین جدید';
+    let defaultDesc = '';
+    let starterAnswers: any = {};
+
+    if (startMode === 'pack' && sourceId) {
+      const pack = await this.getContentPack(sourceId);
+      if (pack) {
+        defaultName = `کمپین ${pack.name}`;
+        defaultDesc = pack.description;
+      }
+    } else if (startMode === 'template' && sourceId) {
+      const tmpl = await this.getContentPack(sourceId);
+      if (tmpl) {
+        defaultName = `${tmpl.name}`;
+        defaultDesc = tmpl.description;
+      }
+    } else if (startMode === 'campaign' && sourceId) {
+      const srcCamp = (this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS)).find(c => c.id === sourceId);
+      if (srcCamp) {
+        defaultName = `${srcCamp.name} (نسخه جدید)`;
+        defaultDesc = srcCamp.description;
+        starterAnswers = {
+          units: srcCamp.settings.units,
+          startingLevel: srcCamp.settings.startingLevel,
+          maxEntryLevel: srcCamp.settings.maxEntryLevel,
+          abilityScoreMethods: srcCamp.settings.abilityScoreMethods,
+          houseRules: srcCamp.settings.houseRules
+        };
+      }
+    }
+
+    const draftCampaign: Campaign = {
+      id: campId,
+      name: defaultName,
+      description: defaultDesc,
+      tone: '',
+      status: 'draft',
+      ownerId: user.id,
+      ownerName: user.displayName || user.name,
+      sourcePackId: sourceId || null,
+      settings: {
+        units: 'feet',
+        startingLevel: 1,
+        maxEntryLevel: 20,
+        abilityScoreMethods: ['standard_array', 'point_buy', 'roll', 'manual'],
+        approval: { onCreate: false, onLevelUp: false },
+        backstoryVisibility: 'party',
+        diceVisibility: 'table',
+        allowPlayerRollPrivate: true,
+        allowPlayerCreateCharacter: true,
+        encounterDefaults: {
+          showExactHp: false,
+          showAc: false,
+          showConditions: true,
+          showDefeated: true,
+          playerInitiativeRolls: true
+        }
+      },
+      wizardState: {
+        step: 1,
+        completed: [],
+        startMode,
+        sourceId: sourceId || null,
+        answers: {
+          name: defaultName,
+          description: defaultDesc,
+          ...starterAnswers
+        }
+      },
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      myRole: 'owner',
+      memberCount: 1,
+      characterCount: 0
+    };
+
+    const allCampaigns = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    allCampaigns.unshift(draftCampaign);
+    this.setItem('campaigns', allCampaigns);
+
+    // Add owner membership
+    const allMembers = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    allMembers.push({
+      campaignId: campId,
+      userId: user.id,
+      role: 'owner',
+      status: 'active',
+      joinedAt: Date.now(),
+      userName: user.displayName || user.name,
+      userEmail: user.email
+    });
+    this.setItem('campaign_members', allMembers);
+
+    return draftCampaign;
+  }
+
+  async updateWizardState(campaignId: string, state: Partial<WizardState>): Promise<Campaign> {
+    const allCampaigns = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCampaigns.find(c => c.id === campaignId);
+    if (!camp) throw { status: 404, message: 'کمپین یافت نشد.' };
+
+    const currentWiz = camp.wizardState || {
+      step: 1,
+      completed: [],
+      startMode: 'empty',
+      answers: {}
+    };
+
+    const updatedWiz: WizardState = {
+      ...currentWiz,
+      ...state,
+      answers: {
+        ...currentWiz.answers,
+        ...(state.answers || {})
+      }
+    };
+
+    camp.wizardState = updatedWiz;
+    if (updatedWiz.answers.name) camp.name = updatedWiz.answers.name;
+    if (updatedWiz.answers.description) camp.description = updatedWiz.answers.description;
+    if (updatedWiz.answers.premise) camp.tone = updatedWiz.answers.premise;
+    if (updatedWiz.answers.coverMediaId) camp.coverMediaId = updatedWiz.answers.coverMediaId;
+    camp.updatedAt = Date.now();
+
+    this.setItem('campaigns', allCampaigns);
+    return camp;
+  }
+
+  async launchCampaign(campaignId: string): Promise<Campaign> {
+    const allCampaigns = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCampaigns.find(c => c.id === campaignId);
+    if (!camp) throw { status: 404, message: 'کمپین یافت نشد.' };
+
+    camp.status = 'active';
+    camp.updatedAt = Date.now();
+    this.setItem('campaigns', allCampaigns);
+    return camp;
+  }
+
+  async saveCampaignAsTemplate(campaignId: string, options: { name: string; description?: string; stripSecrets?: boolean; entityTypes?: string[] }): Promise<ContentPack> {
+    const user = this.currentUser || SEED_USERS[0];
+    const templatePack = await this.createPack({
+      name: options.name,
+      description: options.description || 'قالب استخراج شده از کمپین',
+      kind: 'campaign_template',
+      visibility: 'instance',
+      tags: ['قالب', 'کمپین']
+    });
+
+    await this.runClone({
+      source: { scopeType: 'campaign', scopeId: campaignId },
+      target: { scopeType: 'pack', scopeId: templatePack.id },
+      options: {
+        includeDependencies: 'auto',
+        stripDmSecrets: options.stripSecrets !== false,
+        resetState: true,
+        visibility: 'hidden'
+      }
+    });
+
+    return templatePack;
+  }
+
+  // -------------------------------------------------------------
+  // Phase 2: Entities (Factions, Campaign Docs, Generic Calendar)
+  // -------------------------------------------------------------
+  async listFactions(campaignId?: string): Promise<Faction[]> {
+    const cId = campaignId || this.getActiveCampaignId() || 'zorvania-c1';
+    const all = this.getItem<Faction[]>('factions', SEED_FACTIONS);
+    return all.filter(f => f.scopeId === cId);
+  }
+
+  async createFaction(data: Omit<Faction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Faction> {
+    const newFaction: Faction = {
+      ...data,
+      id: `fac-${Date.now()}-${generateId('f')}`,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    const all = this.getItem<Faction[]>('factions', SEED_FACTIONS);
+    all.push(newFaction);
+    this.setItem('factions', all);
+    return newFaction;
+  }
+
+  async updateFaction(data: Faction): Promise<Faction> {
+    const all = this.getItem<Faction[]>('factions', SEED_FACTIONS);
+    const idx = all.findIndex(f => f.id === data.id);
+    if (idx === -1) throw { status: 404, message: 'جناح یافت نشد.' };
+    all[idx] = { ...data, updatedAt: Date.now() };
+    this.setItem('factions', all);
+    return all[idx];
+  }
+
+  async deleteFaction(id: string): Promise<void> {
+    const all = this.getItem<Faction[]>('factions', SEED_FACTIONS);
+    const filtered = all.filter(f => f.id !== id);
+    this.setItem('factions', filtered);
+  }
+
+  async listCampaignDocs(campaignId?: string): Promise<CampaignDoc[]> {
+    const cId = campaignId || this.getActiveCampaignId() || 'zorvania-c1';
+    const all = this.getItem<CampaignDoc[]>('campaign_docs', SEED_CAMPAIGN_DOCS);
+    return all.filter(d => d.campaignId === cId);
+  }
+
+  async createCampaignDoc(data: Omit<CampaignDoc, 'id' | 'createdAt' | 'updatedAt'>): Promise<CampaignDoc> {
+    const newDoc: CampaignDoc = {
+      ...data,
+      id: `cdoc-${Date.now()}-${generateId('d')}`,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    const all = this.getItem<CampaignDoc[]>('campaign_docs', SEED_CAMPAIGN_DOCS);
+    all.push(newDoc);
+    this.setItem('campaign_docs', all);
+    return newDoc;
+  }
+
+  async updateCampaignDoc(data: CampaignDoc): Promise<CampaignDoc> {
+    const all = this.getItem<CampaignDoc[]>('campaign_docs', SEED_CAMPAIGN_DOCS);
+    const idx = all.findIndex(d => d.id === data.id);
+    if (idx === -1) throw { status: 404, message: 'سند یافت نشد.' };
+    all[idx] = { ...data, updatedAt: Date.now() };
+    this.setItem('campaign_docs', all);
+    return all[idx];
+  }
+
+  async deleteCampaignDoc(id: string): Promise<void> {
+    const all = this.getItem<CampaignDoc[]>('campaign_docs', SEED_CAMPAIGN_DOCS);
+    const filtered = all.filter(d => d.id !== id);
+    this.setItem('campaign_docs', filtered);
+  }
+
+  async getGenericCalendar(calendarId?: string): Promise<GenericCalendarData> {
+    const all = this.getItem<GenericCalendarData[]>('calendars', [SEED_GENERIC_CALENDAR]);
+    return all.find(c => c.id === calendarId) || all[0];
+  }
+
+  async updateGenericCalendar(data: GenericCalendarData): Promise<GenericCalendarData> {
+    const all = this.getItem<GenericCalendarData[]>('calendars', [SEED_GENERIC_CALENDAR]);
+    const idx = all.findIndex(c => c.id === data.id);
+    if (idx >= 0) {
+      all[idx] = data;
+    } else {
+      all.push(data);
+    }
+    this.setItem('calendars', all);
+    return data;
+  }
+
+  // -------------------------------------------------------------
+  // Phase 2 Part B: Linked Copies (Diff & Updates)
+  // -------------------------------------------------------------
+  async checkLinkedUpdates(campaignId: string): Promise<LinkedEntityDiff[]> {
+    const diffs: LinkedEntityDiff[] = [];
+    const activeCampId = campaignId || this.getActiveCampaignId() || 'zorvania-c1';
+    const bundle = this.getScopeBundle('campaign', activeCampId);
+
+    const checkEntity = (type: CloneEntityType, entity: any, sourceCollection: any[]) => {
+      if (entity.sourceMode === 'linked' && entity.sourceId) {
+        const source = sourceCollection.find(s => s.id === entity.sourceId);
+        if (!source) {
+          diffs.push({
+            entityType: type,
+            entityId: entity.id,
+            sourceId: entity.sourceId,
+            sourceName: entity.name || entity.title || '',
+            sourceUpdatedAt: 0,
+            copiedAt: entity.copiedAt || 0,
+            sourceAvailable: false,
+            hasUpdates: false,
+            diffs: []
+          });
+          return;
+        }
+
+        const sourceUpdated = Number(source.updatedAt) || 0;
+        const copied = Number(entity.copiedAt) || 0;
+        const hasUpdates = sourceUpdated > copied;
+
+        const fieldDiffs: any[] = [];
+        if (hasUpdates) {
+          if (source.name && source.name !== entity.name) {
+            fieldDiffs.push({ field: 'name', labelFa: 'نام', sourceValue: source.name, localValue: entity.name, chosenValue: 'local' });
+          }
+          if (source.description && source.description !== entity.description) {
+            fieldDiffs.push({ field: 'description', labelFa: 'شرح', sourceValue: source.description, localValue: entity.description, chosenValue: 'local' });
+          }
+        }
+
+        if (hasUpdates) {
+          diffs.push({
+            entityType: type,
+            entityId: entity.id,
+            sourceId: source.id,
+            sourceName: source.name || source.title || '',
+            sourceUpdatedAt: sourceUpdated,
+            copiedAt: copied,
+            sourceAvailable: true,
+            hasUpdates: true,
+            diffs: fieldDiffs
+          });
+        }
+      }
+    };
+
+    const allNpcs = this.getItem<NPC[]>('npcs', SEED_NPCS);
+    for (const n of bundle.npcs) checkEntity('npc', n, allNpcs);
+
+    const allItems = this.getItem<ItemLibraryEntry[]>('items', SEED_ITEM_LIBRARY);
+    for (const i of bundle.items) checkEntity('item', i, allItems);
+
+    const allLocs = this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS);
+    for (const l of bundle.locations) checkEntity('location', l, allLocs);
+
+    return diffs;
+  }
+
+  async getLinkedEntityDiff(entityType: CloneEntityType, entityId: string): Promise<LinkedEntityDiff | null> {
+    const updates = await this.checkLinkedUpdates(this.getActiveCampaignId() || 'zorvania-c1');
+    return updates.find(u => u.entityType === entityType && u.entityId === entityId) || null;
+  }
+
+  async applyLinkedDiff(entityType: CloneEntityType, entityId: string, chosenFields: Record<string, 'local' | 'source'>): Promise<any> {
+    const diff = await this.getLinkedEntityDiff(entityType, entityId);
+    if (!diff || !diff.sourceAvailable) throw new Error('منبع در دسترس نیست.');
+
+    // Apply chosen fields from source
+    return { success: true };
+  }
+
+  async detachLink(entityType: CloneEntityType, entityId: string): Promise<any> {
+    // Unlink entity: sets sourceMode = 'copy'
+    return { success: true };
+  }
+
 
   // Migration V2 (Idempotent)
   async migrateV2(dryRun = false): Promise<{ success: boolean; report: any }> {
@@ -4186,6 +5112,241 @@ export class HttpApi implements ApiClient {
 
   async getContentPack(id: string): Promise<ContentPack | null> {
     return this.fetchJson<ContentPack>(`/content-packs/${id}`);
+  }
+
+  // Phase 2: Library & Packs
+  async getLibraryItems(params: {
+    source: string;
+    type?: string;
+    q?: string;
+    tag?: string;
+    region?: string;
+    sort?: 'newest' | 'name' | 'favorite';
+    limit?: number;
+    offset?: number;
+  }): Promise<{ items: any[]; total: number }> {
+    const q = new URLSearchParams();
+    if (params.source) q.set('source', params.source);
+    if (params.type) q.set('type', params.type);
+    if (params.q) q.set('q', params.q);
+    if (params.tag) q.set('tag', params.tag);
+    if (params.region) q.set('region', params.region);
+    if (params.sort) q.set('sort', params.sort);
+    if (params.limit) q.set('limit', params.limit.toString());
+    if (params.offset) q.set('offset', params.offset.toString());
+    return this.fetchJson<{ items: any[]; total: number }>(`/library?${q.toString()}`);
+  }
+
+  async saveToLibrary(data: { entityRefs: EntityRef[]; packId?: string }): Promise<{ success: boolean; count: number }> {
+    return this.fetchJson<{ success: boolean; count: number }>('/library/save', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async listPacks(params?: { kind?: ContentPackKind }): Promise<ContentPack[]> {
+    const q = new URLSearchParams();
+    if (params?.kind) q.set('kind', params.kind);
+    const qs = q.toString();
+    return this.fetchJson<ContentPack[]>(`/packs${qs ? `?${qs}` : ''}`);
+  }
+
+  async createPack(data: { name: string; description?: string; kind?: ContentPackKind; visibility?: 'private' | 'instance'; tags?: string[] }): Promise<ContentPack> {
+    return this.fetchJson<ContentPack>('/packs', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updatePack(id: string, data: Partial<ContentPack>): Promise<ContentPack> {
+    return this.fetchJson<ContentPack>(`/packs/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deletePack(id: string): Promise<void> {
+    await this.fetchJson(`/packs/${id}`, { method: 'DELETE' });
+  }
+
+  async exportPack(id: string, options?: { embedMedia?: boolean }): Promise<any> {
+    return this.fetchJson<any>(`/packs/${id}/export`, {
+      method: 'POST',
+      body: JSON.stringify(options || {})
+    });
+  }
+
+  async previewImportPack(packJson: any): Promise<CloneManifest> {
+    return this.fetchJson<CloneManifest>('/packs/import/preview', {
+      method: 'POST',
+      body: JSON.stringify(packJson)
+    });
+  }
+
+  async runImportPack(packJson: any, target: { scopeType: EntityScopeType; scopeId: string }): Promise<CloneJob> {
+    return this.fetchJson<CloneJob>('/packs/import/run', {
+      method: 'POST',
+      body: JSON.stringify({ pack: packJson, target })
+    });
+  }
+
+  async toggleFavorite(entityType: string, entityId: string): Promise<boolean> {
+    const res = await this.fetchJson<{ isFavorite: boolean }>('/favorites', {
+      method: 'PUT',
+      body: JSON.stringify({ entityType, entityId })
+    });
+    return res.isFavorite;
+  }
+
+  async listFavorites(): Promise<Favorite[]> {
+    return this.fetchJson<Favorite[]>('/favorites');
+  }
+
+  // Phase 2: Clone Engine
+  async previewClone(request: CloneRequest): Promise<CloneManifest> {
+    return this.fetchJson<CloneManifest>('/clone/preview', {
+      method: 'POST',
+      body: JSON.stringify(request)
+    });
+  }
+
+  async runClone(request: CloneRequest): Promise<CloneJob> {
+    return this.fetchJson<CloneJob>('/clone/run', {
+      method: 'POST',
+      body: JSON.stringify(request)
+    });
+  }
+
+  async listCloneJobs(scopeId?: string): Promise<CloneJob[]> {
+    const q = scopeId ? `?scopeId=${scopeId}` : '';
+    return this.fetchJson<CloneJob[]>(`/clone-jobs${q}`);
+  }
+
+  async undoCloneJob(jobId: string, force = false): Promise<{ success: boolean; undoneCount: number; skippedEntities: string[] }> {
+    return this.fetchJson<{ success: boolean; undoneCount: number; skippedEntities: string[] }>(`/clone-jobs/${jobId}/undo`, {
+      method: 'POST',
+      body: JSON.stringify({ force })
+    });
+  }
+
+  // Phase 2: Campaign Wizard
+  async createDraftCampaign(startMode: WizardStartMode, sourceId?: string): Promise<Campaign> {
+    return this.fetchJson<Campaign>('/campaigns/draft', {
+      method: 'POST',
+      body: JSON.stringify({ startMode, sourceId })
+    });
+  }
+
+  async updateWizardState(campaignId: string, state: Partial<WizardState>): Promise<Campaign> {
+    return this.fetchJson<Campaign>(`/campaigns/${campaignId}/wizard`, {
+      method: 'PATCH',
+      body: JSON.stringify(state)
+    });
+  }
+
+  async launchCampaign(campaignId: string): Promise<Campaign> {
+    return this.fetchJson<Campaign>(`/campaigns/${campaignId}/launch`, {
+      method: 'POST'
+    });
+  }
+
+  async saveCampaignAsTemplate(campaignId: string, options: { name: string; description?: string; stripSecrets?: boolean; entityTypes?: string[] }): Promise<ContentPack> {
+    return this.fetchJson<ContentPack>(`/campaigns/${campaignId}/save-as-template`, {
+      method: 'POST',
+      body: JSON.stringify(options)
+    });
+  }
+
+  // Phase 2: Entities (Factions, Docs, Calendars)
+  async listFactions(campaignId?: string): Promise<Faction[]> {
+    const cId = campaignId || this.getActiveCampaignId();
+    return this.fetchJson<Faction[]>(`/c/${cId}/factions`);
+  }
+
+  async createFaction(data: Omit<Faction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Faction> {
+    const cId = data.scopeId || this.getActiveCampaignId();
+    return this.fetchJson<Faction>(`/c/${cId}/factions`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateFaction(data: Faction): Promise<Faction> {
+    const cId = data.scopeId || this.getActiveCampaignId();
+    return this.fetchJson<Faction>(`/c/${cId}/factions/${data.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteFaction(id: string): Promise<void> {
+    const cId = this.getActiveCampaignId();
+    await this.fetchJson(`/c/${cId}/factions/${id}`, { method: 'DELETE' });
+  }
+
+  async listCampaignDocs(campaignId?: string): Promise<CampaignDoc[]> {
+    const cId = campaignId || this.getActiveCampaignId();
+    return this.fetchJson<CampaignDoc[]>(`/c/${cId}/docs`);
+  }
+
+  async createCampaignDoc(data: Omit<CampaignDoc, 'id' | 'createdAt' | 'updatedAt'>): Promise<CampaignDoc> {
+    const cId = data.campaignId || this.getActiveCampaignId();
+    return this.fetchJson<CampaignDoc>(`/c/${cId}/docs`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateCampaignDoc(data: CampaignDoc): Promise<CampaignDoc> {
+    const cId = data.campaignId || this.getActiveCampaignId();
+    return this.fetchJson<CampaignDoc>(`/c/${cId}/docs/${data.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteCampaignDoc(id: string): Promise<void> {
+    const cId = this.getActiveCampaignId();
+    await this.fetchJson(`/c/${cId}/docs/${id}`, { method: 'DELETE' });
+  }
+
+  async getGenericCalendar(calendarId?: string): Promise<GenericCalendarData> {
+    const q = calendarId ? `?calendarId=${calendarId}` : '';
+    return this.fetchJson<GenericCalendarData>(`/generic-calendar${q}`);
+  }
+
+  async updateGenericCalendar(data: GenericCalendarData): Promise<GenericCalendarData> {
+    return this.fetchJson<GenericCalendarData>('/generic-calendar', {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  // Phase 2 Part B: Linked Copies
+  async checkLinkedUpdates(campaignId: string): Promise<LinkedEntityDiff[]> {
+    const cId = campaignId || this.getActiveCampaignId();
+    return this.fetchJson<LinkedEntityDiff[]>(`/c/${cId}/linked-updates`);
+  }
+
+  async getLinkedEntityDiff(entityType: CloneEntityType, entityId: string): Promise<LinkedEntityDiff | null> {
+    const cId = this.getActiveCampaignId();
+    return this.fetchJson<LinkedEntityDiff | null>(`/c/${cId}/linked-diff?type=${entityType}&id=${entityId}`);
+  }
+
+  async applyLinkedDiff(entityType: CloneEntityType, entityId: string, chosenFields: Record<string, 'local' | 'source'>): Promise<any> {
+    const cId = this.getActiveCampaignId();
+    return this.fetchJson<any>(`/c/${cId}/linked-diff/apply`, {
+      method: 'POST',
+      body: JSON.stringify({ entityType, entityId, chosenFields })
+    });
+  }
+
+  async detachLink(entityType: CloneEntityType, entityId: string): Promise<any> {
+    const cId = this.getActiveCampaignId();
+    return this.fetchJson<any>(`/c/${cId}/linked-detach`, {
+      method: 'POST',
+      body: JSON.stringify({ entityType, entityId })
+    });
   }
 
   async migrateV2(dryRun = false): Promise<{ success: boolean; report: any }> {

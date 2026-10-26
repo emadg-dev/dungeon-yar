@@ -2499,6 +2499,282 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return json(res.results || []);
   }
 
+  // ---------------------------------------------------------
+  // Phase 2: DM Library & Content Packs
+  // ---------------------------------------------------------
+  if (path === '/library' && method === 'GET') {
+    const source = url.searchParams.get('source') || 'current_campaign';
+    const type = url.searchParams.get('type') || '';
+    const q = (url.searchParams.get('q') || '').trim().toLowerCase();
+    const tag = url.searchParams.get('tag') || '';
+    const region = url.searchParams.get('region') || '';
+    const sort = url.searchParams.get('sort') || 'newest';
+
+    // Query appropriate tables
+    let scopeType = 'campaign';
+    let scopeId = 'zorvania-c1';
+
+    if (source === 'my_library') {
+      const libRow = await env.DB.prepare('SELECT id FROM content_packs WHERE owner_id = ? AND is_default_library = 1').bind(currentUser.id).first();
+      scopeType = 'pack';
+      scopeId = libRow?.id || 'pack-zorvania';
+    } else if (source.startsWith('pack-') || source.startsWith('pack_')) {
+      scopeType = 'pack';
+      scopeId = source;
+    } else if (source.startsWith('camp-') || source === 'zorvania-c1') {
+      scopeType = 'campaign';
+      scopeId = source;
+    }
+
+    const itemsList: any[] = [];
+    if (!type || type === 'location') {
+      const rows = await env.DB.prepare('SELECT * FROM locations WHERE scope_type = ? AND scope_id = ?').bind(scopeType, scopeId).all();
+      for (const r of (rows.results || [])) {
+        itemsList.push({ ...r, itemType: 'location', name: r.name, tags: JSON.parse(r.tags || '[]') });
+      }
+    }
+    if (!type || type === 'npc') {
+      const rows = await env.DB.prepare('SELECT * FROM npcs WHERE scope_type = ? AND scope_id = ?').bind(scopeType, scopeId).all();
+      for (const r of (rows.results || [])) {
+        itemsList.push({ ...r, itemType: 'npc', name: r.name, tags: JSON.parse(r.tags || '[]') });
+      }
+    }
+    if (!type || type === 'item') {
+      const rows = await env.DB.prepare('SELECT * FROM items WHERE scope_type = ? AND scope_id = ?').bind(scopeType, scopeId).all();
+      for (const r of (rows.results || [])) {
+        itemsList.push({ ...r, itemType: 'item', name: r.name, tags: JSON.parse(r.tags || '[]') });
+      }
+    }
+    if (!type || type === 'encounter') {
+      const rows = await env.DB.prepare('SELECT * FROM encounters WHERE scope_type = ? AND scope_id = ?').bind(scopeType, scopeId).all();
+      for (const r of (rows.results || [])) {
+        itemsList.push({ ...r, itemType: 'encounter', name: r.name, tags: JSON.parse(r.tags || '[]') });
+      }
+    }
+    if (!type || type === 'faction') {
+      const rows = await env.DB.prepare('SELECT * FROM factions WHERE scope_type = ? AND scope_id = ?').bind(scopeType, scopeId).all();
+      for (const r of (rows.results || [])) {
+        itemsList.push({ ...r, itemType: 'faction', name: r.name, tags: JSON.parse(r.tags || '[]') });
+      }
+    }
+
+    let filtered = itemsList;
+    if (q) {
+      filtered = filtered.filter(i => (i.name && i.name.toLowerCase().includes(q)) || (i.description && i.description.toLowerCase().includes(q)));
+    }
+    if (tag) {
+      filtered = filtered.filter(i => i.tags && i.tags.includes(tag));
+    }
+    if (region) {
+      filtered = filtered.filter(i => i.region === region);
+    }
+
+    return json({ items: filtered, total: filtered.length });
+  }
+
+  // GET & POST /api/packs
+  if (path === '/packs' && method === 'GET') {
+    const kind = url.searchParams.get('kind');
+    let q = 'SELECT * FROM content_packs WHERE visibility = "instance" OR owner_id = ?';
+    const params: any[] = [currentUser.id];
+    if (kind) {
+      q += ' AND kind = ?';
+      params.push(kind);
+    }
+    const res = await env.DB.prepare(q).bind(...params).all();
+    return json(res.results || []);
+  }
+
+  if (path === '/packs' && method === 'POST') {
+    const data = await request.json() as any;
+    const packId = `pack-${Date.now()}-${generateRandomToken(4)}`;
+    const t = Date.now();
+    await env.DB.prepare(
+      `INSERT INTO content_packs (id, owner_id, name, description, version, visibility, kind, tags, is_default_library, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`
+    ).bind(packId, currentUser.id, data.name, data.description || '', '1.0.0', data.visibility || 'private', data.kind || 'pack', JSON.stringify(data.tags || []), t, t).run();
+
+    return json({ id: packId, name: data.name, kind: data.kind || 'pack', createdAt: t }, 201);
+  }
+
+  // Favorites GET & PUT
+  if (path === '/favorites' && method === 'GET') {
+    const res = await env.DB.prepare('SELECT * FROM favorites WHERE user_id = ?').bind(currentUser.id).all();
+    return json(res.results || []);
+  }
+
+  if (path === '/favorites' && method === 'PUT') {
+    const data = await request.json() as any;
+    const existing = await env.DB.prepare('SELECT * FROM favorites WHERE user_id = ? AND entity_type = ? AND entity_id = ?')
+      .bind(currentUser.id, data.entityType, data.entityId).first();
+    let isFavorite = false;
+    if (existing) {
+      await env.DB.prepare('DELETE FROM favorites WHERE user_id = ? AND entity_type = ? AND entity_id = ?')
+        .bind(currentUser.id, data.entityType, data.entityId).run();
+      isFavorite = false;
+    } else {
+      await env.DB.prepare('INSERT INTO favorites (user_id, entity_type, entity_id, created_at) VALUES (?, ?, ?, ?)')
+        .bind(currentUser.id, data.entityType, data.entityId, Date.now()).run();
+      isFavorite = true;
+    }
+    return json({ isFavorite });
+  }
+
+  // Wizard: POST /api/campaigns/draft
+  if (path === '/campaigns/draft' && method === 'POST') {
+    const data = await request.json() as any;
+    const campId = `camp-draft-${Date.now()}-${generateRandomToken(4)}`;
+    const t = Date.now();
+    const defaultSettings = JSON.stringify({
+      units: 'feet',
+      startingLevel: 1,
+      maxEntryLevel: 20,
+      abilityScoreMethods: ['standard_array', 'point_buy', 'roll', 'manual'],
+      approval: { onCreate: false, onLevelUp: false },
+      backstoryVisibility: 'party',
+      diceVisibility: 'table',
+      allowPlayerRollPrivate: true,
+      allowPlayerCreateCharacter: true,
+      encounterDefaults: {
+        showExactHp: false,
+        showAc: false,
+        showConditions: true,
+        showDefeated: true,
+        playerInitiativeRolls: true
+      }
+    });
+
+    const initWizard = JSON.stringify({
+      step: 1,
+      completed: [],
+      startMode: data.startMode || 'empty',
+      sourceId: data.sourceId || null,
+      answers: { name: 'کمپین جدید' }
+    });
+
+    await env.DB.prepare(
+      `INSERT INTO campaigns (id, name, description, status, owner_id, settings, wizard_state, created_at, updated_at)
+       VALUES (?, 'کمپین جدید', '', 'draft', ?, ?, ?, ?, ?)`
+    ).bind(campId, currentUser.id, defaultSettings, initWizard, t, t).run();
+
+    await env.DB.prepare(
+      `INSERT INTO campaign_members (campaign_id, user_id, role, status, joined_at)
+       VALUES (?, ?, 'owner', 'active', ?)`
+    ).bind(campId, currentUser.id, t).run();
+
+    return json({ id: campId, name: 'کمپین جدید', status: 'draft', wizardState: JSON.parse(initWizard) }, 201);
+  }
+
+  // Wizard: PATCH /api/campaigns/:id/wizard
+  if (path.match(/^\/campaigns\/[^/]+\/wizard$/) && method === 'PATCH') {
+    const campId = path.split('/')[2];
+    const data = await request.json() as any;
+    const camp = await env.DB.prepare('SELECT * FROM campaigns WHERE id = ?').bind(campId).first();
+    if (!camp) return error('کمپین یافت نشد.', 404);
+
+    const currentWiz = camp.wizard_state ? JSON.parse(camp.wizard_state) : { step: 1, answers: {} };
+    const mergedWiz = {
+      ...currentWiz,
+      ...data,
+      answers: {
+        ...(currentWiz.answers || {}),
+        ...(data.answers || {})
+      }
+    };
+
+    const newName = mergedWiz.answers.name || camp.name;
+    const newDesc = mergedWiz.answers.description || camp.description;
+    const t = Date.now();
+
+    await env.DB.prepare(
+      'UPDATE campaigns SET name = ?, description = ?, wizard_state = ?, updated_at = ? WHERE id = ?'
+    ).bind(newName, newDesc, JSON.stringify(mergedWiz), t, campId).run();
+
+    return json({ id: campId, name: newName, description: newDesc, wizardState: mergedWiz });
+  }
+
+  // Wizard: POST /api/campaigns/:id/launch
+  if (path.match(/^\/campaigns\/[^/]+\/launch$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    const t = Date.now();
+    await env.DB.prepare("UPDATE campaigns SET status = 'active', updated_at = ? WHERE id = ?").bind(t, campId).run();
+    return json({ success: true, id: campId, status: 'active' });
+  }
+
+  // Factions: GET /api/c/:id/factions
+  if (path.match(/^\/c\/[^/]+\/factions$/) && method === 'GET') {
+    const cId = path.split('/')[2];
+    const rows = await env.DB.prepare('SELECT * FROM factions WHERE scope_type = "campaign" AND scope_id = ?').bind(cId).all();
+    const list = (rows.results || []).map((r: any) => ({
+      ...r,
+      revealed: r.revealed === 1,
+      tags: JSON.parse(r.tags || '[]')
+    }));
+    return json(list);
+  }
+
+  // Factions: POST /api/c/:id/factions
+  if (path.match(/^\/c\/[^/]+\/factions$/) && method === 'POST') {
+    const cId = path.split('/')[2];
+    const data = await request.json() as any;
+    const fId = `fac-${Date.now()}-${generateRandomToken(4)}`;
+    const t = Date.now();
+    await env.DB.prepare(
+      `INSERT INTO factions (id, scope_type, scope_id, name, description, attitude, region, revealed, dm_notes, tags, source_mode, created_at, updated_at)
+       VALUES (?, 'campaign', ?, ?, ?, ?, ?, ?, ?, ?, 'copy', ?, ?)`
+    ).bind(fId, cId, data.name, data.description || '', data.attitude || '', data.region || '', data.revealed ? 1 : 0, data.dmNotes || '', JSON.stringify(data.tags || []), t, t).run();
+
+    return json({ id: fId, name: data.name, ...data, createdAt: t, updatedAt: t }, 201);
+  }
+
+  // Campaign Docs: GET /api/c/:id/docs
+  if (path.match(/^\/c\/[^/]+\/docs$/) && method === 'GET') {
+    const cId = path.split('/')[2];
+    const rows = await env.DB.prepare('SELECT * FROM campaign_docs WHERE campaign_id = ? ORDER BY sort_index ASC').bind(cId).all();
+    return json(rows.results || []);
+  }
+
+  // Campaign Docs: POST /api/c/:id/docs
+  if (path.match(/^\/c\/[^/]+\/docs$/) && method === 'POST') {
+    const cId = path.split('/')[2];
+    const data = await request.json() as any;
+    const dId = `cdoc-${Date.now()}-${generateRandomToken(4)}`;
+    const t = Date.now();
+    await env.DB.prepare(
+      `INSERT INTO campaign_docs (id, campaign_id, kind, title, body, visibility, sort_index, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(dId, cId, data.kind || 'session_zero', data.title, data.body || '', data.visibility || 'party', data.sortIndex || 0, t, t).run();
+
+    return json({ id: dId, ...data, createdAt: t, updatedAt: t }, 201);
+  }
+
+  // Generic Calendar: GET & PUT /api/generic-calendar
+  if (path === '/generic-calendar' && method === 'GET') {
+    const row = await env.DB.prepare('SELECT * FROM calendars ORDER BY updated_at DESC LIMIT 1').first();
+    if (!row) {
+      return json({
+        id: 'cal-zorvania',
+        name: 'گاه‌شمار شاه‌روزان (زروانیا)',
+        eraLabel: 'پ.ر.ن',
+        startYear: 1500,
+        months: [],
+        festivals: [],
+        offDays: []
+      });
+    }
+    return json({
+      id: row.id,
+      name: row.name,
+      eraLabel: row.era_label,
+      startYear: row.start_year,
+      months: JSON.parse(row.months || '[]'),
+      festivals: [],
+      offDays: JSON.parse(row.off_days || '[]'),
+      weekdays: JSON.parse(row.weekdays || '[]')
+    });
+  }
+
   // 404 Fallback
   return error(`مسیری با مشخصات ${method} ${path} یافت نشد.`, 404);
 };
+
