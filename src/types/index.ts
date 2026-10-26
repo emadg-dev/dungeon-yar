@@ -1,4 +1,6 @@
 export type Role = 'dm' | 'player';
+export type PlatformRole = 'admin' | 'user';
+export type CampaignRole = 'owner' | 'co_dm' | 'player' | 'spectator';
 export type UserStatus = 'active' | 'disabled';
 
 export interface User {
@@ -7,14 +9,309 @@ export interface User {
   name: string;
   displayName: string;
   role: Role;
+  platformRole?: PlatformRole;
   status?: UserStatus;
   mustChangePassword?: boolean;
   createdAt?: number;
   lastLoginAt?: number | null;
   activeCharacterId?: string | null;
   avatarUrl?: string;
+  avatarMediaId?: string | null;
   activeSessionCount?: number;
   characterNames?: string[];
+}
+
+export interface CampaignSettings {
+  units: 'feet' | 'meters';
+  startingLevel: number;
+  maxEntryLevel: number;
+  abilityScoreMethods: ('standard_array' | 'point_buy' | 'roll' | 'manual')[];
+  approval: {
+    onCreate: boolean;
+    onLevelUp: boolean;
+  };
+  backstoryVisibility: 'dm_only' | 'party';
+  diceVisibility: 'table' | 'dm_only';
+  allowPlayerRollPrivate: boolean;
+  restRules?: {
+    shortRestHours?: number;
+    longRestHours?: number;
+    grittyRealism?: boolean;
+  };
+  exhaustion?: {
+    levels?: number;
+    customRules?: string;
+  };
+  rations?: {
+    trackRations?: boolean;
+    trackWater?: boolean;
+  };
+  houseRules?: string;
+  allowPlayerCreateCharacter: boolean;
+  encounterDefaults: {
+    showExactHp: boolean;
+    showAc: boolean;
+    showConditions: boolean;
+    showDefeated: boolean;
+    playerInitiativeRolls: boolean;
+  };
+}
+
+export interface Campaign {
+  id: string;
+  name: string;
+  description: string;
+  coverMediaId?: string | null;
+  coverUrl?: string;
+  tone?: string;
+  status: 'active' | 'paused' | 'archived';
+  ownerId: string;
+  ownerName?: string;
+  sourcePackId?: string | null;
+  settings: CampaignSettings;
+  createdAt: number;
+  updatedAt: number;
+  deletedAt?: number | null;
+  myRole?: CampaignRole;
+  memberCount?: number;
+  characterCount?: number;
+  activeEncounter?: boolean;
+}
+
+export interface CampaignMember {
+  campaignId: string;
+  userId: string;
+  role: CampaignRole;
+  status: 'invited' | 'active' | 'left' | 'removed';
+  joinedAt: number;
+  userName?: string;
+  userEmail?: string;
+  userAvatarUrl?: string;
+  characterId?: string;
+  characterName?: string;
+  participationId?: string;
+}
+
+export interface CampaignInvite {
+  id: string;
+  campaignId?: string | null;
+  codeHash?: string;
+  code?: string;
+  role: CampaignRole;
+  label?: string;
+  createdBy: string;
+  createdAt: number;
+  expiresAt: number;
+  maxUses: number;
+  usedCount: number;
+  assignParticipationId?: string | null;
+  revokedAt?: number | null;
+  inviteLink?: string;
+}
+
+export interface ContentPack {
+  id: string;
+  ownerId: string;
+  name: string;
+  description: string;
+  version: string;
+  visibility: 'private' | 'instance';
+  createdAt: number;
+  updatedAt: number;
+  entityCounts?: {
+    classes: number;
+    weapons: number;
+    items: number;
+    npcs: number;
+    locations: number;
+  };
+}
+
+export interface RuleSet {
+  id: string;
+  scopeType: 'pack' | 'campaign';
+  scopeId: string;
+  abilities: { key: string; labelFa: string; short: string }[];
+  skills: { key: string; nameFa: string; nameEn?: string; ability: string; custom?: boolean }[];
+  saves: { key: string; labelFa: string }[];
+  currencies: { key: string; labelFa: string; conversionRate?: number }[];
+  resources: { key: string; labelFa: string; defaultMax?: number; resetOn?: string }[];
+  conditions: { key: string; labelFa: string; descriptionFa?: string }[];
+  damageTypes: { key: string; labelFa: string }[];
+  proficiencyBonusTable: Record<number, number>;
+}
+
+export interface BackstorySection {
+  id: string;
+  title: string;
+  text: string;
+  shareWithParty: boolean;
+}
+
+export interface MasterBackstory {
+  summary: string;
+  origin: string;
+  personality: {
+    traits: string;
+    ideals: string;
+    bonds: string;
+    flaws: string;
+  };
+  goals: string;
+  relationships: {
+    name: string;
+    npcRef?: string;
+    note: string;
+  }[];
+  timeline: {
+    label: string;
+    text: string;
+  }[];
+  sections: BackstorySection[];
+  dmOnly: {
+    secrets: string;
+    hooks: string;
+  };
+}
+
+export interface MasterCharacter {
+  id: string;
+  ownerId: string;
+  name: string;
+  portraitMediaId?: string | null;
+  portraitUrl?: string;
+  race: string;
+  appearance: string;
+  backstory: MasterBackstory;
+  status: 'active' | 'retired' | 'dead' | 'archived';
+  statusNote?: string;
+  createdAt: number;
+  updatedAt: number;
+  deletedAt?: number | null;
+  participations?: CharacterParticipation[];
+  history?: CharacterHistoryEvent[];
+}
+
+export interface CharacterParticipation {
+  id: string;
+  characterId: string;
+  campaignId: string;
+  campaignName?: string;
+  status: 'pending_approval' | 'active' | 'rejected' | 'retired' | 'dead';
+  classId?: string | null;
+  className: string;
+  subclassName?: string;
+  level: number;
+  xp: number;
+  abilityScores: AbilityScoreMap;
+  savingThrows?: Record<AbilityName, boolean>;
+  currentHp: number;
+  maxHp: number;
+  tempHp: number;
+  hitDice: {
+    current: number;
+    max: number;
+    die: string;
+  };
+  acOverride?: number | null;
+  speedOverride?: number | null;
+  deathSaves: {
+    successes: number;
+    failures: number;
+  };
+  conditions: string[];
+  inventory: InventoryItem[];
+  weapons: Weapon[];
+  currency: Currencies;
+  customResources: TrackedResource[];
+  spellsKnownPrepared?: any;
+  spellSlots?: any;
+  features: Feature[];
+  notes: string;
+  dmNotes?: string;
+  joinedAt: number;
+  updatedAt: number;
+  pendingLevelUp?: {
+    targetLevel: number;
+    diff: any;
+    requestedAt: number;
+  } | null;
+  characterName?: string;
+  characterRace?: string;
+  characterPortraitUrl?: string;
+  characterAppearance?: string;
+  characterBackstory?: MasterBackstory;
+}
+
+export interface CharacterHistoryEvent {
+  id: string;
+  characterId: string;
+  campaignId?: string | null;
+  campaignName?: string;
+  eventType: 'joined' | 'level_up' | 'death' | 'major_deed' | 'retired' | 'custom';
+  payload: {
+    title?: string;
+    description?: string;
+    level?: number;
+    campaignName?: string;
+    oldLevel?: number;
+    newLevel?: number;
+    notes?: string;
+    [key: string]: any;
+  };
+  timestamp: number;
+}
+
+export interface MediaItem {
+  id: string;
+  ownerId: string;
+  mimeType: string;
+  sizeBytes: number;
+  dataBase64?: string;
+  width?: number;
+  height?: number;
+  createdAt: number;
+}
+
+export interface CampaignDiceRoll {
+  id: string;
+  campaignId: string;
+  userId: string;
+  userName: string;
+  characterId?: string | null;
+  characterName?: string | null;
+  rollType: string;
+  diceExpression: string;
+  total: number;
+  details: {
+    rolls: number[];
+    modifier: number;
+    advantage?: 'adv' | 'dis';
+    isCritical?: boolean;
+    isFumble?: boolean;
+    label?: string;
+  };
+  visibility: 'table' | 'dm_only';
+  createdAt: number;
+}
+
+export interface HomeSummaryResponse {
+  user: User;
+  myCampaigns: Campaign[];
+  myCharacters: MasterCharacter[];
+  pendingInvites: CampaignInvite[];
+  pendingApprovals: {
+    campaignId: string;
+    campaignName: string;
+    type: 'create' | 'level_up';
+    participationId: string;
+    characterId: string;
+    characterName: string;
+    playerName: string;
+    level: number;
+    requestedAt: number;
+    details?: any;
+  }[];
 }
 
 export interface UserSession {

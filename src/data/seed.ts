@@ -11,7 +11,15 @@ import {
   WeaponTemplate,
   ClassTemplate,
   CampaignRule,
-  LocationEntry
+  LocationEntry,
+  ContentPack,
+  RuleSet,
+  Campaign,
+  CampaignMember,
+  MasterCharacter,
+  CharacterParticipation,
+  CharacterHistoryEvent,
+  CampaignDiceRoll
 } from '../types';
 
 export const DEFAULT_5E_SKILLS: SkillDefinition[] = [
@@ -469,9 +477,10 @@ export const SEED_USERS: User[] = [
   {
     id: 'user-dm',
     email: 'dm@zorvania.ir',
-    name: 'دانجن مستر زروانیا (راوی)',
-    displayName: 'دانجن مستر زروانیا (راوی)',
+    name: 'دانجن مستر زروانیا (مدیر/راوی)',
+    displayName: 'دانجن مستر زروانیا (مدیر/راوی)',
     role: 'dm',
+    platformRole: 'admin',
     status: 'active',
     activeCharacterId: null,
     avatarUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=200&q=80',
@@ -484,6 +493,7 @@ export const SEED_USERS: User[] = [
     name: 'سامان (دیوانزاد)',
     displayName: 'سامان (دیوانزاد)',
     role: 'player',
+    platformRole: 'user',
     status: 'active',
     activeCharacterId: 'char-saman',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
@@ -496,6 +506,7 @@ export const SEED_USERS: User[] = [
     name: 'پردیس (فرهدار)',
     displayName: 'پردیس (فرهدار)',
     role: 'player',
+    platformRole: 'user',
     status: 'active',
     activeCharacterId: 'char-pardis',
     avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80',
@@ -508,6 +519,7 @@ export const SEED_USERS: User[] = [
     name: 'شیده (سایهخوان)',
     displayName: 'شیده (سایهخوان)',
     role: 'player',
+    platformRole: 'user',
     status: 'active',
     activeCharacterId: 'char-shideh',
     avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80',
@@ -520,6 +532,7 @@ export const SEED_USERS: User[] = [
     name: 'مانا (پیمانبان)',
     displayName: 'مانا (پیمانبان)',
     role: 'player',
+    platformRole: 'user',
     status: 'active',
     activeCharacterId: 'char-mana',
     avatarUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80',
@@ -532,6 +545,7 @@ export const SEED_USERS: User[] = [
     name: 'هامون (موبد آذرین)',
     displayName: 'هامون (موبد آذرین)',
     role: 'player',
+    platformRole: 'user',
     status: 'active',
     activeCharacterId: 'char-hamoun',
     avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
@@ -544,11 +558,25 @@ export const SEED_USERS: User[] = [
     name: 'سیاوش (مهآشنا)',
     displayName: 'سیاوش (مهآشنا)',
     role: 'player',
+    platformRole: 'user',
     status: 'active',
     activeCharacterId: 'char-siavash',
     avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
     createdAt: Date.now() - 15 * 86400000,
     lastLoginAt: Date.now() - 172800000
+  },
+  {
+    id: 'user-spectator',
+    email: 'spectator@zorvania.ir',
+    name: 'تماشاگر بازی (ناظر)',
+    displayName: 'تماشاگر بازی (ناظر)',
+    role: 'player',
+    platformRole: 'user',
+    status: 'active',
+    activeCharacterId: null,
+    avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+    createdAt: Date.now() - 10 * 86400000,
+    lastLoginAt: Date.now() - 3600000
   }
 ];
 
@@ -2239,4 +2267,1130 @@ export const SEED_LOCATIONS: LocationEntry[] = [
     updatedAt: 1700000000000
   }
 ];
+
+// ======================================================================
+// MULTI-CAMPAIGN PLATFORM SEED DATA
+// ======================================================================
+
+export const SEED_CONTENT_PACKS: ContentPack[] = [
+  {
+    id: 'pack-zorvania',
+    ownerId: 'user-dm',
+    name: 'زروانیا',
+    description: 'بسته‌ی محتوای اسطوره‌ای جهان زروانیا: شامل ۶ کلاس سفارشی، سلاح‌های باستانی، آیتم‌های عهد و مهر، هیولاها، مکان‌های ورنا و تقویم ۳۶۵ روزه.',
+    version: '1.0.0',
+    visibility: 'instance',
+    createdAt: Date.now() - 30 * 86400000,
+    updatedAt: Date.now() - 86400000,
+    entityCounts: {
+      classes: 6,
+      weapons: 12,
+      items: 15,
+      npcs: 14,
+      locations: 5
+    }
+  },
+  {
+    id: 'pack-srd-5e',
+    ownerId: 'user-dm',
+    name: 'پایه ۵e',
+    description: 'ساختار استاندارد و خالص قوانین ویرایش پنجم D&D (خالی از هرگونه محتوای توصیفی خارج از SRD): ۶ ویژگی اصلی، ۱۸ مهارت، تاس‌های نجات، شرایط و وضعیت‌ها، انواع آسیب، جدول ضریب مهارت و آستانه سطوح.',
+    version: '1.0.0',
+    visibility: 'instance',
+    createdAt: Date.now() - 30 * 86400000,
+    updatedAt: Date.now() - 86400000,
+    entityCounts: {
+      classes: 0,
+      weapons: 0,
+      items: 0,
+      npcs: 0,
+      locations: 0
+    }
+  }
+];
+
+export const STANDARD_5E_ABILITIES = [
+  { key: 'str', labelFa: 'قدرت', short: 'STR' },
+  { key: 'dex', labelFa: 'چابکی', short: 'DEX' },
+  { key: 'con', labelFa: 'پایداری', short: 'CON' },
+  { key: 'int', labelFa: 'هوش', short: 'INT' },
+  { key: 'wis', labelFa: 'خرد', short: 'WIS' },
+  { key: 'cha', labelFa: 'فرهمندی', short: 'CHA' }
+];
+
+export const STANDARD_5E_SAVES = [
+  { key: 'str', labelFa: 'قدرت (STR)' },
+  { key: 'dex', labelFa: 'چابکی (DEX)' },
+  { key: 'con', labelFa: 'پایداری (CON)' },
+  { key: 'int', labelFa: 'هوش (INT)' },
+  { key: 'wis', labelFa: 'خرد (WIS)' },
+  { key: 'cha', labelFa: 'فرهمندی (CHA)' }
+];
+
+export const STANDARD_5E_CONDITIONS = [
+  { key: 'blinded', labelFa: 'نابینا (Blinded)' },
+  { key: 'charmed', labelFa: 'افسون‌شده (Charmed)' },
+  { key: 'deafened', labelFa: 'ناشنوا (Deafened)' },
+  { key: 'frightened', labelFa: 'ترسان (Frightened)' },
+  { key: 'grappled', labelFa: 'چنگ‌زده (Grappled)' },
+  { key: 'incapacitated', labelFa: 'ناتوان (Incapacitated)' },
+  { key: 'invisible', labelFa: 'نامرئی (Invisible)' },
+  { key: 'paralyzed', labelFa: 'فلج (Paralyzed)' },
+  { key: 'petrified', labelFa: 'سنگ‌شده (Petrified)' },
+  { key: 'poisoned', labelFa: 'مسموم (Poisoned)' },
+  { key: 'prone', labelFa: 'افتاده (Prone)' },
+  { key: 'restrained', labelFa: 'مهارشده (Restrained)' },
+  { key: 'stunned', labelFa: 'گیج (Stunned)' },
+  { key: 'unconscious', labelFa: 'بیهوش (Unconscious)' },
+  { key: 'exhaustion', labelFa: 'فرسودگی (Exhaustion)' }
+];
+
+export const STANDARD_5E_DAMAGE_TYPES = [
+  { key: 'acid', labelFa: 'اسیدی (Acid)' },
+  { key: 'bludgeoning', labelFa: 'کوبشی (Bludgeoning)' },
+  { key: 'cold', labelFa: 'سرمایی (Cold)' },
+  { key: 'fire', labelFa: 'آتشین (Fire)' },
+  { key: 'force', labelFa: 'نیرویی (Force)' },
+  { key: 'lightning', labelFa: 'صاعقه (Lightning)' },
+  { key: 'necrotic', labelFa: 'فساد (Necrotic)' },
+  { key: 'piercing', labelFa: 'سوراخ‌کننده (Piercing)' },
+  { key: 'poison', labelFa: 'سم (Poison)' },
+  { key: 'psychic', labelFa: 'روانی (Psychic)' },
+  { key: 'radiant', labelFa: 'تابشی (Radiant)' },
+  { key: 'slashing', labelFa: 'برشی (Slashing)' },
+  { key: 'thunder', labelFa: 'تندری (Thunder)' }
+];
+
+export const STANDARD_PROFICIENCY_TABLE: Record<number, number> = {
+  1: 2, 2: 2, 3: 2, 4: 2,
+  5: 3, 6: 3, 7: 3, 8: 3,
+  9: 4, 10: 4, 11: 4, 12: 4,
+  13: 5, 14: 5, 15: 5, 16: 5,
+  17: 6, 18: 6, 19: 6, 20: 6
+};
+
+export const SEED_RULE_SETS: RuleSet[] = [
+  {
+    id: 'ruleset-zorvania',
+    scopeType: 'pack',
+    scopeId: 'pack-zorvania',
+    abilities: STANDARD_5E_ABILITIES,
+    skills: DEFAULT_5E_SKILLS.map(s => ({ key: s.id, nameFa: s.nameFa, nameEn: s.nameEn, ability: s.ability, custom: s.custom })),
+    saves: STANDARD_5E_SAVES,
+    currencies: [
+      { key: 'gold', labelFa: 'سکه زر' },
+      { key: 'silver', labelFa: 'سکه سیم' },
+      { key: 'copper', labelFa: 'سکه مس' },
+      { key: 'ember', labelFa: 'دانه اخگر' }
+    ],
+    resources: [
+      { key: 'rations', labelFa: 'جیره غذایی' },
+      { key: 'lantern_oil', labelFa: 'روغن چراغ' },
+      { key: 'time_resonance', labelFa: 'طنین زمان' }
+    ],
+    conditions: STANDARD_5E_CONDITIONS,
+    damageTypes: STANDARD_5E_DAMAGE_TYPES,
+    proficiencyBonusTable: STANDARD_PROFICIENCY_TABLE
+  },
+  {
+    id: 'ruleset-srd-5e',
+    scopeType: 'pack',
+    scopeId: 'pack-srd-5e',
+    abilities: STANDARD_5E_ABILITIES,
+    skills: DEFAULT_5E_SKILLS.filter(s => !s.custom).map(s => ({ key: s.id, nameFa: s.nameFa, nameEn: s.nameEn, ability: s.ability })),
+    saves: STANDARD_5E_SAVES,
+    currencies: [
+      { key: 'gold', labelFa: 'Gold (GP)' },
+      { key: 'silver', labelFa: 'Silver (SP)' },
+      { key: 'copper', labelFa: 'Copper (CP)' }
+    ],
+    resources: [
+      { key: 'rations', labelFa: 'جیره' },
+      { key: 'torches', labelFa: 'مشعل' }
+    ],
+    conditions: STANDARD_5E_CONDITIONS,
+    damageTypes: STANDARD_5E_DAMAGE_TYPES,
+    proficiencyBonusTable: STANDARD_PROFICIENCY_TABLE
+  }
+];
+
+export const SEED_CAMPAIGNS: Campaign[] = [
+  {
+    id: 'zorvania-c1',
+    name: 'زروانیا: کمپین نخست',
+    description: 'ماجراجویی آغازین در سرزمین‌های ازهم‌گسیخته‌ی زمان، رازهای باستانی فره و رویارویی با گسسته‌زمان.',
+    tone: 'حماسی و اساطیری با تمرکز بر رازهای باستانی زمان و فره',
+    status: 'active',
+    ownerId: 'user-dm',
+    ownerName: 'دانجن مستر زروانیا (مدیر/راوی)',
+    sourcePackId: 'pack-zorvania',
+    settings: {
+      units: 'feet',
+      startingLevel: 1,
+      maxEntryLevel: 20,
+      abilityScoreMethods: ['standard_array', 'point_buy', 'roll', 'manual'],
+      approval: { onCreate: false, onLevelUp: false },
+      backstoryVisibility: 'party',
+      diceVisibility: 'table',
+      allowPlayerRollPrivate: true,
+      allowPlayerCreateCharacter: true,
+      encounterDefaults: {
+        showExactHp: false,
+        showAc: false,
+        showConditions: true,
+        showDefeated: true,
+        playerInitiativeRolls: true
+      },
+      houseRules: 'در جهان زروانیا، استراحت کوتاه ۱ ساعت و استراحت طولانی ۸ ساعت است. آسیب‌های زمانی نیازمند پالایش خاطره هستند.'
+    },
+    createdAt: Date.now() - 30 * 86400000,
+    updatedAt: Date.now() - 100000,
+    myRole: 'owner',
+    memberCount: 8,
+    characterCount: 6,
+    activeEncounter: true
+  },
+  {
+    id: 'campaign-srd-test',
+    name: 'سیاه‌چال کهن (کمپین آزمایشی ۵e)',
+    description: 'یک کمپین آزمایشی مبتنی بر هسته مکانیکی D&D 5e بدون لور اختصاصی زروانیا.',
+    tone: 'ماجراجویی کلاسیک سیاهچال و کاوش گنج',
+    status: 'active',
+    ownerId: 'user-dm',
+    ownerName: 'دانجن مستر زروانیا (مدیر/راوی)',
+    sourcePackId: 'pack-srd-5e',
+    settings: {
+      units: 'feet',
+      startingLevel: 1,
+      maxEntryLevel: 10,
+      abilityScoreMethods: ['standard_array', 'point_buy', 'roll', 'manual'],
+      approval: { onCreate: true, onLevelUp: true },
+      backstoryVisibility: 'party',
+      diceVisibility: 'table',
+      allowPlayerRollPrivate: true,
+      allowPlayerCreateCharacter: true,
+      encounterDefaults: {
+        showExactHp: false,
+        showAc: false,
+        showConditions: true,
+        showDefeated: true,
+        playerInitiativeRolls: true
+      },
+      houseRules: 'قوانین استاندارد SRD 5e.'
+    },
+    createdAt: Date.now() - 15 * 86400000,
+    updatedAt: Date.now() - 86400000,
+    myRole: 'owner',
+    memberCount: 2,
+    characterCount: 1,
+    activeEncounter: false
+  }
+];
+
+export const SEED_CAMPAIGN_MEMBERS: CampaignMember[] = [
+  {
+    campaignId: 'zorvania-c1',
+    userId: 'user-dm',
+    role: 'owner',
+    status: 'active',
+    joinedAt: Date.now() - 30 * 86400000,
+    userName: 'دانجن مستر زروانیا (مدیر/راوی)',
+    userEmail: 'dm@zorvania.ir'
+  },
+  {
+    campaignId: 'zorvania-c1',
+    userId: 'user-saman',
+    role: 'player',
+    status: 'active',
+    joinedAt: Date.now() - 25 * 86400000,
+    userName: 'سامان (دیوانزاد)',
+    userEmail: 'saman@zorvania.ir',
+    characterId: 'char-saman',
+    characterName: 'سامان',
+    participationId: 'part-saman-c1'
+  },
+  {
+    campaignId: 'zorvania-c1',
+    userId: 'user-pardis',
+    role: 'player',
+    status: 'active',
+    joinedAt: Date.now() - 24 * 86400000,
+    userName: 'پردیس (فرهدار)',
+    userEmail: 'pardis@zorvania.ir',
+    characterId: 'char-pardis',
+    characterName: 'پردیس',
+    participationId: 'part-pardis-c1'
+  },
+  {
+    campaignId: 'zorvania-c1',
+    userId: 'user-shideh',
+    role: 'player',
+    status: 'active',
+    joinedAt: Date.now() - 22 * 86400000,
+    userName: 'شیده (سایهخوان)',
+    userEmail: 'shideh@zorvania.ir',
+    characterId: 'char-shideh',
+    characterName: 'شیده',
+    participationId: 'part-shideh-c1'
+  },
+  {
+    campaignId: 'zorvania-c1',
+    userId: 'user-mana',
+    role: 'player',
+    status: 'active',
+    joinedAt: Date.now() - 20 * 86400000,
+    userName: 'مانا (پیمانبان)',
+    userEmail: 'mana@zorvania.ir',
+    characterId: 'char-mana',
+    characterName: 'مانا',
+    participationId: 'part-mana-c1'
+  },
+  {
+    campaignId: 'zorvania-c1',
+    userId: 'user-hamoun',
+    role: 'player',
+    status: 'active',
+    joinedAt: Date.now() - 18 * 86400000,
+    userName: 'هامون (موبد آذرین)',
+    userEmail: 'hamoun@zorvania.ir',
+    characterId: 'char-hamoun',
+    characterName: 'هامون',
+    participationId: 'part-hamoun-c1'
+  },
+  {
+    campaignId: 'zorvania-c1',
+    userId: 'user-siavash',
+    role: 'player',
+    status: 'active',
+    joinedAt: Date.now() - 15 * 86400000,
+    userName: 'سیاوش (مهآشنا)',
+    userEmail: 'siavash@zorvania.ir',
+    characterId: 'char-siavash',
+    characterName: 'سیاوش',
+    participationId: 'part-siavash-c1'
+  },
+  {
+    campaignId: 'zorvania-c1',
+    userId: 'user-spectator',
+    role: 'spectator',
+    status: 'active',
+    joinedAt: Date.now() - 10 * 86400000,
+    userName: 'تماشاگر بازی (ناظر)',
+    userEmail: 'spectator@zorvania.ir'
+  },
+  {
+    campaignId: 'campaign-srd-test',
+    userId: 'user-dm',
+    role: 'owner',
+    status: 'active',
+    joinedAt: Date.now() - 15 * 86400000,
+    userName: 'دانجن مستر زروانیا (مدیر/راوی)',
+    userEmail: 'dm@zorvania.ir'
+  },
+  {
+    campaignId: 'campaign-srd-test',
+    userId: 'user-saman',
+    role: 'player',
+    status: 'active',
+    joinedAt: Date.now() - 10 * 86400000,
+    userName: 'سامان (دیوانزاد)',
+    userEmail: 'saman@zorvania.ir',
+    characterId: 'char-saman',
+    characterName: 'سامان',
+    participationId: 'part-saman-test'
+  }
+];
+
+export const SEED_MASTER_CHARACTERS: MasterCharacter[] = [
+  {
+    id: 'char-saman',
+    ownerId: 'user-saman',
+    name: 'سامان',
+    race: 'دیوانزاد',
+    appearance: 'درشت‌اندام و استوار با پوست خاکستری متمایل به برنز، دست‌های ورزیده آهنگری و رد رگه‌های سنگی بر پیشانی.',
+    backstory: {
+      summary: 'آهنگری از نوادگان دیوان باستان که در جستجوی شناخت رازهای مکانیکی سنگ‌خواب‌هاست.',
+      origin: 'کوهپایه‌های سپیدارون و کارگاه‌های آهنگری متروکه',
+      personality: {
+        traits: 'ساکت، صبور و دقیق در سنجش سنگ‌ها و سازه‌ها.',
+        ideals: 'پایداری و درک قوانین نهفته در صنعت کهن.',
+        bonds: 'میراث چکش پدرش و تعهد به کشف حقیقت دیوان.',
+        flaws: 'گاهی در برابر ظرافت‌های احساسی ناتوان است و به سنگ‌ها بیشتر از آدم‌ها اعتماد دارد.'
+      },
+      goals: 'بازگشایی دخمه سنگ‌خواب و احیای مهندسی هیدرولیک باغستان.',
+      relationships: [
+        { name: 'فرخداد', npcRef: 'npc-farakhdad', note: 'مبادله اطلاعات کتیبه‌های باستانی' }
+      ],
+      timeline: [
+        { label: 'کودکی', text: 'کشف اولین تراشه‌های سنگی با ارتعاشات حرارتی در سپیدارون.' },
+        { label: 'جوانی', text: 'شاگردی در کاروانسرای ماه سرخ و آموختن ساخت ابزار.' }
+      ],
+      sections: [
+        { id: 'sec-saman-1', title: 'خاطره اولین طنین', text: 'صدای تپش عمیقی که در اعماق معادن سنگ‌خواب شنید و مسیر زندگیش را دگرگون ساخت.', shareWithParty: true },
+        { id: 'sec-saman-secret', title: 'راز خون دیوان', text: 'او حامل نشانه‌ای پنهان در ستون فقراتش است که می‌تواند کلید ماشین‌های باستانی باشد.', shareWithParty: false }
+      ],
+      dmOnly: {
+        secrets: 'در صورت فعال شدن محراب اصلی، ممکن است پیوند ناخواسته‌ای با هوش جمعی دیوان برقرار شود.',
+        hooks: 'نیاز به پیدا کردن کلید بی‌دندان برای خاموش کردن سازه نگهبان.'
+      }
+    },
+    status: 'active',
+    createdAt: Date.now() - 25 * 86400000,
+    updatedAt: Date.now() - 100000
+  },
+  {
+    id: 'char-pardis',
+    ownerId: 'user-pardis',
+    name: 'پردیس',
+    race: 'فرهدار',
+    appearance: 'بلندبالا با نگاهی نافذ و موهای تیره بافته‌شده؛ نشان فره به شکل شعله‌ای کوچک و کم‌نور بر کف دست راست او می‌درخشد.',
+    backstory: {
+      summary: 'پاسدار سوگند باستانی آریامن که بار سنگین فره شاهنشاهی را بر دوش می‌کشد.',
+      origin: 'معبد کهن سپیدارون و خاندان پاسداران عهد',
+      personality: {
+        traits: 'شجاع، مصمم و پایبند به وعده‌ها تا پای جان.',
+        ideals: 'عدالت و بازگرداندن پیوند از دست رفته میان انسان‌ها و پریان.',
+        bonds: 'حفاظت از یاران خود در برابر هرگونه هجوم تاریکی.',
+        flaws: 'گاهی بار مسئولیت او را بیش از حد سخت‌گیر و تلخ‌زبان می‌کند.'
+      },
+      goals: 'روشن نگه داشتن اخگر فره و جلوگیری از شکست نهایی مهرها.',
+      relationships: [
+        { name: 'شهباز', npcRef: 'npc-shahbaz', note: 'هم‌پیمان و پشتیبان در تصمیم‌گیری‌های سخت' }
+      ],
+      timeline: [
+        { label: 'بیدار شدن فره', text: 'درخشش ناگهانی نشان در دوران نوجوانی در آتشکده سپیدارون.' }
+      ],
+      sections: [
+        { id: 'sec-par-1', title: 'سوگند آریامن', text: 'متن پیمانی که هنگام پذیرش فره در برابر موبدان خواند.', shareWithParty: true },
+        { id: 'sec-par-secret', title: 'ترس از سوختن درون', text: 'اگر نشان بیش از حد فعال شود، گرمای آن قلبش را می‌سوزاند.', shareWithParty: false }
+      ],
+      dmOnly: {
+        secrets: 'او آخرین نسل از تباری است که می‌توانند بدون زوال عقل با آریامن سخن بگویند.',
+        hooks: 'در مواجهه با شاهباز، نشان عکس‌العمل غریبی نشان می‌دهد.'
+      }
+    },
+    status: 'active',
+    createdAt: Date.now() - 24 * 86400000,
+    updatedAt: Date.now() - 100000
+  },
+  {
+    id: 'char-shideh',
+    ownerId: 'user-shideh',
+    name: 'شیده',
+    race: 'سایهخوان',
+    appearance: 'چابک با لباس‌های تیره و خاکستری، گام‌های کاملاً بی‌صدا و نگاهی که سایه‌ها را دنبال می‌کند.',
+    backstory: {
+      summary: 'کاشف شکاف‌های زمانی و سایه‌روانی که از خیابان‌های خطرناک شان‌شین جان سالم به در برده است.',
+      origin: 'کوچه‌های تاریک و محله‌های پایینی شان‌شین',
+      personality: {
+        traits: 'مراقب، تیزبین و اهل عمل سریع.',
+        ideals: 'آزادی عمل و کشف حقیقت فارغ از تعصبات مذهبی.',
+        bonds: 'تعهد به نریمان و محافظت از دوستان نزدیک.',
+        flaws: 'بدگمانی مزمن به هر غریبه و تمایل به گریز در اولین نشانه خیانت.'
+      },
+      goals: 'یافتن راهی برای ترمیم شکاف‌های زمان قبل از بلعیده شدن شهر.',
+      relationships: [
+        { name: 'نریمان', npcRef: 'npc-nariman', note: 'منبع اطلاعاتی در بازار سیاه' }
+      ],
+      timeline: [
+        { label: 'فرار اول', text: 'گریز از محاصره ماموران پیمانداران در سنین نوجوانی.' }
+      ],
+      sections: [
+        { id: 'sec-shi-1', title: 'شنود سایه‌ها', text: 'آموخته‌هایش در مورد زمزمه‌های پنهان درون شکاف‌های دیوارها.', shareWithParty: true }
+      ],
+      dmOnly: {
+        secrets: 'او یک قطعه شکسته از ساعت نخستین را در کمربند خود پنهان کرده است.',
+        hooks: 'سایه‌خواران هنوز در پی بازپس‌گیری بدهی‌های قدیمی او هستند.'
+      }
+    },
+    status: 'active',
+    createdAt: Date.now() - 22 * 86400000,
+    updatedAt: Date.now() - 100000
+  },
+  {
+    id: 'char-mana',
+    ownerId: 'user-mana',
+    name: 'مانا',
+    race: 'پیمانبان',
+    appearance: 'پوست گندمگون با رد خطوط سبز و خاکی، چشمانی روشن که به زمزمه برگ‌ها و گیاهان گوش می‌سپارد.',
+    backstory: {
+      summary: 'پیمان‌بان بیشه بلورین ورنا و پیونددهنده طبیعت زنده با ارواح جنگل.',
+      origin: 'بیشه بلورین و جنگل‌های سرسبز ورنا',
+      personality: {
+        traits: 'آرام، صبور، همدل با رنج موجودات زنده.',
+        ideals: 'هماهنگی و باززایی حیات در مناطق خشکیده.',
+        bonds: 'درخت کهنسال ورنا و همراهان سفرهایش.',
+        flaws: 'گاهی در تصمیم‌گیری‌های خشن علیه انسان‌ها تردید دارد.'
+      },
+      goals: 'رساندن بذر ورنا به چشمه‌های خشکیده و احیای جریان آب‌های پاک.',
+      relationships: [
+        { name: 'پری مه‌آشنا', note: 'راهنمای معنوی در مهستان' }
+      ],
+      timeline: [
+        { label: 'پیمان ریشه‌ها', text: 'پیوند خون و شیره گیاهی با ریشه مقدس در اعماق ورنا.' }
+      ],
+      sections: [
+        { id: 'sec-man-1', title: 'زبان پرندگان ورنا', text: 'نشانه‌ها و آواهایی که برای جهت‌یابی در مهستان کاربرد دارد.', shareWithParty: true }
+      ],
+      dmOnly: {
+        secrets: 'خشک شدن چشمه‌ها نتیجه نشت انرژی دیوان در زیر بستر ریشه‌هاست.',
+        hooks: 'در حضور دیوانزادها، ریشه‌ها واکنش مضاعف نشان می‌دهند.'
+      }
+    },
+    status: 'active',
+    createdAt: Date.now() - 20 * 86400000,
+    updatedAt: Date.now() - 100000
+  },
+  {
+    id: 'char-hamoun',
+    ownerId: 'user-hamoun',
+    name: 'هامون',
+    race: 'موبد آذرین',
+    appearance: 'لباس ساده خاکی با رگه‌های قرمز بر لبه‌ها، عصای آتشین در دست و چهره‌ای آفتاب‌سوخته اما متمرکز.',
+    backstory: {
+      summary: 'موبد حافظ شعله خاطرات که برای ثبت وقایع و درمان زخم‌های دوران به سفر آمده است.',
+      origin: 'آتشکده کاروانسرای ماه سرخ در آستانه کویر خاموش',
+      personality: {
+        traits: 'مهربان، اهل تامل و یادداشت‌برداری مداوم.',
+        ideals: 'دانش و پالایش ارواح از آلودگی‌های زمانلغزیده.',
+        bonds: 'آتشکده نیاکان و حفظ جان همراهان گروه.',
+        flaws: 'بیش از حد به تعبیر رویاها و نشانه‌ها متکی است.'
+      },
+      goals: 'افروختن دوباره آتش‌های خاموش‌شده در برج‌های نگهبانی.',
+      relationships: [
+        { name: 'موبد ارشد', note: 'استاد دیرین در کویر خاموش' }
+      ],
+      timeline: [
+        { label: 'آغاز سلوک', text: 'پذیرش عصای آذرین پس از هفت سال مراقبه در غارهای کویر.' }
+      ],
+      sections: [
+        { id: 'sec-ham-1', title: 'خاطرات شعله', text: 'ثبت وقایع سفر و نام کسانی که در راه رستگاری جان باختند.', shareWithParty: true }
+      ],
+      dmOnly: {
+        secrets: 'او نشانه‌هایی از خاکستر شدن تدریجی شعله مقدس در سراسر جهان دیده است.',
+        hooks: 'در برخورد با اخگر مادر، شعله عصای او به بنفش تغییر رنگ می‌دهد.'
+      }
+    },
+    status: 'active',
+    createdAt: Date.now() - 18 * 86400000,
+    updatedAt: Date.now() - 100000
+  },
+  {
+    id: 'char-siavash',
+    ownerId: 'user-siavash',
+    name: 'سیاوش',
+    race: 'مهآشنا',
+    appearance: 'ورزیده با ردای خاکستری تیره، حرکات سریع و غیرمنتظره که گویی در مرز بین دو ثانیه متوقف می‌شود.',
+    backstory: {
+      summary: 'راهب سرگردان میان لحظه‌ها که به دنبال تثبیت موقعیت خود در جهان متزلزل زمان است.',
+      origin: 'معابد صخره‌ای مه‌ستان',
+      personality: {
+        traits: 'متمرکز، خویشتن‌دار، سخنگو به گزیده‌ترین کلمات.',
+        ideals: 'تعادل درونی و نفوذ به لایه‌های پنهان لحظه.',
+        bonds: 'عهد سکوت و حمایت از سرگشتگان زمان.',
+        flaws: 'درک متفاوتی از گذر زمان دارد و گاهی روزها را گم می‌کند.'
+      },
+      goals: 'دستیابی به حالت ایستاده میان دو لحظه بدون از دست دادن هوشیاری.',
+      relationships: [],
+      timeline: [
+        { label: 'گم‌شدن در مه', text: 'سه ماه سرگردانی در شکاف زمانی مهستان بدون احساس گرسنگی.' }
+      ],
+      sections: [
+        { id: 'sec-sia-1', title: 'تنفس در مه', text: 'اصول تمرکز برای رهایی از اضطراب هجوم زمان.', shareWithParty: true }
+      ],
+      dmOnly: {
+        secrets: 'او سایه‌ای از خود را در آینده دیده است که در برابر یاران ایستاده است.',
+        hooks: 'صدای پژواک گم‌شده او را به سوی اعماق برج ساعت فرامی‌خواند.'
+      }
+    },
+    status: 'active',
+    createdAt: Date.now() - 15 * 86400000,
+    updatedAt: Date.now() - 100000
+  }
+];
+
+export const SEED_CHARACTER_PARTICIPATIONS: CharacterParticipation[] = [
+  // Saman in Zorvania C1
+  {
+    id: 'part-saman-c1',
+    characterId: 'char-saman',
+    campaignId: 'zorvania-c1',
+    campaignName: 'زروانیا: کمپین نخست',
+    status: 'active',
+    classId: 'class-devanzad',
+    className: 'دیوانزاد (Saman)',
+    level: 1,
+    xp: 0,
+    abilityScores: { str: 15, dex: 10, con: 16, int: 14, wis: 12, cha: 8 },
+    savingThrows: { str: false, dex: false, con: true, int: true, wis: false, cha: false },
+    currentHp: 12,
+    maxHp: 12,
+    tempHp: 0,
+    hitDice: { current: 1, max: 1, die: 'd10' },
+    acOverride: null,
+    speedOverride: null,
+    deathSaves: { successes: 0, failures: 0 },
+    conditions: [],
+    inventory: [
+      {
+        id: 'inv-sam-1',
+        name: 'ابزار آهنگری و اندازه‌گیری سنگ',
+        quantity: 1,
+        weight: 3,
+        description: 'ابزار ویژه سنجش رگه‌های برنز و سرب.',
+        category: 'misc',
+        equipped: true,
+        isQuestItem: false
+      }
+    ],
+    weapons: [
+      {
+        id: 'w-sam-1',
+        templateId: 'wpn-sam-special',
+        name: 'چکش پژواکسنگ',
+        damageDice: '1d6',
+        damageType: 'کوبشی (Bludgeoning)',
+        range: 'تن به تن',
+        properties: 'دو دست 1d8، سربی و برنز ورنا',
+        kind: 'special',
+        isSpecial: true,
+        isShowy: false,
+        specialAbility: {
+          name: 'طنین ساختار',
+          description: 'یک بار در هر استراحت کوتاه؛ مزیت در چک‌های کشف درهای مخفی و تله‌ها.',
+          usesPerRest: 1,
+          restType: 'short'
+        },
+        abilityName: 'طنین ساختار',
+        abilityDesc: 'کشف ساختار پشت سنگ تا شعاع ۳۰ فوت',
+        abilityMaxUses: 1,
+        abilityUsed: 0,
+        abilityReset: 'short'
+      }
+    ],
+    currency: { gold: 12, silver: 15, copper: 30 },
+    customResources: [],
+    features: [
+      {
+        id: 'f-sam-1',
+        name: 'خون سنگ',
+        description: 'پیوند بدنی با استقامت سازه‌های دیوان و مقاومت در برابر تکانه‌ها.',
+        source: 'دیوانزاد - سطح ۱',
+        usageType: 'none',
+        usedCount: 0
+      }
+    ],
+    notes: 'بررسی قفل‌های سنگی رصدخانه با چکش پژواکسنگ انجام گیرد.',
+    dmNotes: 'سامان با لمس هسته رصدخانه جرقه اول را ایجاد خواهد کرد.',
+    joinedAt: Date.now() - 25 * 86400000,
+    updatedAt: Date.now() - 100000
+  },
+
+  // Saman in Test Campaign (Level 2 to test cross-campaign divergence!)
+  {
+    id: 'part-saman-test',
+    characterId: 'char-saman',
+    campaignId: 'campaign-srd-test',
+    campaignName: 'سیاه‌چال کهن (کمپین آزمایشی ۵e)',
+    status: 'active',
+    classId: null,
+    className: 'Fighter (جنگجو)',
+    level: 2, // Different level from C1!
+    xp: 300,
+    abilityScores: { str: 16, dex: 12, con: 16, int: 10, wis: 12, cha: 8 },
+    savingThrows: { str: true, dex: false, con: true, int: false, wis: false, cha: false },
+    currentHp: 22, // Divergent HP!
+    maxHp: 22,
+    tempHp: 0,
+    hitDice: { current: 2, max: 2, die: 'd10' },
+    acOverride: null,
+    speedOverride: null,
+    deathSaves: { successes: 0, failures: 0 },
+    conditions: [],
+    inventory: [
+      {
+        id: 'inv-sam-test-1',
+        name: 'شمشیر بزرگ استاندارد',
+        quantity: 1,
+        weight: 6,
+        description: 'شمشیر فولادی دو دست',
+        category: 'weapon',
+        equipped: true
+      }
+    ],
+    weapons: [],
+    currency: { gold: 50, silver: 0, copper: 0 },
+    customResources: [],
+    features: [],
+    notes: 'کمپین آزمایشی ۵e با سیستم استانداردهای سیاه‌چال.',
+    dmNotes: '',
+    joinedAt: Date.now() - 10 * 86400000,
+    updatedAt: Date.now() - 100000
+  },
+
+  // Pardis in Zorvania C1
+  {
+    id: 'part-pardis-c1',
+    characterId: 'char-pardis',
+    campaignId: 'zorvania-c1',
+    campaignName: 'زروانیا: کمپین نخست',
+    status: 'active',
+    classId: 'class-farrehdar',
+    className: 'فرهدار (Pardis)',
+    level: 1,
+    xp: 0,
+    abilityScores: { str: 14, dex: 12, con: 14, int: 10, wis: 16, cha: 12 },
+    savingThrows: { str: false, dex: false, con: false, int: false, wis: true, cha: true },
+    currentHp: 11,
+    maxHp: 11,
+    tempHp: 0,
+    hitDice: { current: 1, max: 1, die: 'd8' },
+    deathSaves: { successes: 0, failures: 0 },
+    conditions: [],
+    inventory: [
+      {
+        id: 'inv-par-1',
+        name: 'زره زنجیری محافظ',
+        quantity: 1,
+        weight: 12,
+        description: 'زره حلقه‌ای با نشان باستانی پیمان.',
+        category: 'armor',
+        equipped: true
+      }
+    ],
+    weapons: [
+      {
+        id: 'w-par-1',
+        templateId: 'wpn-par-special',
+        name: 'گرز پیمان',
+        damageDice: '1d6',
+        damageType: 'کوبشی (Bludgeoning)',
+        range: 'تن به تن',
+        properties: 'یک دست، سر سنگی تیره',
+        kind: 'special',
+        isSpecial: true,
+        isShowy: false,
+        specialAbility: {
+          name: 'سپر عهد',
+          description: 'یک بار در هر استراحت کوتاه؛ واکنش (Reaction) هنگامی که هم‌پیمانی در ۵ فوتی هدف حمله قرار می‌گیرد: +۲ به درجه زرهی (AC) او در برابر آن حمله می‌دهد.',
+          usesPerRest: 1,
+          restType: 'short'
+        },
+        abilityName: 'سپر عهد',
+        abilityDesc: '+۲ به زره یار در فاصله ۵ فوتی در برابر یک حمله',
+        abilityMaxUses: 1,
+        abilityUsed: 0,
+        abilityReset: 'short'
+      }
+    ],
+    currency: { gold: 15, silver: 10, copper: 20 },
+    customResources: [],
+    features: [
+      {
+        id: 'f-par-1',
+        name: 'نشان فره',
+        description: 'نشان بیدارشده‌ای که می‌تواند سپری از نور جامد در اطراف خود و یاران ایجاد کند.',
+        source: 'فرهدار - سطح ۱',
+        usageType: 'short',
+        maxUses: 1,
+        usedCount: 0
+      }
+    ],
+    notes: 'پردیس با نشان فره می‌تواند AC گرگ زمان‌گسسته را مهار کند.',
+    dmNotes: 'پردیس در مواجهه با شهباز واکنش نشان خواهد داشت.',
+    joinedAt: Date.now() - 24 * 86400000,
+    updatedAt: Date.now() - 100000
+  },
+
+  // Shideh in Zorvania C1
+  {
+    id: 'part-shideh-c1',
+    characterId: 'char-shideh',
+    campaignId: 'zorvania-c1',
+    campaignName: 'زروانیا: کمپین نخست',
+    status: 'active',
+    classId: 'class-sayehkhan',
+    className: 'سایهخوان (Shideh)',
+    level: 1,
+    xp: 0,
+    abilityScores: { str: 10, dex: 16, con: 12, int: 14, wis: 13, cha: 10 },
+    savingThrows: { str: false, dex: true, con: false, int: true, wis: false, cha: false },
+    currentHp: 9,
+    maxHp: 9,
+    tempHp: 0,
+    hitDice: { current: 1, max: 1, die: 'd8' },
+    deathSaves: { successes: 0, failures: 0 },
+    conditions: [],
+    inventory: [
+      {
+        id: 'inv-shi-1',
+        name: 'ابزار قفل‌گشایی و جیب‌بری',
+        quantity: 1,
+        weight: 0.5,
+        description: 'مجموعه میله‌های برنزی نازک.',
+        category: 'misc',
+        equipped: true
+      }
+    ],
+    weapons: [
+      {
+        id: 'w-shi-1',
+        templateId: 'wpn-shi-special',
+        name: 'خنجر لغزنده',
+        damageDice: '1d4',
+        damageType: 'نافذ (Piercing)',
+        range: 'تن به تن / پرتابی (۲۰/۶۰ فوت)',
+        properties: 'چابک (Finesse)، سبک، پرتابی',
+        kind: 'special',
+        isSpecial: true,
+        isShowy: false,
+        specialAbility: {
+          name: 'دوختن سایه',
+          description: 'کاهش ۱۰ فوتی سرعت هدف تا پایان دور بعدی.',
+          usesPerRest: 1,
+          restType: 'short'
+        },
+        abilityName: 'دوختن سایه',
+        abilityDesc: 'کاهش ۱۰ فوتی سرعت هدف تا پایان دور بعدی',
+        abilityMaxUses: 1,
+        abilityUsed: 0,
+        abilityReset: 'short'
+      }
+    ],
+    currency: { gold: 18, silver: 12, copper: 10 },
+    customResources: [],
+    features: [
+      {
+        id: 'f-shi-1',
+        name: 'پژواک لحظه',
+        description: 'مشاهده پژواک‌های روح‌مانند از گذشته یک مکان.',
+        source: 'سایهخوان - سطح ۱',
+        usageType: 'short',
+        maxUses: 1,
+        usedCount: 0
+      }
+    ],
+    notes: 'مخفی‌کاری در سایه راهرو.',
+    dmNotes: '',
+    joinedAt: Date.now() - 22 * 86400000,
+    updatedAt: Date.now() - 100000
+  },
+
+  // Mana in Zorvania C1
+  {
+    id: 'part-mana-c1',
+    characterId: 'char-mana',
+    campaignId: 'zorvania-c1',
+    campaignName: 'زروانیا: کمپین نخست',
+    status: 'active',
+    classId: 'class-peymanban',
+    className: 'پیمانبان (Mana)',
+    level: 1,
+    xp: 0,
+    abilityScores: { str: 10, dex: 16, con: 12, int: 10, wis: 16, cha: 12 },
+    savingThrows: { str: true, dex: false, con: false, int: false, wis: true, cha: false },
+    currentHp: 10,
+    maxHp: 10,
+    tempHp: 0,
+    hitDice: { current: 1, max: 1, die: 'd10' },
+    deathSaves: { successes: 0, failures: 0 },
+    conditions: [],
+    inventory: [
+      {
+        id: 'inv-man-1',
+        name: 'کیسه بذر ورنا',
+        quantity: 1,
+        weight: 0.5,
+        description: 'بذرهای احیاکننده طبیعت ورنا.',
+        category: 'artifact',
+        equipped: true
+      }
+    ],
+    weapons: [
+      {
+        id: 'w-man-1',
+        templateId: 'wpn-man-special',
+        name: 'کمان ریشهبافت',
+        damageDice: '1d4',
+        damageType: 'نافذ (Piercing)',
+        range: '۸۰/۳۲۰ فوت',
+        properties: 'دو دست، دوربرد',
+        kind: 'special',
+        isSpecial: true,
+        isShowy: false,
+        specialAbility: {
+          name: 'تیر نهال',
+          description: 'تست نجات قدرت DC 12 یا نصف شدن سرعت هدف تا پایان دور بعدی.',
+          usesPerRest: 1,
+          restType: 'short'
+        },
+        abilityName: 'تیر نهال',
+        abilityDesc: 'ریشه‌های جوانه زده از تیر مانع سرعت می‌شوند',
+        abilityMaxUses: 1,
+        abilityUsed: 0,
+        abilityReset: 'short'
+      }
+    ],
+    currency: { gold: 10, silver: 20, copper: 15 },
+    customResources: [],
+    features: [
+      {
+        id: 'f-man-1',
+        name: 'زبان ریشه‌ها',
+        description: 'ارتباط حسی و تکلم با گیاهان و جانوران ورنا.',
+        source: 'پیمانبان - سطح ۱',
+        usageType: 'none',
+        usedCount: 0
+      }
+    ],
+    notes: 'کمان ریشهبافت مسلح.',
+    dmNotes: '',
+    joinedAt: Date.now() - 20 * 86400000,
+    updatedAt: Date.now() - 100000
+  },
+
+  // Hamoun in Zorvania C1
+  {
+    id: 'part-hamoun-c1',
+    characterId: 'char-hamoun',
+    campaignId: 'zorvania-c1',
+    campaignName: 'زروانیا: کمپین نخست',
+    status: 'active',
+    classId: 'class-azarin',
+    className: 'موبد آذرین (Hamoun)',
+    level: 1,
+    xp: 0,
+    abilityScores: { str: 8, dex: 10, con: 13, int: 14, wis: 16, cha: 14 },
+    savingThrows: { str: false, dex: false, con: false, int: true, wis: true, cha: false },
+    currentHp: 10,
+    maxHp: 10,
+    tempHp: 0,
+    hitDice: { current: 1, max: 1, die: 'd8' },
+    deathSaves: { successes: 0, failures: 0 },
+    conditions: [],
+    inventory: [
+      {
+        id: 'inv-ham-1',
+        name: 'کیف دارویی کویر',
+        quantity: 1,
+        weight: 2,
+        description: 'گیاهان دارویی و مرهم‌های التیام‌بخش.',
+        category: 'consumable',
+        equipped: true
+      }
+    ],
+    weapons: [
+      {
+        id: 'w-ham-1',
+        templateId: 'wpn-ham-special',
+        name: 'عصای آذرین',
+        damageDice: '1d4',
+        damageType: 'آتشین (Fire)',
+        range: 'تن به تن',
+        properties: 'دو دست 1d8',
+        kind: 'special',
+        isSpecial: true,
+        isShowy: false,
+        specialAbility: {
+          name: 'شعله پیوسته',
+          description: '1d6 درمان HP به یاران در ۵ فوتی.',
+          usesPerRest: 1,
+          restType: 'short'
+        },
+        abilityName: 'شعله پیوسته',
+        abilityDesc: 'ترمیم 1d6 جان یاران نزدیک',
+        abilityMaxUses: 1,
+        abilityUsed: 0,
+        abilityReset: 'short'
+      }
+    ],
+    currency: { gold: 8, silver: 25, copper: 40 },
+    customResources: [],
+    features: [
+      {
+        id: 'f-ham-1',
+        name: 'شعله حافظه',
+        description: 'مشاهده خاطرات حک شده بر سنگ‌ها و اشیای باستانی.',
+        source: 'موبد آذرین - سطح ۱',
+        usageType: 'short',
+        maxUses: 1,
+        usedCount: 0
+      }
+    ],
+    notes: 'آماده اجرای شعله پیوسته برای یاران مجروح.',
+    dmNotes: '',
+    joinedAt: Date.now() - 18 * 86400000,
+    updatedAt: Date.now() - 100000
+  },
+
+  // Siavash in Zorvania C1
+  {
+    id: 'part-siavash-c1',
+    characterId: 'char-siavash',
+    campaignId: 'zorvania-c1',
+    campaignName: 'زروانیا: کمپین نخست',
+    status: 'active',
+    classId: 'class-meh-ashna',
+    className: 'مهآشنا (Siavash)',
+    level: 1,
+    xp: 0,
+    abilityScores: { str: 8, dex: 15, con: 12, int: 13, wis: 16, cha: 10 },
+    savingThrows: { str: true, dex: true, con: false, int: false, wis: false, cha: false },
+    currentHp: 9,
+    maxHp: 9,
+    tempHp: 0,
+    hitDice: { current: 1, max: 1, die: 'd8' },
+    deathSaves: { successes: 0, failures: 0 },
+    conditions: [],
+    inventory: [],
+    weapons: [],
+    currency: { gold: 5, silver: 10, copper: 10 },
+    customResources: [],
+    features: [],
+    notes: 'پاسداری از آستانه لحظه‌ها.',
+    dmNotes: '',
+    joinedAt: Date.now() - 15 * 86400000,
+    updatedAt: Date.now() - 100000
+  }
+];
+
+export const SEED_HISTORY_EVENTS: CharacterHistoryEvent[] = [
+  {
+    id: 'hist-sam-1',
+    characterId: 'char-saman',
+    campaignId: 'zorvania-c1',
+    campaignName: 'زروانیا: کمپین نخست',
+    eventType: 'joined',
+    payload: {
+      title: 'ورود به کمپین زروانیا: کمپین نخست',
+      description: 'سامان با پذیرش نقش دیوانزاد وارد ماجراجویی رازهای فره شد.',
+      level: 1
+    },
+    timestamp: Date.now() - 25 * 86400000
+  },
+  {
+    id: 'hist-sam-2',
+    characterId: 'char-saman',
+    campaignId: 'zorvania-c1',
+    campaignName: 'زروانیا: کمپین نخست',
+    eventType: 'major_deed',
+    payload: {
+      title: 'کشف اولین طنین دیوان در کاروانسرا',
+      description: 'با لمس سنگ زیرزمین کاروانسرای ماه سرخ، ارتعاشات ماشین‌های باستانی آشکار گردید.'
+    },
+    timestamp: Date.now() - 20 * 86400000
+  },
+  {
+    id: 'hist-sam-3',
+    characterId: 'char-saman',
+    campaignId: 'campaign-srd-test',
+    campaignName: 'سیاه‌چال کهن (کمپین آزمایشی ۵e)',
+    eventType: 'joined',
+    payload: {
+      title: 'ورود به کمپین سیاه‌چال کهن',
+      description: 'آغاز مأموریت کاوش در سیاه‌چال آزمایشی.',
+      level: 1
+    },
+    timestamp: Date.now() - 10 * 86400000
+  },
+  {
+    id: 'hist-sam-4',
+    characterId: 'char-saman',
+    campaignId: 'campaign-srd-test',
+    campaignName: 'سیاه‌چال کهن (کمپین آزمایشی ۵e)',
+    eventType: 'level_up',
+    payload: {
+      title: 'ارتقای سطح به ۲ در سیاه‌چال کهن',
+      oldLevel: 1,
+      newLevel: 2,
+      description: 'ارتقای توان بدنی و باز شدن قابلیت Action Surge جنگجو.'
+    },
+    timestamp: Date.now() - 5 * 86400000
+  },
+  {
+    id: 'hist-par-1',
+    characterId: 'char-pardis',
+    campaignId: 'zorvania-c1',
+    campaignName: 'زروانیا: کمپین نخست',
+    eventType: 'joined',
+    payload: {
+      title: 'ورود به کمپین زروانیا: کمپین نخست',
+      description: 'پردیس سوگند آریامن را تجدید کرد و رهبری دفاعی گروه را به عهده گرفت.',
+      level: 1
+    },
+    timestamp: Date.now() - 24 * 86400000
+  },
+  {
+    id: 'hist-shi-1',
+    characterId: 'char-shideh',
+    campaignId: 'zorvania-c1',
+    campaignName: 'زروانیا: کمپین نخست',
+    eventType: 'joined',
+    payload: {
+      title: 'ورود به کمپین زروانیا: کمپین نخست',
+      description: 'شیده برای پیگیری ریشه‌های شکست زمان به گروه پیوست.',
+      level: 1
+    },
+    timestamp: Date.now() - 22 * 86400000
+  }
+];
+
+export const SEED_CAMPAIGN_DICE_ROLLS: CampaignDiceRoll[] = [
+  {
+    id: 'roll-c1-1',
+    campaignId: 'zorvania-c1',
+    userId: 'user-saman',
+    userName: 'سامان (دیوانزاد)',
+    characterId: 'char-saman',
+    characterName: 'سامان',
+    rollType: 'attack',
+    diceExpression: '1d20+4',
+    total: 24,
+    details: {
+      rolls: [20],
+      modifier: 4,
+      isCritical: true,
+      label: 'حمله چکش پژواکسنگ به نگهبان'
+    },
+    visibility: 'table',
+    createdAt: Date.now() - 1800000
+  },
+  {
+    id: 'roll-c1-2',
+    campaignId: 'zorvania-c1',
+    userId: 'user-pardis',
+    userName: 'پردیس (فرهدار)',
+    characterId: 'char-pardis',
+    characterName: 'پردیس',
+    rollType: 'ability_check',
+    diceExpression: '1d20+3',
+    total: 18,
+    details: {
+      rolls: [15],
+      modifier: 3,
+      label: 'چک بینش و درک انگیزه'
+    },
+    visibility: 'table',
+    createdAt: Date.now() - 1200000
+  },
+  {
+    id: 'roll-c1-3',
+    campaignId: 'zorvania-c1',
+    userId: 'user-dm',
+    userName: 'دانجن مستر زروانیا (مدیر/راوی)',
+    characterId: null,
+    characterName: null,
+    rollType: 'dm_secret',
+    diceExpression: '1d20+5',
+    total: 21,
+    details: {
+      rolls: [16],
+      modifier: 5,
+      label: 'پرتاب مخفی دانجن مستر: هوشیاری نگهبان زمان‌گم'
+    },
+    visibility: 'dm_only',
+    createdAt: Date.now() - 600000
+  }
+];
+
 
