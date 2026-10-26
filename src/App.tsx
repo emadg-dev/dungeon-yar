@@ -6,7 +6,8 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { 
   User, Character, CharacterNote, NPC, ItemLibraryEntry, 
-  RewardPackage, CampaignNote, Encounter, WeaponTemplate, ClassTemplate, DiceRollResult 
+  RewardPackage, CampaignNote, Encounter, WeaponTemplate, ClassTemplate, DiceRollResult,
+  LocationEntry, PlayerEncounterView 
 } from './types';
 import { api } from './services/api';
 import { Header } from './components/Header';
@@ -33,6 +34,7 @@ const AuthModal = React.lazy(() => import('./components/AuthModal').then(m => ({
 const AccountModal = React.lazy(() => import('./components/AccountModal').then(m => ({ default: m.AccountModal })));
 const DiceRollerModal = React.lazy(() => import('./components/DiceRollerModal').then(m => ({ default: m.DiceRollerModal })));
 const RestModal = React.lazy(() => import('./components/character/RestModal').then(m => ({ default: m.RestModal })));
+const LiveEncounterModal = React.lazy(() => import('./components/character/LiveEncounterModal').then(m => ({ default: m.LiveEncounterModal })));
 
 // Loading skeleton fallback for tabs
 const TabSkeleton = () => (
@@ -67,6 +69,11 @@ export default function App() {
   const [weaponTemplates, setWeaponTemplates] = useState<WeaponTemplate[]>([]);
   const [classTemplates, setClassTemplates] = useState<ClassTemplate[]>([]);
   const [allowPlayerCreateCharacter, setAllowPlayerCreateCharacter] = useState<boolean>(false);
+
+  // Locations & Live Encounters
+  const [locations, setLocations] = useState<LocationEntry[]>([]);
+  const [activeLiveEncounter, setActiveLiveEncounter] = useState<PlayerEncounterView | null>(null);
+  const [liveEncounterModalOpen, setLiveEncounterModalOpen] = useState(false);
 
   // Modals & UI State
   const [authModalState, setAuthModalState] = useState<{
@@ -235,6 +242,12 @@ export default function App() {
       const classTmplList = await api.listClassTemplates().catch(() => []);
       setClassTemplates(classTmplList);
 
+      const locsList = await api.listLocations().catch(() => []);
+      setLocations(locsList);
+
+      const activeEnc = await api.getActiveEncounter().catch(() => null);
+      setActiveLiveEncounter(activeEnc);
+
       const settings = await api.getCampaignSettings().catch(() => ({ allowPlayerCreateCharacter: false }));
       setAllowPlayerCreateCharacter(settings.allowPlayerCreateCharacter);
 
@@ -256,6 +269,51 @@ export default function App() {
   useEffect(() => {
     loadInitialData();
   }, []);
+
+  // Real-time live encounter updates via liveChannel (§3)
+  useEffect(() => {
+    const unsubscribe = api.liveChannel.subscribe(null, async (update: any) => {
+      const activeEnc = await api.getActiveEncounter().catch(() => null);
+      setActiveLiveEncounter(activeEnc);
+
+      if (update?.type === 'start') {
+        const locName = activeEnc?.location?.name;
+        showToast(locName ? `مبارزه شروع شد — ${locName}` : 'مبارزه شروع شد!');
+        if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+          try {
+            navigator.vibrate([120, 60, 120]);
+          } catch {}
+        }
+      } else if (update?.type === 'end') {
+        showToast('مبارزه به پایان رسید.');
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // Location CRUD handlers
+  const handleCreateLocation = async (loc: Omit<LocationEntry, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const created = await api.createLocation(loc);
+    setLocations(prev => [...prev, created]);
+    showToast('مکان جدید با موفقیت ثبت شد.');
+    return created;
+  };
+
+  const handleUpdateLocation = async (loc: LocationEntry) => {
+    const updated = await api.updateLocation(loc);
+    setLocations(prev => prev.map(l => l.id === loc.id ? updated : l));
+    showToast('تغییرات مکان ذخیره شد.');
+    return updated;
+  };
+
+  const handleDeleteLocation = async (id: string) => {
+    await api.deleteLocation(id);
+    setLocations(prev => prev.filter(l => l.id !== id));
+    showToast('مکان حذف شد.');
+  };
 
   // Active Character
   const activeCharacter = characters.find(c => c.id === activeCharId) || characters[0] || null;
@@ -409,6 +467,8 @@ export default function App() {
         wakeLockSupported={wakeLockSupported}
         fontScale={fontScale}
         onToggleFontScale={toggleFontScale}
+        activeEncounter={activeLiveEncounter ? { id: activeLiveEncounter.id, name: activeLiveEncounter.name } : null}
+        onOpenActiveEncounter={() => setLiveEncounterModalOpen(true)}
       />
 
       {/* Sticky Character Header & Sub-Tabs */}
@@ -438,6 +498,7 @@ export default function App() {
               sharedNotes={notes.filter(n => n.sharedWithDm)}
               npcs={npcs}
               items={items}
+              locations={locations}
               rewards={rewards}
               campaignNotes={campaignNotes}
               savedEncounters={encounters}
@@ -471,6 +532,9 @@ export default function App() {
                 await api.deleteNpc(id);
                 setNpcs(prev => prev.filter(n => n.id !== id));
               }}
+              onCreateLocation={handleCreateLocation}
+              onUpdateLocation={handleUpdateLocation}
+              onDeleteLocation={handleDeleteLocation}
               onCreateItem={async (data) => {
                 const created = await api.createItem(data);
                 setItems(prev => [...prev, created]);
@@ -572,6 +636,7 @@ export default function App() {
                 <CodexTab
                   revealedNpcs={npcs}
                   revealedItems={items}
+                  revealedLocations={locations.filter(l => Boolean(l.revealed))}
                 />
               )}
             </div>
@@ -636,6 +701,8 @@ export default function App() {
         inventoryBadge={activeCharacter?.inventory?.length || 0}
         notesBadge={notes.filter(n => n.characterId === activeCharId).length || 0}
         isKeyboardOpen={isKeyboardOpen}
+        hasActiveEncounter={Boolean(activeLiveEncounter && activeLiveEncounter.status === 'active')}
+        onOpenActiveEncounter={() => setLiveEncounterModalOpen(true)}
       />
 
       {/* Global Modals */}
@@ -720,6 +787,30 @@ export default function App() {
             type={restModal.type}
             onClose={() => setRestModal({ isOpen: false, type: 'short' })}
             onConfirm={handleConfirmRest}
+          />
+        )}
+
+        {liveEncounterModalOpen && (
+          <LiveEncounterModal
+            isOpen={liveEncounterModalOpen}
+            onClose={() => setLiveEncounterModalOpen(false)}
+            encounter={activeLiveEncounter}
+            activeCharacter={activeCharacter}
+            onOpenDice={() => {
+              setPresetRoll(null);
+              setDiceModalOpen(true);
+            }}
+            onUpdateCharacterHp={(newHp) => {
+              if (activeCharacter) {
+                handleUpdateCharacter({
+                  ...activeCharacter,
+                  hp: {
+                    ...activeCharacter.hp,
+                    current: newHp
+                  }
+                });
+              }
+            }}
           />
         )}
       </Suspense>

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate } from '../../types';
+import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate, LocationEntry } from '../../types';
 import { DmDashboard } from './DmDashboard';
 import { DmEncounterRunner } from './DmEncounterRunner';
 import { DmNpcManager } from './DmNpcManager';
 import { DmItemVault } from './DmItemVault';
+import { DmLocationManager } from './DmLocationManager';
 import { DmCampaignNotes } from './DmCampaignNotes';
 import { DmEndingTracker } from './DmEndingTracker';
 import { DmSettings } from './DmSettings';
@@ -12,7 +13,7 @@ import { DmInvites } from './DmInvites';
 import { DmAuditLog } from './DmAuditLog';
 import { 
   LayoutDashboard, Swords, Library, Scroll, MoreHorizontal, 
-  Users, KeyRound, ShieldAlert, Sparkles, BookOpen, Compass, Award, Database 
+  Users, KeyRound, ShieldAlert, Sparkles, BookOpen, Compass, Award, Database, MapPin 
 } from 'lucide-react';
 
 interface DmToolsProps {
@@ -20,6 +21,7 @@ interface DmToolsProps {
   sharedNotes: CharacterNote[];
   npcs: NPC[];
   items: ItemLibraryEntry[];
+  locations: LocationEntry[];
   rewards: RewardPackage[];
   campaignNotes: CampaignNote[];
   savedEncounters: Encounter[];
@@ -33,6 +35,9 @@ interface DmToolsProps {
   onCreateNpc: (npc: Omit<NPC, 'id' | 'updatedAt'>) => void;
   onUpdateNpc: (npc: NPC) => void;
   onDeleteNpc: (id: string) => void;
+  onCreateLocation?: (loc: Omit<LocationEntry, 'id' | 'createdAt' | 'updatedAt'>) => Promise<any>;
+  onUpdateLocation?: (loc: LocationEntry) => Promise<any>;
+  onDeleteLocation?: (id: string) => Promise<any>;
   onCreateItem: (item: Omit<ItemLibraryEntry, 'id' | 'updatedAt'>) => void;
   onUpdateItem: (item: ItemLibraryEntry) => void;
   onDeleteItem: (id: string) => void;
@@ -56,6 +61,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
   sharedNotes,
   npcs,
   items,
+  locations,
   rewards,
   campaignNotes,
   savedEncounters,
@@ -69,6 +75,9 @@ export const DmTools: React.FC<DmToolsProps> = ({
   onCreateNpc,
   onUpdateNpc,
   onDeleteNpc,
+  onCreateLocation,
+  onUpdateLocation,
+  onDeleteLocation,
   onCreateItem,
   onUpdateItem,
   onDeleteItem,
@@ -87,7 +96,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
   onRefreshCharacters
 }) => {
   const [internalDmTab, setInternalDmTab] = useState<'dashboard' | 'encounters' | 'library' | 'narrative' | 'more'>('dashboard');
-  const [librarySubTab, setLibrarySubTab] = useState<'npcs' | 'items' | 'rewards'>('npcs');
+  const [librarySubTab, setLibrarySubTab] = useState<'npcs' | 'items' | 'locations' | 'rewards'>('npcs');
   const [narrativeSubTab, setNarrativeSubTab] = useState<'notes' | 'endings'>('notes');
   const [moreSubTab, setMoreSubTab] = useState<'users' | 'invites' | 'audit' | 'settings'>('users');
 
@@ -159,39 +168,53 @@ export const DmTools: React.FC<DmToolsProps> = ({
         <DmEncounterRunner
           characters={characters}
           npcs={npcs}
+          locations={locations}
           savedEncounters={savedEncounters}
           onSaveEncounter={onSaveEncounter}
           onRollDice={onRollDice}
+          onCreateLocation={onCreateLocation}
         />
       )}
 
-      {/* 3. Library (NPCs / Items / Rewards) */}
+      {/* 3. Library (NPCs / Items / Locations / Rewards) */}
       {activeTab === 'library' && (
         <div className="space-y-4">
           <div className="surface-card rounded-[12px] p-1 border border-[#2F2A23] flex items-center gap-1">
             <button
               type="button"
               onClick={() => setLibrarySubTab('npcs')}
-              className={`flex-1 py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
                 librarySubTab === 'npcs'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
               <Users className="w-3.5 h-3.5" />
-              <span>موجودات و NPCها ({npcs.length})</span>
+              <span>موجودات ({npcs.length})</span>
             </button>
             <button
               type="button"
               onClick={() => setLibrarySubTab('items')}
-              className={`flex-1 py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
                 librarySubTab === 'items'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>خزانه اشیاء ({items.length})</span>
+              <span>اشیاء ({items.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setLibrarySubTab('locations')}
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+                librarySubTab === 'locations'
+                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              }`}
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>مکان‌ها ({locations.length})</span>
             </button>
           </div>
 
@@ -214,6 +237,15 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onUpdateItem={onUpdateItem}
               onDeleteItem={onDeleteItem}
               onGiveItem={onGiveItemToPlayer}
+            />
+          )}
+
+          {librarySubTab === 'locations' && (
+            <DmLocationManager
+              locations={locations}
+              onCreateLocation={async (loc) => { if (onCreateLocation) await onCreateLocation(loc); }}
+              onUpdateLocation={async (loc) => { if (onUpdateLocation) await onUpdateLocation(loc); }}
+              onDeleteLocation={async (id) => { if (onDeleteLocation) await onDeleteLocation(id); }}
             />
           )}
         </div>

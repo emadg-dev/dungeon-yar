@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
-import { NPC, ItemLibraryEntry } from '../../types';
+import { NPC, ItemLibraryEntry, LocationEntry } from '../../types';
 import { SEED_RULES } from '../../data/seed';
-import { BookOpen, Users, Sparkles, Compass, Calendar, Search } from 'lucide-react';
+import { BookOpen, Users, Sparkles, Compass, Calendar, Search, MapPin } from 'lucide-react';
 import { Chip } from '../common/Chip';
 
 interface CodexTabProps {
   revealedNpcs: NPC[];
   revealedItems: ItemLibraryEntry[];
+  revealedLocations?: LocationEntry[];
 }
 
-export const CodexTab: React.FC<CodexTabProps> = ({ revealedNpcs, revealedItems }) => {
-  const [subTab, setSubTab] = useState<'items' | 'creatures' | 'rules' | 'calendar' | 'factions'>('items');
+export const CodexTab: React.FC<CodexTabProps> = ({ 
+  revealedNpcs, 
+  revealedItems, 
+  revealedLocations = [] 
+}) => {
+  const [subTab, setSubTab] = useState<'locations' | 'items' | 'creatures' | 'rules' | 'calendar' | 'factions'>('locations');
   const [searchQuery, setSearchQuery] = useState('');
 
   const factions = [
@@ -45,6 +50,12 @@ export const CodexTab: React.FC<CodexTabProps> = ({ revealedNpcs, revealedItems 
     { day: 'روز ۲۰ دی', event: 'سالگرد پیمان بزرگ ثبات در شان‌شین', region: 'شان‌شین' },
   ];
 
+  const filteredLocations = revealedLocations.filter(loc =>
+    !searchQuery || loc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    loc.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (loc.region && loc.region.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   const filteredNpcs = revealedNpcs.filter(npc =>
     !searchQuery || npc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     npc.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -64,8 +75,21 @@ export const CodexTab: React.FC<CodexTabProps> = ({ revealedNpcs, revealedItems 
 
   return (
     <div className="space-y-4" dir="rtl">
-      {/* Inner Tabs Strip: Items / Creatures / Rules / Calendar / Factions */}
+      {/* Inner Tabs Strip: Locations / Items / Creatures / Rules / Calendar / Factions */}
       <div className="surface-card rounded-[14px] p-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <button
+          type="button"
+          onClick={() => setSubTab('locations')}
+          className={`flex-1 min-w-[95px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+            subTab === 'locations'
+              ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+              : 'text-[#A39A89] hover:text-[#EDE6D8]'
+          }`}
+        >
+          <MapPin className="w-3.5 h-3.5" />
+          <span>مکان‌ها ({revealedLocations.length})</span>
+        </button>
+
         <button
           type="button"
           onClick={() => setSubTab('items')}
@@ -143,6 +167,36 @@ export const CodexTab: React.FC<CodexTabProps> = ({ revealedNpcs, revealedItems 
         />
         <Search className="w-3.5 h-3.5 text-[#A39A89] absolute start-2.5 top-1/2 -translate-y-1/2" />
       </div>
+
+      {/* Locations Inner Tab */}
+      {subTab === 'locations' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {filteredLocations.length === 0 ? (
+            <div className="surface-card rounded-[14px] col-span-2 text-center py-10 text-[#A39A89] text-xs">
+              مکانی در دانشنامه فاش نشده است. با کشف و کاوش در زروانیا نقاط جدید در این بخش ثبت خواهند شد.
+            </div>
+          ) : (
+            filteredLocations.map(loc => (
+              <div key={loc.id} className="surface-card rounded-[14px] p-3.5 border border-[#2F2A23] flex flex-col justify-between gap-2.5 card-gold-top">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="font-extrabold text-sm text-[#EDE6D8] truncate">{loc.name}</h4>
+                    <Chip variant="region" region={loc.region as any} />
+                  </div>
+                  {loc.imageUrl && (
+                    <div className="w-full h-32 rounded-[10px] overflow-hidden border border-[#2F2A23] bg-[#0E0D0C]">
+                      <img src={loc.imageUrl} alt={loc.name} className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <p className="text-xs text-[#EDE6D8]/80 leading-relaxed select-text">
+                    {loc.description}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       {/* Items Inner Tab */}
       {subTab === 'items' && (

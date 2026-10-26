@@ -23,7 +23,10 @@ import {
   LiveSyncStatus,
   EncounterParticipant,
   EncounterSettings,
-  EncounterEvent
+  EncounterEvent,
+  QualitativeHealth,
+  PlayerEncounterParticipant,
+  EncounterStatus
 } from '../types';
 import {
   SEED_USERS,
@@ -57,6 +60,170 @@ export type LiveChannelCallback = (update: {
 export interface LiveChannel {
   subscribe(encounterId: string | null, cb: LiveChannelCallback): () => void;
   notify(encounterId: string | null, version: number, data?: any): void;
+}
+
+// ----------------------------------------------------------------------
+// LocalLiveChannel (BroadcastChannel + storage events for instant tab sync)
+// ----------------------------------------------------------------------
+export class LocalLiveChannel implements LiveChannel {
+  private listeners = new Set<LiveChannelCallback>();
+  private channel: BroadcastChannel | null = null;
+
+  constructor() {
+    if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
+      try {
+        this.channel = new BroadcastChannel('zorvania_live_sync');
+        this.channel.onmessage = (ev) => {
+          if (ev.data) {
+            this.notifyLocal(ev.data.activeEncounterId, ev.data.version, ev.data.data);
+          }
+        };
+      } catch {}
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'zorvania_live_signal' && e.newValue) {
+          try {
+            const data = JSON.parse(e.newValue);
+            this.notifyLocal(data.activeEncounterId, data.version, data.data);
+          } catch {}
+        }
+      });
+      window.addEventListener('zorvania_live_event', (e: any) => {
+        if (e.detail) {
+          this.notifyLocal(e.detail.activeEncounterId, e.detail.version, e.detail.data);
+        }
+      });
+    }
+  }
+
+  private notifyLocal(encounterId: string | null, version: number, data?: any) {
+    for (const cb of this.listeners) {
+      try {
+        cb({ activeEncounterId: encounterId, version, data });
+      } catch (err) {
+        console.error('LiveChannel listener error:', err);
+      }
+    }
+  }
+
+  subscribe(encounterId: string | null, cb: LiveChannelCallback): () => void {
+    this.listeners.add(cb);
+    return () => {
+      this.listeners.delete(cb);
+    };
+  }
+
+  notify(encounterId: string | null, version: number, data?: any): void {
+    const payload = { activeEncounterId: encounterId, version, data, timestamp: Date.now() };
+    this.notifyLocal(encounterId, version, data);
+    try {
+      this.channel?.postMessage(payload);
+    } catch {}
+    try {
+      localStorage.setItem('zorvania_live_signal', JSON.stringify(payload));
+    } catch {}
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('zorvania_live_event', { detail: payload }));
+    }
+  }
+}
+
+// ----------------------------------------------------------------------
+// HttpLiveChannel (Smart polling: 3s active, 15s idle, pauses when hidden, backoff)
+// ----------------------------------------------------------------------
+export class HttpLiveChannel implements LiveChannel {
+  private listeners = new Set<LiveChannelCallback>();
+  private pollTimer: any = null;
+  private lastVersion = -1;
+  private lastActiveId: string | null = null;
+  private errorCount = 0;
+  private isPolling = false;
+
+  constructor(private fetchJson: <T>(url: string, opts?: RequestInit) => Promise<T>) {
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          this.errorCount = 0;
+          this.pollNow();
+        }
+      });
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', () => {
+        this.errorCount = 0;
+        this.pollNow();
+      });
+      window.addEventListener('focus', () => {
+        if (!document.hidden) this.pollNow();
+      });
+    }
+  }
+
+  subscribe(encounterId: string | null, cb: LiveChannelCallback): () => void {
+    this.listeners.add(cb);
+    if (this.listeners.size === 1) {
+      this.startPolling();
+    }
+    return () => {
+      this.listeners.delete(cb);
+      if (this.listeners.size === 0) {
+        this.stopPolling();
+      }
+    };
+  }
+
+  notify(encounterId: string | null, version: number, data?: any): void {
+    for (const cb of this.listeners) {
+      try {
+        cb({ activeEncounterId: encounterId, version, data });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
+
+  private startPolling() {
+    this.pollNow();
+  }
+
+  private stopPolling() {
+    if (this.pollTimer) {
+      clearTimeout(this.pollTimer);
+      this.pollTimer = null;
+    }
+  }
+
+  private async pollNow() {
+    if (this.isPolling) return;
+    if (typeof document !== 'undefined' && document.hidden) {
+      return; // Pause while hidden (Acceptance Test 8)
+    }
+
+    this.isPolling = true;
+    try {
+      const live = await this.fetchJson<LiveSyncStatus>('/live');
+      this.errorCount = 0;
+      if (live.version !== this.lastVersion || live.activeEncounterId !== this.lastActiveId) {
+        this.lastVersion = live.version;
+        this.lastActiveId = live.activeEncounterId;
+        this.notify(live.activeEncounterId, live.version);
+      }
+    } catch {
+      this.errorCount = Math.min(this.errorCount + 1, 6);
+    } finally {
+      this.isPolling = false;
+      if (this.listeners.size > 0 && (typeof document === 'undefined' || !document.hidden)) {
+        // Base interval: 3s if active encounter, 15s if idle (Acceptance Test 8)
+        const baseInterval = this.lastActiveId ? 3000 : 15000;
+        const backoff = this.errorCount > 0 
+          ? Math.min(30000, baseInterval * Math.pow(1.5, this.errorCount) + Math.random() * 1000) 
+          : baseInterval;
+        this.pollTimer = setTimeout(() => this.pollNow(), backoff);
+      }
+    }
+  }
 }
 
 export interface ApiClient {
@@ -114,7 +281,7 @@ export interface ApiClient {
   createLiveEncounter(data: { name: string; locationId?: string | null; sessionTag?: string; settings?: Partial<EncounterSettings>; dmNotes?: string }): Promise<LiveEncounter>;
   getLiveEncounter(id: string): Promise<LiveEncounter | null>;
   updateLiveEncounter(id: string, data: Partial<LiveEncounter>): Promise<LiveEncounter>;
-  startLiveEncounter(id: string): Promise<void>;
+  startLiveEncounter(id: string, withSurpriseRound?: boolean): Promise<void>;
   pauseLiveEncounter(id: string): Promise<void>;
   resumeLiveEncounter(id: string): Promise<void>;
   endLiveEncounter(id: string): Promise<void>;
@@ -217,6 +384,7 @@ export interface ApiClient {
 const STORAGE_PREFIX = 'zorvania_';
 
 export class LocalApi implements ApiClient {
+  public liveChannel: LiveChannel = new LocalLiveChannel();
   private currentUser: User | null = null;
 
   constructor() {
@@ -275,6 +443,8 @@ export class LocalApi implements ApiClient {
     this.setItem('rewards', SEED_REWARD_PACKAGES);
     this.setItem('campaign_notes', SEED_CAMPAIGN_NOTES);
     this.setItem('encounters', SEED_ENCOUNTERS);
+    this.setItem('locations', SEED_LOCATIONS);
+    this.setItem('live_encounters', []);
     this.setItem('invites', [
       {
         id: 'inv-sample-1',
@@ -1365,6 +1535,718 @@ export class LocalApi implements ApiClient {
     const found = all.find(e => e.id === roll) || all[0];
     return { result: found, roll };
   }
+
+  // --- Locations CRUD ---
+  async listLocations(): Promise<LocationEntry[]> {
+    const locs = this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS);
+    if (this.currentUser?.role === 'dm') {
+      return locs;
+    }
+    // Players see ONLY revealed locations without dmNotes (Acceptance Test 4)
+    return locs
+      .filter(l => l.revealed)
+      .map(l => ({
+        ...l,
+        dmNotes: undefined
+      }));
+  }
+
+  async createLocation(loc: Omit<LocationEntry, 'id' | 'createdAt' | 'updatedAt'>): Promise<LocationEntry> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS);
+    const newLoc: LocationEntry = {
+      ...loc,
+      id: `loc-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    all.push(newLoc);
+    this.setItem('locations', all);
+    return newLoc;
+  }
+
+  async updateLocation(loc: LocationEntry): Promise<LocationEntry> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS);
+    const updated = all.map(l => l.id === loc.id ? { ...loc, updatedAt: Date.now() } : l);
+    this.setItem('locations', updated);
+    return loc;
+  }
+
+  async deleteLocation(id: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS);
+    this.setItem('locations', all.filter(l => l.id !== id));
+  }
+
+  // --- Live Encounter Helpers ---
+  private computeQualitativeHealth(hp: number, maxHp: number): QualitativeHealth {
+    if (maxHp <= 0 || hp <= 0) return 'رو به مرگ';
+    const pct = (hp / maxHp) * 100;
+    if (pct > 75) return 'سالم';
+    if (pct >= 25) return 'زخمی';
+    return 'نیمه‌جان';
+  }
+
+  private buildPlayerEncounterSnapshot(enc: LiveEncounter): PlayerEncounterView {
+    const locations = this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS);
+    const loc = enc.locationId ? locations.find(l => l.id === enc.locationId) : null;
+    const settings = enc.settings || {
+      showExactHp: false,
+      showAc: false,
+      showConditions: true,
+      showDefeated: true,
+      playerInitiativeRolls: true
+    };
+
+    const characters = this.getItem<Character[]>('characters', SEED_CHARACTERS);
+
+    const playerParticipants: PlayerEncounterParticipant[] = [];
+    for (const p of (enc.participants || [])) {
+      // 1. Hidden participants are NEVER included in any player response (Acceptance Test 3)
+      if (p.visibility === 'hidden') continue;
+
+      // 2. Defeated visibility follows showDefeated (Acceptance Test 6)
+      if (p.status === 'defeated' && settings.showDefeated === false) continue;
+
+      // 3. Announced participants show as "موجود ناشناخته" with no stats (Acceptance Test 3)
+      if (p.visibility === 'announced') {
+        playerParticipants.push({
+          id: p.id,
+          kind: p.kind,
+          displayNameForPlayers: 'موجود ناشناخته',
+          healthStatus: 'سالم',
+          status: p.status,
+          initiative: p.initiative,
+          initiativeStatus: p.initiativeStatus,
+          phase: null,
+          sortIndex: p.sortIndex,
+          characterId: null,
+          isAlly: false
+        });
+        continue;
+      }
+
+      // 4. Revealed participant
+      let currentHp = p.hp;
+      let maxHp = p.maxHp;
+
+      if (p.kind === 'character' && p.characterId) {
+        const char = characters.find(c => c.id === p.characterId);
+        if (char?.hp) {
+          currentHp = char.hp.current;
+          maxHp = char.hp.max;
+        }
+      }
+
+      const healthStatus = this.computeQualitativeHealth(currentHp, maxHp);
+      const isAlly = p.kind === 'character';
+      const isOwnCharacter = Boolean(this.currentUser && p.characterId && this.currentUser.activeCharacterId === p.characterId);
+
+      const conditions = settings.showConditions !== false ? p.conditions : undefined;
+      const exactHp = (settings.showExactHp === true || isAlly || isOwnCharacter)
+        ? { current: currentHp, max: maxHp }
+        : undefined;
+      const exactAc = (settings.showAc === true || isAlly || isOwnCharacter)
+        ? p.ac
+        : undefined;
+
+      playerParticipants.push({
+        id: p.id,
+        kind: p.kind,
+        displayNameForPlayers: p.displayNameForPlayers || p.instanceName,
+        healthStatus,
+        status: p.status,
+        conditions,
+        exactHp,
+        exactAc,
+        initiative: p.initiative,
+        initiativeStatus: p.initiativeStatus,
+        phase: p.phase,
+        sortIndex: p.sortIndex,
+        characterId: p.characterId,
+        isAlly
+      });
+    }
+
+    const events = (enc.events || [])
+      .filter(e => e.visibleToPlayers)
+      .map(e => ({ ...e }));
+
+    return {
+      id: enc.id,
+      name: enc.name,
+      locationId: enc.locationId,
+      location: loc ? {
+        id: loc.id,
+        name: loc.name,
+        region: loc.region,
+        description: loc.revealed ? loc.description : undefined,
+        imageUrl: loc.revealed ? loc.imageUrl : undefined
+      } : null,
+      status: enc.status,
+      round: enc.round,
+      currentParticipantId: enc.currentParticipantId,
+      settings,
+      version: enc.version,
+      participants: playerParticipants,
+      events
+    };
+  }
+
+  // --- Live Encounter Methods (Local) ---
+  async getLiveStatus(): Promise<LiveSyncStatus> {
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const active = all.find(e => e.status === 'active' || e.status === 'paused');
+    return {
+      activeEncounterId: active?.id || null,
+      version: active ? Number(active.version) : 0,
+      serverTime: Date.now()
+    };
+  }
+
+  async getActiveEncounter(): Promise<PlayerEncounterView | null> {
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const active = all.find(e => e.status === 'active' || e.status === 'paused');
+    if (!active) return null;
+    return this.buildPlayerEncounterSnapshot(active);
+  }
+
+  async getEncounterView(id: string, since?: number): Promise<PlayerEncounterView | LiveEncounter | { notModified: true }> {
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const enc = all.find(e => e.id === id);
+    if (!enc) throw new Error('مبارزه یافت نشد.');
+
+    if (this.currentUser?.role !== 'dm' && enc.status === 'draft') {
+      throw new Error('مبارزه یافت نشد.'); // Invisible to players (Acceptance Test 1)
+    }
+
+    if (since !== undefined && Number(since) === Number(enc.version)) {
+      return { notModified: true };
+    }
+
+    if (this.currentUser?.role === 'dm') {
+      const locations = this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS);
+      const loc = enc.locationId ? locations.find(l => l.id === enc.locationId) : null;
+      return {
+        ...enc,
+        location: loc || null
+      };
+    } else {
+      return this.buildPlayerEncounterSnapshot(enc);
+    }
+  }
+
+  async submitInitiative(encounterId: string, characterId: string, value: number): Promise<{ initiative: number; initiativeStatus: string }> {
+    const numValue = Number(value);
+    // Acceptance Test 5: Reject values outside 1-40
+    if (isNaN(numValue) || numValue < 1 || numValue > 40) {
+      throw new Error('مقدار ابتکار عمل باید بین ۱ تا ۴۰ باشد.');
+    }
+
+    // Acceptance Test 5: Player can submit initiative ONLY for their own character
+    if (this.currentUser?.role !== 'dm') {
+      const chars = this.getItem<Character[]>('characters', SEED_CHARACTERS);
+      const char = chars.find(c => c.id === characterId);
+      if (!char || (char.ownerId && this.currentUser && char.ownerId !== this.currentUser.id)) {
+        throw new Error('شما فقط می‌توانید برای شخصیت متعلق به خود ابتکار عمل بیندازید.');
+      }
+    }
+
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const enc = all.find(e => e.id === encounterId);
+    if (!enc) throw new Error('مبارزه یافت نشد.');
+
+    const part = (enc.participants || []).find(p => p.characterId === characterId);
+    if (!part) throw new Error('این شخصیت در مبارزه حضور ندارد.');
+
+    const settings = enc.settings || { playerInitiativeRolls: true };
+    const newStatus = settings.playerInitiativeRolls === false ? 'set' : 'pending';
+
+    part.initiative = numValue;
+    part.initiativeStatus = newStatus;
+    part.revision = (part.revision || 1) + 1;
+
+    enc.version = (enc.version || 0) + 1;
+    enc.updatedAt = Date.now();
+
+    const charName = part.displayNameForPlayers || part.instanceName;
+    enc.events = enc.events || [];
+    enc.events.push({
+      id: `evt-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      encounterId,
+      round: enc.round || 1,
+      type: 'round',
+      text: `${charName} ابتکار عمل ${numValue} را ثبت کرد.`,
+      visibleToPlayers: true,
+      createdAt: Date.now()
+    });
+
+    this.setItem('live_encounters', all);
+    this.liveChannel.notify(enc.id, enc.version);
+
+    return { initiative: numValue, initiativeStatus: newStatus };
+  }
+
+  async listLiveEncounters(status?: string, locationId?: string): Promise<LiveEncounter[]> {
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const locations = this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS);
+
+    return all
+      .filter(e => {
+        if (status && e.status !== status) return false;
+        if (locationId && e.locationId !== locationId) return false;
+        return true;
+      })
+      .map(e => ({
+        ...e,
+        location: e.locationId ? locations.find(l => l.id === e.locationId) || null : null
+      }));
+  }
+
+  async createLiveEncounter(data: {
+    name: string;
+    locationId?: string | null;
+    sessionTag?: string;
+    settings?: Partial<EncounterSettings>;
+    dmNotes?: string;
+  }): Promise<LiveEncounter> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const t = Date.now();
+    const newEnc: LiveEncounter = {
+      id: `enc-${t}-${Math.random().toString(36).substring(2, 6)}`,
+      name: data.name.trim() || 'نبرد جدید',
+      locationId: data.locationId || null,
+      status: 'draft',
+      round: 0,
+      currentParticipantId: null,
+      sessionTag: data.sessionTag || '',
+      settings: {
+        showExactHp: false,
+        showAc: false,
+        showConditions: true,
+        showDefeated: true,
+        playerInitiativeRolls: true,
+        ...(data.settings || {})
+      },
+      version: 1,
+      dmNotes: data.dmNotes || '',
+      startedAt: null,
+      endedAt: null,
+      createdBy: this.currentUser?.id,
+      createdAt: t,
+      updatedAt: t,
+      participants: [],
+      events: []
+    };
+
+    all.push(newEnc);
+    this.setItem('live_encounters', all);
+    this.liveChannel.notify(newEnc.id, newEnc.version);
+    return newEnc;
+  }
+
+  async getLiveEncounter(id: string): Promise<LiveEncounter | null> {
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const enc = all.find(e => e.id === id);
+    if (!enc) return null;
+    const locations = this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS);
+    return {
+      ...enc,
+      location: enc.locationId ? locations.find(l => l.id === enc.locationId) || null : null
+    };
+  }
+
+  async updateLiveEncounter(id: string, data: Partial<LiveEncounter>): Promise<LiveEncounter> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const idx = all.findIndex(e => e.id === id);
+    if (idx === -1) throw new Error('مبارزه یافت نشد.');
+
+    const prev = all[idx];
+    const updated: LiveEncounter = {
+      ...prev,
+      ...data,
+      settings: { ...prev.settings, ...(data.settings || {}) },
+      version: (prev.version || 0) + 1,
+      updatedAt: Date.now()
+    };
+
+    all[idx] = updated;
+    this.setItem('live_encounters', all);
+    this.liveChannel.notify(updated.id, updated.version);
+    return updated;
+  }
+
+  async startLiveEncounter(id: string, withSurpriseRound?: boolean): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const enc = all.find(e => e.id === id);
+    if (!enc) throw new Error('مبارزه یافت نشد.');
+
+    // If surprise round requested, hidden combatants stay hidden
+    if (!withSurpriseRound) {
+      // By default revealed
+    }
+
+    const sortedActive = (enc.participants || [])
+      .filter(p => p.status === 'active' && p.initiative !== null)
+      .sort((a, b) => (b.initiative ?? 0) - (a.initiative ?? 0) || a.sortIndex - b.sortIndex);
+
+    const firstId = sortedActive[0]?.id || enc.participants[0]?.id || null;
+
+    enc.status = 'active';
+    enc.round = 1;
+    enc.currentParticipantId = firstId;
+    enc.startedAt = Date.now();
+    enc.version = (enc.version || 0) + 1;
+    enc.updatedAt = Date.now();
+
+    enc.events = enc.events || [];
+    enc.events.push({
+      id: `evt-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      encounterId: enc.id,
+      round: 1,
+      type: 'start',
+      text: withSurpriseRound ? 'مبارزه با دور غافلگیری آغاز شد!' : 'مبارزه آغاز شد! دور ۱',
+      visibleToPlayers: true,
+      createdAt: Date.now()
+    });
+
+    this.setItem('live_encounters', all);
+    this.liveChannel.notify(enc.id, enc.version);
+  }
+
+  async pauseLiveEncounter(id: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const enc = all.find(e => e.id === id);
+    if (!enc) throw new Error('مبارزه یافت نشد.');
+
+    enc.status = 'paused';
+    enc.version = (enc.version || 0) + 1;
+    enc.updatedAt = Date.now();
+
+    enc.events = enc.events || [];
+    enc.events.push({
+      id: `evt-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      encounterId: enc.id,
+      round: enc.round,
+      type: 'note',
+      text: 'مبارزه متوقف شد.',
+      visibleToPlayers: true,
+      createdAt: Date.now()
+    });
+
+    this.setItem('live_encounters', all);
+    this.liveChannel.notify(enc.id, enc.version);
+  }
+
+  async resumeLiveEncounter(id: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const enc = all.find(e => e.id === id);
+    if (!enc) throw new Error('مبارزه یافت نشد.');
+
+    enc.status = 'active';
+    enc.version = (enc.version || 0) + 1;
+    enc.updatedAt = Date.now();
+
+    enc.events = enc.events || [];
+    enc.events.push({
+      id: `evt-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      encounterId: enc.id,
+      round: enc.round,
+      type: 'note',
+      text: 'مبارزه از سر گرفته شد.',
+      visibleToPlayers: true,
+      createdAt: Date.now()
+    });
+
+    this.setItem('live_encounters', all);
+    this.liveChannel.notify(enc.id, enc.version);
+  }
+
+  async endLiveEncounter(id: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const enc = all.find(e => e.id === id);
+    if (!enc) throw new Error('مبارزه یافت نشد.');
+
+    enc.status = 'ended';
+    enc.endedAt = Date.now();
+    enc.version = (enc.version || 0) + 1;
+    enc.updatedAt = Date.now();
+
+    enc.events = enc.events || [];
+    enc.events.push({
+      id: `evt-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      encounterId: enc.id,
+      round: enc.round,
+      type: 'end',
+      text: 'مبارزه به پایان رسید.',
+      visibleToPlayers: true,
+      createdAt: Date.now()
+    });
+
+    this.setItem('live_encounters', all);
+    this.liveChannel.notify(enc.id, enc.version);
+  }
+
+  async nextEncounterTurn(id: string): Promise<{ currentParticipantId: string; round: number }> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const enc = all.find(e => e.id === id);
+    if (!enc) throw new Error('مبارزه یافت نشد.');
+
+    // Acceptance Test 6: Skip defeated or fled participants
+    const activeParticipants = (enc.participants || [])
+      .filter(p => p.status === 'active' && p.initiative !== null)
+      .sort((a, b) => (b.initiative ?? 0) - (a.initiative ?? 0) || a.sortIndex - b.sortIndex);
+
+    if (activeParticipants.length === 0) {
+      return { currentParticipantId: '', round: enc.round };
+    }
+
+    const currentIndex = activeParticipants.findIndex(p => p.id === enc.currentParticipantId);
+    let nextIndex = currentIndex + 1;
+    let nextRound = enc.round;
+
+    if (nextIndex >= activeParticipants.length || currentIndex === -1) {
+      nextIndex = 0;
+      nextRound += 1;
+    }
+
+    const nextParticipant = activeParticipants[nextIndex];
+    enc.currentParticipantId = nextParticipant.id;
+    enc.round = nextRound;
+    enc.version = (enc.version || 0) + 1;
+    enc.updatedAt = Date.now();
+
+    const partName = nextParticipant.displayNameForPlayers || nextParticipant.instanceName;
+    enc.events = enc.events || [];
+    enc.events.push({
+      id: `evt-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      encounterId: enc.id,
+      round: nextRound,
+      type: 'turn',
+      text: `نوبت ${partName} آغاز شد (دور ${nextRound}).`,
+      visibleToPlayers: nextParticipant.visibility !== 'hidden',
+      createdAt: Date.now()
+    });
+
+    this.setItem('live_encounters', all);
+    this.liveChannel.notify(enc.id, enc.version);
+
+    return { currentParticipantId: nextParticipant.id, round: nextRound };
+  }
+
+  async prevEncounterTurn(id: string): Promise<{ currentParticipantId: string; round: number }> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const enc = all.find(e => e.id === id);
+    if (!enc) throw new Error('مبارزه یافت نشد.');
+
+    const activeParticipants = (enc.participants || [])
+      .filter(p => p.status === 'active' && p.initiative !== null)
+      .sort((a, b) => (b.initiative ?? 0) - (a.initiative ?? 0) || a.sortIndex - b.sortIndex);
+
+    if (activeParticipants.length === 0) {
+      return { currentParticipantId: '', round: enc.round };
+    }
+
+    const currentIndex = activeParticipants.findIndex(p => p.id === enc.currentParticipantId);
+    let prevIndex = currentIndex - 1;
+    let prevRound = enc.round;
+
+    if (prevIndex < 0) {
+      prevIndex = activeParticipants.length - 1;
+      if (prevRound > 1) prevRound -= 1;
+    }
+
+    const prevParticipant = activeParticipants[prevIndex];
+    enc.currentParticipantId = prevParticipant.id;
+    enc.round = prevRound;
+    enc.version = (enc.version || 0) + 1;
+    enc.updatedAt = Date.now();
+
+    this.setItem('live_encounters', all);
+    this.liveChannel.notify(enc.id, enc.version);
+
+    return { currentParticipantId: prevParticipant.id, round: prevRound };
+  }
+
+  async addEncounterParticipants(
+    encounterId: string,
+    participants: any[],
+    announce?: boolean,
+    announcementText?: string
+  ): Promise<EncounterParticipant[]> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const enc = all.find(e => e.id === encounterId);
+    if (!enc) throw new Error('مبارزه یافت نشد.');
+
+    const createdList: EncounterParticipant[] = [];
+    const t = Date.now();
+
+    for (let i = 0; i < participants.length; i++) {
+      const p = participants[i];
+      const pid = `part-${t}-${i}-${Math.random().toString(36).substring(2, 6)}`;
+      const newPart: EncounterParticipant = {
+        id: pid,
+        encounterId,
+        kind: p.kind || 'monster',
+        npcTemplateId: p.npcTemplateId || null,
+        characterId: p.characterId || null,
+        instanceName: p.instanceName || p.name || 'موجود',
+        displayNameForPlayers: p.displayNameForPlayers || null,
+        maxHp: Number(p.maxHp ?? p.hp ?? 10),
+        hp: Number(p.hp ?? p.maxHp ?? 10),
+        ac: String(p.ac ?? '10'),
+        acState: p.acState || null,
+        conditions: Array.isArray(p.conditions) ? p.conditions : [],
+        initiative: p.initiative !== undefined && p.initiative !== null ? Number(p.initiative) : null,
+        initiativeStatus: p.initiativeStatus || (p.initiative !== null && p.initiative !== undefined ? 'set' : 'none'),
+        visibility: p.visibility || 'revealed',
+        status: p.status || 'active',
+        phase: p.phase || null,
+        groupId: p.groupId || null,
+        sortIndex: p.sortIndex !== undefined ? p.sortIndex : ((enc.participants?.length || 0) + i),
+        addedAtRound: enc.round || 1,
+        revision: 1,
+        notes: p.notes || '',
+        createdAt: t
+      };
+      createdList.push(newPart);
+    }
+
+    // Acceptance Test 2: Current turn pointer does NOT move when adding participants!
+    enc.participants = [...(enc.participants || []), ...createdList];
+    enc.version = (enc.version || 0) + 1;
+    enc.updatedAt = t;
+
+    if (announce) {
+      const text = announcementText?.trim() || 'نیروهای کمکی از راه رسیدند!';
+      enc.events = enc.events || [];
+      enc.events.push({
+        id: `evt-${t}-${Math.random().toString(36).substring(2, 6)}`,
+        encounterId,
+        round: enc.round || 1,
+        type: 'add',
+        text,
+        visibleToPlayers: true,
+        createdAt: t
+      });
+    }
+
+    this.setItem('live_encounters', all);
+    this.liveChannel.notify(enc.id, enc.version);
+
+    return createdList;
+  }
+
+  async updateEncounterParticipant(
+    encounterId: string,
+    participantId: string,
+    data: Partial<EncounterParticipant>
+  ): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const enc = all.find(e => e.id === encounterId);
+    if (!enc) throw new Error('مبارزه یافت نشد.');
+
+    const targetIdx = (enc.participants || []).findIndex(p => p.id === participantId);
+    if (targetIdx === -1) throw new Error('شرکت‌کننده یافت نشد.');
+
+    const prev = enc.participants[targetIdx];
+    // Acceptance Test 9: Participant revision protection
+    const updated: EncounterParticipant = {
+      ...prev,
+      ...data,
+      id: prev.id,
+      encounterId: prev.encounterId,
+      revision: (prev.revision || 1) + 1
+    };
+
+    enc.participants[targetIdx] = updated;
+    enc.version = (enc.version || 0) + 1;
+    enc.updatedAt = Date.now();
+
+    this.setItem('live_encounters', all);
+    this.liveChannel.notify(enc.id, enc.version);
+  }
+
+  async deleteEncounterParticipant(encounterId: string, participantId: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const enc = all.find(e => e.id === encounterId);
+    if (!enc) throw new Error('مبارزه یافت نشد.');
+
+    enc.participants = (enc.participants || []).filter(p => p.id !== participantId);
+    if (enc.currentParticipantId === participantId) {
+      enc.currentParticipantId = enc.participants[0]?.id || null;
+    }
+    enc.version = (enc.version || 0) + 1;
+    enc.updatedAt = Date.now();
+
+    this.setItem('live_encounters', all);
+    this.liveChannel.notify(enc.id, enc.version);
+  }
+
+  async addEncounterEvent(encounterId: string, text: string, visibleToPlayers: boolean = true): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LiveEncounter[]>('live_encounters', []);
+    const enc = all.find(e => e.id === encounterId);
+    if (!enc) throw new Error('مبارزه یافت نشد.');
+
+    const t = Date.now();
+    const event: EncounterEvent = {
+      id: `evt-${t}-${Math.random().toString(36).substring(2, 6)}`,
+      encounterId,
+      round: enc.round || 1,
+      type: 'note',
+      text,
+      visibleToPlayers,
+      createdAt: t
+    };
+
+    enc.events = enc.events || [];
+    enc.events.push(event);
+    enc.version = (enc.version || 0) + 1;
+    enc.updatedAt = t;
+
+    this.setItem('live_encounters', all);
+    this.liveChannel.notify(enc.id, enc.version);
+  }
+
+  async distributeEncounterLoot(encounterId: string, characterId: string, item: any): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const chars = this.getItem<Character[]>('characters', SEED_CHARACTERS);
+    const char = chars.find(c => c.id === characterId);
+    if (!char) throw new Error('شخصیت یافت نشد.');
+
+    const newItem = {
+      id: `inv-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      name: item.name || 'آیتم لوت',
+      category: item.category || 'misc',
+      quantity: item.quantity || 1,
+      weight: item.weight || 0,
+      description: item.description || '',
+      equipped: false,
+      properties: item.properties || ''
+    };
+
+    char.inventory = [...(char.inventory || []), newItem];
+    this.setItem('characters', chars);
+
+    await this.addEncounterEvent(
+      encounterId,
+      `غنیمت [${newItem.name}] به [${char.name}] اهدا شد.`,
+      true
+    );
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -1372,6 +2254,11 @@ export class LocalApi implements ApiClient {
 // ----------------------------------------------------------------------
 export class HttpApi implements ApiClient {
   private baseUrl = '/api';
+  public liveChannel: LiveChannel;
+
+  constructor() {
+    this.liveChannel = new HttpLiveChannel((url, opts) => this.fetchJson(url, opts));
+  }
 
   private async fetchJson<T>(url: string, options: RequestInit = {}): Promise<T> {
     const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method?.toUpperCase() || '');
@@ -1866,6 +2753,159 @@ export class HttpApi implements ApiClient {
     return this.fetchJson<{ success: boolean; message: string }>('/admin/seed', {
       method: 'POST',
       body: JSON.stringify({ force })
+    });
+  }
+
+  // --- Locations CRUD ---
+  async listLocations(): Promise<LocationEntry[]> {
+    return this.fetchJson<LocationEntry[]>('/locations');
+  }
+
+  async createLocation(loc: Omit<LocationEntry, 'id' | 'createdAt' | 'updatedAt'>): Promise<LocationEntry> {
+    return this.fetchJson<LocationEntry>('/locations', {
+      method: 'POST',
+      body: JSON.stringify(loc)
+    });
+  }
+
+  async updateLocation(loc: LocationEntry): Promise<LocationEntry> {
+    return this.fetchJson<LocationEntry>(`/locations/${loc.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(loc)
+    });
+  }
+
+  async deleteLocation(id: string): Promise<void> {
+    await this.fetchJson(`/locations/${id}`, { method: 'DELETE' });
+  }
+
+  // --- Live Sync & Player Encounter ---
+  async getLiveStatus(): Promise<LiveSyncStatus> {
+    return this.fetchJson<LiveSyncStatus>('/live');
+  }
+
+  async getActiveEncounter(): Promise<PlayerEncounterView | null> {
+    try {
+      return await this.fetchJson<PlayerEncounterView>('/encounters/active');
+    } catch (e: any) {
+      if (e.status === 404) return null;
+      throw e;
+    }
+  }
+
+  async getEncounterView(id: string, since?: number): Promise<PlayerEncounterView | LiveEncounter | { notModified: true }> {
+    const url = since !== undefined ? `/encounters/${id}/view?since=${since}` : `/encounters/${id}/view`;
+    return this.fetchJson(url);
+  }
+
+  async submitInitiative(encounterId: string, characterId: string, value: number): Promise<{ initiative: number; initiativeStatus: string }> {
+    return this.fetchJson<{ initiative: number; initiativeStatus: string }>(`/encounters/${encounterId}/initiative`, {
+      method: 'POST',
+      body: JSON.stringify({ characterId, value })
+    });
+  }
+
+  // --- Live Encounters (DM) ---
+  async listLiveEncounters(status?: string, locationId?: string): Promise<LiveEncounter[]> {
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    if (locationId) params.set('locationId', locationId);
+    const qs = params.toString();
+    return this.fetchJson<LiveEncounter[]>(`/encounters${qs ? `?${qs}` : ''}`);
+  }
+
+  async createLiveEncounter(data: {
+    name: string;
+    locationId?: string | null;
+    sessionTag?: string;
+    settings?: Partial<EncounterSettings>;
+    dmNotes?: string;
+  }): Promise<LiveEncounter> {
+    return this.fetchJson<LiveEncounter>('/encounters', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getLiveEncounter(id: string): Promise<LiveEncounter | null> {
+    try {
+      return await this.fetchJson<LiveEncounter>(`/encounters/${id}`);
+    } catch (e: any) {
+      if (e.status === 404) return null;
+      throw e;
+    }
+  }
+
+  async updateLiveEncounter(id: string, data: Partial<LiveEncounter>): Promise<LiveEncounter> {
+    return this.fetchJson<LiveEncounter>(`/encounters/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async startLiveEncounter(id: string, withSurpriseRound?: boolean): Promise<void> {
+    await this.fetchJson(`/encounters/${id}/start`, {
+      method: 'POST',
+      body: JSON.stringify({ withSurpriseRound })
+    });
+  }
+
+  async pauseLiveEncounter(id: string): Promise<void> {
+    await this.fetchJson(`/encounters/${id}/pause`, { method: 'POST' });
+  }
+
+  async resumeLiveEncounter(id: string): Promise<void> {
+    await this.fetchJson(`/encounters/${id}/resume`, { method: 'POST' });
+  }
+
+  async endLiveEncounter(id: string): Promise<void> {
+    await this.fetchJson(`/encounters/${id}/end`, { method: 'POST' });
+  }
+
+  async nextEncounterTurn(id: string): Promise<{ currentParticipantId: string; round: number }> {
+    return this.fetchJson<{ currentParticipantId: string; round: number }>(`/encounters/${id}/next-turn`, { method: 'POST' });
+  }
+
+  async prevEncounterTurn(id: string): Promise<{ currentParticipantId: string; round: number }> {
+    return this.fetchJson<{ currentParticipantId: string; round: number }>(`/encounters/${id}/prev-turn`, { method: 'POST' });
+  }
+
+  async addEncounterParticipants(
+    encounterId: string,
+    participants: any[],
+    announce?: boolean,
+    announcementText?: string
+  ): Promise<EncounterParticipant[]> {
+    return this.fetchJson<EncounterParticipant[]>(`/encounters/${encounterId}/participants`, {
+      method: 'POST',
+      body: JSON.stringify({ participants, announce, announcementText })
+    });
+  }
+
+  async updateEncounterParticipant(encounterId: string, participantId: string, data: Partial<EncounterParticipant>): Promise<void> {
+    await this.fetchJson(`/encounters/${encounterId}/participants/${participantId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteEncounterParticipant(encounterId: string, participantId: string): Promise<void> {
+    await this.fetchJson(`/encounters/${encounterId}/participants/${participantId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async addEncounterEvent(encounterId: string, text: string, visibleToPlayers?: boolean): Promise<void> {
+    await this.fetchJson(`/encounters/${encounterId}/events`, {
+      method: 'POST',
+      body: JSON.stringify({ text, visibleToPlayers })
+    });
+  }
+
+  async distributeEncounterLoot(encounterId: string, characterId: string, item: any): Promise<void> {
+    await this.fetchJson(`/encounters/${encounterId}/loot`, {
+      method: 'POST',
+      body: JSON.stringify({ characterId, item })
     });
   }
 }

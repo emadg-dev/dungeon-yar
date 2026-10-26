@@ -14,6 +14,8 @@ interface BottomNavProps {
   inventoryBadge?: number;
   notesBadge?: number;
   isKeyboardOpen?: boolean;
+  hasActiveEncounter?: boolean;
+  onOpenActiveEncounter?: () => void;
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({
@@ -26,6 +28,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   inventoryBadge = 0,
   notesBadge = 0,
   isKeyboardOpen = false,
+  hasActiveEncounter = false,
+  onOpenActiveEncounter,
 }) => {
   // Hide bottom nav while on-screen keyboard is open to avoid covering inputs
   if (isKeyboardOpen) return null;
@@ -88,6 +92,19 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       className="fixed bottom-0 inset-x-0 z-[30] bg-[#171513]/95 backdrop-blur-md border-t border-[#2F2A23] pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_25px_rgba(0,0,0,0.8)]"
       dir="rtl"
     >
+      {/* Active Encounter Quick Join Bar on BottomNav */}
+      {hasActiveEncounter && onOpenActiveEncounter && (
+        <div className="bg-gradient-to-r from-[#C2512B] via-[#E0A030] to-[#C2512B] border-b border-[#F2C265]/40 px-3 py-1 text-center shadow-lg">
+          <button
+            type="button"
+            onClick={onOpenActiveEncounter}
+            className="w-full flex items-center justify-center gap-2 text-[11px] font-black text-[#0E0D0C] hover:opacity-95 transition"
+          >
+            <Swords className="w-3.5 h-3.5 animate-bounce shrink-0" />
+            <span>مبارزه زنده در جریان است — لمس جهت مشاهده</span>
+          </button>
+        </div>
+      )}
       <div className="max-w-md mx-auto grid grid-cols-5 h-16 px-1 items-center">
         {/* 1. Sheet */}
         <button
@@ -99,7 +116,23 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
           }`}
         >
-          <Heart className={`w-5 h-5 ${isSheetTab ? 'stroke-[2.5]' : 'stroke-2'}`} />
+          <div className="relative">
+            <Heart className={`w-5 h-5 ${isSheetTab ? 'stroke-[2.5]' : 'stroke-2'}`} />
+            {hasActiveEncounter && (
+              <span 
+                onClick={(e) => {
+                  if (onOpenActiveEncounter) {
+                    e.stopPropagation();
+                    onOpenActiveEncounter();
+                  }
+                }}
+                className="absolute -top-1.5 -end-2 w-4 h-4 rounded-full bg-[#C2512B] text-white flex items-center justify-center animate-pulse border border-[#F2C265] shadow-[0_0_8px_rgba(194,81,43,0.8)]"
+                title="مبارزه زنده"
+              >
+                <Swords className="w-2.5 h-2.5" />
+              </span>
+            )}
+          </div>
           <span className="text-xs leading-none font-semibold truncate">شیت</span>
           {isSheetTab && (
             <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-[#E0A030] shadow-[0_0_6px_#E0A030]" />

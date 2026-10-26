@@ -3,7 +3,7 @@ import { User, Character } from '../types';
 import { PWAInstallPrompt } from './mobile/PWAInstallPrompt';
 import { 
   CheckCircle2, RefreshCw, Shield, BookOpen, 
-  SunMedium, Type, LogOut, ChevronDown, MoreVertical, X, Sparkles
+  SunMedium, Type, LogOut, ChevronDown, MoreVertical, X, Sparkles, Swords
 } from 'lucide-react';
 
 export interface HeaderProps {
@@ -24,6 +24,8 @@ export interface HeaderProps {
   wakeLockSupported?: boolean;
   fontScale?: 'normal' | 'large' | 'xlarge';
   onToggleFontScale?: () => void;
+  activeEncounter?: { id: string; name: string } | null;
+  onOpenActiveEncounter?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -43,7 +45,9 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleWakeLock = () => {},
   wakeLockSupported = false,
   fontScale = 'normal',
-  onToggleFontScale = () => {}
+  onToggleFontScale = () => {},
+  activeEncounter,
+  onOpenActiveEncounter
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -85,6 +89,19 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Action Controls & Utilities */}
         <div className="flex items-center gap-1.5 shrink-0">
+          {/* Live Encounter Button for Players or DM */}
+          {activeEncounter && onOpenActiveEncounter && (
+            <button
+              type="button"
+              onClick={onOpenActiveEncounter}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-xs font-black bg-[#C2512B] hover:bg-[#D65D34] text-white animate-pulse border border-[#F2C265] shadow-[0_0_12px_rgba(194,81,43,0.6)] touch-target transition"
+              title={`مبارزه فعال: ${activeEncounter.name}`}
+            >
+              <Swords className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span className="hidden sm:inline">مبارزه زنده</span>
+            </button>
+          )}
+
           {/* Autosave Status Icon */}
           <div className="flex items-center px-1" title={saveStatus === 'saving' ? 'در حال ذخیره‌سازی...' : 'ذخیره شد'}>
             {saveStatus === 'saving' ? (
