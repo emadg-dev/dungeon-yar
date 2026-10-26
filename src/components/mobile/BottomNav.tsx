@@ -1,10 +1,13 @@
 import React from 'react';
 import { 
   Heart, Package, FileText, Compass, Dices, 
-  LayoutDashboard, Swords, Library, Scroll, MoreHorizontal 
+  LayoutDashboard, Swords, Library, Scroll, MoreHorizontal, Shield 
 } from 'lucide-react';
 
 interface BottomNavProps {
+  isHomeView?: boolean;
+  homeTab?: 'home' | 'characters' | 'campaigns' | 'account';
+  onSelectHomeTab?: (tab: any) => void;
   isDmView: boolean;
   playerTab: string;
   onSelectPlayerTab: (tab: any) => void;
@@ -19,6 +22,9 @@ interface BottomNavProps {
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({
+  isHomeView = false,
+  homeTab = 'home',
+  onSelectHomeTab,
   isDmView,
   playerTab,
   onSelectPlayerTab,
@@ -33,6 +39,49 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 }) => {
   // Hide bottom nav while on-screen keyboard is open to avoid covering inputs
   if (isKeyboardOpen) return null;
+
+  // Home Navigation (Section 5: خانه / شخصیتها / کمپینها / حساب)
+  if (isHomeView) {
+    const homeItems = [
+      { id: 'home', label: 'خانه', icon: Compass },
+      { id: 'characters', label: 'شخصیت‌ها', icon: Heart },
+      { id: 'campaigns', label: 'کمپین‌ها', icon: Shield },
+      { id: 'account', label: 'حساب', icon: MoreHorizontal },
+    ] as const;
+
+    return (
+      <nav 
+        aria-label="منوی ناوبری اصلی"
+        className="fixed bottom-0 inset-x-0 z-[30] bg-[#171513]/95 backdrop-blur-md border-t border-[#2F2A23] pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_25px_rgba(0,0,0,0.8)]"
+        dir="rtl"
+      >
+        <div className="max-w-md mx-auto grid grid-cols-4 h-16 px-2">
+          {homeItems.map(item => {
+            const Icon = item.icon;
+            const isActive = homeTab === item.id;
+            return (
+              <button
+                type="button"
+                key={item.id}
+                onClick={() => onSelectHomeTab?.(item.id)}
+                className={`flex flex-col items-center justify-center gap-1 touch-target transition-all duration-150 relative ${
+                  isActive
+                    ? 'text-[#E0A030] font-extrabold'
+                    : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                }`}
+              >
+                <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+                <span className="text-xs leading-none font-semibold truncate">{item.label}</span>
+                {isActive && (
+                  <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-[#E0A030] shadow-[0_0_6px_#E0A030]" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+    );
+  }
 
   if (isDmView) {
     const dmItems = [

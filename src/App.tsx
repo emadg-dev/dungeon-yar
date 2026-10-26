@@ -7,7 +7,8 @@ import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react
 import { 
   User, Character, CharacterNote, NPC, ItemLibraryEntry, 
   RewardPackage, CampaignNote, Encounter, WeaponTemplate, ClassTemplate, DiceRollResult,
-  LocationEntry, PlayerEncounterView 
+  LocationEntry, PlayerEncounterView, Campaign, MasterCharacter, CampaignInvite, 
+  CampaignMember, CharacterHistoryEvent, CharacterParticipation, CampaignRole, CampaignSettings
 } from './types';
 import { api } from './services/api';
 import { Header } from './components/Header';
@@ -36,6 +37,17 @@ const DiceRollerModal = React.lazy(() => import('./components/DiceRollerModal').
 const RestModal = React.lazy(() => import('./components/character/RestModal').then(m => ({ default: m.RestModal })));
 const LiveEncounterModal = React.lazy(() => import('./components/character/LiveEncounterModal').then(m => ({ default: m.LiveEncounterModal })));
 
+// Multi-Campaign Views & Modals
+const HomeScreen = React.lazy(() => import('./components/home/HomeScreen').then(m => ({ default: m.HomeScreen })));
+const MasterCharacterScreen = React.lazy(() => import('./components/character/MasterCharacterScreen').then(m => ({ default: m.MasterCharacterScreen })));
+const CampaignSwitcherModal = React.lazy(() => import('./components/campaign/CampaignSwitcherModal').then(m => ({ default: m.CampaignSwitcherModal })));
+const CreateCampaignModal = React.lazy(() => import('./components/campaign/CreateCampaignModal').then(m => ({ default: m.CreateCampaignModal })));
+const JoinCampaignModal = React.lazy(() => import('./components/campaign/JoinCampaignModal').then(m => ({ default: m.JoinCampaignModal })));
+const CampaignSettingsModal = React.lazy(() => import('./components/campaign/CampaignSettingsModal').then(m => ({ default: m.CampaignSettingsModal })));
+const CampaignMembersModal = React.lazy(() => import('./components/campaign/CampaignMembersModal').then(m => ({ default: m.CampaignMembersModal })));
+const CampaignInvitesModal = React.lazy(() => import('./components/campaign/CampaignInvitesModal').then(m => ({ default: m.CampaignInvitesModal })));
+const CampaignApprovalsModal = React.lazy(() => import('./components/campaign/CampaignApprovalsModal').then(m => ({ default: m.CampaignApprovalsModal })));
+
 // Loading skeleton fallback for tabs
 const TabSkeleton = () => (
   <div className="space-y-4 p-2 animate-pulse" dir="rtl">
@@ -51,8 +63,30 @@ const TabSkeleton = () => (
 );
 
 export default function App() {
+  // Top-level Navigation View Mode
+  const [viewMode, setViewMode] = useState<'home' | 'character_master' | 'campaign_space'>('home');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
+
+  // Platform / Home Summary State
+  const [myCampaigns, setMyCampaigns] = useState<Campaign[]>([]);
+  const [myCharacters, setMyCharacters] = useState<MasterCharacter[]>([]);
+  const [pendingInvites, setPendingInvites] = useState<CampaignInvite[]>([]);
+  const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
+
+  // Master Character View State
+  const [selectedMasterCharId, setSelectedMasterCharId] = useState<string | null>(null);
+  const [selectedMasterChar, setSelectedMasterChar] = useState<MasterCharacter | null>(null);
+  const [charHistoryEvents, setCharHistoryEvents] = useState<CharacterHistoryEvent[]>([]);
+  const [charParticipations, setCharParticipations] = useState<CharacterParticipation[]>([]);
+
+  // Active Campaign Scoped State
+  const [activeCampaignId, setActiveCampaignId] = useState<string | null>(null);
+  const [activeCampaign, setActiveCampaign] = useState<Campaign | null>(null);
+  const [activeCampaignMembers, setActiveCampaignMembers] = useState<CampaignMember[]>([]);
+  const [campaignInvites, setCampaignInvites] = useState<CampaignInvite[]>([]);
+
+  // In-Campaign Play State
   const [characters, setCharacters] = useState<Character[]>([]);
   const [activeCharId, setActiveCharId] = useState<string | null>(null);
   const [activePlayerTab, setActivePlayerTab] = useState<'overview' | 'abilities' | 'combat' | 'companions' | 'inventory' | 'notes' | 'codex'>('overview');
@@ -88,6 +122,23 @@ export default function App() {
   const [accountModalOpen, setAccountModalOpen] = useState(false);
   const [sessionExpiredSheetOpen, setSessionExpiredSheetOpen] = useState(false);
 
+  // Multi-campaign Modals
+  const [campaignSwitcherOpen, setCampaignSwitcherOpen] = useState(false);
+  const [createCampaignOpen, setCreateCampaignOpen] = useState(false);
+  const [joinCampaignModal, setJoinCampaignModal] = useState<{
+    isOpen: boolean;
+    campaign: Campaign | null;
+    characterId?: string | null;
+  }>({
+    isOpen: false,
+    campaign: null
+  });
+  const [campaignSettingsOpen, setCampaignSettingsOpen] = useState(false);
+  const [campaignMembersOpen, setCampaignMembersOpen] = useState(false);
+  const [campaignInvitesOpen, setCampaignInvitesOpen] = useState(false);
+  const [campaignApprovalsOpen, setCampaignApprovalsOpen] = useState(false);
+
+  // Dice & Rest Modals
   const [diceModalOpen, setDiceModalOpen] = useState(false);
   const [presetRoll, setPresetRoll] = useState<{ sides: number; count: number; modifier: number; label: string } | null>(null);
   const [diceHistory, setDiceHistory] = useState<DiceRollResult[]>([]);
@@ -129,101 +180,95 @@ export default function App() {
 
   // Scroll positions per tab
   const scrollPositionsRef = useRef<Record<string, number>>({});
-
-  // Deep-linkable hash routing
-  const applyRouteFromHash = useCallback((hash: string) => {
-    const raw = hash.replace(/^#\/?/, '');
-    if (!raw) return;
-
-    // Check query params in hash (e.g. #register?code=XYZ or #reset-password?token=ABC)
-    const [routePart, queryPart] = raw.split('?');
-    const clean = routePart.toLowerCase();
-    const query = new URLSearchParams(queryPart || '');
-
-    if (clean === 'register') {
-      const code = query.get('code') || '';
-      setAuthModalState({ isOpen: true, mode: 'register', inviteCode: code });
-      return;
-    }
-    if (clean === 'reset-password' || clean === 'reset') {
-      const token = query.get('token') || '';
-      setAuthModalState({ isOpen: true, mode: 'reset', resetToken: token });
-      return;
-    }
-    if (clean === 'login') {
-      setAuthModalState({ isOpen: true, mode: 'login' });
-      return;
-    }
-
-    if (clean.startsWith('dm')) {
-      setIsDmView(true);
-      const parts = clean.split('/');
-      const dmSub = parts[1] as any;
-      if (['dashboard', 'encounters', 'library', 'narrative', 'more'].includes(dmSub)) {
-        setActiveDmTab(dmSub);
-      }
-    } else {
-      setIsDmView(false);
-      if (['overview', 'abilities', 'combat', 'companions', 'inventory', 'notes', 'codex'].includes(clean)) {
-        setActivePlayerTab(clean as any);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    applyRouteFromHash(window.location.hash);
-    const onHashChange = () => {
-      applyRouteFromHash(window.location.hash);
-    };
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
-  }, [applyRouteFromHash]);
-
-  const handleSelectPlayerTab = (tab: typeof activePlayerTab) => {
-    scrollPositionsRef.current[`player_${activePlayerTab}`] = window.scrollY;
-    setActivePlayerTab(tab);
-    window.location.hash = `#${tab}`;
-    const prevPos = scrollPositionsRef.current[`player_${tab}`] || 0;
-    setTimeout(() => window.scrollTo({ top: prevPos, behavior: 'instant' }), 20);
-  };
-
-  const handleSelectDmTab = (tab: typeof activeDmTab) => {
-    scrollPositionsRef.current[`dm_${activeDmTab}`] = window.scrollY;
-    setActiveDmTab(tab);
-    window.location.hash = `#dm/${tab}`;
-    const prevPos = scrollPositionsRef.current[`dm_${tab}`] || 0;
-    setTimeout(() => window.scrollTo({ top: prevPos, behavior: 'instant' }), 20);
-  };
-
-  // Debounced save ref
   const saveTimeoutRef = useRef<any>(null);
 
-  // Load Initial Data
-  const loadInitialData = async () => {
+  // Load Platform Home Data
+  const loadHomeData = async () => {
     try {
       const authRes = await api.getMe();
       const user = authRes.user;
       setCurrentUser(user);
-      setIsDmView(user?.role === 'dm');
 
-      if (user?.role === 'dm') {
+      if (user?.role === 'dm' || user?.platformRole === 'admin') {
         const usersList = await api.listUsers().catch(() => []);
         setAllUsers(usersList);
       } else {
         setAllUsers(user ? [user] : []);
       }
 
-      const charsList = await api.listCharacters();
-      setCharacters(charsList);
+      const summary = await api.getHomeSummary();
+      setMyCampaigns(summary.myCampaigns || []);
+      setMyCharacters(summary.myCharacters || []);
+      setPendingInvites(summary.pendingInvites || []);
+      setPendingApprovals(summary.pendingApprovals || []);
+    } catch (err: any) {
+      if (err?.status === 401 || err?.message?.includes('نشست')) {
+        setSessionExpiredSheetOpen(true);
+      }
+      console.error('Home data load error:', err);
+    }
+  };
 
-      if (authRes.activeCharacterId && charsList.some(c => c.id === authRes.activeCharacterId)) {
-        setActiveCharId(authRes.activeCharacterId);
-      } else if (charsList.length > 0) {
+  // Load Master Character Screen Data
+  const loadMasterCharacter = async (charId: string) => {
+    try {
+      const masterChar = await api.getMasterCharacter(charId);
+      if (masterChar) {
+        setSelectedMasterChar(masterChar);
+        setSelectedMasterCharId(masterChar.id);
+        const history = await api.getMasterCharacterHistory(charId).catch(() => []);
+        setCharHistoryEvents(history);
+        const parts = await api.listParticipations(charId).catch(() => []);
+        setCharParticipations(parts);
+        setViewMode('character_master');
+      }
+    } catch (err) {
+      console.error('Master character load error:', err);
+      showToast('خطا در بارگذاری اطلاعات پرونده شخصیت.');
+    }
+  };
+
+  // Load Campaign Workspace Data
+  const loadCampaignWorkspace = async (campaignId: string) => {
+    try {
+      const camp = await api.getCampaign(campaignId);
+      if (!camp) {
+        showToast('کمپین مورد نظر یافت نشد.');
+        setViewMode('home');
+        return;
+      }
+      api.setActiveCampaignId(camp.id);
+      setActiveCampaign(camp);
+      setActiveCampaignId(camp.id);
+
+      // Check user role in campaign
+      const myRole = camp.myRole || 'player';
+      const isDmRole = myRole === 'owner' || myRole === 'co_dm' || currentUser?.role === 'dm';
+      setIsDmView(isDmRole);
+
+      // Members & Invites
+      const members = await api.listCampaignMembers(campaignId).catch(() => []);
+      setActiveCampaignMembers(members);
+
+      if (isDmRole) {
+        const invites = await api.listCampaignInvites(campaignId).catch(() => []);
+        setCampaignInvites(invites);
+        const campNotes = await api.listCampaignNotes().catch(() => []);
+        setCampaignNotes(campNotes);
+        const encList = await api.listEncounters().catch(() => []);
+        setEncounters(encList);
+      }
+
+      // Characters in campaign
+      const charsList = await api.listCharacters().catch(() => []);
+      setCharacters(charsList);
+      if (charsList.length > 0) {
         setActiveCharId(charsList[0].id);
       } else {
         setActiveCharId(null);
       }
 
+      // Scoped game entities
       const notesList = await api.listNotes().catch(() => []);
       setNotes(notesList);
 
@@ -248,31 +293,115 @@ export default function App() {
       const activeEnc = await api.getActiveEncounter().catch(() => null);
       setActiveLiveEncounter(activeEnc);
 
-      const settings = await api.getCampaignSettings().catch(() => ({ allowPlayerCreateCharacter: false }));
-      setAllowPlayerCreateCharacter(settings.allowPlayerCreateCharacter);
+      const campSettings = await api.getCampaignSettings().catch(() => ({
+        allowPlayerCreateCharacter: camp.settings?.allowPlayerCreateCharacter ?? true
+      }));
+      setAllowPlayerCreateCharacter(Boolean(campSettings.allowPlayerCreateCharacter));
 
-      if (user?.role === 'dm') {
-        const campNotes = await api.listCampaignNotes().catch(() => []);
-        setCampaignNotes(campNotes);
-
-        const encList = await api.listEncounters().catch(() => []);
-        setEncounters(encList);
-      }
+      setViewMode('campaign_space');
     } catch (err: any) {
-      if (err?.status === 401 || err?.message?.includes('نشست')) {
-        setSessionExpiredSheetOpen(true);
-      }
-      console.error('Initial data load error:', err);
+      console.error('Campaign workspace load error:', err);
+      showToast('خطا در ورود به کمپین.');
+      setViewMode('home');
     }
   };
 
+  // Deep-linkable hash routing
+  const applyRouteFromHash = useCallback((hash: string) => {
+    const raw = hash.replace(/^#\/?/, '');
+    if (!raw || raw === '') {
+      setViewMode('home');
+      return;
+    }
+
+    const [routePart, queryPart] = raw.split('?');
+    const clean = routePart.toLowerCase();
+    const query = new URLSearchParams(queryPart || '');
+
+    if (clean === 'register') {
+      const code = query.get('code') || '';
+      setAuthModalState({ isOpen: true, mode: 'register', inviteCode: code });
+      return;
+    }
+    if (clean === 'reset-password' || clean === 'reset') {
+      const token = query.get('token') || '';
+      setAuthModalState({ isOpen: true, mode: 'reset', resetToken: token });
+      return;
+    }
+    if (clean === 'login') {
+      setAuthModalState({ isOpen: true, mode: 'login' });
+      return;
+    }
+
+    // Characters route: #characters/:id
+    if (clean.startsWith('characters/')) {
+      const charId = routePart.split('/')[1];
+      if (charId) {
+        loadMasterCharacter(charId);
+        return;
+      }
+    }
+
+    // Campaign route: #c/:campaignId/...
+    if (clean.startsWith('c/')) {
+      const parts = routePart.split('/');
+      const campaignId = parts[1];
+      if (campaignId) {
+        if (activeCampaignId !== campaignId) {
+          loadCampaignWorkspace(campaignId);
+        } else {
+          setViewMode('campaign_space');
+        }
+
+        const sub = parts[2];
+        if (sub === 'dm') {
+          setIsDmView(true);
+          const dmSub = parts[3] as any;
+          if (['dashboard', 'encounters', 'library', 'narrative', 'more'].includes(dmSub)) {
+            setActiveDmTab(dmSub);
+          }
+        } else if (sub) {
+          setIsDmView(false);
+          if (['overview', 'abilities', 'combat', 'companions', 'inventory', 'notes', 'codex'].includes(sub)) {
+            setActivePlayerTab(sub as any);
+          }
+        }
+        return;
+      }
+    }
+
+    // Legacy tab shortcuts fallback if in campaign
+    if (['overview', 'abilities', 'combat', 'companions', 'inventory', 'notes', 'codex'].includes(clean)) {
+      if (activeCampaignId) {
+        setViewMode('campaign_space');
+        setIsDmView(false);
+        setActivePlayerTab(clean as any);
+      } else {
+        setViewMode('home');
+      }
+      return;
+    }
+
+    // Default to home
+    setViewMode('home');
+  }, [activeCampaignId]);
+
   useEffect(() => {
-    loadInitialData();
+    loadHomeData();
   }, []);
 
-  // Real-time live encounter updates via liveChannel (§3)
   useEffect(() => {
-    const unsubscribe = api.liveChannel.subscribe(null, async (update: any) => {
+    applyRouteFromHash(window.location.hash);
+    const onHashChange = () => {
+      applyRouteFromHash(window.location.hash);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, [applyRouteFromHash]);
+
+  // Live encounter channel subscription
+  useEffect(() => {
+    const unsubscribe = api.liveChannel.subscribe(activeCampaignId, async (update: any) => {
       const activeEnc = await api.getActiveEncounter().catch(() => null);
       setActiveLiveEncounter(activeEnc);
 
@@ -292,31 +421,32 @@ export default function App() {
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [activeCampaignId]);
 
-  // Location CRUD handlers
-  const handleCreateLocation = async (loc: Omit<LocationEntry, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const created = await api.createLocation(loc);
-    setLocations(prev => [...prev, created]);
-    showToast('مکان جدید با موفقیت ثبت شد.');
-    return created;
+  // Tab Selection with History Hash
+  const handleSelectPlayerTab = (tab: typeof activePlayerTab) => {
+    scrollPositionsRef.current[`player_${activePlayerTab}`] = window.scrollY;
+    setActivePlayerTab(tab);
+    if (activeCampaignId) {
+      window.location.hash = `#c/${activeCampaignId}/${tab}`;
+    } else {
+      window.location.hash = `#${tab}`;
+    }
+    const prevPos = scrollPositionsRef.current[`player_${tab}`] || 0;
+    setTimeout(() => window.scrollTo({ top: prevPos, behavior: 'instant' }), 20);
   };
 
-  const handleUpdateLocation = async (loc: LocationEntry) => {
-    const updated = await api.updateLocation(loc);
-    setLocations(prev => prev.map(l => l.id === loc.id ? updated : l));
-    showToast('تغییرات مکان ذخیره شد.');
-    return updated;
+  const handleSelectDmTab = (tab: typeof activeDmTab) => {
+    scrollPositionsRef.current[`dm_${activeDmTab}`] = window.scrollY;
+    setActiveDmTab(tab);
+    if (activeCampaignId) {
+      window.location.hash = `#c/${activeCampaignId}/dm/${tab}`;
+    } else {
+      window.location.hash = `#dm/${tab}`;
+    }
+    const prevPos = scrollPositionsRef.current[`dm_${tab}`] || 0;
+    setTimeout(() => window.scrollTo({ top: prevPos, behavior: 'instant' }), 20);
   };
-
-  const handleDeleteLocation = async (id: string) => {
-    await api.deleteLocation(id);
-    setLocations(prev => prev.filter(l => l.id !== id));
-    showToast('مکان حذف شد.');
-  };
-
-  // Active Character
-  const activeCharacter = characters.find(c => c.id === activeCharId) || characters[0] || null;
 
   // Character Update with Debounced Save
   const handleUpdateCharacter = useCallback((updated: Character) => {
@@ -369,18 +499,19 @@ export default function App() {
   // Auth Callbacks
   const handleAuthSuccess = async (user: User) => {
     setCurrentUser(user);
-    setIsDmView(user.role === 'dm');
     showToast(`خوش آمدید، ${user.displayName || user.name}!`);
-    await loadInitialData();
+    await loadHomeData();
   };
 
   const handleSwitchUser = async (userId: string) => {
     try {
       const user = await api.switchUser(userId);
       setCurrentUser(user);
-      setIsDmView(user.role === 'dm');
       showToast(`به حساب ${user.displayName || user.name} جابجا شدید.`);
-      await loadInitialData();
+      await loadHomeData();
+      if (activeCampaignId) {
+        await loadCampaignWorkspace(activeCampaignId);
+      }
     } catch (e: any) {
       showToast(e.message || 'خطا در جابجایی کاربر.');
     }
@@ -390,58 +521,64 @@ export default function App() {
     try {
       await api.logout();
       setCurrentUser(null);
-      setIsDmView(false);
+      setViewMode('home');
+      window.location.hash = '#/';
       showToast('با موفقیت خارج شدید.');
-      await loadInitialData();
+      await loadHomeData();
     } catch (e) {
       setCurrentUser(null);
     }
   };
 
-  // Distribute Reward
-  const handleDistributeReward = async (rewardId: string, characterIds: string[]) => {
+  // Multi-Campaign Actions
+  const handleSelectCampaign = (campaignId: string) => {
+    window.location.hash = `#c/${campaignId}/overview`;
+  };
+
+  const handleCreateCampaignSubmit = async (data: {
+    name: string;
+    description?: string;
+    tone?: string;
+    packId?: string | null;
+    settings?: Partial<CampaignSettings>;
+  }) => {
+    const newCamp = await api.createCampaign(data);
+    showToast(`کمپین «${newCamp.name}» با موفقیت ایجاد شد!`);
+    await loadHomeData();
+    setCreateCampaignOpen(false);
+    window.location.hash = `#c/${newCamp.id}/overview`;
+  };
+
+  const handleSaveMasterCharacter = async (updated: MasterCharacter) => {
+    const saved = await api.updateMasterCharacter(updated);
+    setSelectedMasterChar(saved);
+    setMyCharacters(prev => prev.map(c => c.id === saved.id ? saved : c));
+    showToast('پرونده شخصیت با موفقیت ذخیره شد.');
+  };
+
+  const handleAddMilestone = async (event: Omit<CharacterHistoryEvent, 'id' | 'timestamp'>) => {
+    if (!selectedMasterChar) return;
+    const added = await api.addCharacterHistoryEvent({
+      ...event,
+      characterId: selectedMasterChar.id
+    });
+    setCharHistoryEvents(prev => [added, ...prev]);
+    showToast('رویداد جدید به گاه‌شمار اضافه شد.');
+  };
+
+  const handleAcceptInvite = async (code: string) => {
     try {
-      const updated = await api.distributeReward(rewardId, characterIds);
-      setCharacters(updated);
-      showToast('پاداش با موفقیت میان ماجراجویان توزیع گردید!');
+      const res = await api.acceptInvite(code);
+      showToast('دعوت با موفقیت پذیرفته شد! در حال انتقال به کمپین...');
+      await loadHomeData();
+      window.location.hash = `#c/${res.campaignId}/overview`;
     } catch (err: any) {
-      showToast(err.message || 'خطا در توزیع پاداش.');
+      showToast(err.message || 'کد دعوت نامعتبر یا منقضی شده است.');
     }
   };
 
-  // Give item from library
-  const handleGiveItemToPlayer = async (charId: string, item: ItemLibraryEntry) => {
-    try {
-      const updatedChar = await api.giveItemToPlayer(charId, item);
-      setCharacters(prev => prev.map(c => c.id === updatedChar.id ? updatedChar : c));
-      showToast(`شیء «${item.name}» به کوله‌پشتی ${updatedChar.name} افزوده شد!`);
-    } catch (err: any) {
-      showToast(err.message || 'خطا در اهدای شیء.');
-    }
-  };
-
-  // Import Seed data
-  const handleImportSeedIntoDb = async () => {
-    const res = await api.seedDatabase(true);
-    showToast(res.message);
-    await loadInitialData();
-  };
-
-  // Notes callbacks
-  const handleAddNote = async (noteData: Omit<CharacterNote, 'id' | 'updatedAt'>) => {
-    const newNote = await api.createNote(noteData);
-    setNotes(prev => [newNote, ...prev]);
-  };
-
-  const handleUpdateNote = async (note: CharacterNote) => {
-    const updated = await api.updateNote(note);
-    setNotes(prev => prev.map(n => n.id === updated.id ? updated : n));
-  };
-
-  const handleDeleteNote = async (id: string) => {
-    await api.deleteNote(id);
-    setNotes(prev => prev.filter(n => n.id !== id));
-  };
+  // Active Character in Campaign
+  const activeCharacter = characters.find(c => c.id === activeCharId) || characters[0] || null;
 
   return (
     <div className="min-h-screen bg-[#0E0D0C] text-[#EDE6D8] flex flex-col font-sans selection:bg-[#E0A030]/25 selection:text-[#E0A030]" dir="rtl">
@@ -469,10 +606,24 @@ export default function App() {
         onToggleFontScale={toggleFontScale}
         activeEncounter={activeLiveEncounter ? { id: activeLiveEncounter.id, name: activeLiveEncounter.name } : null}
         onOpenActiveEncounter={() => setLiveEncounterModalOpen(true)}
+        // Multi-Campaign Props
+        activeCampaignName={activeCampaign?.name}
+        activeCampaignRole={activeCampaign?.myRole}
+        viewMode={viewMode}
+        onOpenCampaignSwitcher={() => setCampaignSwitcherOpen(true)}
+        onGoHome={() => {
+          setViewMode('home');
+          window.location.hash = '#/';
+        }}
+        onOpenCampaignSettings={() => setCampaignSettingsOpen(true)}
+        onOpenCampaignMembers={() => setCampaignMembersOpen(true)}
+        onOpenCampaignInvites={() => setCampaignInvitesOpen(true)}
+        onOpenCampaignApprovals={() => setCampaignApprovalsOpen(true)}
+        pendingApprovalsCount={pendingApprovals.length}
       />
 
-      {/* Sticky Character Header & Sub-Tabs */}
-      {activeCharacter && !isDmView && (activePlayerTab === 'overview' || activePlayerTab === 'abilities' || activePlayerTab === 'combat' || activePlayerTab === 'companions') && (
+      {/* Sticky Character Header & Sub-Tabs (In Campaign Space, Player View) */}
+      {viewMode === 'campaign_space' && activeCharacter && !isDmView && (activePlayerTab === 'overview' || activePlayerTab === 'abilities' || activePlayerTab === 'combat' || activePlayerTab === 'companions') && (
         <StickyHeader
           character={activeCharacter}
           onUpdate={handleUpdateCharacter}
@@ -491,204 +642,315 @@ export default function App() {
       {/* Main Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-4 py-3 sm:py-6 overflow-x-hidden">
         <Suspense fallback={<TabSkeleton />}>
-          {isDmView && currentUser?.role === 'dm' ? (
-            /* DM Tools Suite */
-            <DmTools
-              characters={characters}
-              sharedNotes={notes.filter(n => n.sharedWithDm)}
-              npcs={npcs}
-              items={items}
-              locations={locations}
-              rewards={rewards}
-              campaignNotes={campaignNotes}
-              savedEncounters={encounters}
-              users={allUsers}
-              weaponTemplates={weaponTemplates}
-              onUpdateCharacter={handleUpdateCharacter}
-              onApplyGroupRest={handleConfirmRest}
-              onUpdateGroupResources={async (delta) => {
-                const res = await api.updateGroupResources(delta);
-                setCharacters(res);
+          {/* VIEW 1: HOME DASHBOARD */}
+          {viewMode === 'home' && (
+            <HomeScreen
+              currentUser={currentUser}
+              myCampaigns={myCampaigns}
+              myCharacters={myCharacters}
+              pendingInvites={pendingInvites}
+              pendingApprovals={pendingApprovals}
+              onSelectCampaign={handleSelectCampaign}
+              onOpenCreateCampaign={() => setCreateCampaignOpen(true)}
+              onOpenCharacterMaster={(charId) => {
+                window.location.hash = `#/characters/${charId}`;
               }}
-              onInspectCharacter={(id) => {
-                setActiveCharId(id);
-                setIsDmView(false);
-                handleSelectPlayerTab('overview');
+              onOpenCreateCharacter={async () => {
+                const newChar = await api.createMasterCharacter({
+                  name: `شخصیت جدید ${currentUser?.displayName || currentUser?.name || ''}`.trim()
+                });
+                setMyCharacters(prev => [newChar, ...prev]);
+                showToast('پرونده شخصیت جدید ایجاد گردید.');
+                window.location.hash = `#/characters/${newChar.id}`;
               }}
-              onSaveEncounter={async (enc) => {
-                const saved = await api.createEncounter(enc);
-                setEncounters(prev => [saved, ...prev]);
-                showToast('وضعیت مواجهه با موفقیت ذخیره شد!');
-              }}
-              onCreateNpc={async (data) => {
-                const created = await api.createNpc(data);
-                setNpcs(prev => [...prev, created]);
-              }}
-              onUpdateNpc={async (data) => {
-                const updated = await api.updateNpc(data);
-                setNpcs(prev => prev.map(n => n.id === updated.id ? updated : n));
-              }}
-              onDeleteNpc={async (id) => {
-                await api.deleteNpc(id);
-                setNpcs(prev => prev.filter(n => n.id !== id));
-              }}
-              onCreateLocation={handleCreateLocation}
-              onUpdateLocation={handleUpdateLocation}
-              onDeleteLocation={handleDeleteLocation}
-              onCreateItem={async (data) => {
-                const created = await api.createItem(data);
-                setItems(prev => [...prev, created]);
-              }}
-              onUpdateItem={async (data) => {
-                const updated = await api.updateItem(data);
-                setItems(prev => prev.map(i => i.id === updated.id ? updated : i));
-              }}
-              onDeleteItem={async (id) => {
-                await api.deleteItem(id);
-                setItems(prev => prev.filter(i => i.id !== id));
-              }}
-              onGiveItemToPlayer={handleGiveItemToPlayer}
-              onDistributeReward={handleDistributeReward}
-              onCreateReward={async (data) => {
-                const created = await api.createReward(data);
-                setRewards(prev => [...prev, created]);
-              }}
-              onCreateCampaignNote={async (data) => {
-                const created = await api.createCampaignNote(data);
-                setCampaignNotes(prev => [created, ...prev]);
-              }}
-              onUpdateCampaignNote={async (data) => {
-                const updated = await api.updateCampaignNote(data);
-                setCampaignNotes(prev => prev.map(c => c.id === updated.id ? updated : c));
-              }}
-              onDeleteCampaignNote={async (id) => {
-                await api.deleteCampaignNote(id);
-                setCampaignNotes(prev => prev.filter(c => c.id !== id));
-              }}
-              onUpdateUserRole={async (userId, role) => {
-                const updated = await api.updateUser(userId, { role });
-                setAllUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
-              }}
-              onImportSeedIntoDb={handleImportSeedIntoDb}
-              onRollDice={handleRollCheck}
-              isHttpMode={import.meta.env.VITE_API_MODE === 'http'}
-              activeDmTab={activeDmTab}
-              onSelectDmTab={handleSelectDmTab}
-              onRefreshCharacters={loadInitialData}
+              onOpenApprovals={() => setCampaignApprovalsOpen(true)}
+              onAcceptInvite={handleAcceptInvite}
             />
-          ) : activeCharacter ? (
-            /* Player Character Sheet */
-            <div className="space-y-4 sm:space-y-6">
-              {activePlayerTab === 'overview' && (
-                <OverviewTab
-                  character={activeCharacter}
-                  classTemplates={classTemplates}
-                  onUpdate={handleUpdateCharacter}
-                  onOpenRestModal={(type) => setRestModal({ isOpen: true, type })}
-                  onRollCheck={handleRollCheck}
-                />
-              )}
+          )}
 
-              {activePlayerTab === 'abilities' && (
-                <AbilitiesTab
-                  character={activeCharacter}
-                  onUpdate={handleUpdateCharacter}
-                  onRollCheck={handleRollCheck}
-                />
-              )}
+          {/* VIEW 2: MASTER CHARACTER SCREEN */}
+          {viewMode === 'character_master' && selectedMasterChar && (
+            <MasterCharacterScreen
+              character={selectedMasterChar}
+              history={charHistoryEvents}
+              participations={charParticipations}
+              onBack={() => {
+                setViewMode('home');
+                window.location.hash = '#/';
+              }}
+              onSaveCharacter={handleSaveMasterCharacter}
+              onAddMilestone={handleAddMilestone}
+              onOpenJoinCampaign={(charId) => {
+                setJoinCampaignModal({
+                  isOpen: true,
+                  campaign: myCampaigns[0] || null,
+                  characterId: charId
+                });
+              }}
+              onSelectCampaignParticipation={(campaignId) => {
+                handleSelectCampaign(campaignId);
+              }}
+            />
+          )}
 
-              {activePlayerTab === 'combat' && (
-                <CombatTab
-                  character={activeCharacter}
+          {/* VIEW 3: CAMPAIGN WORKSPACE */}
+          {viewMode === 'campaign_space' && (
+            <>
+              {isDmView ? (
+                /* DM Tools Suite inside Campaign */
+                <DmTools
+                  characters={characters}
+                  sharedNotes={notes.filter(n => n.sharedWithDm)}
+                  npcs={npcs}
+                  items={items}
+                  locations={locations}
+                  rewards={rewards}
+                  campaignNotes={campaignNotes}
+                  savedEncounters={encounters}
+                  users={allUsers}
                   weaponTemplates={weaponTemplates}
-                  onUpdate={handleUpdateCharacter}
-                  onOpenRestModal={(type) => setRestModal({ isOpen: true, type })}
-                  onRollCheck={handleRollCheck}
-                />
-              )}
-
-              {activePlayerTab === 'companions' && (
-                <CompanionsTab
-                  character={activeCharacter}
-                  onUpdate={handleUpdateCharacter}
-                  onRollCheck={handleRollCheck}
-                />
-              )}
-
-              {activePlayerTab === 'inventory' && (
-                <InventoryTab
-                  character={activeCharacter}
-                  onUpdate={handleUpdateCharacter}
-                />
-              )}
-
-              {activePlayerTab === 'notes' && (
-                <NotesTab
-                  character={activeCharacter}
-                  notes={notes.filter(n => n.characterId === activeCharacter.id)}
-                  onAddNote={handleAddNote}
-                  onUpdateNote={handleUpdateNote}
-                  onDeleteNote={handleDeleteNote}
-                />
-              )}
-
-              {activePlayerTab === 'codex' && (
-                <CodexTab
-                  revealedNpcs={npcs}
-                  revealedItems={items}
-                  revealedLocations={locations.filter(l => Boolean(l.revealed))}
-                />
-              )}
-            </div>
-          ) : currentUser && currentUser.role === 'player' && characters.length === 0 ? (
-            /* Screen 6: First-login empty state when user has no character */
-            <div className="surface-card rounded-[14px] p-6 text-center py-12 max-w-md mx-auto space-y-4 card-gold-top border border-[#2F2A23]">
-              <div className="w-14 h-14 rounded-[12px] bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#E0A030] flex items-center justify-center mx-auto shadow-md">
-                <Shield className="w-7 h-7" />
-              </div>
-              <h2 className="text-base font-black text-[#EDE6D8]">کاراکتری به شما اختصاص داده نشده است</h2>
-              <p className="text-xs text-[#A39A89] leading-relaxed">
-                سلام <strong>{currentUser.displayName || currentUser.name}</strong>؛ حساب کاربری شما با موفقیت فعال شد، اما هنوز کاراکتری برای شما تعیین نگردیده است. لطفاً از دانجن مستر خود بخواهید کاراکتر شما را پیوند دهد.
-              </p>
-              {allowPlayerCreateCharacter && (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const newChar = await api.createCharacter({ name: `شخصیت ${currentUser.displayName || currentUser.name}` });
-                    setCharacters([newChar]);
-                    setActiveCharId(newChar.id);
+                  onUpdateCharacter={handleUpdateCharacter}
+                  onApplyGroupRest={handleConfirmRest}
+                  onUpdateGroupResources={async (delta) => {
+                    const res = await api.updateGroupResources(delta);
+                    setCharacters(res);
                   }}
-                  className="py-2.5 px-6 rounded-[12px] btn-primary-amber font-extrabold text-xs shadow-lg transition touch-target"
-                >
-                  ساخت کاراکتر جدید
-                </button>
-              )}
-            </div>
-          ) : (
-            /* Welcome / Login prompt for unauthenticated guest */
-            <div className="surface-card rounded-[14px] p-6 text-center py-12 max-w-md mx-auto space-y-4 card-gold-top border border-[#2F2A23]">
-              <div className="w-14 h-14 rounded-[12px] bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#E0A030] flex items-center justify-center mx-auto shadow-md">
-                <Sparkles className="w-7 h-7" />
-              </div>
-              <h2 className="text-lg font-black text-[#EDE6D8]">به کمپین زروانیا خوش آمدید</h2>
-              <p className="text-xs text-[#A39A89] leading-relaxed">
-                جهت دسترسی به برگه شخصیت، کوله‌پشتی و ابزارهای بازی، لطفاً وارد حساب خود شوید یا با کد دعوت ثبت‌نام کنید.
-              </p>
-              <button
-                type="button"
-                onClick={() => setAuthModalState({ isOpen: true, mode: 'login' })}
-                className="py-2.5 px-6 rounded-[12px] btn-primary-amber font-extrabold text-xs shadow-lg transition touch-target flex items-center justify-center gap-2 mx-auto"
-              >
-                <LogIn className="w-4 h-4" />
-                <span>ورود / عضویت با کد دعوت</span>
-              </button>
-            </div>
+                  onInspectCharacter={(id) => {
+                    setActiveCharId(id);
+                    setIsDmView(false);
+                    handleSelectPlayerTab('overview');
+                  }}
+                  onSaveEncounter={async (enc) => {
+                    const saved = await api.createEncounter(enc);
+                    setEncounters(prev => [saved, ...prev]);
+                    showToast('وضعیت مواجهه با موفقیت ذخیره شد!');
+                  }}
+                  onCreateNpc={async (data) => {
+                    const created = await api.createNpc(data);
+                    setNpcs(prev => [...prev, created]);
+                  }}
+                  onUpdateNpc={async (data) => {
+                    const updated = await api.updateNpc(data);
+                    setNpcs(prev => prev.map(n => n.id === updated.id ? updated : n));
+                  }}
+                  onDeleteNpc={async (id) => {
+                    await api.deleteNpc(id);
+                    setNpcs(prev => prev.filter(n => n.id !== id));
+                  }}
+                  onCreateLocation={async (loc) => {
+                    const created = await api.createLocation(loc);
+                    setLocations(prev => [...prev, created]);
+                    showToast('مکان جدید ثبت شد.');
+                    return created;
+                  }}
+                  onUpdateLocation={async (loc) => {
+                    const updated = await api.updateLocation(loc);
+                    setLocations(prev => prev.map(l => l.id === loc.id ? updated : l));
+                    return updated;
+                  }}
+                  onDeleteLocation={async (id) => {
+                    await api.deleteLocation(id);
+                    setLocations(prev => prev.filter(l => l.id !== id));
+                  }}
+                  onCreateItem={async (data) => {
+                    const created = await api.createItem(data);
+                    setItems(prev => [...prev, created]);
+                  }}
+                  onUpdateItem={async (data) => {
+                    const updated = await api.updateItem(data);
+                    setItems(prev => prev.map(i => i.id === updated.id ? updated : i));
+                  }}
+                  onDeleteItem={async (id) => {
+                    await api.deleteItem(id);
+                    setItems(prev => prev.filter(i => i.id !== id));
+                  }}
+                  onGiveItemToPlayer={async (charId, item) => {
+                    const updatedChar = await api.giveItemToPlayer(charId, item);
+                    setCharacters(prev => prev.map(c => c.id === updatedChar.id ? updatedChar : c));
+                    showToast(`شیء به کوله‌پشتی ${updatedChar.name} افزوده شد!`);
+                  }}
+                  onDistributeReward={async (rewardId, charIds) => {
+                    const updated = await api.distributeReward(rewardId, charIds);
+                    setCharacters(updated);
+                    showToast('پاداش میان ماجراجویان توزیع گردید!');
+                  }}
+                  onCreateReward={async (data) => {
+                    const created = await api.createReward(data);
+                    setRewards(prev => [...prev, created]);
+                  }}
+                  onCreateCampaignNote={async (data) => {
+                    const created = await api.createCampaignNote(data);
+                    setCampaignNotes(prev => [created, ...prev]);
+                  }}
+                  onUpdateCampaignNote={async (data) => {
+                    const updated = await api.updateCampaignNote(data);
+                    setCampaignNotes(prev => prev.map(c => c.id === updated.id ? updated : c));
+                  }}
+                  onDeleteCampaignNote={async (id) => {
+                    await api.deleteCampaignNote(id);
+                    setCampaignNotes(prev => prev.filter(c => c.id !== id));
+                  }}
+                  onUpdateUserRole={async (userId, role) => {
+                    const updated = await api.updateUser(userId, { role });
+                    setAllUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
+                  }}
+                  onImportSeedIntoDb={async () => {
+                    const res = await api.seedDatabase(true);
+                    showToast(res.message);
+                    if (activeCampaignId) await loadCampaignWorkspace(activeCampaignId);
+                  }}
+                  onRollDice={handleRollCheck}
+                  isHttpMode={import.meta.env.VITE_API_MODE === 'http'}
+                  activeDmTab={activeDmTab}
+                  onSelectDmTab={handleSelectDmTab}
+                  onRefreshCharacters={() => activeCampaignId && loadCampaignWorkspace(activeCampaignId)}
+                />
+              ) : activeCharacter ? (
+                /* Player Character Sheet */
+                <div className="space-y-4 sm:space-y-6">
+                  {activePlayerTab === 'overview' && (
+                    <OverviewTab
+                      character={activeCharacter}
+                      classTemplates={classTemplates}
+                      onUpdate={handleUpdateCharacter}
+                      onOpenRestModal={(type) => setRestModal({ isOpen: true, type })}
+                      onRollCheck={handleRollCheck}
+                    />
+                  )}
+
+                  {activePlayerTab === 'abilities' && (
+                    <AbilitiesTab
+                      character={activeCharacter}
+                      onUpdate={handleUpdateCharacter}
+                      onRollCheck={handleRollCheck}
+                    />
+                  )}
+
+                  {activePlayerTab === 'combat' && (
+                    <CombatTab
+                      character={activeCharacter}
+                      weaponTemplates={weaponTemplates}
+                      onUpdate={handleUpdateCharacter}
+                      onOpenRestModal={(type) => setRestModal({ isOpen: true, type })}
+                      onRollCheck={handleRollCheck}
+                    />
+                  )}
+
+                  {activePlayerTab === 'companions' && (
+                    <CompanionsTab
+                      character={activeCharacter}
+                      onUpdate={handleUpdateCharacter}
+                      onRollCheck={handleRollCheck}
+                    />
+                  )}
+
+                  {activePlayerTab === 'inventory' && (
+                    <InventoryTab
+                      character={activeCharacter}
+                      onUpdate={handleUpdateCharacter}
+                    />
+                  )}
+
+                  {activePlayerTab === 'notes' && (
+                    <NotesTab
+                      character={activeCharacter}
+                      notes={notes.filter(n => n.characterId === activeCharacter.id)}
+                      onAddNote={async (noteData) => {
+                        const newNote = await api.createNote(noteData);
+                        setNotes(prev => [newNote, ...prev]);
+                      }}
+                      onUpdateNote={async (note) => {
+                        const updated = await api.updateNote(note);
+                        setNotes(prev => prev.map(n => n.id === updated.id ? updated : n));
+                      }}
+                      onDeleteNote={async (id) => {
+                        await api.deleteNote(id);
+                        setNotes(prev => prev.filter(n => n.id !== id));
+                      }}
+                    />
+                  )}
+
+                  {activePlayerTab === 'codex' && (
+                    <CodexTab
+                      revealedNpcs={npcs}
+                      revealedItems={items}
+                      revealedLocations={locations.filter(l => Boolean(l.revealed))}
+                    />
+                  )}
+                </div>
+              ) : characters.length === 0 ? (
+                /* Empty state when user has no active character in this campaign */
+                <div className="surface-card rounded-[14px] p-6 text-center py-12 max-w-md mx-auto space-y-4 card-gold-top border border-[#2F2A23]">
+                  <div className="w-14 h-14 rounded-[12px] bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#E0A030] flex items-center justify-center mx-auto shadow-md">
+                    <Shield className="w-7 h-7" />
+                  </div>
+                  <h2 className="text-base font-black text-[#EDE6D8]">شخصیتی در این کمپین ندارید</h2>
+                  <p className="text-xs text-[#A39A89] leading-relaxed">
+                    برای ماجراجویی در کمپین <strong>{activeCampaign?.name}</strong>، یکی از شخصیت‌های خود را وارد کنید یا شخصیت جدید بسازید.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setJoinCampaignModal({
+                          isOpen: true,
+                          campaign: activeCampaign,
+                          characterId: myCharacters[0]?.id || null
+                        });
+                      }}
+                      className="py-2.5 px-6 rounded-[12px] btn-primary-amber font-extrabold text-xs shadow-lg transition touch-target"
+                    >
+                      ورود با شخصیت موجود
+                    </button>
+                    {allowPlayerCreateCharacter && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const newMaster = await api.createMasterCharacter({
+                            name: `شخصیت جدید ${currentUser?.displayName || currentUser?.name || ''}`.trim()
+                          });
+                          setMyCharacters(prev => [newMaster, ...prev]);
+                          if (activeCampaignId) {
+                            await api.createParticipation(activeCampaignId, {
+                              characterId: newMaster.id,
+                              entryMode: 'campaign_start'
+                            });
+                            await loadCampaignWorkspace(activeCampaignId);
+                          }
+                        }}
+                        className="py-2.5 px-6 rounded-[12px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] font-extrabold text-xs text-[#EDE6D8] transition touch-target"
+                      >
+                        ساخت شخصیت تازه
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+            </>
           )}
         </Suspense>
       </main>
 
       {/* Fixed Mobile Bottom Navigation Bar */}
       <BottomNav
+        isHomeView={viewMode === 'home'}
+        homeTab="home"
+        onSelectHomeTab={(tab) => {
+          if (tab === 'home') {
+            setViewMode('home');
+            window.location.hash = '#/';
+          } else if (tab === 'characters') {
+            if (myCharacters.length > 0) {
+              window.location.hash = `#/characters/${myCharacters[0].id}`;
+            } else {
+              setViewMode('home');
+            }
+          } else if (tab === 'campaigns') {
+            setCampaignSwitcherOpen(true);
+          } else if (tab === 'account') {
+            setAccountModalOpen(true);
+          }
+        }}
         isDmView={isDmView}
         playerTab={activePlayerTab}
         onSelectPlayerTab={handleSelectPlayerTab}
@@ -705,8 +967,146 @@ export default function App() {
         onOpenActiveEncounter={() => setLiveEncounterModalOpen(true)}
       />
 
-      {/* Global Modals */}
+      {/* Global & Multi-Campaign Modals */}
       <Suspense fallback={null}>
+        {/* Campaign Fast Switcher */}
+        {campaignSwitcherOpen && (
+          <CampaignSwitcherModal
+            isOpen={campaignSwitcherOpen}
+            onClose={() => setCampaignSwitcherOpen(false)}
+            campaigns={myCampaigns}
+            activeCampaignId={activeCampaignId}
+            onSelectCampaign={(cId) => {
+              handleSelectCampaign(cId);
+            }}
+            onGoHome={() => {
+              setViewMode('home');
+              window.location.hash = '#/';
+            }}
+            onOpenCreateCampaign={() => {
+              setCampaignSwitcherOpen(false);
+              setCreateCampaignOpen(true);
+            }}
+          />
+        )}
+
+        {/* Create Campaign Modal */}
+        {createCampaignOpen && (
+          <CreateCampaignModal
+            isOpen={createCampaignOpen}
+            onClose={() => setCreateCampaignOpen(false)}
+            onCreateCampaign={handleCreateCampaignSubmit}
+          />
+        )}
+
+        {/* Join Campaign Modal */}
+        {joinCampaignModal.isOpen && joinCampaignModal.campaign && (
+          <JoinCampaignModal
+            isOpen={joinCampaignModal.isOpen}
+            onClose={() => setJoinCampaignModal({ isOpen: false, campaign: null })}
+            campaign={joinCampaignModal.campaign}
+            myCharacters={myCharacters}
+            preSelectedCharacterId={joinCampaignModal.characterId}
+            onJoin={async (joinData) => {
+              if (!joinCampaignModal.campaign) return;
+              await api.createParticipation(joinCampaignModal.campaign.id, joinData);
+              showToast('درخواست پیوستن با موفقیت ثبت شد!');
+              setJoinCampaignModal({ isOpen: false, campaign: null });
+              await loadHomeData();
+              if (activeCampaignId === joinCampaignModal.campaign.id) {
+                await loadCampaignWorkspace(joinCampaignModal.campaign.id);
+              }
+            }}
+          />
+        )}
+
+        {/* Campaign Settings Modal (DM) */}
+        {campaignSettingsOpen && activeCampaign && (
+          <CampaignSettingsModal
+            isOpen={campaignSettingsOpen}
+            onClose={() => setCampaignSettingsOpen(false)}
+            campaign={activeCampaign}
+            onSaveSettings={async (updatedSettings) => {
+              const saved = await api.updateCampaign(activeCampaign.id, { settings: updatedSettings });
+              setActiveCampaign(saved);
+              showToast('تنظیمات کمپین به‌روزرسانی شد.');
+            }}
+          />
+        )}
+
+        {/* Campaign Members Modal (DM) */}
+        {campaignMembersOpen && activeCampaign && (
+          <CampaignMembersModal
+            isOpen={campaignMembersOpen}
+            onClose={() => setCampaignMembersOpen(false)}
+            campaign={activeCampaign}
+            currentUser={currentUser}
+            members={activeCampaignMembers}
+            onUpdateMemberRole={async (userId, newRole) => {
+              await api.updateCampaignMember(activeCampaign.id, userId, { role: newRole });
+              const updatedMembers = await api.listCampaignMembers(activeCampaign.id);
+              setActiveCampaignMembers(updatedMembers);
+              showToast('نقش عضو تغییر یافت.');
+            }}
+            onRemoveMember={async (userId) => {
+              await api.removeCampaignMember(activeCampaign.id, userId);
+              const updatedMembers = await api.listCampaignMembers(activeCampaign.id);
+              setActiveCampaignMembers(updatedMembers);
+              showToast('عضو از کمپین حذف گردید.');
+            }}
+            onTransferOwnership={async (newOwnerId) => {
+              await api.transferCampaignOwnership(activeCampaign.id, newOwnerId);
+              showToast('مالکیت کمپین منتقل شد.');
+              await loadHomeData();
+              await loadCampaignWorkspace(activeCampaign.id);
+            }}
+          />
+        )}
+
+        {/* Campaign Invites Modal (DM) */}
+        {campaignInvitesOpen && activeCampaign && (
+          <CampaignInvitesModal
+            isOpen={campaignInvitesOpen}
+            onClose={() => setCampaignInvitesOpen(false)}
+            campaign={activeCampaign}
+            invites={campaignInvites}
+            onCreateInvite={async (inviteData) => {
+              const inv = await api.createCampaignInvite(activeCampaign.id, inviteData);
+              setCampaignInvites(prev => [inv, ...prev]);
+              showToast('کد دعوت جدید ساخته شد.');
+            }}
+            onRevokeInvite={async (invId) => {
+              await api.revokeCampaignInvite(activeCampaign.id, invId);
+              setCampaignInvites(prev => prev.filter(i => i.id !== invId));
+              showToast('کد دعوت باطل گردید.');
+            }}
+          />
+        )}
+
+        {/* Campaign Approvals Modal (DM) */}
+        {campaignApprovalsOpen && (
+          <CampaignApprovalsModal
+            isOpen={campaignApprovalsOpen}
+            onClose={() => setCampaignApprovalsOpen(false)}
+            approvals={pendingApprovals}
+            onReview={async (campId, partId, action, reviewNotes) => {
+              await api.reviewParticipation(campId, partId, action, reviewNotes);
+              showToast(
+                action === 'approve'
+                  ? 'شخصیت تأیید شد و وارد کمپین گردید.'
+                  : action === 'reject'
+                  ? 'درخواست رد شد.'
+                  : 'تغییرات به بازیکن ارجاع داده شد.'
+              );
+              await loadHomeData();
+              if (activeCampaignId) {
+                await loadCampaignWorkspace(activeCampaignId);
+              }
+            }}
+          />
+        )}
+
+        {/* Auth Modal */}
         {authModalState.isOpen && (
           <AuthModal
             isOpen={authModalState.isOpen}
@@ -719,6 +1119,7 @@ export default function App() {
           />
         )}
 
+        {/* Account Modal */}
         {accountModalOpen && currentUser && (
           <AccountModal
             isOpen={accountModalOpen}
@@ -768,6 +1169,7 @@ export default function App() {
           </BottomSheet>
         )}
 
+        {/* Dice Roller Modal (with Shared Table & Private Rolls) */}
         {diceModalOpen && (
           <DiceRollerModal
             isOpen={diceModalOpen}
@@ -777,10 +1179,14 @@ export default function App() {
             }}
             presetRoll={presetRoll}
             history={diceHistory}
+            campaignId={activeCampaignId}
+            currentUser={currentUser}
+            allowPlayerRollPrivate={activeCampaign?.settings?.allowPlayerRollPrivate ?? true}
             onAddRoll={handleAddDiceRoll}
           />
         )}
 
+        {/* Group Rest Modal */}
         {restModal.isOpen && (
           <RestModal
             isOpen={restModal.isOpen}
@@ -790,6 +1196,7 @@ export default function App() {
           />
         )}
 
+        {/* Live Encounter Modal */}
         {liveEncounterModalOpen && (
           <LiveEncounterModal
             isOpen={liveEncounterModalOpen}

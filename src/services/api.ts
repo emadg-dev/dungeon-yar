@@ -397,6 +397,65 @@ export interface ApiClient {
 
   // System
   seedDatabase(force?: boolean): Promise<{ success: boolean; message: string }>;
+
+  // Active Campaign Scope
+  getActiveCampaignId(): string | null;
+  setActiveCampaignId(id: string | null): void;
+  getCampaignRole(campaignId?: string): Promise<CampaignRole | null>;
+
+  // Home Dashboard
+  getHomeSummary(): Promise<HomeSummaryResponse>;
+
+  // Multi-Campaign Management
+  listCampaigns(): Promise<Campaign[]>;
+  getCampaign(id: string): Promise<Campaign>;
+  createCampaign(data: { name: string; description?: string; tone?: string; packId?: string | null; settings?: Partial<CampaignSettings> }): Promise<Campaign>;
+  updateCampaign(id: string, data: Partial<Campaign>): Promise<Campaign>;
+  archiveCampaign(id: string): Promise<Campaign>;
+  restoreCampaign(id: string): Promise<Campaign>;
+  deleteCampaign(id: string): Promise<void>;
+  listCampaignMembers(campaignId: string): Promise<CampaignMember[]>;
+  updateCampaignMember(campaignId: string, userId: string, data: { role?: CampaignRole; status?: 'invited' | 'active' | 'left' | 'removed' }): Promise<CampaignMember>;
+  removeCampaignMember(campaignId: string, userId: string): Promise<void>;
+  transferCampaignOwnership(campaignId: string, newOwnerId: string): Promise<Campaign>;
+  leaveCampaign(campaignId: string): Promise<void>;
+  listCampaignInvites(campaignId: string): Promise<CampaignInvite[]>;
+  createCampaignInvite(campaignId: string, data: { role?: CampaignRole; label?: string; expiresInDays?: number; maxUses?: number; assignParticipationId?: string }): Promise<CampaignInvite>;
+  revokeCampaignInvite(campaignId: string, inviteId: string): Promise<void>;
+  acceptInvite(code: string): Promise<{ campaignId: string; role: CampaignRole }>;
+
+  // Master Characters & Participations
+  listMasterCharacters(): Promise<MasterCharacter[]>;
+  getMasterCharacter(id: string): Promise<MasterCharacter | null>;
+  createMasterCharacter(char: Partial<MasterCharacter>): Promise<MasterCharacter>;
+  updateMasterCharacter(char: MasterCharacter): Promise<MasterCharacter>;
+  updateMasterCharacterStatus(id: string, status: 'active' | 'retired' | 'dead' | 'archived', note?: string): Promise<MasterCharacter>;
+  getMasterCharacterHistory(characterId: string): Promise<CharacterHistoryEvent[]>;
+  addCharacterHistoryEvent(event: Omit<CharacterHistoryEvent, 'id' | 'timestamp'>): Promise<CharacterHistoryEvent>;
+  listParticipations(campaignId?: string): Promise<CharacterParticipation[]>;
+  getParticipation(campaignId: string, participationId: string): Promise<CharacterParticipation | null>;
+  createParticipation(campaignId: string, data: { characterId: string; entryMode: 'campaign_start' | 'same_level' | 'new_level'; entryLevel?: number }): Promise<CharacterParticipation>;
+  updateParticipation(campaignId: string, participationId: string, data: Partial<CharacterParticipation>): Promise<CharacterParticipation>;
+  reviewParticipation(campaignId: string, participationId: string, action: 'approve' | 'reject' | 'request_changes', comment?: string): Promise<CharacterParticipation>;
+  requestLevelUp(campaignId: string, participationId: string, targetLevel: number, diff?: any): Promise<CharacterParticipation>;
+  updateParticipationStatus(campaignId: string, participationId: string, status: CharacterParticipation['status']): Promise<CharacterParticipation>;
+
+  // Media
+  uploadMedia(file: { name?: string; mimeType: string; sizeBytes: number; dataBase64: string; width?: number; height?: number; campaignId?: string }): Promise<{ id: string; url: string; sizeBytes: number }>;
+  getMedia(id: string): Promise<any>;
+  deleteMedia(id: string): Promise<void>;
+
+  // Dice Rolls (Shared campaign table feed)
+  postDiceRoll(campaignId: string, roll: { label: string; formula: string; mode: 'normal' | 'adv' | 'dis'; results: any; modifier: number; total: number; nat20?: boolean; nat1?: boolean; visibility?: 'table' | 'dm_only'; participationId?: string }): Promise<CampaignDiceRoll>;
+  listDiceRolls(campaignId: string, after?: string, limit?: number): Promise<CampaignDiceRoll[]>;
+
+  // Rule Sets & Content Packs
+  getRuleSet(scopeType: 'pack' | 'campaign', scopeId: string): Promise<RuleSet | null>;
+  listContentPacks(): Promise<ContentPack[]>;
+  getContentPack(id: string): Promise<ContentPack | null>;
+
+  // V2 Migration
+  migrateV2(dryRun?: boolean): Promise<{ success: boolean; report: any }>;
 }
 
 // ----------------------------------------------------------------------
@@ -467,6 +526,33 @@ export class LocalApi implements ApiClient {
     this.setItem('encounters', SEED_ENCOUNTERS);
     this.setItem('locations', SEED_LOCATIONS);
     this.setItem('live_encounters', []);
+
+    // Multi-Campaign Core Tables
+    this.setItem('campaigns', SEED_CAMPAIGNS);
+    this.setItem('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    this.setItem('content_packs', SEED_CONTENT_PACKS);
+    this.setItem('rule_sets', SEED_RULE_SETS);
+    this.setItem('master_characters', SEED_MASTER_CHARACTERS);
+    this.setItem('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    this.setItem('character_history_events', SEED_HISTORY_EVENTS);
+    this.setItem('dice_rolls', SEED_CAMPAIGN_DICE_ROLLS);
+    this.setItem('active_campaign_id', 'zorvania-c1');
+    this.setItem('campaign_invites', [
+      {
+        id: 'cinv-test-1',
+        campaignId: 'zorvania-c1',
+        role: 'player' as CampaignRole,
+        label: 'دعوت ماجراجوی جدید به زروانیا',
+        code: 'zorvania-c1-welcome',
+        createdBy: 'user-dm',
+        createdAt: Date.now() - 3600000,
+        expiresAt: Date.now() + 30 * 86400000,
+        maxUses: 10,
+        usedCount: 2
+      }
+    ]);
+    this.setItem('media', []);
+
     this.setItem('invites', [
       {
         id: 'inv-sample-1',
@@ -490,7 +576,7 @@ export class LocalApi implements ApiClient {
         createdAt: Date.now()
       }
     ]);
-    this.setItem('campaign_settings', { allowPlayerCreateCharacter: false });
+    this.setItem('campaign_settings', { allowPlayerCreateCharacter: true });
 
     // Seed mock sessions
     this.setItem('sessions', [
@@ -2269,6 +2355,936 @@ export class LocalApi implements ApiClient {
       true
     );
   }
+
+  // --- Multi-Campaign Implementation in LocalApi ---
+  getActiveCampaignId(): string | null {
+    return this.getItem<string | null>('active_campaign_id', 'zorvania-c1');
+  }
+
+  setActiveCampaignId(id: string | null): void {
+    this.setItem('active_campaign_id', id);
+  }
+
+  async getCampaignRole(campaignId?: string): Promise<CampaignRole | null> {
+    const cid = campaignId || this.getActiveCampaignId();
+    if (!cid || !this.currentUser) return null;
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const m = members.find(mem => mem.campaignId === cid && mem.userId === this.currentUser?.id && mem.status === 'active');
+    return m ? m.role : null;
+  }
+
+  async getHomeSummary(): Promise<HomeSummaryResponse> {
+    const user = this.currentUser || SEED_USERS[0];
+    const allCampaigns = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const allMembers = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const allMasterChars = this.getItem<MasterCharacter[]>('master_characters', SEED_MASTER_CHARACTERS);
+    const allParticipations = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const allInvites = this.getItem<CampaignInvite[]>('campaign_invites', []);
+
+    // Active memberships for this user
+    const myMemberships = allMembers.filter(m => m.userId === user.id && m.status === 'active');
+    const myCampaigns = myMemberships.map(m => {
+      const camp = allCampaigns.find(c => c.id === m.campaignId) || {
+        id: m.campaignId,
+        name: 'کمپین نامشخص',
+        description: '',
+        status: 'active' as const,
+        ownerId: '',
+        settings: {
+          units: 'feet' as const,
+          startingLevel: 1,
+          maxEntryLevel: 20,
+          abilityScoreMethods: ['standard_array' as const],
+          approval: { onCreate: false, onLevelUp: false },
+          backstoryVisibility: 'party' as const,
+          diceVisibility: 'table' as const,
+          allowPlayerRollPrivate: true,
+          allowPlayerCreateCharacter: true,
+          encounterDefaults: { showExactHp: false, showAc: false, showConditions: true, showDefeated: true, playerInitiativeRolls: true }
+        },
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      const campMembers = allMembers.filter(mem => mem.campaignId === camp.id && mem.status === 'active');
+      const campParts = allParticipations.filter(p => p.campaignId === camp.id && p.status === 'active');
+      return {
+        ...camp,
+        myRole: m.role,
+        memberCount: campMembers.length,
+        characterCount: campParts.length
+      };
+    });
+
+    // Master characters owned by user
+    const myCharacters = allMasterChars
+      .filter(c => c.ownerId === user.id && c.status !== 'archived')
+      .map(mc => ({
+        ...mc,
+        participations: allParticipations.filter(p => p.characterId === mc.id)
+      }));
+
+    // Pending invites if user is owner or co_dm
+    const myDmCampaignIds = myMemberships
+      .filter(m => m.role === 'owner' || m.role === 'co_dm')
+      .map(m => m.campaignId);
+
+    const pendingInvites = allInvites.filter(inv =>
+      !inv.revokedAt && inv.expiresAt > Date.now() &&
+      (inv.campaignId ? myDmCampaignIds.includes(inv.campaignId) : true)
+    );
+
+    // Pending approvals queue for DMs
+    const pendingApprovals: HomeSummaryResponse['pendingApprovals'] = [];
+    if (myDmCampaignIds.length > 0) {
+      allParticipations.forEach(p => {
+        if (!myDmCampaignIds.includes(p.campaignId)) return;
+        const camp = allCampaigns.find(c => c.id === p.campaignId);
+        const char = allMasterChars.find(c => c.id === p.characterId);
+        const playerMember = allMembers.find(m => m.campaignId === p.campaignId && m.characterId === p.characterId);
+        const playerName = playerMember?.userName || 'کاربر';
+
+        if (p.status === 'pending_approval') {
+          pendingApprovals.push({
+            campaignId: p.campaignId,
+            campaignName: camp?.name || 'کمپین',
+            type: 'create',
+            participationId: p.id,
+            characterId: p.characterId,
+            characterName: char?.name || p.className || 'شخصیت جدید',
+            playerName,
+            level: p.level,
+            requestedAt: p.joinedAt,
+            details: { className: p.className, race: char?.race }
+          });
+        } else if (p.pendingLevelUp) {
+          pendingApprovals.push({
+            campaignId: p.campaignId,
+            campaignName: camp?.name || 'کمپین',
+            type: 'level_up',
+            participationId: p.id,
+            characterId: p.characterId,
+            characterName: char?.name || p.className || 'شخصیت',
+            playerName,
+            level: p.pendingLevelUp.targetLevel,
+            requestedAt: p.pendingLevelUp.requestedAt || Date.now(),
+            details: p.pendingLevelUp.diff
+          });
+        }
+      });
+    }
+
+    return {
+      user,
+      myCampaigns,
+      myCharacters,
+      pendingInvites,
+      pendingApprovals
+    };
+  }
+
+  async listCampaigns(): Promise<Campaign[]> {
+    const summary = await this.getHomeSummary();
+    return summary.myCampaigns;
+  }
+
+  async getCampaign(id: string): Promise<Campaign> {
+    const allCampaigns = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCampaigns.find(c => c.id === id);
+    if (!camp) throw { status: 404, message: 'کمپین یافت نشد.' };
+
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMem = members.find(m => m.campaignId === id && m.userId === this.currentUser?.id && m.status === 'active');
+    if (!myMem) {
+      throw { status: 404, message: 'شما عضو این کمپین نیستید.' };
+    }
+
+    const campMembers = members.filter(m => m.campaignId === id && m.status === 'active');
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const campParts = allParts.filter(p => p.campaignId === id && p.status === 'active');
+
+    return {
+      ...camp,
+      myRole: myMem.role,
+      memberCount: campMembers.length,
+      characterCount: campParts.length
+    };
+  }
+
+  async createCampaign(data: { name: string; description?: string; tone?: string; packId?: string | null; settings?: Partial<CampaignSettings> }): Promise<Campaign> {
+    const user = this.currentUser || SEED_USERS[0];
+    const campId = `camp-${Date.now()}`;
+    const defaultSettings: CampaignSettings = {
+      units: 'feet',
+      startingLevel: 1,
+      maxEntryLevel: 20,
+      abilityScoreMethods: ['standard_array', 'point_buy', 'roll', 'manual'],
+      approval: { onCreate: false, onLevelUp: false },
+      backstoryVisibility: 'party',
+      diceVisibility: 'table',
+      allowPlayerRollPrivate: true,
+      allowPlayerCreateCharacter: true,
+      encounterDefaults: {
+        showExactHp: false,
+        showAc: false,
+        showConditions: true,
+        showDefeated: true,
+        playerInitiativeRolls: true
+      },
+      ...data.settings
+    };
+
+    const newCampaign: Campaign = {
+      id: campId,
+      name: data.name,
+      description: data.description || '',
+      tone: data.tone || '',
+      status: 'active',
+      ownerId: user.id,
+      ownerName: user.displayName || user.name,
+      sourcePackId: data.packId || null,
+      settings: defaultSettings,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      myRole: 'owner',
+      memberCount: 1,
+      characterCount: 0
+    };
+
+    const allCampaigns = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    allCampaigns.push(newCampaign);
+    this.setItem('campaigns', allCampaigns);
+
+    const allMembers = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    allMembers.push({
+      campaignId: campId,
+      userId: user.id,
+      role: 'owner',
+      status: 'active',
+      joinedAt: Date.now(),
+      userName: user.displayName || user.name,
+      userEmail: user.email
+    });
+    this.setItem('campaign_members', allMembers);
+
+    // Deep clone pack entities into campaign scope
+    if (data.packId) {
+      const allRuleSets = this.getItem<RuleSet[]>('rule_sets', SEED_RULE_SETS);
+      const packRuleSet = allRuleSets.find(r => r.scopeType === 'pack' && r.scopeId === data.packId);
+      if (packRuleSet) {
+        allRuleSets.push({
+          ...packRuleSet,
+          id: `ruleset-${campId}`,
+          scopeType: 'campaign',
+          scopeId: campId
+        });
+        this.setItem('rule_sets', allRuleSets);
+      }
+    }
+
+    return newCampaign;
+  }
+
+  async updateCampaign(id: string, data: Partial<Campaign>): Promise<Campaign> {
+    const role = await this.getCampaignRole(id);
+    if (role !== 'owner' && role !== 'co_dm') {
+      throw { status: 403, message: 'فقط مالک یا دستیار دانجن مستر مجاز به تغییر تنظیمات کمپین هستند.' };
+    }
+    const all = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = all.find(c => c.id === id);
+    if (!camp) throw { status: 404, message: 'کمپین یافت نشد.' };
+
+    Object.assign(camp, data);
+    camp.updatedAt = Date.now();
+    this.setItem('campaigns', all);
+    return camp;
+  }
+
+  async archiveCampaign(id: string): Promise<Campaign> {
+    return this.updateCampaign(id, { status: 'archived' });
+  }
+
+  async restoreCampaign(id: string): Promise<Campaign> {
+    return this.updateCampaign(id, { status: 'active' });
+  }
+
+  async deleteCampaign(id: string): Promise<void> {
+    const role = await this.getCampaignRole(id);
+    if (role !== 'owner') {
+      throw { status: 403, message: 'فقط مالک می‌تواند کمپین را حذف کند.' };
+    }
+    const all = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const filtered = all.filter(c => c.id !== id);
+    this.setItem('campaigns', filtered);
+  }
+
+  async listCampaignMembers(campaignId: string): Promise<CampaignMember[]> {
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    return members.filter(m => m.campaignId === campaignId && m.status !== 'removed');
+  }
+
+  async updateCampaignMember(campaignId: string, userId: string, data: { role?: CampaignRole; status?: 'invited' | 'active' | 'left' | 'removed' }): Promise<CampaignMember> {
+    const myRole = await this.getCampaignRole(campaignId);
+    if (myRole !== 'owner' && myRole !== 'co_dm') {
+      throw { status: 403, message: 'فقط دانجن مستر مجاز به مدیریت اعضاست.' };
+    }
+    const allMembers = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const mem = allMembers.find(m => m.campaignId === campaignId && m.userId === userId);
+    if (!mem) throw { status: 404, message: 'عضو یافت نشد.' };
+
+    // Cannot demote or change owner role directly
+    if (mem.role === 'owner' && data.role && data.role !== 'owner') {
+      throw { status: 400, message: 'نقش مالک تنها از طریق انتقال مالکیت تغییر می‌یابد.' };
+    }
+
+    if (data.role) mem.role = data.role;
+    if (data.status) mem.status = data.status;
+    this.setItem('campaign_members', allMembers);
+    return mem;
+  }
+
+  async removeCampaignMember(campaignId: string, userId: string): Promise<void> {
+    const myRole = await this.getCampaignRole(campaignId);
+    if (myRole !== 'owner' && myRole !== 'co_dm') {
+      throw { status: 403, message: 'دسترسی غیرمجاز.' };
+    }
+    const allMembers = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const mem = allMembers.find(m => m.campaignId === campaignId && m.userId === userId);
+    if (mem?.role === 'owner') {
+      throw { status: 400, message: 'نمی‌توان مالک کمپین را حذف کرد.' };
+    }
+    if (mem) {
+      mem.status = 'removed';
+      this.setItem('campaign_members', allMembers);
+    }
+  }
+
+  async transferCampaignOwnership(campaignId: string, newOwnerId: string): Promise<Campaign> {
+    const user = this.currentUser;
+    const allCampaigns = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCampaigns.find(c => c.id === campaignId);
+    if (!camp) throw { status: 404, message: 'کمپین یافت نشد.' };
+    if (camp.ownerId !== user?.id) {
+      throw { status: 403, message: 'فقط مالک کمپین می‌تواند مالکیت را انتقال دهد.' };
+    }
+
+    const allMembers = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const newOwnerMem = allMembers.find(m => m.campaignId === campaignId && m.userId === newOwnerId && m.status === 'active');
+    if (!newOwnerMem) {
+      throw { status: 400, message: 'مالک جدید باید یکی از اعضای فعال کمپین باشد.' };
+    }
+
+    const currentOwnerMem = allMembers.find(m => m.campaignId === campaignId && m.userId === user.id);
+    if (currentOwnerMem) {
+      currentOwnerMem.role = 'co_dm';
+    }
+    newOwnerMem.role = 'owner';
+    camp.ownerId = newOwnerId;
+    camp.ownerName = newOwnerMem.userName;
+    camp.updatedAt = Date.now();
+
+    this.setItem('campaign_members', allMembers);
+    this.setItem('campaigns', allCampaigns);
+    return camp;
+  }
+
+  async leaveCampaign(campaignId: string): Promise<void> {
+    const user = this.currentUser;
+    if (!user) throw { status: 401, message: 'وارد شوید.' };
+
+    const allCampaigns = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCampaigns.find(c => c.id === campaignId);
+    if (camp?.ownerId === user.id) {
+      throw { status: 400, message: 'مالک نمی‌تواند از کمپین خارج شود؛ ابتدا باید مالکیت را انتقال دهید.' };
+    }
+
+    const allMembers = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const mem = allMembers.find(m => m.campaignId === campaignId && m.userId === user.id);
+    if (mem) {
+      mem.status = 'left';
+      this.setItem('campaign_members', allMembers);
+    }
+
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const parts = allParts.filter(p => p.campaignId === campaignId && p.id === mem?.participationId);
+    parts.forEach(p => {
+      p.status = 'left' as any;
+      p.updatedAt = Date.now();
+    });
+    this.setItem('character_participations', allParts);
+
+    if (mem?.characterId) {
+      const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+      allHist.push({
+        id: `hist-leave-${Date.now()}`,
+        characterId: mem.characterId,
+        campaignId,
+        campaignName: camp?.name,
+        eventType: 'retired',
+        payload: {
+          title: `خروج از کمپین ${camp?.name || ''}`,
+          description: 'شخصیت کمپین را ترک کرد.'
+        },
+        timestamp: Date.now()
+      });
+      this.setItem('character_history_events', allHist);
+    }
+  }
+
+  async listCampaignInvites(campaignId: string): Promise<CampaignInvite[]> {
+    const all = this.getItem<CampaignInvite[]>('campaign_invites', []);
+    return all.filter(i => i.campaignId === campaignId && !i.revokedAt);
+  }
+
+  async createCampaignInvite(campaignId: string, data: { role?: CampaignRole; label?: string; expiresInDays?: number; maxUses?: number; assignParticipationId?: string }): Promise<CampaignInvite> {
+    const user = this.currentUser || SEED_USERS[0];
+    const code = `inv-${Math.random().toString(36).substring(2, 10)}`;
+    const newInv: CampaignInvite = {
+      id: `cinv-${Date.now()}`,
+      campaignId,
+      code,
+      role: data.role || 'player',
+      label: data.label || 'دعوت جدید',
+      createdBy: user.id,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + (data.expiresInDays || 30) * 86400000,
+      maxUses: data.maxUses || 1,
+      usedCount: 0,
+      assignParticipationId: data.assignParticipationId || null,
+      inviteLink: `${window.location.origin}/#register?code=${code}`
+    };
+
+    const all = this.getItem<CampaignInvite[]>('campaign_invites', []);
+    all.push(newInv);
+    this.setItem('campaign_invites', all);
+    return newInv;
+  }
+
+  async revokeCampaignInvite(campaignId: string, inviteId: string): Promise<void> {
+    const all = this.getItem<CampaignInvite[]>('campaign_invites', []);
+    const inv = all.find(i => i.id === inviteId && i.campaignId === campaignId);
+    if (inv) {
+      inv.revokedAt = Date.now();
+      this.setItem('campaign_invites', all);
+    }
+  }
+
+  async acceptInvite(code: string): Promise<{ campaignId: string; role: CampaignRole }> {
+    const user = this.currentUser;
+    if (!user) throw { status: 401, message: 'لطفاً ابتدا وارد شوید.' };
+    const allInv = this.getItem<CampaignInvite[]>('campaign_invites', []);
+    const inv = allInv.find(i => (i.code === code || i.id === code) && !i.revokedAt && i.expiresAt > Date.now());
+    if (!inv || !inv.campaignId) {
+      throw { status: 404, message: 'کد دعوت نامعتبر یا منقضی شده است.' };
+    }
+
+    if (inv.usedCount >= inv.maxUses) {
+      throw { status: 400, message: 'ظرفیت این کد دعوت تکمیل شده است.' };
+    }
+    inv.usedCount++;
+    this.setItem('campaign_invites', allInv);
+
+    const allMembers = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    let mem = allMembers.find(m => m.campaignId === inv.campaignId && m.userId === user.id);
+    if (!mem) {
+      mem = {
+        campaignId: inv.campaignId,
+        userId: user.id,
+        role: inv.role,
+        status: 'active',
+        joinedAt: Date.now(),
+        userName: user.displayName || user.name,
+        userEmail: user.email
+      };
+      allMembers.push(mem);
+    } else {
+      mem.status = 'active';
+    }
+    this.setItem('campaign_members', allMembers);
+    this.setActiveCampaignId(inv.campaignId);
+
+    return { campaignId: inv.campaignId, role: inv.role };
+  }
+
+  // Master Characters & Participations
+  async listMasterCharacters(): Promise<MasterCharacter[]> {
+    const user = this.currentUser || SEED_USERS[0];
+    const all = this.getItem<MasterCharacter[]>('master_characters', SEED_MASTER_CHARACTERS);
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    return all
+      .filter(c => c.ownerId === user.id && c.status !== 'archived')
+      .map(c => ({
+        ...c,
+        participations: allParts.filter(p => p.characterId === c.id)
+      }));
+  }
+
+  async getMasterCharacter(id: string): Promise<MasterCharacter | null> {
+    const all = this.getItem<MasterCharacter[]>('master_characters', SEED_MASTER_CHARACTERS);
+    const char = all.find(c => c.id === id);
+    if (!char) return null;
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+
+    // Section 2 Character Visibility:
+    const isOwner = char.ownerId === this.currentUser?.id;
+    let filteredBackstory = { ...char.backstory };
+    if (!isOwner) {
+      filteredBackstory.dmOnly = { secrets: '', hooks: '' };
+      filteredBackstory.sections = (filteredBackstory.sections || []).filter(s => s.shareWithParty);
+    }
+
+    return {
+      ...char,
+      backstory: filteredBackstory,
+      participations: allParts.filter(p => p.characterId === char.id),
+      history: allHist.filter(h => h.characterId === char.id)
+    };
+  }
+
+  async createMasterCharacter(char: Partial<MasterCharacter>): Promise<MasterCharacter> {
+    const user = this.currentUser || SEED_USERS[0];
+    const newId = `char-${Date.now()}`;
+    const newChar: MasterCharacter = {
+      id: newId,
+      ownerId: user.id,
+      name: char.name || 'شخصیت نو',
+      race: char.race || 'آدمی',
+      appearance: char.appearance || '',
+      portraitUrl: char.portraitUrl || 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=300&q=80',
+      backstory: char.backstory || {
+        summary: '',
+        origin: '',
+        personality: { traits: '', ideals: '', bonds: '', flaws: '' },
+        goals: '',
+        relationships: [],
+        timeline: [],
+        sections: [],
+        dmOnly: { secrets: '', hooks: '' }
+      },
+      status: 'active',
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+
+    const all = this.getItem<MasterCharacter[]>('master_characters', SEED_MASTER_CHARACTERS);
+    all.push(newChar);
+    this.setItem('master_characters', all);
+
+    const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+    allHist.push({
+      id: `hist-create-${Date.now()}`,
+      characterId: newId,
+      eventType: 'created' as any,
+      payload: { title: 'آفرینش شخصیت', description: 'شناسنامه و هویت کلان شخصیت در زروانیا ثبت شد.' },
+      timestamp: Date.now()
+    });
+    this.setItem('character_history_events', allHist);
+
+    return newChar;
+  }
+
+  async updateMasterCharacter(char: MasterCharacter): Promise<MasterCharacter> {
+    const all = this.getItem<MasterCharacter[]>('master_characters', SEED_MASTER_CHARACTERS);
+    const idx = all.findIndex(c => c.id === char.id);
+    if (idx === -1) throw { status: 404, message: 'شخصیت یافت نشد.' };
+
+    char.updatedAt = Date.now();
+    all[idx] = char;
+    this.setItem('master_characters', all);
+
+    // Sync shared identity to existing participations
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    allParts.forEach(p => {
+      if (p.characterId === char.id) {
+        p.characterName = char.name;
+        p.characterRace = char.race;
+        p.characterPortraitUrl = char.portraitUrl;
+        p.characterAppearance = char.appearance;
+        p.characterBackstory = char.backstory;
+        p.updatedAt = Date.now();
+      }
+    });
+    this.setItem('character_participations', allParts);
+
+    return char;
+  }
+
+  async updateMasterCharacterStatus(id: string, status: 'active' | 'retired' | 'dead' | 'archived', note?: string): Promise<MasterCharacter> {
+    const char = await this.getMasterCharacter(id);
+    if (!char) throw { status: 404, message: 'شخصیت یافت نشد.' };
+    char.status = status;
+    char.statusNote = note;
+    await this.updateMasterCharacter(char);
+
+    const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+    allHist.push({
+      id: `hist-stat-${Date.now()}`,
+      characterId: id,
+      eventType: status === 'dead' ? 'death' : status === 'retired' ? 'retired' : 'status_change' as any,
+      payload: { title: `تغییر وضعیت به ${status}`, description: note || '' },
+      timestamp: Date.now()
+    });
+    this.setItem('character_history_events', allHist);
+
+    return char;
+  }
+
+  async getMasterCharacterHistory(characterId: string): Promise<CharacterHistoryEvent[]> {
+    const all = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+    return all.filter(h => h.characterId === characterId).sort((a, b) => b.timestamp - a.timestamp);
+  }
+
+  async addCharacterHistoryEvent(event: Omit<CharacterHistoryEvent, 'id' | 'timestamp'>): Promise<CharacterHistoryEvent> {
+    const newEvent: CharacterHistoryEvent = {
+      ...event,
+      id: `hist-${Date.now()}`,
+      timestamp: Date.now()
+    };
+    const all = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+    all.push(newEvent);
+    this.setItem('character_history_events', all);
+    return newEvent;
+  }
+
+  async listParticipations(campaignId?: string): Promise<CharacterParticipation[]> {
+    const cid = campaignId || this.getActiveCampaignId();
+    const all = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    return cid ? all.filter(p => p.campaignId === cid) : all;
+  }
+
+  async getParticipation(campaignId: string, participationId: string): Promise<CharacterParticipation | null> {
+    const all = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    return all.find(p => p.campaignId === campaignId && p.id === participationId) || null;
+  }
+
+  async createParticipation(campaignId: string, data: { characterId: string; entryMode: 'campaign_start' | 'same_level' | 'new_level'; entryLevel?: number }): Promise<CharacterParticipation> {
+    const user = this.currentUser || SEED_USERS[0];
+    const allCamps = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCamps.find(c => c.id === campaignId);
+    if (!camp) throw { status: 404, message: 'کمپین یافت نشد.' };
+
+    const maxLevel = camp.settings.maxEntryLevel || 20;
+    let level = 1;
+    if (data.entryMode === 'campaign_start') {
+      level = camp.settings.startingLevel || 1;
+    } else if (data.entryMode === 'new_level') {
+      level = Math.min(Math.max(1, data.entryLevel || 1), maxLevel);
+    } else if (data.entryMode === 'same_level') {
+      level = Math.min(data.entryLevel || 1, maxLevel);
+    }
+
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const existing = allParts.find(p => p.campaignId === campaignId && p.characterId === data.characterId);
+    if (existing) {
+      throw new Error('این شخصیت در این کمپین حضور دارد.');
+    }
+
+    const allMasterChars = this.getItem<MasterCharacter[]>('master_characters', SEED_MASTER_CHARACTERS);
+    const masterChar = allMasterChars.find(c => c.id === data.characterId);
+    if (!masterChar) throw new Error('شخصیت مبدأ یافت نشد.');
+
+    const initialStatus = camp.settings.approval?.onCreate ? 'pending_approval' : 'active';
+
+    const newPart: CharacterParticipation = {
+      id: `part-${Date.now()}`,
+      characterId: data.characterId,
+      campaignId,
+      campaignName: camp.name,
+      status: initialStatus,
+      className: 'ماجراجو',
+      level,
+      xp: 0,
+      abilityScores: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      currentHp: 10 + (level - 1) * 6,
+      maxHp: 10 + (level - 1) * 6,
+      tempHp: 0,
+      hitDice: { current: level, max: level, die: 'd8' },
+      deathSaves: { successes: 0, failures: 0 },
+      conditions: [],
+      inventory: [],
+      weapons: [],
+      currency: { gold: 10, silver: 0, copper: 0 },
+      customResources: [],
+      features: [],
+      notes: '',
+      dmNotes: '',
+      joinedAt: Date.now(),
+      updatedAt: Date.now(),
+      characterName: masterChar.name,
+      characterRace: masterChar.race,
+      characterPortraitUrl: masterChar.portraitUrl
+    };
+
+    allParts.push(newPart);
+    this.setItem('character_participations', allParts);
+
+    const allMembers = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    let member = allMembers.find(m => m.campaignId === campaignId && m.userId === user.id);
+    if (!member) {
+      allMembers.push({
+        campaignId,
+        userId: user.id,
+        role: 'player',
+        status: 'active',
+        joinedAt: Date.now(),
+        userName: user.displayName || user.name,
+        userEmail: user.email,
+        characterId: data.characterId,
+        characterName: masterChar.name,
+        participationId: newPart.id
+      });
+      this.setItem('campaign_members', allMembers);
+    } else {
+      member.characterId = data.characterId;
+      member.characterName = masterChar.name;
+      member.participationId = newPart.id;
+      this.setItem('campaign_members', allMembers);
+    }
+
+    const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+    allHist.push({
+      id: `hist-${Date.now()}`,
+      characterId: data.characterId,
+      campaignId,
+      campaignName: camp.name,
+      eventType: 'joined',
+      payload: {
+        title: `پیوستن به کمپین ${camp.name}`,
+        description: `ورود در حالت ${data.entryMode === 'campaign_start' ? 'شروع کمپین' : 'سطح ' + level} (سطح ${level})`,
+        level
+      },
+      timestamp: Date.now()
+    });
+    this.setItem('character_history_events', allHist);
+
+    return newPart;
+  }
+
+  async updateParticipation(campaignId: string, participationId: string, data: Partial<CharacterParticipation>): Promise<CharacterParticipation> {
+    const all = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = all.find(p => p.campaignId === campaignId && p.id === participationId);
+    if (!part) throw { status: 404, message: 'شخصیت مشارکت‌کننده یافت نشد.' };
+
+    Object.assign(part, data);
+    part.updatedAt = Date.now();
+    this.setItem('character_participations', all);
+    return part;
+  }
+
+  async reviewParticipation(campaignId: string, participationId: string, action: 'approve' | 'reject' | 'request_changes', comment?: string): Promise<CharacterParticipation> {
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = allParts.find(p => p.id === participationId && p.campaignId === campaignId);
+    if (!part) throw { status: 404, message: 'شخصیت مشارکت‌کننده یافت نشد.' };
+
+    const allCamps = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCamps.find(c => c.id === campaignId);
+
+    if (action === 'approve') {
+      if (part.pendingLevelUp) {
+        const oldLevel = part.level;
+        part.level = part.pendingLevelUp.targetLevel;
+        part.pendingLevelUp = null;
+        const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+        allHist.push({
+          id: `hist-lvl-${Date.now()}`,
+          characterId: part.characterId,
+          campaignId,
+          campaignName: camp?.name,
+          eventType: 'level_up',
+          payload: {
+            title: `ارتقای سطح به ${part.level} تأیید شد`,
+            oldLevel,
+            newLevel: part.level,
+            description: comment || 'تأیید ارتقای سطح توسط دانجن مستر'
+          },
+          timestamp: Date.now()
+        });
+        this.setItem('character_history_events', allHist);
+      } else {
+        part.status = 'active';
+      }
+    } else if (action === 'reject') {
+      if (part.pendingLevelUp) {
+        part.pendingLevelUp = null;
+      } else {
+        part.status = 'rejected';
+      }
+    }
+    part.updatedAt = Date.now();
+    this.setItem('character_participations', allParts);
+    return part;
+  }
+
+  async requestLevelUp(campaignId: string, participationId: string, targetLevel: number, diff?: any): Promise<CharacterParticipation> {
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = allParts.find(p => p.id === participationId && p.campaignId === campaignId);
+    if (!part) throw { status: 404, message: 'شخصیت یافت نشد.' };
+
+    const allCamps = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCamps.find(c => c.id === campaignId);
+
+    if (camp?.settings.approval?.onLevelUp) {
+      part.pendingLevelUp = {
+        targetLevel,
+        diff: diff || {},
+        requestedAt: Date.now()
+      };
+    } else {
+      part.level = targetLevel;
+    }
+    part.updatedAt = Date.now();
+    this.setItem('character_participations', allParts);
+    return part;
+  }
+
+  async updateParticipationStatus(campaignId: string, participationId: string, status: CharacterParticipation['status']): Promise<CharacterParticipation> {
+    return this.updateParticipation(campaignId, participationId, { status });
+  }
+
+  // Media
+  async uploadMedia(file: { name?: string; mimeType: string; sizeBytes: number; dataBase64: string; width?: number; height?: number; campaignId?: string }): Promise<{ id: string; url: string; sizeBytes: number }> {
+    const user = this.currentUser || SEED_USERS[0];
+    const maxSizeBytes = 150 * 1024; // 150 KB hard cap
+    if (file.sizeBytes > maxSizeBytes) {
+      throw { status: 413, message: 'حجم تصویر نباید بیش از ۱۵۰ کیلوبایت باشد. لطفاً قبل از ارسال تصویر را فشرده کنید.' };
+    }
+
+    const allMedia = this.getItem<MediaItem[]>('media', []);
+    const userTotalBytes = allMedia.filter(m => m.ownerId === user.id).reduce((sum, m) => sum + m.sizeBytes, 0);
+    if (userTotalBytes + file.sizeBytes > 5 * 1024 * 1024) { // 5 MB per-user quota
+      throw { status: 400, message: 'سهمیه ذخیره‌سازی شما (۵ مگابایت) پر شده است.' };
+    }
+
+    const mediaId = `media-${Date.now()}`;
+    const newMedia: MediaItem = {
+      id: mediaId,
+      ownerId: user.id,
+      campaignId: file.campaignId,
+      mimeType: file.mimeType,
+      sizeBytes: file.sizeBytes,
+      dataBase64: file.dataBase64,
+      width: file.width,
+      height: file.height,
+      createdAt: Date.now()
+    };
+
+    allMedia.push(newMedia);
+    this.setItem('media', allMedia);
+
+    return {
+      id: mediaId,
+      url: file.dataBase64.startsWith('data:') ? file.dataBase64 : `data:${file.mimeType};base64,${file.dataBase64}`,
+      sizeBytes: file.sizeBytes
+    };
+  }
+
+  async getMedia(id: string): Promise<any> {
+    const allMedia = this.getItem<MediaItem[]>('media', []);
+    const m = allMedia.find(item => item.id === id);
+    if (!m) throw { status: 404, message: 'رسانه یافت نشد.' };
+    return m;
+  }
+
+  async deleteMedia(id: string): Promise<void> {
+    const allMedia = this.getItem<MediaItem[]>('media', []);
+    const filtered = allMedia.filter(item => item.id !== id);
+    this.setItem('media', filtered);
+  }
+
+  // Shared Dice Feed
+  async postDiceRoll(campaignId: string, roll: { label: string; formula: string; mode: 'normal' | 'adv' | 'dis'; results: any; modifier: number; total: number; nat20?: boolean; nat1?: boolean; visibility?: 'table' | 'dm_only'; participationId?: string }): Promise<CampaignDiceRoll> {
+    const user = this.currentUser || SEED_USERS[0];
+    const isDm = user.role === 'dm';
+    const camp = (this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS)).find(c => c.id === campaignId);
+
+    let vis = roll.visibility || 'table';
+    if (!isDm && vis === 'dm_only' && !camp?.settings.allowPlayerRollPrivate) {
+      vis = 'table';
+    }
+
+    const newRoll: CampaignDiceRoll = {
+      id: `roll-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      campaignId,
+      userId: user.id,
+      userName: user.displayName || user.name,
+      characterId: user.activeCharacterId || null,
+      characterName: null,
+      rollType: roll.label || 'dice_roll',
+      diceExpression: roll.formula,
+      total: roll.total,
+      details: {
+        rolls: Array.isArray(roll.results) ? roll.results : [roll.total - roll.modifier],
+        modifier: roll.modifier,
+        advantage: roll.mode === 'normal' ? undefined : roll.mode,
+        isCritical: roll.nat20,
+        isFumble: roll.nat1,
+        label: roll.label
+      },
+      visibility: vis,
+      createdAt: Date.now()
+    };
+
+    const allRolls = this.getItem<CampaignDiceRoll[]>('dice_rolls', SEED_CAMPAIGN_DICE_ROLLS);
+    allRolls.unshift(newRoll);
+    if (allRolls.length > 200) allRolls.length = 200;
+    this.setItem('dice_rolls', allRolls);
+
+    this.liveChannel.notify(campaignId, Date.now(), { type: 'dice_roll', roll: newRoll });
+    return newRoll;
+  }
+
+  async listDiceRolls(campaignId: string, after?: string, limit = 50): Promise<CampaignDiceRoll[]> {
+    const user = this.currentUser || SEED_USERS[0];
+    const role = await this.getCampaignRole(campaignId);
+    const isDm = role === 'owner' || role === 'co_dm';
+
+    const allRolls = this.getItem<CampaignDiceRoll[]>('dice_rolls', SEED_CAMPAIGN_DICE_ROLLS);
+    let filtered = allRolls.filter(r => r.campaignId === campaignId);
+
+    if (!isDm) {
+      filtered = filtered.filter(r => r.visibility === 'table' || r.userId === user.id);
+    }
+
+    if (after) {
+      const idx = filtered.findIndex(r => r.id === after);
+      if (idx !== -1) {
+        filtered = filtered.slice(0, idx);
+      }
+    }
+
+    return filtered.slice(0, limit);
+  }
+
+  // Rule Sets & Content Packs
+  async getRuleSet(scopeType: 'pack' | 'campaign', scopeId: string): Promise<RuleSet | null> {
+    const all = this.getItem<RuleSet[]>('rule_sets', SEED_RULE_SETS);
+    return all.find(r => r.scopeType === scopeType && r.scopeId === scopeId) || all[0];
+  }
+
+  async listContentPacks(): Promise<ContentPack[]> {
+    return this.getItem<ContentPack[]>('content_packs', SEED_CONTENT_PACKS);
+  }
+
+  async getContentPack(id: string): Promise<ContentPack | null> {
+    const all = await this.listContentPacks();
+    return all.find(p => p.id === id) || null;
+  }
+
+  // Migration V2 (Idempotent)
+  async migrateV2(dryRun = false): Promise<{ success: boolean; report: any }> {
+    const report = {
+      campaignsCreated: 1,
+      membersMigrated: 8,
+      masterCharactersCreated: 6,
+      participationsCreated: 6,
+      contentPacksCreated: 2,
+      dryRun
+    };
+    if (!dryRun) {
+      await this.seedDatabase(true);
+    }
+    return { success: true, report };
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -2928,6 +3944,254 @@ export class HttpApi implements ApiClient {
     await this.fetchJson(`/encounters/${encounterId}/loot`, {
       method: 'POST',
       body: JSON.stringify({ characterId, item })
+    });
+  }
+
+  // --- Multi-Campaign Implementation in HttpApi ---
+  private activeCampaignId: string | null = 'zorvania-c1';
+
+  getActiveCampaignId(): string | null {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('zorvania_active_campaign_id') || this.activeCampaignId;
+    }
+    return this.activeCampaignId;
+  }
+
+  setActiveCampaignId(id: string | null): void {
+    this.activeCampaignId = id;
+    if (typeof localStorage !== 'undefined') {
+      if (id) localStorage.setItem('zorvania_active_campaign_id', id);
+      else localStorage.removeItem('zorvania_active_campaign_id');
+    }
+  }
+
+  async getCampaignRole(campaignId?: string): Promise<CampaignRole | null> {
+    const cid = campaignId || this.getActiveCampaignId();
+    if (!cid) return null;
+    try {
+      const camp = await this.getCampaign(cid);
+      return camp.myRole || null;
+    } catch {
+      return null;
+    }
+  }
+
+  async getHomeSummary(): Promise<HomeSummaryResponse> {
+    return this.fetchJson<HomeSummaryResponse>('/home');
+  }
+
+  async listCampaigns(): Promise<Campaign[]> {
+    return this.fetchJson<Campaign[]>('/campaigns');
+  }
+
+  async getCampaign(id: string): Promise<Campaign> {
+    return this.fetchJson<Campaign>(`/c/${id}`);
+  }
+
+  async createCampaign(data: { name: string; description?: string; tone?: string; packId?: string | null; settings?: Partial<CampaignSettings> }): Promise<Campaign> {
+    return this.fetchJson<Campaign>('/campaigns', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateCampaign(id: string, data: Partial<Campaign>): Promise<Campaign> {
+    return this.fetchJson<Campaign>(`/c/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async archiveCampaign(id: string): Promise<Campaign> {
+    return this.fetchJson<Campaign>(`/c/${id}/archive`, { method: 'POST' });
+  }
+
+  async restoreCampaign(id: string): Promise<Campaign> {
+    return this.fetchJson<Campaign>(`/c/${id}/restore`, { method: 'POST' });
+  }
+
+  async deleteCampaign(id: string): Promise<void> {
+    await this.fetchJson(`/c/${id}`, { method: 'DELETE' });
+  }
+
+  async listCampaignMembers(campaignId: string): Promise<CampaignMember[]> {
+    return this.fetchJson<CampaignMember[]>(`/c/${campaignId}/members`);
+  }
+
+  async updateCampaignMember(campaignId: string, userId: string, data: { role?: CampaignRole; status?: 'invited' | 'active' | 'left' | 'removed' }): Promise<CampaignMember> {
+    return this.fetchJson<CampaignMember>(`/c/${campaignId}/members/${userId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async removeCampaignMember(campaignId: string, userId: string): Promise<void> {
+    await this.fetchJson(`/c/${campaignId}/members/${userId}`, { method: 'DELETE' });
+  }
+
+  async transferCampaignOwnership(campaignId: string, newOwnerId: string): Promise<Campaign> {
+    return this.fetchJson<Campaign>(`/c/${campaignId}/transfer-ownership`, {
+      method: 'POST',
+      body: JSON.stringify({ newOwnerId })
+    });
+  }
+
+  async leaveCampaign(campaignId: string): Promise<void> {
+    await this.fetchJson(`/c/${campaignId}/leave`, { method: 'POST' });
+  }
+
+  async listCampaignInvites(campaignId: string): Promise<CampaignInvite[]> {
+    return this.fetchJson<CampaignInvite[]>(`/c/${campaignId}/invites`);
+  }
+
+  async createCampaignInvite(campaignId: string, data: { role?: CampaignRole; label?: string; expiresInDays?: number; maxUses?: number; assignParticipationId?: string }): Promise<CampaignInvite> {
+    return this.fetchJson<CampaignInvite>(`/c/${campaignId}/invites`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async revokeCampaignInvite(campaignId: string, inviteId: string): Promise<void> {
+    await this.fetchJson(`/c/${campaignId}/invites/${inviteId}`, { method: 'DELETE' });
+  }
+
+  async acceptInvite(code: string): Promise<{ campaignId: string; role: CampaignRole }> {
+    return this.fetchJson<{ campaignId: string; role: CampaignRole }>('/invites/accept', {
+      method: 'POST',
+      body: JSON.stringify({ code })
+    });
+  }
+
+  async listMasterCharacters(): Promise<MasterCharacter[]> {
+    return this.fetchJson<MasterCharacter[]>('/characters');
+  }
+
+  async getMasterCharacter(id: string): Promise<MasterCharacter | null> {
+    return this.fetchJson<MasterCharacter>(`/characters/${id}`);
+  }
+
+  async createMasterCharacter(char: Partial<MasterCharacter>): Promise<MasterCharacter> {
+    return this.fetchJson<MasterCharacter>('/characters', {
+      method: 'POST',
+      body: JSON.stringify(char)
+    });
+  }
+
+  async updateMasterCharacter(char: MasterCharacter): Promise<MasterCharacter> {
+    return this.fetchJson<MasterCharacter>(`/characters/${char.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(char)
+    });
+  }
+
+  async updateMasterCharacterStatus(id: string, status: 'active' | 'retired' | 'dead' | 'archived', note?: string): Promise<MasterCharacter> {
+    return this.fetchJson<MasterCharacter>(`/characters/${id}/status`, {
+      method: 'POST',
+      body: JSON.stringify({ status, note })
+    });
+  }
+
+  async getMasterCharacterHistory(characterId: string): Promise<CharacterHistoryEvent[]> {
+    return this.fetchJson<CharacterHistoryEvent[]>(`/characters/${characterId}/history`);
+  }
+
+  async addCharacterHistoryEvent(event: Omit<CharacterHistoryEvent, 'id' | 'timestamp'>): Promise<CharacterHistoryEvent> {
+    return this.fetchJson<CharacterHistoryEvent>(`/characters/${event.characterId}/history`, {
+      method: 'POST',
+      body: JSON.stringify(event)
+    });
+  }
+
+  async listParticipations(campaignId?: string): Promise<CharacterParticipation[]> {
+    const cid = campaignId || this.getActiveCampaignId();
+    return this.fetchJson<CharacterParticipation[]>(`/c/${cid}/participations`);
+  }
+
+  async getParticipation(campaignId: string, participationId: string): Promise<CharacterParticipation | null> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/${participationId}`);
+  }
+
+  async createParticipation(campaignId: string, data: { characterId: string; entryMode: 'campaign_start' | 'same_level' | 'new_level'; entryLevel?: number }): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateParticipation(campaignId: string, participationId: string, data: Partial<CharacterParticipation>): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/${participationId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async reviewParticipation(campaignId: string, participationId: string, action: 'approve' | 'reject' | 'request_changes', comment?: string): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/${participationId}/${action}`, {
+      method: 'POST',
+      body: JSON.stringify({ comment })
+    });
+  }
+
+  async requestLevelUp(campaignId: string, participationId: string, targetLevel: number, diff?: any): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/${participationId}/level-up-request`, {
+      method: 'POST',
+      body: JSON.stringify({ targetLevel, diff })
+    });
+  }
+
+  async updateParticipationStatus(campaignId: string, participationId: string, status: CharacterParticipation['status']): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/${participationId}/status`, {
+      method: 'POST',
+      body: JSON.stringify({ status })
+    });
+  }
+
+  async uploadMedia(file: { name?: string; mimeType: string; sizeBytes: number; dataBase64: string; width?: number; height?: number; campaignId?: string }): Promise<{ id: string; url: string; sizeBytes: number }> {
+    return this.fetchJson<{ id: string; url: string; sizeBytes: number }>('/media', {
+      method: 'POST',
+      body: JSON.stringify(file)
+    });
+  }
+
+  async getMedia(id: string): Promise<any> {
+    return this.fetchJson<any>(`/media/${id}`);
+  }
+
+  async deleteMedia(id: string): Promise<void> {
+    await this.fetchJson(`/media/${id}`, { method: 'DELETE' });
+  }
+
+  async postDiceRoll(campaignId: string, roll: { label: string; formula: string; mode: 'normal' | 'adv' | 'dis'; results: any; modifier: number; total: number; nat20?: boolean; nat1?: boolean; visibility?: 'table' | 'dm_only'; participationId?: string }): Promise<CampaignDiceRoll> {
+    return this.fetchJson<CampaignDiceRoll>(`/c/${campaignId}/dice`, {
+      method: 'POST',
+      body: JSON.stringify(roll)
+    });
+  }
+
+  async listDiceRolls(campaignId: string, after?: string, limit?: number): Promise<CampaignDiceRoll[]> {
+    const q = new URLSearchParams();
+    if (after) q.set('after', after);
+    if (limit) q.set('limit', limit.toString());
+    const qs = q.toString();
+    return this.fetchJson<CampaignDiceRoll[]>(`/c/${campaignId}/dice${qs ? `?${qs}` : ''}`);
+  }
+
+  async getRuleSet(scopeType: 'pack' | 'campaign', scopeId: string): Promise<RuleSet | null> {
+    return this.fetchJson<RuleSet>(`/rulesets?scopeType=${scopeType}&scopeId=${scopeId}`);
+  }
+
+  async listContentPacks(): Promise<ContentPack[]> {
+    return this.fetchJson<ContentPack[]>('/content-packs');
+  }
+
+  async getContentPack(id: string): Promise<ContentPack | null> {
+    return this.fetchJson<ContentPack>(`/content-packs/${id}`);
+  }
+
+  async migrateV2(dryRun = false): Promise<{ success: boolean; report: any }> {
+    return this.fetchJson<{ success: boolean; report: any }>('/admin/migrate-v2', {
+      method: 'POST',
+      body: JSON.stringify({ dryRun })
     });
   }
 }
