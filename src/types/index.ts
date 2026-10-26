@@ -265,6 +265,8 @@ export interface CharacterHistoryEvent {
 export interface MediaItem {
   id: string;
   ownerId: string;
+  campaignId?: string | null;
+  kind?: 'portrait' | 'cover' | 'handout';
   mimeType: string;
   sizeBytes: number;
   dataBase64?: string;
