@@ -16,6 +16,7 @@ interface DmDashboardProps {
   onUpdateGroupResources: (delta: { rations?: number; lanternOil?: number }) => void;
   onInspectCharacter: (charId: string) => void;
   onRollDice?: (sides: number, count: number, modifier: number, label: string) => void;
+  onCreateForPlayer?: () => void;
 }
 
 export const DmDashboard: React.FC<DmDashboardProps> = ({
@@ -27,7 +28,8 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
   onApplyGroupRest,
   onUpdateGroupResources,
   onInspectCharacter,
-  onRollDice
+  onRollDice,
+  onCreateForPlayer
 }) => {
   const [worldDay, setWorldDay] = useState(14);
   const [worldMonth, setWorldMonth] = useState('آبان');
@@ -171,11 +173,23 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
       {/* Player Cards in a Strip with Big HP Controls & "Needs Attention" Badge */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
-          <h3 className="text-xs font-bold text-[#A39A89] flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5 text-[#E0A030]" />
-            یاران حاضر در کمپین ({characters.length})
-          </h3>
-          <span className="text-[10px] text-[#A39A89]">نظارت و مدیریت آنی جان و امتیازات</span>
+          <div className="flex items-center gap-2">
+            <h3 className="text-xs font-bold text-[#A39A89] flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-[#E0A030]" />
+              یاران حاضر در کمپین ({characters.length})
+            </h3>
+            <span className="text-[10px] text-[#A39A89] hidden sm:inline">• نظارت و مدیریت آنی جان و امتیازات</span>
+          </div>
+          {onCreateForPlayer && (
+            <button
+              type="button"
+              onClick={onCreateForPlayer}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/40 hover:bg-[#E0A030]/30 text-xs font-bold transition min-h-[36px]"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>ساخت برای بازیکن (ویزارد)</span>
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

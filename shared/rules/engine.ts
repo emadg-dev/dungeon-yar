@@ -609,7 +609,8 @@ export function computeMaxHp(params: ComputeHpParams): number {
   }
 
   // 2. AVERAGE MODE
-  const hitDie = params.hitDie || params.classTemplate?.hitDie || 8;
+  const rawHitDie = params.hitDie || params.classTemplate?.hitDie || 8;
+  const hitDie = typeof rawHitDie === 'string' ? (parseInt(rawHitDie.replace(/\D/g, ''), 10) || 8) : (Number(rawHitDie) || 8);
   const avgIncrease = Math.floor(hitDie / 2) + 1;
 
   if (mode === 'average') {

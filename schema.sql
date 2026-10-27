@@ -177,7 +177,7 @@ CREATE TABLE IF NOT EXISTS character_participations (
   id TEXT PRIMARY KEY,
   character_id TEXT NOT NULL,
   campaign_id TEXT NOT NULL,
-  status TEXT CHECK (status IN ('pending_approval', 'active', 'rejected', 'retired', 'dead')) DEFAULT 'active',
+  status TEXT CHECK (status IN ('draft', 'pending_approval', 'active', 'rejected', 'retired', 'dead')) DEFAULT 'active',
   class_id TEXT,
   class_name TEXT,
   subclass_name TEXT,
@@ -201,6 +201,8 @@ CREATE TABLE IF NOT EXISTS character_participations (
   features TEXT NOT NULL DEFAULT '[]',
   notes TEXT,
   dm_notes TEXT,
+  build TEXT DEFAULT '{}',
+  sheet_locked INTEGER DEFAULT 1,
   pending_level_up TEXT,
   joined_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
@@ -211,6 +213,22 @@ CREATE TABLE IF NOT EXISTS character_participations (
 
 CREATE INDEX IF NOT EXISTS idx_participations_campaign ON character_participations(campaign_id, status);
 CREATE INDEX IF NOT EXISTS idx_participations_character ON character_participations(character_id);
+
+-- 10b. Participation Snapshots table (keeps last 10 snapshots per participation)
+CREATE TABLE IF NOT EXISTS participation_snapshots (
+  id TEXT PRIMARY KEY,
+  participation_id TEXT NOT NULL,
+  label TEXT NOT NULL,
+  state TEXT NOT NULL,
+  build TEXT NOT NULL,
+  level INTEGER NOT NULL DEFAULT 1,
+  created_by TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY (participation_id) REFERENCES character_participations(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_snapshots_participation ON participation_snapshots(participation_id, created_at DESC);
 
 -- 11. Character History Events table (Cross-campaign deeds and progression)
 CREATE TABLE IF NOT EXISTS character_history_events (

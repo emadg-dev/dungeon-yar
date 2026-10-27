@@ -25,7 +25,11 @@ export interface CampaignSettings {
   units: 'feet' | 'meters';
   startingLevel: number;
   maxEntryLevel: number;
-  abilityScoreMethods: ('standard_array' | 'point_buy' | 'roll' | 'manual')[];
+  abilityScoreMethods: ('standard_array' | 'point_buy' | 'roll' | 'class_base' | 'manual')[];
+  hpMode?: 'fixed' | 'roll' | 'manual';
+  conAdjustFixedTable?: boolean;
+  allowCustomLineage?: boolean;
+  sheetLock?: 'locked_core' | 'free';
   approval: {
     onCreate: boolean;
     onLevelUp: boolean;
@@ -200,12 +204,78 @@ export interface MasterCharacter {
   history?: CharacterHistoryEvent[];
 }
 
+export type AbilityMethod = 'standard_array' | 'point_buy' | 'roll' | 'class_base' | 'manual';
+export type HpMode = 'fixed' | 'roll' | 'manual';
+
+export interface CharacterBuild {
+  abilityMethod: AbilityMethod;
+  rolls?: {
+    dice: number[][]; // 6 groups of 4d6
+    scores: number[]; // 6 scores
+    assigned?: Record<string, number>; // ability key -> score
+  };
+  pointBuy?: {
+    scores: Record<string, number>;
+    cost?: number;
+  };
+  lineageId?: string | null;
+  sublineageName?: string | null;
+  lineageAbilityChoices?: Record<string, number>;
+  backgroundId?: string | null;
+  backgroundCustomFeature?: string | null;
+  skillChoices: {
+    fromClass?: string[];
+    fromBackground?: string[];
+    fromLineage?: string[];
+    all?: string[];
+  };
+  equipmentChoices: {
+    groups?: Record<string, string>;
+    starterWeaponId?: string | null;
+    starterWeaponChoice?: 'standard' | 'special_showy';
+    items?: string[];
+  };
+  subclassId?: string | null;
+  asiHistory?: Array<{
+    level: number;
+    type: 'asi' | 'feat';
+    abilities?: Record<string, number>;
+    featName?: string;
+  }>;
+  hpHistory?: Array<{
+    level: number;
+    hpIncrease: number;
+    mode: 'fixed' | 'roll' | 'manual';
+    roll?: number;
+  }>;
+  spellChoices?: {
+    cantrips?: string[];
+    spellsKnown?: string[];
+  };
+  wizardStep?: number;
+  step?: number;
+  masterData?: Partial<MasterCharacter>;
+  className?: string;
+  [key: string]: any;
+}
+
+export interface ParticipationSnapshot {
+  id: string;
+  participationId: string;
+  label: string;
+  state: any;
+  build: CharacterBuild;
+  level: number;
+  createdBy: string;
+  createdAt: number;
+}
+
 export interface CharacterParticipation {
   id: string;
   characterId: string;
   campaignId: string;
   campaignName?: string;
-  status: 'pending_approval' | 'active' | 'rejected' | 'retired' | 'dead';
+  status: 'draft' | 'pending_approval' | 'active' | 'rejected' | 'retired' | 'dead';
   classId?: string | null;
   className: string;
   subclassName?: string;
@@ -237,6 +307,8 @@ export interface CharacterParticipation {
   features: Feature[];
   notes: string;
   dmNotes?: string;
+  build?: CharacterBuild | null;
+  sheetLocked?: boolean;
   joinedAt: number;
   updatedAt: number;
   pendingLevelUp?: {
@@ -455,7 +527,8 @@ export interface Feature {
 export interface AcFormula {
   base: number;
   abilityMods: AbilityName[];
-  unarmored: boolean; // Hamoun and Mist-Familiar lose it if armor/shield equipped
+  unarmored?: boolean; // Hamoun and Mist-Familiar lose it if armor/shield equipped
+  maxDexMod?: number | null;
   note?: string;
 }
 
@@ -599,10 +672,10 @@ export interface ClassTemplate {
   hitDie: string | number;
   saves?: string[];
   savingThrowProficiencies?: AbilityName[];
-  skillChoices: { count: number; options: string[] };
-  weaponProf?: string;
+  skillChoices: { count: number; options?: string[]; from?: string[] };
+  weaponProf?: string | string[];
   weaponProficiencies?: string[];
-  armorProf?: string;
+  armorProf?: string | string[];
   armorProficiencies?: string[];
   startingEquipment: string | string[] | EquipmentChoiceGroup[];
   startingEquipmentChoices?: EquipmentChoiceGroup[];
@@ -621,7 +694,7 @@ export interface ClassTemplate {
   asiLevels: number[];
   fixedHpByLevel: number[] | Record<number, number>;
   hpFormula?: string;
-  baseAbilities?: { STR: number; DEX: number; CON: number; WIS: number; INT: number; CHA: number } | AbilityScoreMap;
+  baseAbilities?: { STR: number; DEX: number; CON: number; WIS: number; INT: number; CHA: number } | AbilityScoreMap | Record<string, number>;
   baseAbilityScores?: AbilityScoreMap;
   companion?: { name: string; fromLevel: number; ac?: number | null; hp: string } | null;
   companions?: CompanionDef[];
@@ -629,8 +702,11 @@ export interface ClassTemplate {
   classResources?: {
     name: string;
     type?: string;
-    formulaOrDiceByLevel?: string | Record<number, string>;
-    resetType?: RechargeType;
+    formulaOrDiceByLevel?: string | Record<number, string | number>;
+    maxUsesFormula?: string;
+    maxUsesByLevel?: Record<number, number>;
+    diceByLevel?: Record<number, string>;
+    resetType?: RechargeType | 'short' | 'long';
     description?: string;
     id?: string;
   }[];
@@ -639,7 +715,7 @@ export interface ClassTemplate {
     name: string;
     unlockLevel: number;
     description?: string;
-    featuresByLevel?: Record<number, { name: string; description: string; usage?: RechargeType }[]>;
+    featuresByLevel?: Record<number, any[]>;
   }[];
   notes?: string;
   features?: Record<number | string, string>;
@@ -647,7 +723,8 @@ export interface ClassTemplate {
   martialArtsDie?: Record<string, string>;
   startingFeatures?: FeatureTemplate[];
   level2Options?: string[];
-  starterWeaponOptions?: string[];
+  starterWeapons?: { name: string; kind: 'showy' | 'special'; description?: string }[] | string[];
+  starterWeaponOptions?: string[] | { name: string; kind: 'showy' | 'special'; description?: string }[];
   scopeType?: EntityScopeType;
   scopeId?: string;
   sourceId?: string | null;

@@ -57,8 +57,12 @@ import {
   EntityScopeType,
   WizardStartMode,
   WizardState,
-  LinkedEntityDiff
+  LinkedEntityDiff,
+  CharacterBuild,
+  ParticipationSnapshot
 } from '../types';
+import { rollAbilityScores } from '../../shared/rules/engine';
+import { computeAuthoritativeParticipation, createSnapshot, pruneSnapshots } from '../../shared/rules/wizardEngine';
 import { APP_NAME_FA } from '../config/app';
 import {
   SEED_USERS,
@@ -482,6 +486,13 @@ export interface ApiClient {
   reviewParticipation(campaignId: string, participationId: string, action: 'approve' | 'reject' | 'request_changes', comment?: string): Promise<CharacterParticipation>;
   requestLevelUp(campaignId: string, participationId: string, targetLevel: number, diff?: any): Promise<CharacterParticipation>;
   updateParticipationStatus(campaignId: string, participationId: string, status: CharacterParticipation['status']): Promise<CharacterParticipation>;
+  rollWizardAbilities(): Promise<{ rolls: number[][]; scores: number[] }>;
+  saveDraftParticipation(campaignId: string, data: { id?: string; characterId?: string; masterData?: Partial<MasterCharacter>; build: CharacterBuild; level?: number; name?: string; className?: string }): Promise<CharacterParticipation>;
+  submitCharacterWizard(campaignId: string, data: { participationId?: string; characterId?: string; masterData: Partial<MasterCharacter>; build: CharacterBuild; clientDerived?: any }): Promise<CharacterParticipation>;
+  listDraftParticipations(campaignId?: string): Promise<CharacterParticipation[]>;
+  listParticipationSnapshots(campaignId: string, participationId: string): Promise<ParticipationSnapshot[]>;
+  createParticipationSnapshot(campaignId: string, participationId: string, label: string): Promise<ParticipationSnapshot>;
+  restoreParticipationSnapshot(campaignId: string, participationId: string, snapshotId: string): Promise<CharacterParticipation>;
 
   // Media
   uploadMedia(file: { name?: string; mimeType: string; sizeBytes: number; dataBase64: string; width?: number; height?: number; campaignId?: string }): Promise<{ id: string; url: string; sizeBytes: number }>;
@@ -3338,6 +3349,274 @@ export class LocalApi implements ApiClient {
     return this.updateParticipation(campaignId, participationId, { status });
   }
 
+  async rollWizardAbilities(): Promise<{ rolls: number[][]; scores: number[] }> {
+    return rollAbilityScores();
+  }
+
+  async listDraftParticipations(campaignId?: string): Promise<CharacterParticipation[]> {
+    const all = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    return all.filter(p => p.status === 'draft' && (!campaignId || p.campaignId === campaignId));
+  }
+
+  async saveDraftParticipation(
+    campaignId: string,
+    data: { id?: string; characterId?: string; masterData?: Partial<MasterCharacter>; build: CharacterBuild; level?: number; name?: string; className?: string }
+  ): Promise<CharacterParticipation> {
+    const user = this.currentUser || SEED_USERS[0];
+    const allCamps = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCamps.find(c => c.id === campaignId);
+    if (!camp) throw { status: 404, message: 'کمپین یافت نشد.' };
+
+    let charId = data.characterId;
+    const allMaster = this.getItem<MasterCharacter[]>('master_characters', SEED_MASTER_CHARACTERS);
+    let master = charId ? allMaster.find(c => c.id === charId) : null;
+
+    if (!master) {
+      charId = `char-${Date.now()}`;
+      master = {
+        id: charId,
+        ownerId: user.id,
+        name: data.masterData?.name || data.name || 'پیش‌نویس کاراکتر',
+        race: data.masterData?.race || 'آدمی',
+        appearance: data.masterData?.appearance || '',
+        portraitUrl: data.masterData?.portraitUrl || 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=300&q=80',
+        backstory: data.masterData?.backstory || {
+          summary: '',
+          origin: '',
+          personality: { traits: '', ideals: '', bonds: '', flaws: '' },
+          goals: '',
+          relationships: [],
+          timeline: [],
+          sections: [],
+          dmOnly: { secrets: '', hooks: '' }
+        },
+        status: 'active',
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      allMaster.push(master);
+      this.setItem('master_characters', allMaster);
+    } else if (data.masterData) {
+      Object.assign(master, data.masterData);
+      master.updatedAt = Date.now();
+      this.setItem('master_characters', allMaster);
+    }
+
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const resolvedCharId = charId || master.id;
+    let part: CharacterParticipation | undefined = (data.id ? allParts.find(p => p.id === data.id) : null) ||
+               allParts.find(p => p.campaignId === campaignId && p.characterId === resolvedCharId && p.status === 'draft');
+
+    const level = data.level || 1;
+    const scores = data.build?.pointBuy?.scores || (data.build?.rolls?.assigned as any) || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+
+    if (part) {
+      part.className = data.className || part.className || 'ماجراجو';
+      part.level = level;
+      part.abilityScores = scores;
+      part.build = data.build;
+      part.sheetLocked = true;
+      part.updatedAt = Date.now();
+      part.characterName = master.name;
+      part.characterRace = master.race;
+      part.characterPortraitUrl = master.portraitUrl;
+    } else {
+      const newPart: CharacterParticipation = {
+        id: `part-draft-${Date.now()}`,
+        characterId: resolvedCharId,
+        campaignId,
+        campaignName: camp.name,
+        status: 'draft',
+        className: data.className || 'ماجراجو',
+        level,
+        xp: 0,
+        abilityScores: scores,
+        currentHp: 10,
+        maxHp: 10,
+        tempHp: 0,
+        hitDice: { current: level, max: level, die: 'd8' },
+        deathSaves: { successes: 0, failures: 0 },
+        conditions: [],
+        inventory: [],
+        weapons: [],
+        currency: { gold: 15, silver: 0, copper: 0 },
+        customResources: [],
+        features: [],
+        notes: '',
+        dmNotes: '',
+        build: data.build,
+        sheetLocked: true,
+        joinedAt: Date.now(),
+        updatedAt: Date.now(),
+        characterName: master.name,
+        characterRace: master.race,
+        characterPortraitUrl: master.portraitUrl
+      };
+      part = newPart;
+      allParts.push(newPart);
+    }
+
+    this.setItem('character_participations', allParts);
+    return part!;
+  }
+
+  async submitCharacterWizard(
+    campaignId: string,
+    data: { participationId?: string; characterId?: string; masterData: Partial<MasterCharacter>; build: CharacterBuild; clientDerived?: any }
+  ): Promise<CharacterParticipation> {
+    const user = this.currentUser || SEED_USERS[0];
+    const allCamps = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCamps.find(c => c.id === campaignId);
+    if (!camp) throw { status: 404, message: 'کمپین یافت نشد.' };
+
+    const classes = this.getItem<ClassTemplate[]>('class_templates', SEED_CLASS_TEMPLATES);
+    const lineages = this.getItem<LineageTemplate[]>('lineage_templates', SEED_LINEAGE_TEMPLATES);
+    const backgrounds = this.getItem<BackgroundTemplate[]>('background_templates', SEED_BACKGROUND_TEMPLATES);
+
+    const classTemplate = classes.find(c => c.name === data.build?.className || c.id === data.build?.className) || classes[0];
+    const lineageTemplate = data.build?.lineageId ? lineages.find(l => l.id === data.build?.lineageId) : null;
+    const backgroundTemplate = data.build?.backgroundId ? backgrounds.find(b => b.id === data.build?.backgroundId) : null;
+
+    const { participation: computed, validation } = computeAuthoritativeParticipation({
+      masterData: data.masterData,
+      build: data.build,
+      campaignId,
+      campaignSettings: camp.settings,
+      classTemplate,
+      lineageTemplate,
+      backgroundTemplate,
+      entryLevel: camp.settings?.startingLevel || 1
+    });
+
+    if (!validation.valid && validation.errors.length > 0) {
+      throw { status: 400, message: validation.errors.join(' | ') };
+    }
+
+    // Save or update Master Character
+    let charId = data.characterId;
+    const allMaster = this.getItem<MasterCharacter[]>('master_characters', SEED_MASTER_CHARACTERS);
+    let master = charId ? allMaster.find(c => c.id === charId) : null;
+
+    if (!master) {
+      charId = `char-${Date.now()}`;
+      master = {
+        id: charId,
+        ownerId: user.id,
+        name: data.masterData?.name || computed.characterName || 'شخصیت',
+        race: data.masterData?.race || computed.characterRace || 'آدمی',
+        appearance: data.masterData?.appearance || '',
+        portraitUrl: data.masterData?.portraitUrl || 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=300&q=80',
+        backstory: data.masterData?.backstory || { summary: '' } as any,
+        status: 'active',
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      allMaster.push(master);
+    } else {
+      Object.assign(master, data.masterData);
+      master.updatedAt = Date.now();
+    }
+    this.setItem('master_characters', allMaster);
+
+    // Save participation
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    let part = data.participationId ? allParts.find(p => p.id === data.participationId) : null;
+
+    if (part) {
+      Object.assign(part, computed);
+      part.characterId = charId!;
+      part.updatedAt = Date.now();
+    } else {
+      part = {
+        id: `part-${Date.now()}`,
+        characterId: charId!,
+        ...computed
+      };
+      allParts.push(part);
+    }
+    this.setItem('character_participations', allParts);
+
+    // History event 'joined'
+    const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+    allHist.push({
+      id: `hist-${Date.now()}`,
+      characterId: charId!,
+      campaignId,
+      campaignName: camp.name,
+      eventType: 'joined',
+      payload: {
+        title: `پیوستن به کمپین ${camp.name}`,
+        description: `آفرینش کامل شخصیت در سطح ${computed.level} با ویزارد`,
+        level: computed.level
+      },
+      timestamp: Date.now()
+    });
+    this.setItem('character_history_events', allHist);
+
+    // Initial snapshot & retention prune (keep last 10)
+    const snap = createSnapshot(part, `آفرینش شخصیت (سطح ${computed.level})`, user.id);
+    const allSnaps = this.getItem<ParticipationSnapshot[]>('participation_snapshots', []);
+    const partSnaps = allSnaps.filter(s => s.participationId === part!.id);
+    partSnaps.push(snap);
+    const { kept } = pruneSnapshots(partSnaps, 10);
+    const otherSnaps = allSnaps.filter(s => s.participationId !== part!.id);
+    this.setItem('participation_snapshots', [...otherSnaps, ...kept]);
+
+    return part;
+  }
+
+  async listParticipationSnapshots(campaignId: string, participationId: string): Promise<ParticipationSnapshot[]> {
+    const allSnaps = this.getItem<ParticipationSnapshot[]>('participation_snapshots', []);
+    return allSnaps
+      .filter(s => s.participationId === participationId)
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, 10);
+  }
+
+  async createParticipationSnapshot(campaignId: string, participationId: string, label: string): Promise<ParticipationSnapshot> {
+    const user = this.currentUser || SEED_USERS[0];
+    const part = await this.getParticipation(campaignId, participationId);
+    if (!part) throw { status: 404, message: 'مشارکت یافت نشد.' };
+
+    const snap = createSnapshot(part, label, user.id);
+    const allSnaps = this.getItem<ParticipationSnapshot[]>('participation_snapshots', []);
+    const partSnaps = allSnaps.filter(s => s.participationId === participationId);
+    partSnaps.push(snap);
+    const { kept } = pruneSnapshots(partSnaps, 10);
+    const otherSnaps = allSnaps.filter(s => s.participationId !== participationId);
+    this.setItem('participation_snapshots', [...otherSnaps, ...kept]);
+    return snap;
+  }
+
+  async restoreParticipationSnapshot(campaignId: string, participationId: string, snapshotId: string): Promise<CharacterParticipation> {
+    const allSnaps = this.getItem<ParticipationSnapshot[]>('participation_snapshots', []);
+    const snap = allSnaps.find(s => s.id === snapshotId && s.participationId === participationId);
+    if (!snap) throw { status: 404, message: 'عکس لحظه‌ای یافت نشد.' };
+
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = allParts.find(p => p.id === participationId);
+    if (!part) throw { status: 404, message: 'مشارکت یافت نشد.' };
+
+    part.level = snap.level;
+    part.abilityScores = snap.state.abilityScores || part.abilityScores;
+    part.currentHp = snap.state.currentHp || part.currentHp;
+    part.maxHp = snap.state.maxHp || part.maxHp;
+    part.tempHp = snap.state.tempHp || 0;
+    part.hitDice = snap.state.hitDice || part.hitDice;
+    part.inventory = snap.state.inventory || part.inventory;
+    part.weapons = snap.state.weapons || part.weapons;
+    part.currency = snap.state.currency || part.currency;
+    part.customResources = snap.state.customResources || part.customResources;
+    part.spellsKnownPrepared = snap.state.spellsKnownPrepared;
+    part.spellSlots = snap.state.spellSlots;
+    part.features = snap.state.features || part.features;
+    part.build = snap.build;
+    part.updatedAt = Date.now();
+
+    this.setItem('character_participations', allParts);
+    return part;
+  }
+
   // Media
   async uploadMedia(file: { name?: string; mimeType: string; sizeBytes: number; dataBase64: string; width?: number; height?: number; campaignId?: string }): Promise<{ id: string; url: string; sizeBytes: number }> {
     const user = this.currentUser || SEED_USERS[0];
@@ -3739,6 +4018,8 @@ export class LocalApi implements ApiClient {
     const entities = packJson.entities || {};
     const bundle: CloneEntityBundle = {
       classTemplates: entities.classTemplates || [],
+      lineageTemplates: entities.lineageTemplates || [],
+      backgroundTemplates: entities.backgroundTemplates || [],
       featureTemplates: entities.featureTemplates || [],
       weaponTemplates: entities.weaponTemplates || [],
       items: entities.items || [],
@@ -3771,6 +4052,8 @@ export class LocalApi implements ApiClient {
     const entities = packJson.entities || {};
     const bundle: CloneEntityBundle = {
       classTemplates: entities.classTemplates || [],
+      lineageTemplates: entities.lineageTemplates || [],
+      backgroundTemplates: entities.backgroundTemplates || [],
       featureTemplates: entities.featureTemplates || [],
       weaponTemplates: entities.weaponTemplates || [],
       items: entities.items || [],
@@ -5300,6 +5583,53 @@ export class HttpApi implements ApiClient {
     return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/${participationId}/status`, {
       method: 'POST',
       body: JSON.stringify({ status })
+    });
+  }
+
+  async rollWizardAbilities(): Promise<{ rolls: number[][]; scores: number[] }> {
+    return this.fetchJson<{ rolls: number[][]; scores: number[] }>('/c/wizard/roll-abilities', {
+      method: 'POST'
+    });
+  }
+
+  async listDraftParticipations(campaignId?: string): Promise<CharacterParticipation[]> {
+    return this.fetchJson<CharacterParticipation[]>(`/c/${campaignId || 'wizard'}/participations/drafts`);
+  }
+
+  async saveDraftParticipation(
+    campaignId: string,
+    data: { id?: string; characterId?: string; masterData?: Partial<MasterCharacter>; build: CharacterBuild; level?: number; name?: string; className?: string }
+  ): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/draft`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async submitCharacterWizard(
+    campaignId: string,
+    data: { participationId?: string; characterId?: string; masterData: Partial<MasterCharacter>; build: CharacterBuild; clientDerived?: any }
+  ): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/wizard-submit`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async listParticipationSnapshots(campaignId: string, participationId: string): Promise<ParticipationSnapshot[]> {
+    return this.fetchJson<ParticipationSnapshot[]>(`/c/${campaignId}/participations/${participationId}/snapshots`);
+  }
+
+  async createParticipationSnapshot(campaignId: string, participationId: string, label: string): Promise<ParticipationSnapshot> {
+    return this.fetchJson<ParticipationSnapshot>(`/c/${campaignId}/participations/${participationId}/snapshots`, {
+      method: 'POST',
+      body: JSON.stringify({ label })
+    });
+  }
+
+  async restoreParticipationSnapshot(campaignId: string, participationId: string, snapshotId: string): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/${participationId}/snapshots/${snapshotId}/restore`, {
+      method: 'POST'
     });
   }
 

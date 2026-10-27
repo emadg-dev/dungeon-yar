@@ -4,6 +4,9 @@
  * D1 database storage, CSRF protection, rate limiting, and RBAC authorization.
  */
 
+import { computeAuthoritativeParticipation, createSnapshot, pruneSnapshots } from '../../shared/rules/wizardEngine';
+import { rollAbilityScores } from '../../shared/rules/engine';
+
 interface Env {
   DB: any; // Cloudflare D1Database binding
   DM_EMAILS?: string;
@@ -1698,6 +1701,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       features: parseBlob(r.features, []),
       notes: r.notes || '',
       dmNotes: r.dm_notes || '',
+      build: parseBlob(r.build, null),
+      sheetLocked: r.sheet_locked === 1,
       pendingLevelUp: parseBlob(r.pending_level_up, null),
       joinedAt: r.joined_at,
       updatedAt: r.updated_at,
@@ -1815,16 +1820,16 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       abilityScores: 'ability_scores', hitDice: 'hit_dice', deathSaves: 'death_saves', conditions: 'conditions',
       inventory: 'inventory', weapons: 'weapons', currency: 'currency', customResources: 'custom_resources',
       spellsKnownPrepared: 'spells_known_prepared', spellSlots: 'spell_slots', features: 'features',
-      pendingLevelUp: 'pending_level_up'
+      pendingLevelUp: 'pending_level_up', build: 'build', sheetLocked: 'sheet_locked'
     };
     const sets: string[] = [];
     const binds: any[] = [];
     for (const [key, col] of Object.entries(colMap)) {
       if (body[key] === undefined) continue;
-      if (key === 'status' && !['pending_approval', 'active', 'rejected', 'retired', 'dead'].includes(body[key])) {
+      if (key === 'status' && !['draft', 'pending_approval', 'active', 'rejected', 'retired', 'dead'].includes(body[key])) {
         return error('وضعیت نامعتبر است.');
       }
-      const value = body[key];
+      const value = key === 'sheetLocked' ? (body[key] ? 1 : 0) : body[key];
       sets.push(`${col} = ?`);
       binds.push(value !== null && typeof value === 'object' ? JSON.stringify(value) : value);
     }
@@ -1929,6 +1934,377 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     }
     await env.DB.prepare('UPDATE character_participations SET status = ?, updated_at = ? WHERE id = ? AND campaign_id = ?')
       .bind(body.status, now, partId, campId).run();
+    const updated = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    return json(mapParticipation(updated));
+  }
+
+  // ---------------------------------------------------------
+  // Step 3.3: Character Creation Wizard & Snapshots
+  // ---------------------------------------------------------
+
+  // POST /api/c/wizard/roll-abilities
+  if (path === '/c/wizard/roll-abilities' && method === 'POST') {
+    const random = () => {
+      const arr = new Uint32Array(1);
+      crypto.getRandomValues(arr);
+      return arr[0] / (0xffffffff + 1);
+    };
+    const { rolls, scores } = rollAbilityScores(random);
+    return json({ rolls, scores });
+  }
+
+  // GET /api/c/wizard/drafts or GET /api/c/:id/participations/drafts
+  if ((path === '/c/wizard/drafts' || path.match(/^\/c\/[^/]+\/participations\/drafts$/)) && method === 'GET') {
+    const cid = path.startsWith('/c/wizard') ? null : path.split('/')[2];
+    let query = `${PART_SELECT} WHERE p.status = 'draft'`;
+    const params: any[] = [];
+    if (cid && cid !== 'all') {
+      query += ' AND p.campaign_id = ?';
+      params.push(cid);
+    }
+    query += ' AND ch.owner_id = ? ORDER BY p.updated_at DESC';
+    params.push(actor.id);
+    const res = await env.DB.prepare(query).bind(...params).all();
+    return json((res.results || []).map(mapParticipation));
+  }
+
+  // POST /api/c/:id/participations/draft (Autosave Draft)
+  if (path.match(/^\/c\/[^/]+\/participations\/draft$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    const body = await request.json() as any;
+    const camp = await env.DB.prepare('SELECT id, name FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(campId).first();
+    if (!camp) return error('کمپین یافت نشد.', 404);
+
+    let charId = body.characterId;
+    let masterCharRow = null;
+    if (charId) {
+      masterCharRow = await env.DB.prepare('SELECT id, data FROM characters WHERE id = ?').bind(charId).first();
+    }
+
+    if (!charId || !masterCharRow) {
+      charId = `char-${Date.now()}-${generateRandomToken(3)}`;
+      const masterBlob = {
+        id: charId,
+        ownerId: actor.id,
+        name: body.masterData?.name || body.name || 'پیش‌نویس کاراکتر',
+        race: body.masterData?.race || body.race || 'آدمی',
+        appearance: body.masterData?.appearance || '',
+        portraitUrl: body.masterData?.portraitUrl || '',
+        backstory: body.masterData?.backstory || { summary: '' },
+        status: 'active'
+      };
+      await env.DB.prepare(
+        'INSERT INTO characters (id, owner_id, name, class_name, level, data, revision, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?)'
+      ).bind(charId, actor.id, masterBlob.name, body.className || 'ماجراجو', body.level || 1, JSON.stringify(masterBlob), now).run();
+    } else if (body.masterData) {
+      const existingBlob = parseBlob(masterCharRow.data, {});
+      const updatedBlob = { ...existingBlob, ...body.masterData, updatedAt: now };
+      await env.DB.prepare('UPDATE characters SET name = ?, data = ?, updated_at = ? WHERE id = ?')
+        .bind(updatedBlob.name || masterCharRow.name, JSON.stringify(updatedBlob), now, charId).run();
+    }
+
+    let partId = body.id || body.participationId;
+    let existingPart = null;
+    if (partId) {
+      existingPart = await env.DB.prepare('SELECT id FROM character_participations WHERE id = ?').bind(partId).first();
+    } else {
+      existingPart = await env.DB.prepare('SELECT id FROM character_participations WHERE campaign_id = ? AND character_id = ? AND status = "draft"').bind(campId, charId).first();
+      if (existingPart) partId = existingPart.id;
+    }
+
+    const buildJson = JSON.stringify(body.build || {});
+    const level = body.level || 1;
+    const abilityScores = JSON.stringify(body.build?.pointBuy?.scores || body.build?.rolls?.assigned || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 });
+    const hp = 10;
+    const hitDice = JSON.stringify({ current: level, max: level, die: 'd8' });
+    const deathSaves = JSON.stringify({ successes: 0, failures: 0 });
+    const currency = JSON.stringify({ gold: 15, silver: 0, copper: 0 });
+
+    if (existingPart) {
+      await env.DB.prepare(
+        `UPDATE character_participations SET
+           class_name = ?, level = ?, ability_scores = ?, build = ?, sheet_locked = 1, updated_at = ?
+         WHERE id = ?`
+      ).bind(body.className || 'ماجراجو', level, abilityScores, buildJson, now, partId).run();
+    } else {
+      partId = `part-draft-${Date.now()}-${generateRandomToken(3)}`;
+      await env.DB.prepare(
+        `INSERT INTO character_participations
+           (id, character_id, campaign_id, status, class_name, level, xp, ability_scores,
+            current_hp, max_hp, temp_hp, hit_dice, death_saves, conditions, inventory, weapons,
+            currency, custom_resources, features, notes, dm_notes, build, sheet_locked, joined_at, updated_at)
+         VALUES (?, ?, ?, 'draft', ?, ?, 0, ?, ?, ?, 0, ?, ?, '[]', '[]', '[]', ?, '[]', '[]', '', '', ?, 1, ?, ?)`
+      ).bind(partId, charId, campId, body.className || 'ماجراجو', level, abilityScores, hp, hp, hitDice, deathSaves, currency, buildJson, now, now).run();
+    }
+
+    const saved = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    return json(mapParticipation(saved));
+  }
+
+  // POST /api/c/:id/participations/wizard-submit (Authoritative Validation & Submission)
+  if (path.match(/^\/c\/[^/]+\/participations\/wizard-submit$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    const body = await request.json() as any;
+    const camp = await env.DB.prepare('SELECT * FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(campId).first();
+    if (!camp) return error('کمپین یافت نشد.', 404);
+
+    const campSettings = parseBlob(camp.settings, {});
+
+    // Fetch class template
+    let classTemplate: any = null;
+    const classIdOrName = body.classId || body.className || body.build?.className;
+    if (classIdOrName) {
+      const ctRow = await env.DB.prepare(
+        'SELECT * FROM class_templates WHERE (id = ? OR name = ?) AND ((scope_type = "campaign" AND scope_id = ?) OR scope_type = "pack")'
+      ).bind(classIdOrName, classIdOrName, campId).first();
+      if (ctRow) {
+        classTemplate = { ...parseBlob(ctRow.data, {}), ...ctRow };
+      }
+    }
+
+    // Fetch lineage template
+    let lineageTemplate: any = null;
+    if (body.build?.lineageId) {
+      const linRow = await env.DB.prepare('SELECT * FROM lineage_templates WHERE id = ?').bind(body.build.lineageId).first();
+      if (linRow) {
+        lineageTemplate = {
+          ...linRow,
+          abilityBonuses: parseBlob(linRow.ability_bonuses, {}),
+          proficiencies: parseBlob(linRow.proficiencies, {}),
+          traits: parseBlob(linRow.traits, [])
+        };
+      }
+    }
+
+    // Fetch background template
+    let backgroundTemplate: any = null;
+    if (body.build?.backgroundId) {
+      const bgRow = await env.DB.prepare('SELECT * FROM background_templates WHERE id = ?').bind(body.build.backgroundId).first();
+      if (bgRow) {
+        backgroundTemplate = {
+          ...bgRow,
+          skillProficiencies: parseBlob(bgRow.skill_proficiencies, []),
+          startingEquipment: parseBlob(bgRow.starting_equipment, [])
+        };
+      }
+    }
+
+    // Authoritative Server Recomputation
+    const { participation: computed, validation } = computeAuthoritativeParticipation({
+      masterData: body.masterData || {},
+      build: body.build,
+      campaignId: campId,
+      campaignSettings: campSettings,
+      classTemplate,
+      lineageTemplate,
+      backgroundTemplate,
+      entryLevel: body.entryLevel || campSettings.startingLevel || 1
+    });
+
+    if (!validation.valid && validation.errors.length > 0) {
+      return error(`خطا در اعتبارسنجی قوانین کاراکتر: ${validation.errors.join(' | ')}`, 400);
+    }
+
+    // Save or update Master Character
+    let charId = body.characterId;
+    const masterBlob = {
+      id: charId || `char-${Date.now()}-${generateRandomToken(3)}`,
+      ownerId: actor.id,
+      name: body.masterData?.name || computed.characterName || 'شخصیت',
+      race: body.masterData?.race || computed.characterRace || 'آدمی',
+      appearance: body.masterData?.appearance || '',
+      portraitUrl: body.masterData?.portraitUrl || '',
+      backstory: body.masterData?.backstory || { summary: '' },
+      status: 'active'
+    };
+
+    if (charId) {
+      await env.DB.prepare('UPDATE characters SET name = ?, data = ?, updated_at = ? WHERE id = ?')
+        .bind(masterBlob.name, JSON.stringify(masterBlob), now, charId).run();
+    } else {
+      charId = masterBlob.id;
+      await env.DB.prepare(
+        'INSERT INTO characters (id, owner_id, name, class_name, level, data, revision, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?)'
+      ).bind(charId, actor.id, masterBlob.name, computed.className, computed.level, JSON.stringify(masterBlob), now).run();
+    }
+
+    // Save or update participation
+    let partId = body.participationId;
+    const existing = partId
+      ? await env.DB.prepare('SELECT id FROM character_participations WHERE id = ?').bind(partId).first()
+      : null;
+
+    if (existing) {
+      await env.DB.prepare(
+        `UPDATE character_participations SET
+           character_id = ?, status = ?, class_id = ?, class_name = ?, subclass_name = ?, level = ?, xp = ?,
+           ability_scores = ?, current_hp = ?, max_hp = ?, temp_hp = 0, hit_dice = ?, ac_override = ?,
+           speed_override = ?, death_saves = ?, conditions = ?, inventory = ?, weapons = ?, currency = ?,
+           custom_resources = ?, spells_known_prepared = ?, spell_slots = ?, features = ?, notes = ?, dm_notes = ?,
+           build = ?, sheet_locked = ?, updated_at = ?
+         WHERE id = ?`
+      ).bind(
+        charId, computed.status, computed.classId, computed.className, computed.subclassName || null, computed.level, computed.xp,
+        JSON.stringify(computed.abilityScores), computed.currentHp, computed.maxHp, JSON.stringify(computed.hitDice),
+        computed.acOverride, computed.speedOverride, JSON.stringify(computed.deathSaves), JSON.stringify(computed.conditions),
+        JSON.stringify(computed.inventory), JSON.stringify(computed.weapons), JSON.stringify(computed.currency),
+        JSON.stringify(computed.customResources), computed.spellsKnownPrepared ? JSON.stringify(computed.spellsKnownPrepared) : null,
+        computed.spellSlots ? JSON.stringify(computed.spellSlots) : null, JSON.stringify(computed.features),
+        computed.notes, computed.dmNotes, JSON.stringify(computed.build), computed.sheetLocked ? 1 : 0, now, partId
+      ).run();
+    } else {
+      partId = `part-${Date.now()}-${generateRandomToken(3)}`;
+      await env.DB.prepare(
+        `INSERT INTO character_participations
+           (id, character_id, campaign_id, status, class_id, class_name, subclass_name, level, xp,
+            ability_scores, current_hp, max_hp, temp_hp, hit_dice, ac_override, speed_override,
+            death_saves, conditions, inventory, weapons, currency, custom_resources, spells_known_prepared,
+            spell_slots, features, notes, dm_notes, build, sheet_locked, joined_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(
+        partId, charId, campId, computed.status, computed.classId, computed.className, computed.subclassName || null,
+        computed.level, computed.xp, JSON.stringify(computed.abilityScores), computed.currentHp, computed.maxHp,
+        JSON.stringify(computed.hitDice), computed.acOverride, computed.speedOverride, JSON.stringify(computed.deathSaves),
+        JSON.stringify(computed.conditions), JSON.stringify(computed.inventory), JSON.stringify(computed.weapons),
+        JSON.stringify(computed.currency), JSON.stringify(computed.customResources),
+        computed.spellsKnownPrepared ? JSON.stringify(computed.spellsKnownPrepared) : null,
+        computed.spellSlots ? JSON.stringify(computed.spellSlots) : null, JSON.stringify(computed.features),
+        computed.notes, computed.dmNotes, JSON.stringify(computed.build), computed.sheetLocked ? 1 : 0, now, now
+      ).run();
+    }
+
+    // Ensure member record
+    await env.DB.prepare(
+      `INSERT INTO campaign_members (campaign_id, user_id, role, status, joined_at)
+       VALUES (?, ?, 'player', 'active', ?)
+       ON CONFLICT(campaign_id, user_id) DO NOTHING`
+    ).bind(campId, actor.id, now).run();
+
+    // Create history event 'joined'
+    await env.DB.prepare(
+      'INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(
+      `hist-${Date.now()}-${generateRandomToken(3)}`, charId, campId, 'joined',
+      JSON.stringify({
+        title: `پیوستن به کمپین ${camp.name}`,
+        description: `آفرینش کامل شخصیت در سطح ${computed.level} با ویزارد`,
+        level: computed.level
+      }),
+      now
+    ).run();
+
+    // Create initial snapshot
+    const fullPart: CharacterParticipation = {
+      id: partId,
+      characterId: charId,
+      ...computed
+    };
+    const snap = createSnapshot(fullPart, `آفرینش شخصیت (سطح ${computed.level})`, actor.id);
+
+    await env.DB.prepare(
+      `INSERT INTO participation_snapshots (id, participation_id, label, state, build, level, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      snap.id, partId, snap.label, JSON.stringify(snap.state), JSON.stringify(snap.build), snap.level, actor.id, now
+    ).run();
+
+    // Prune snapshots: keep only newest 10!
+    const allSnapsRes = await env.DB.prepare(
+      'SELECT id, created_at FROM participation_snapshots WHERE participation_id = ? ORDER BY created_at DESC'
+    ).bind(partId).all();
+    const snapsList = allSnapsRes.results || [];
+    if (snapsList.length > 10) {
+      const toDelete = snapsList.slice(10).map((s: any) => s.id);
+      for (const dId of toDelete) {
+        await env.DB.prepare('DELETE FROM participation_snapshots WHERE id = ?').bind(dId).run();
+      }
+    }
+
+    await audit('participation-wizard-submit', partId, { campaignId: campId, characterId: charId, status: computed.status });
+    const finalPart = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    return json(mapParticipation(finalPart), 201);
+  }
+
+  // Snapshots: GET /api/c/:id/participations/:pid/snapshots
+  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+\/snapshots$/) && method === 'GET') {
+    const parts = path.split('/');
+    const partId = parts[4];
+    const rows = await env.DB.prepare(
+      'SELECT * FROM participation_snapshots WHERE participation_id = ? ORDER BY created_at DESC LIMIT 10'
+    ).bind(partId).all();
+    const list = (rows.results || []).map((r: any) => ({
+      id: r.id,
+      participationId: r.participation_id,
+      label: r.label,
+      state: parseBlob(r.state, {}),
+      build: parseBlob(r.build, {}),
+      level: r.level,
+      createdBy: r.created_by,
+      createdAt: r.created_at
+    }));
+    return json(list);
+  }
+
+  // Snapshots: POST /api/c/:id/participations/:pid/snapshots
+  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+\/snapshots$/) && method === 'POST') {
+    const parts = path.split('/');
+    const partId = parts[4];
+    const body = await request.json() as any;
+    const label = String(body.label || 'عکس لحظه‌ای').trim();
+
+    const part = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    if (!part) return error('مشارکت یافت نشد.', 404);
+
+    const fullPart: CharacterParticipation = mapParticipation(part) as any;
+    const snap = createSnapshot(fullPart, label, actor.id);
+
+    await env.DB.prepare(
+      `INSERT INTO participation_snapshots (id, participation_id, label, state, build, level, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(snap.id, partId, snap.label, JSON.stringify(snap.state), JSON.stringify(snap.build), snap.level, actor.id, now).run();
+
+    // Retention prune to 10
+    const allSnaps = await env.DB.prepare(
+      'SELECT id, created_at FROM participation_snapshots WHERE participation_id = ? ORDER BY created_at DESC'
+    ).bind(partId).all();
+    const snapsList = allSnaps.results || [];
+    if (snapsList.length > 10) {
+      const toDelete = snapsList.slice(10).map((s: any) => s.id);
+      for (const dId of toDelete) {
+        await env.DB.prepare('DELETE FROM participation_snapshots WHERE id = ?').bind(dId).run();
+      }
+    }
+
+    return json(snap, 201);
+  }
+
+  // Snapshots: POST /api/c/:id/participations/:pid/snapshots/:sid/restore
+  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+\/snapshots\/[^/]+\/restore$/) && method === 'POST') {
+    const parts = path.split('/');
+    const partId = parts[4];
+    const snapId = parts[6];
+
+    const snap = await env.DB.prepare('SELECT * FROM participation_snapshots WHERE id = ? AND participation_id = ?').bind(snapId, partId).first();
+    if (!snap) return error('عکس لحظه‌ای یافت نشد.', 404);
+
+    const state = parseBlob(snap.state, {});
+    const build = parseBlob(snap.build, {});
+
+    await env.DB.prepare(
+      `UPDATE character_participations SET
+         level = ?, ability_scores = ?, current_hp = ?, max_hp = ?, temp_hp = ?,
+         hit_dice = ?, inventory = ?, weapons = ?, currency = ?, custom_resources = ?,
+         spells_known_prepared = ?, spell_slots = ?, features = ?, build = ?, updated_at = ?
+       WHERE id = ?`
+    ).bind(
+      snap.level, JSON.stringify(state.abilityScores || {}), state.currentHp || 10, state.maxHp || 10, state.tempHp || 0,
+      JSON.stringify(state.hitDice || {}), JSON.stringify(state.inventory || []), JSON.stringify(state.weapons || []),
+      JSON.stringify(state.currency || {}), JSON.stringify(state.customResources || []),
+      state.spellsKnownPrepared ? JSON.stringify(state.spellsKnownPrepared) : null,
+      state.spellSlots ? JSON.stringify(state.spellSlots) : null,
+      JSON.stringify(state.features || []), JSON.stringify(build), now, partId
+    ).run();
+
     const updated = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
     return json(mapParticipation(updated));
   }
