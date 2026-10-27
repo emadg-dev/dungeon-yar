@@ -583,7 +583,7 @@ export function computeAuthoritativeParticipation(
   // Spellcasting
   let spellSlots: any = undefined;
   let spellsKnownPrepared: any = undefined;
-  if (classTemplate?.spellcasting?.ability || (classTemplate as any)?.spellcastingStruct) {
+  if (classTemplate && (classTemplate.spellcasting?.ability || (classTemplate as any).spellcastingStruct)) {
     const spellAbility = (classTemplate.spellcasting?.ability || 'int').toLowerCase() as AbilityName;
     const spellMod = abilityModifier(finalAbilities[spellAbility] || 10);
     const { dc, attackBonus } = computeSpellDcAndAttack(spellAbility, spellMod, profBonus);

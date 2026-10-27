@@ -43,6 +43,7 @@ export interface CloneEntityBundle {
   factions: Faction[];
   campaignDocs: CampaignDoc[];
   calendars: GenericCalendarData[];
+  genericCalendars?: GenericCalendarData[];
   ruleSets: RuleSet[];
 }
 
@@ -642,7 +643,7 @@ export function executeClone(
         }
         // Remap starter weapon options
         if (copy.starterWeaponOptions) {
-          copy.starterWeaponOptions = copy.starterWeaponOptions.map(wId => idMap[wId] || wId);
+          copy.starterWeaponOptions = copy.starterWeaponOptions.map((w: any) => (typeof w === 'string' ? (idMap[w] || w) : w));
         }
         created.classTemplates.push(copy);
         break;

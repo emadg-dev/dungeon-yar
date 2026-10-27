@@ -155,13 +155,14 @@ describe('Templates & Editors - Step 3.2 Unit Tests', () => {
       for (const cls of SEED_CLASS_TEMPLATES) {
         // Structured AC formula present
         expect(cls.acFormula).toBeDefined();
-        expect(typeof cls.acFormula?.base).toBe('number');
-        expect(Array.isArray(cls.acFormula?.abilityMods)).toBe(true);
+        const acObj = cls.acFormula as { base?: number; abilityMods?: string[] };
+        expect(typeof acObj?.base).toBe('number');
+        expect(Array.isArray(acObj?.abilityMods)).toBe(true);
 
         // Fixed HP table 1..20
         expect(cls.fixedHpByLevel).toBeDefined();
         expect(Array.isArray(cls.fixedHpByLevel)).toBe(true);
-        expect(cls.fixedHpByLevel?.length).toBe(20);
+        expect((cls.fixedHpByLevel as number[])?.length).toBe(20);
 
         // Starting equipment choice groups
         expect(cls.startingEquipmentChoices).toBeDefined();
@@ -274,7 +275,7 @@ describe('Templates & Editors - Step 3.2 Unit Tests', () => {
       size: 'Medium',
       speed: 30,
       abilityBonuses: { mode: 'choose', chooseCount: 1, chooseValue: 2 },
-      traits: [{ name: 'دید در شب' }],
+      traits: [{ name: 'دید در شب', description: 'دید در تاریکی تا ۱۸ متر' }],
       languages: ['مشترک'],
       proficiencies: { skills: ['stealth'], weapons: [], armor: [], tools: [] },
       tags: ['test'],
@@ -287,6 +288,7 @@ describe('Templates & Editors - Step 3.2 Unit Tests', () => {
       scopeType: 'pack',
       scopeId: 'pack_src',
       name: 'پیشینه نمونه',
+      description: 'توضیحات پیشینه آزمایشی',
       skillProficiencies: ['insight'],
       toolProficiencies: [],
       languages: ['مشترک'],
@@ -312,6 +314,7 @@ describe('Templates & Editors - Step 3.2 Unit Tests', () => {
       rewards: [],
       factions: [],
       campaignDocs: [],
+      calendars: [],
       genericCalendars: [],
       ruleSets: []
     };
@@ -329,6 +332,7 @@ describe('Templates & Editors - Step 3.2 Unit Tests', () => {
       rewards: [],
       factions: [],
       campaignDocs: [],
+      calendars: [],
       genericCalendars: [],
       ruleSets: []
     };

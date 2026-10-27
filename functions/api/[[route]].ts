@@ -6,6 +6,7 @@
 
 import { computeAuthoritativeParticipation, createSnapshot, pruneSnapshots } from '../../shared/rules/wizardEngine';
 import { rollAbilityScores } from '../../shared/rules/engine';
+import type { CharacterParticipation } from '../../src/types';
 
 interface Env {
   DB: any; // Cloudflare D1Database binding
