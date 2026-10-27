@@ -1,17 +1,22 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "dungeon-yar",
-  "pages_build_output_dir": "./dist",
-  "compatibility_date": "2026-10-26",
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "zorvania-db",
-      "database_id": "21052cdb-8e75-4e00-8bba-bd8198e5e756"
-    }
-  ],
-  "vars": {
-    "REGISTRATION_MODE": "invite",
-    "DM_EMAILS": "emadghosi.pw@gmail.com"
-  }
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "dungeon-yar",
+	"pages_build_output_dir": "./dist",
+	"compatibility_date": "2026-10-26",
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "zorvania-db",
+			"database_id": "6ef19069-f388-4565-9adf-e5d300f739cb"
+		},
+		{
+			"binding": "zorvania_db",
+			"database_name": "zorvania-db",
+			"database_id": "6ef19069-f388-4565-9adf-e5d300f739cb"
+		}
+	],
+	"vars": {
+		"REGISTRATION_MODE": "invite",
+		"DM_EMAILS": "emadghosi.pw@gmail.com"
+	}
 }

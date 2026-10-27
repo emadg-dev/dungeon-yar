@@ -445,6 +445,11 @@ CREATE TABLE IF NOT EXISTS calendars (
   months TEXT NOT NULL,
   off_days TEXT NOT NULL,
   data TEXT NOT NULL,
+  tags TEXT DEFAULT '[]',
+  copied_at INTEGER,
+  era_label TEXT DEFAULT 'پ.ر.ن',
+  start_year INTEGER DEFAULT 1500,
+  weekdays TEXT DEFAULT '["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنج‌شنبه","جمعه"]',
   updated_at INTEGER NOT NULL
 );
 

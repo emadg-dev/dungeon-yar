@@ -88,7 +88,7 @@ export const CANON_CLASS_TEMPLATES: ClassTemplate[] = [
         name: 'انرژی سازه همراه',
         description: 'جان و وضعیت سازه سنگی همراه دیوانزاد (AC 15).',
         resetType: 'long',
-        maxUsesFormula: '2×level + 2×con'
+        formulaOrDiceByLevel: '2×level + 2×con'
       }
     ],
     startingFeatures: [
@@ -175,7 +175,7 @@ export const CANON_CLASS_TEMPLATES: ClassTemplate[] = [
         name: 'خستگی واقعیت',
         description: 'تعداد دفعات اعمال انحراف زمانی بر اهداف (INT mod + 1 در هر استراحت کامل).',
         resetType: 'long',
-        maxUsesFormula: 'INT + 1'
+        formulaOrDiceByLevel: 'INT + 1'
       }
     ],
     startingFeatures: [
@@ -279,7 +279,7 @@ export const CANON_CLASS_TEMPLATES: ClassTemplate[] = [
         name: 'جان همراه جنگل',
         description: 'وضعیت سلامت همراه بیشه باستانی مانا.',
         resetType: 'long',
-        maxUsesFormula: '3×level + WIS'
+        formulaOrDiceByLevel: '3×level + WIS'
       }
     ],
     startingFeatures: [
@@ -405,11 +405,7 @@ export const CANON_CLASS_TEMPLATES: ClassTemplate[] = [
         name: 'ضربت ایزدی (Divine Smite)',
         description: 'فورانی از نور جامد فره هنگام حمله (۱ بار در هر استراحت کوتاه از سطح ۲؛ صدمه 2d8 تا 6d8).',
         resetType: 'short',
-        maxUsesByLevel: {
-          1: 0, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1,
-          11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1
-        },
-        diceByLevel: {
+        formulaOrDiceByLevel: {
           2: '2d8', 3: '2d8', 4: '2d8',
           5: '3d8', 6: '3d8', 7: '3d8', 8: '3d8',
           9: '4d8', 10: '4d8', 11: '4d8', 12: '4d8',
@@ -522,8 +518,8 @@ export const CANON_CLASS_TEMPLATES: ClassTemplate[] = [
         name: 'شعله‌های حافظه',
         description: 'تعداد دفعات افروختن زغال سرد برای احضار تصاویر گذشته.',
         resetType: 'short',
-        maxUsesByLevel: {
-          1: 2, 2: 2, 3: 3, 4: 3, 5: 4
+        formulaOrDiceByLevel: {
+          1: '2', 2: '2', 3: '3', 4: '3', 5: '4'
         }
       }
     ],
@@ -651,14 +647,14 @@ export const CANON_CLASS_TEMPLATES: ClassTemplate[] = [
         name: 'امتیاز لحظه (Moment Points)',
         description: 'معادل سطح کاراکتر در هر استراحت کوتاه یا بلند.',
         resetType: 'short',
-        maxUsesFormula: 'level'
+        formulaOrDiceByLevel: 'level'
       },
       {
         id: 'res-martial-arts-die',
         name: 'تاس هنرهای رزمی',
         description: 'مقدار تاس صدمه ضربات بدون سلاح و تکنیک‌های مه‌آشنا.',
         resetType: 'none',
-        diceByLevel: {
+        formulaOrDiceByLevel: {
           1: '1d4', 2: '1d4', 3: '1d4', 4: '1d4',
           5: '1d6', 6: '1d6', 7: '1d6', 8: '1d6', 9: '1d6', 10: '1d6',
           11: '1d8', 12: '1d8', 13: '1d8', 14: '1d8', 15: '1d8', 16: '1d8',

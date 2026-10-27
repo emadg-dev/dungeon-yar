@@ -22,7 +22,9 @@ import {
   CampaignDiceRoll,
   Faction,
   CampaignDoc,
-  GenericCalendarData
+  GenericCalendarData,
+  LineageTemplate,
+  BackgroundTemplate
 } from '../types';
 
 export const DEFAULT_5E_SKILLS: SkillDefinition[] = [

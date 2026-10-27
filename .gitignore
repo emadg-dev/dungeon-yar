@@ -6,3 +6,14 @@ coverage/
 *.log
 .env*
 !.env.example
+tmp/remote-backup.sql
+# Generated seed artifacts (build from src/data/seed.ts via seed-http.mjs)
+tmp/seed-http.sql
+tmp/seed-http-ign.sql
+tmp/seed-combined.sql
+tmp/seed-combined-v2.sql
+tmp/seed-bundle.mjs
+# Deployment helper (keep seed-http.mjs and schema.sql tracked separately)
+.deploy.bat
+# Throwaway audit scaffolding from this session's verification
+audit-*.mjs

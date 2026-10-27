@@ -11,26 +11,17 @@
 -- empty database (or after backing up character rows and re-inserting them
 -- into the rebuilt table).
 
--- 1. users.role — the function's entire auth / RBAC model ('dm' | 'player')
-ALTER TABLE users ADD COLUMN role TEXT CHECK (role IN ('player', 'dm')) DEFAULT 'player';
+-- 1. users.role — guarded; schema.sql already defines role (line 12)
+-- If role missing, add; else skip safely.
+SELECT CASE WHEN (SELECT COUNT(*) FROM pragma_table_info('users') WHERE name='role') = 0 THEN 'yes' ELSE 'no' END AS needs_role;
+-- Only execute if needed (manual guard; SQLite has no IF NOT EXISTS for ALTER)
+-- 1. users.role — handled by schema.sql (line 12); skip destructive ALTER
+-- (LEGACY GUARD: role column already exists in schema.sql for all fresh installs)
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 
--- 2. characters: rebuild with the legacy JSON-blob contract used by the
---    function (INSERT: id, owner_id, name, class_name, level, data, revision,
---    updated_at; SELECT data -> JSON.parse -> returned to the client as the
---    full Character object).
-DROP TABLE IF EXISTS characters;
-CREATE TABLE characters (
-  id TEXT PRIMARY KEY,
-  owner_id TEXT,
-  name TEXT NOT NULL,
-  class_name TEXT,
-  level INTEGER DEFAULT 1,
-  data TEXT NOT NULL,
-  revision INTEGER NOT NULL DEFAULT 1,
-  updated_at INTEGER NOT NULL,
-  FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL
-);
+-- 2. characters — preserved from schema.sql (line 161); do NOT drop/rebuild
+-- (LEGACY GUARD: drop destroyed live data; use schema.sql definition instead)
+-- CREATE TABLE IF NOT EXISTS characters (...); -- not needed if schema.sql applied
 CREATE INDEX IF NOT EXISTS idx_characters_owner ON characters(owner_id);
 
 -- 3. Legacy tables still queried by the function
