@@ -3849,6 +3849,50 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         itemsList.push({ ...r, itemType: 'faction', name: r.name, tags: JSON.parse(r.tags || '[]') });
       }
     }
+    if (!type || type === 'class_template') {
+      const rows = await env.DB.prepare('SELECT * FROM class_templates WHERE scope_type = ? AND scope_id = ?').bind(scopeType, scopeId).all();
+      for (const r of (rows.results || [])) {
+        let parsed = {};
+        try { parsed = JSON.parse(r.data); } catch {}
+        itemsList.push({ ...parsed, ...r, itemType: 'class_template', name: r.name, tags: JSON.parse(r.tags || '[]') });
+      }
+    }
+    if (!type || type === 'lineage_template') {
+      const rows = await env.DB.prepare('SELECT * FROM lineage_templates WHERE scope_type = ? AND scope_id = ?').bind(scopeType, scopeId).all();
+      for (const r of (rows.results || [])) {
+        itemsList.push({
+          ...r,
+          itemType: 'lineage_template',
+          name: r.name,
+          tags: JSON.parse(r.tags || '[]'),
+          abilityBonuses: JSON.parse(r.ability_bonuses || '{}'),
+          traits: JSON.parse(r.traits || '[]'),
+          languages: JSON.parse(r.languages || '[]'),
+          proficiencies: JSON.parse(r.proficiencies || '{}'),
+          resistances: JSON.parse(r.resistances || '[]'),
+          senses: JSON.parse(r.senses || '{}'),
+          sublineages: JSON.parse(r.sublineages || '[]'),
+          nameSuggestions: JSON.parse(r.name_suggestions || '[]'),
+          backstoryPrompts: JSON.parse(r.backstory_prompts || '[]')
+        });
+      }
+    }
+    if (!type || type === 'background_template') {
+      const rows = await env.DB.prepare('SELECT * FROM background_templates WHERE scope_type = ? AND scope_id = ?').bind(scopeType, scopeId).all();
+      for (const r of (rows.results || [])) {
+        itemsList.push({
+          ...r,
+          itemType: 'background_template',
+          name: r.name,
+          tags: JSON.parse(r.tags || '[]'),
+          skillProficiencies: JSON.parse(r.skill_proficiencies || '[]'),
+          toolProficiencies: JSON.parse(r.tool_proficiencies || '[]'),
+          languages: JSON.parse(r.languages || '[]'),
+          startingEquipment: JSON.parse(r.starting_equipment || '[]'),
+          personalityTables: JSON.parse(r.personality_tables || '{}')
+        });
+      }
+    }
 
     let filtered = itemsList;
     if (q) {
@@ -4064,6 +4108,235 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       offDays: JSON.parse(row.off_days || '[]'),
       weekdays: JSON.parse(row.weekdays || '[]')
     });
+  }
+
+  // ---------------------------------------------------------
+  // Class Templates REST
+  // ---------------------------------------------------------
+  if (path === '/class-templates' && method === 'GET') {
+    const scopeType = url.searchParams.get('scopeType') || 'campaign';
+    const scopeId = url.searchParams.get('scopeId') || 'zorvania-c1';
+    const rows = await env.DB.prepare('SELECT * FROM class_templates WHERE scope_type = ? AND scope_id = ?').bind(scopeType, scopeId).all();
+    const list = (rows.results || []).map((r: any) => {
+      let parsed = {};
+      try { parsed = JSON.parse(r.data); } catch {}
+      return { ...parsed, ...r, tags: JSON.parse(r.tags || '[]') };
+    });
+    return json(list);
+  }
+
+  if (path === '/class-templates' && method === 'POST') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const data = await request.json() as any;
+    const id = data.id || `class-${Date.now()}`;
+    const t = Date.now();
+    await env.DB.prepare(
+      `INSERT INTO class_templates (id, scope_type, scope_id, name, data, tags, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    ).bind(id, data.scopeType || 'campaign', data.scopeId || 'zorvania-c1', data.name, JSON.stringify(data), JSON.stringify(data.tags || []), t).run();
+    return json({ ...data, id, updatedAt: t }, 201);
+  }
+
+  if (path.startsWith('/class-templates/') && (method === 'PUT' || method === 'PATCH')) {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const id = path.split('/')[2];
+    const data = await request.json() as any;
+    const t = Date.now();
+    await env.DB.prepare(
+      'UPDATE class_templates SET name = ?, data = ?, tags = ?, updated_at = ? WHERE id = ?'
+    ).bind(data.name, JSON.stringify(data), JSON.stringify(data.tags || []), t, id).run();
+    return json({ ...data, id, updatedAt: t });
+  }
+
+  if (path.startsWith('/class-templates/') && method === 'DELETE') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const id = path.split('/')[2];
+    await env.DB.prepare('DELETE FROM class_templates WHERE id = ?').bind(id).run();
+    return json({ success: true });
+  }
+
+  // ---------------------------------------------------------
+  // Lineage Templates REST
+  // ---------------------------------------------------------
+  if (path === '/lineage-templates' && method === 'GET') {
+    const scopeType = url.searchParams.get('scopeType') || 'campaign';
+    const scopeId = url.searchParams.get('scopeId') || 'zorvania-c1';
+    const rows = await env.DB.prepare('SELECT * FROM lineage_templates WHERE scope_type = ? AND scope_id = ?').bind(scopeType, scopeId).all();
+    const list = (rows.results || []).map((r: any) => ({
+      ...r,
+      tags: JSON.parse(r.tags || '[]'),
+      abilityBonuses: JSON.parse(r.ability_bonuses || '{}'),
+      traits: JSON.parse(r.traits || '[]'),
+      languages: JSON.parse(r.languages || '[]'),
+      proficiencies: JSON.parse(r.proficiencies || '{}'),
+      resistances: JSON.parse(r.resistances || '[]'),
+      senses: JSON.parse(r.senses || '{}'),
+      sublineages: JSON.parse(r.sublineages || '[]'),
+      nameSuggestions: JSON.parse(r.name_suggestions || '[]'),
+      backstoryPrompts: JSON.parse(r.backstory_prompts || '[]')
+    }));
+    return json(list);
+  }
+
+  if (path.startsWith('/lineage-templates/') && method === 'GET') {
+    const id = path.split('/')[2];
+    const r = await env.DB.prepare('SELECT * FROM lineage_templates WHERE id = ?').bind(id).first();
+    if (!r) return error('نژاد یافت نشد.', 404);
+    return json({
+      ...r,
+      tags: JSON.parse(r.tags || '[]'),
+      abilityBonuses: JSON.parse(r.ability_bonuses || '{}'),
+      traits: JSON.parse(r.traits || '[]'),
+      languages: JSON.parse(r.languages || '[]'),
+      proficiencies: JSON.parse(r.proficiencies || '{}'),
+      resistances: JSON.parse(r.resistances || '[]'),
+      senses: JSON.parse(r.senses || '{}'),
+      sublineages: JSON.parse(r.sublineages || '[]'),
+      nameSuggestions: JSON.parse(r.name_suggestions || '[]'),
+      backstoryPrompts: JSON.parse(r.backstory_prompts || '[]')
+    });
+  }
+
+  if (path === '/lineage-templates' && method === 'POST') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const data = await request.json() as any;
+    const id = data.id || `lin-${Date.now()}-${generateRandomToken(4)}`;
+    const t = Date.now();
+    await env.DB.prepare(
+      `INSERT INTO lineage_templates (
+        id, scope_type, scope_id, source_id, source_mode, tags, name, description,
+        size, speed, ability_bonuses, traits, languages, proficiencies, resistances,
+        senses, sublineages, name_suggestions, backstory_prompts, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      id, data.scopeType || 'campaign', data.scopeId || 'zorvania-c1', data.sourceId || null,
+      data.sourceMode || 'copy', JSON.stringify(data.tags || []), data.name, data.description || '',
+      data.size || 'متوسط (Medium)', data.speed || 30, JSON.stringify(data.abilityBonuses || {}),
+      JSON.stringify(data.traits || []), JSON.stringify(data.languages || []),
+      JSON.stringify(data.proficiencies || {}), JSON.stringify(data.resistances || []),
+      JSON.stringify(data.senses || {}), JSON.stringify(data.sublineages || []),
+      JSON.stringify(data.nameSuggestions || []), JSON.stringify(data.backstoryPrompts || []),
+      t, t
+    ).run();
+    return json({ ...data, id, createdAt: t, updatedAt: t }, 201);
+  }
+
+  if (path.startsWith('/lineage-templates/') && (method === 'PUT' || method === 'PATCH')) {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const id = path.split('/')[2];
+    const data = await request.json() as any;
+    const t = Date.now();
+    await env.DB.prepare(
+      `UPDATE lineage_templates SET
+        name = ?, description = ?, size = ?, speed = ?, ability_bonuses = ?,
+        traits = ?, languages = ?, proficiencies = ?, resistances = ?, senses = ?,
+        sublineages = ?, name_suggestions = ?, backstory_prompts = ?, tags = ?, updated_at = ?
+       WHERE id = ?`
+    ).bind(
+      data.name, data.description || '', data.size || 'متوسط (Medium)', data.speed || 30,
+      JSON.stringify(data.abilityBonuses || {}), JSON.stringify(data.traits || []),
+      JSON.stringify(data.languages || []), JSON.stringify(data.proficiencies || {}),
+      JSON.stringify(data.resistances || []), JSON.stringify(data.senses || {}),
+      JSON.stringify(data.sublineages || []), JSON.stringify(data.nameSuggestions || []),
+      JSON.stringify(data.backstoryPrompts || []), JSON.stringify(data.tags || []),
+      t, id
+    ).run();
+    return json({ ...data, id, updatedAt: t });
+  }
+
+  if (path.startsWith('/lineage-templates/') && method === 'DELETE') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const id = path.split('/')[2];
+    await env.DB.prepare('DELETE FROM lineage_templates WHERE id = ?').bind(id).run();
+    return json({ success: true });
+  }
+
+  // ---------------------------------------------------------
+  // Background Templates REST
+  // ---------------------------------------------------------
+  if (path === '/background-templates' && method === 'GET') {
+    const scopeType = url.searchParams.get('scopeType') || 'campaign';
+    const scopeId = url.searchParams.get('scopeId') || 'zorvania-c1';
+    const rows = await env.DB.prepare('SELECT * FROM background_templates WHERE scope_type = ? AND scope_id = ?').bind(scopeType, scopeId).all();
+    const list = (rows.results || []).map((r: any) => ({
+      ...r,
+      tags: JSON.parse(r.tags || '[]'),
+      skillProficiencies: JSON.parse(r.skill_proficiencies || '[]'),
+      toolProficiencies: JSON.parse(r.tool_proficiencies || '[]'),
+      languages: JSON.parse(r.languages || '[]'),
+      startingEquipment: JSON.parse(r.starting_equipment || '[]'),
+      featureName: r.feature_name,
+      featureDescription: r.feature_description,
+      personalityTables: JSON.parse(r.personality_tables || '{}')
+    }));
+    return json(list);
+  }
+
+  if (path.startsWith('/background-templates/') && method === 'GET') {
+    const id = path.split('/')[2];
+    const r = await env.DB.prepare('SELECT * FROM background_templates WHERE id = ?').bind(id).first();
+    if (!r) return error('پیشینه یافت نشد.', 404);
+    return json({
+      ...r,
+      tags: JSON.parse(r.tags || '[]'),
+      skillProficiencies: JSON.parse(r.skill_proficiencies || '[]'),
+      toolProficiencies: JSON.parse(r.tool_proficiencies || '[]'),
+      languages: JSON.parse(r.languages || '[]'),
+      startingEquipment: JSON.parse(r.starting_equipment || '[]'),
+      featureName: r.feature_name,
+      featureDescription: r.feature_description,
+      personalityTables: JSON.parse(r.personality_tables || '{}')
+    });
+  }
+
+  if (path === '/background-templates' && method === 'POST') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const data = await request.json() as any;
+    const id = data.id || `bg-${Date.now()}-${generateRandomToken(4)}`;
+    const t = Date.now();
+    await env.DB.prepare(
+      `INSERT INTO background_templates (
+        id, scope_type, scope_id, source_id, source_mode, tags, name, description,
+        skill_proficiencies, tool_proficiencies, languages, starting_equipment,
+        feature_name, feature_description, personality_tables, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      id, data.scopeType || 'campaign', data.scopeId || 'zorvania-c1', data.sourceId || null,
+      data.sourceMode || 'copy', JSON.stringify(data.tags || []), data.name, data.description || '',
+      JSON.stringify(data.skillProficiencies || []), JSON.stringify(data.toolProficiencies || []),
+      JSON.stringify(data.languages || []), JSON.stringify(data.startingEquipment || []),
+      data.featureName || '', data.featureDescription || '',
+      JSON.stringify(data.personalityTables || {}), t, t
+    ).run();
+    return json({ ...data, id, createdAt: t, updatedAt: t }, 201);
+  }
+
+  if (path.startsWith('/background-templates/') && (method === 'PUT' || method === 'PATCH')) {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const id = path.split('/')[2];
+    const data = await request.json() as any;
+    const t = Date.now();
+    await env.DB.prepare(
+      `UPDATE background_templates SET
+        name = ?, description = ?, skill_proficiencies = ?, tool_proficiencies = ?,
+        languages = ?, starting_equipment = ?, feature_name = ?, feature_description = ?,
+        personality_tables = ?, tags = ?, updated_at = ?
+       WHERE id = ?`
+    ).bind(
+      data.name, data.description || '', JSON.stringify(data.skillProficiencies || []),
+      JSON.stringify(data.toolProficiencies || []), JSON.stringify(data.languages || []),
+      JSON.stringify(data.startingEquipment || []), data.featureName || '',
+      data.featureDescription || '', JSON.stringify(data.personalityTables || {}),
+      JSON.stringify(data.tags || []), t, id
+    ).run();
+    return json({ ...data, id, updatedAt: t });
+  }
+
+  if (path.startsWith('/background-templates/') && method === 'DELETE') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const id = path.split('/')[2];
+    await env.DB.prepare('DELETE FROM background_templates WHERE id = ?').bind(id).run();
+    return json({ success: true });
   }
 
   // 404 Fallback

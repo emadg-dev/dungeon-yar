@@ -18,6 +18,8 @@ import {
   LocationEntry,
   Encounter,
   ClassTemplate,
+  LineageTemplate,
+  BackgroundTemplate,
   FeatureTemplate,
   WeaponTemplate,
   RewardPackage,
@@ -29,6 +31,8 @@ import {
 
 export interface CloneEntityBundle {
   classTemplates: ClassTemplate[];
+  lineageTemplates: LineageTemplate[];
+  backgroundTemplates: BackgroundTemplate[];
   featureTemplates: FeatureTemplate[];
   weaponTemplates: WeaponTemplate[];
   items: ItemLibraryEntry[];
@@ -300,6 +304,12 @@ export function checkNameConflict(
     case 'class_template':
       existing = targetBundle.classTemplates.find(c => c.name === name);
       break;
+    case 'lineage_template':
+      existing = targetBundle.lineageTemplates?.find(l => l.name === name);
+      break;
+    case 'background_template':
+      existing = targetBundle.backgroundTemplates?.find(b => b.name === name);
+      break;
     case 'feature_template':
       existing = targetBundle.featureTemplates.find(f => f.name === name);
       break;
@@ -354,6 +364,8 @@ export function previewClone(
     // Bring all entities from source scope
     initialRefs = [
       ...sourceBundle.classTemplates.map(c => ({ type: 'class_template' as const, id: c.id })),
+      ...(sourceBundle.lineageTemplates || []).map(l => ({ type: 'lineage_template' as const, id: l.id })),
+      ...(sourceBundle.backgroundTemplates || []).map(b => ({ type: 'background_template' as const, id: b.id })),
       ...sourceBundle.featureTemplates.map(f => ({ type: 'feature_template' as const, id: f.id })),
       ...sourceBundle.weaponTemplates.map(w => ({ type: 'weapon_template' as const, id: w.id })),
       ...sourceBundle.items.map(i => ({ type: 'item' as const, id: i.id })),
@@ -389,6 +401,12 @@ export function previewClone(
     switch (ref.type) {
       case 'class_template':
         name = sourceBundle.classTemplates.find(c => c.id === ref.id)?.name || 'کلاس';
+        break;
+      case 'lineage_template':
+        name = sourceBundle.lineageTemplates?.find(l => l.id === ref.id)?.name || 'نژاد';
+        break;
+      case 'background_template':
+        name = sourceBundle.backgroundTemplates?.find(b => b.id === ref.id)?.name || 'پیشینه';
         break;
       case 'feature_template':
         name = sourceBundle.featureTemplates.find(f => f.id === ref.id)?.name || 'قابلیت';
@@ -501,6 +519,8 @@ export function executeClone(
 
   const created: CloneEntityBundle = {
     classTemplates: [],
+    lineageTemplates: [],
+    backgroundTemplates: [],
     featureTemplates: [],
     weaponTemplates: [],
     items: [],
@@ -622,6 +642,36 @@ export function executeClone(
           copy.starterWeaponOptions = copy.starterWeaponOptions.map(wId => idMap[wId] || wId);
         }
         created.classTemplates.push(copy);
+        break;
+      }
+
+      case 'lineage_template': {
+        const orig = sourceBundle.lineageTemplates?.find(l => l.id === item.originalId);
+        if (!orig) break;
+        const copy: LineageTemplate = transformEntity('lineage_template', orig, options, entityOverride);
+        copy.id = newId;
+        copy.scopeType = request.target.scopeType;
+        copy.scopeId = request.target.scopeId;
+        copy.sourceId = keepLink ? orig.id : null;
+        copy.sourceMode = keepLink ? 'linked' : 'copy';
+        copy.copiedAt = keepLink ? now : null;
+        if (item.action === 'rename') copy.name = `${copy.name} (کپی)`;
+        created.lineageTemplates.push(copy);
+        break;
+      }
+
+      case 'background_template': {
+        const orig = sourceBundle.backgroundTemplates?.find(b => b.id === item.originalId);
+        if (!orig) break;
+        const copy: BackgroundTemplate = transformEntity('background_template', orig, options, entityOverride);
+        copy.id = newId;
+        copy.scopeType = request.target.scopeType;
+        copy.scopeId = request.target.scopeId;
+        copy.sourceId = keepLink ? orig.id : null;
+        copy.sourceMode = keepLink ? 'linked' : 'copy';
+        copy.copiedAt = keepLink ? now : null;
+        if (item.action === 'rename') copy.name = `${copy.name} (کپی)`;
+        created.backgroundTemplates.push(copy);
         break;
       }
 
@@ -766,6 +816,8 @@ export function executeClone(
   manifest.idMap = idMap;
   manifest.createdIds = {
     classTemplates: created.classTemplates.map(c => c.id),
+    lineageTemplates: created.lineageTemplates.map(l => l.id),
+    backgroundTemplates: created.backgroundTemplates.map(b => b.id),
     featureTemplates: created.featureTemplates.map(f => f.id),
     weaponTemplates: created.weaponTemplates.map(w => w.id),
     items: created.items.map(i => i.id),

@@ -247,7 +247,59 @@ CREATE TABLE IF NOT EXISTS dice_rolls (
 CREATE INDEX IF NOT EXISTS idx_dice_rolls_campaign ON dice_rolls(campaign_id, created_at DESC);
 
 -- 13. Scoped Content Entities (scope_type IN ('pack', 'campaign'))
--- Class Templates
+-- Lineage Templates (نژادها و تبارها)
+CREATE TABLE IF NOT EXISTS lineage_templates (
+  id TEXT PRIMARY KEY,
+  scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
+  source_id TEXT,
+  source_mode TEXT CHECK (source_mode IN ('copy', 'linked')) DEFAULT 'copy',
+  tags TEXT NOT NULL DEFAULT '[]',
+  name TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  size TEXT NOT NULL DEFAULT 'متوسط (Medium)',
+  speed INTEGER NOT NULL DEFAULT 30,
+  ability_bonuses TEXT NOT NULL DEFAULT '{"mode":"fixed","fixed":{},"chooseCount":0,"chooseValue":1}',
+  traits TEXT NOT NULL DEFAULT '[]',
+  languages TEXT NOT NULL DEFAULT '["مشترک"]',
+  proficiencies TEXT NOT NULL DEFAULT '{"skills":[],"weapons":[],"armor":[],"tools":[]}',
+  resistances TEXT NOT NULL DEFAULT '[]',
+  senses TEXT NOT NULL DEFAULT '{"darkvision":0}',
+  sublineages TEXT NOT NULL DEFAULT '[]',
+  name_suggestions TEXT NOT NULL DEFAULT '[]',
+  backstory_prompts TEXT NOT NULL DEFAULT '[]',
+  copied_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_lineage_templates_scope ON lineage_templates(scope_type, scope_id, updated_at);
+
+-- Background Templates (پیشینه‌ها)
+CREATE TABLE IF NOT EXISTS background_templates (
+  id TEXT PRIMARY KEY,
+  scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
+  source_id TEXT,
+  source_mode TEXT CHECK (source_mode IN ('copy', 'linked')) DEFAULT 'copy',
+  tags TEXT NOT NULL DEFAULT '[]',
+  name TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  skill_proficiencies TEXT NOT NULL DEFAULT '[]',
+  tool_proficiencies TEXT NOT NULL DEFAULT '[]',
+  languages TEXT NOT NULL DEFAULT '[]',
+  starting_equipment TEXT NOT NULL DEFAULT '[]',
+  feature_name TEXT NOT NULL DEFAULT '',
+  feature_description TEXT NOT NULL DEFAULT '',
+  personality_tables TEXT NOT NULL DEFAULT '{"traits":[],"ideals":[],"bonds":[],"flaws":[]}',
+  copied_at INTEGER,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_background_templates_scope ON background_templates(scope_type, scope_id, updated_at);
+
+-- Class Templates (کلاس‌ها)
 CREATE TABLE IF NOT EXISTS class_templates (
   id TEXT PRIMARY KEY,
   scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
@@ -257,10 +309,24 @@ CREATE TABLE IF NOT EXISTS class_templates (
   created_by TEXT,
   name TEXT NOT NULL,
   data TEXT NOT NULL,
+  tags TEXT DEFAULT '[]',
+  copied_at INTEGER,
+  starting_equipment_choices TEXT DEFAULT '[]',
+  starter_weapon_options TEXT DEFAULT '[]',
+  ac_formula_struct TEXT,
+  spellcasting_struct TEXT,
+  extra_attack_level INTEGER,
+  asi_levels TEXT DEFAULT '[4,8,12,16,19]',
+  fixed_hp_by_level TEXT DEFAULT '[]',
+  base_abilities_struct TEXT,
+  features_by_level TEXT DEFAULT '{}',
+  subclasses_struct TEXT DEFAULT '[]',
+  class_resources_struct TEXT DEFAULT '[]',
+  companions_struct TEXT DEFAULT '[]',
   updated_at INTEGER NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_class_templates_scope ON class_templates(scope_type, scope_id);
+CREATE INDEX IF NOT EXISTS idx_class_templates_scope ON class_templates(scope_type, scope_id, updated_at);
 
 -- Feature Templates
 CREATE TABLE IF NOT EXISTS feature_templates (

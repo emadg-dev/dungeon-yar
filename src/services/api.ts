@@ -10,6 +10,8 @@ import {
   WeaponTemplate,
   FeatureTemplate,
   ClassTemplate,
+  LineageTemplate,
+  BackgroundTemplate,
   RewardPackage,
   CampaignNote,
   Encounter,
@@ -66,6 +68,8 @@ import {
   SEED_ITEM_LIBRARY,
   SEED_WEAPON_TEMPLATES,
   SEED_CLASS_TEMPLATES,
+  SEED_LINEAGE_TEMPLATES,
+  SEED_BACKGROUND_TEMPLATES,
   SEED_REWARD_PACKAGES,
   SEED_CAMPAIGN_NOTES,
   SEED_ENCOUNTERS,
@@ -381,10 +385,23 @@ export interface ApiClient {
   updateWeaponTemplate(tmpl: WeaponTemplate): Promise<WeaponTemplate>;
   deleteWeaponTemplate(id: string): Promise<void>;
 
-  listClassTemplates(): Promise<ClassTemplate[]>;
+  listClassTemplates(scopeType?: string, scopeId?: string): Promise<ClassTemplate[]>;
+  getClassTemplate(id: string): Promise<ClassTemplate | null>;
   createClassTemplate(tmpl: Omit<ClassTemplate, 'id' | 'updatedAt'>): Promise<ClassTemplate>;
   updateClassTemplate(tmpl: ClassTemplate): Promise<ClassTemplate>;
   deleteClassTemplate(id: string): Promise<void>;
+
+  listLineageTemplates(scopeType?: string, scopeId?: string): Promise<LineageTemplate[]>;
+  getLineageTemplate(id: string): Promise<LineageTemplate | null>;
+  createLineageTemplate(tmpl: Omit<LineageTemplate, 'id' | 'createdAt' | 'updatedAt'>): Promise<LineageTemplate>;
+  updateLineageTemplate(tmpl: LineageTemplate): Promise<LineageTemplate>;
+  deleteLineageTemplate(id: string): Promise<void>;
+
+  listBackgroundTemplates(scopeType?: string, scopeId?: string): Promise<BackgroundTemplate[]>;
+  getBackgroundTemplate(id: string): Promise<BackgroundTemplate | null>;
+  createBackgroundTemplate(tmpl: Omit<BackgroundTemplate, 'id' | 'createdAt' | 'updatedAt'>): Promise<BackgroundTemplate>;
+  updateBackgroundTemplate(tmpl: BackgroundTemplate): Promise<BackgroundTemplate>;
+  deleteBackgroundTemplate(id: string): Promise<void>;
 
   // Rewards
   listRewards(): Promise<RewardPackage[]>;
@@ -1460,8 +1477,17 @@ export class LocalApi implements ApiClient {
     this.setItem('weapon_templates', all.filter(w => w.id !== id));
   }
 
-  async listClassTemplates(): Promise<ClassTemplate[]> {
-    return this.getItem<ClassTemplate[]>('class_templates', SEED_CLASS_TEMPLATES);
+  async listClassTemplates(scopeType?: string, scopeId?: string): Promise<ClassTemplate[]> {
+    const all = this.getItem<ClassTemplate[]>('class_templates', SEED_CLASS_TEMPLATES);
+    if (scopeType && scopeId) {
+      return all.filter(c => (c.scopeType || 'pack') === scopeType && (c.scopeId || 'pack-zorvania') === scopeId);
+    }
+    return all;
+  }
+
+  async getClassTemplate(id: string): Promise<ClassTemplate | null> {
+    const all = this.getItem<ClassTemplate[]>('class_templates', SEED_CLASS_TEMPLATES);
+    return all.find(c => c.id === id) || null;
   }
 
   async createClassTemplate(tmplData: Omit<ClassTemplate, 'id' | 'updatedAt'>): Promise<ClassTemplate> {
@@ -1470,6 +1496,7 @@ export class LocalApi implements ApiClient {
     const newClass: ClassTemplate = {
       ...tmplData,
       id: `class-${Date.now()}`,
+      createdAt: Date.now(),
       updatedAt: new Date().toISOString()
     };
     all.push(newClass);
@@ -1491,6 +1518,98 @@ export class LocalApi implements ApiClient {
     if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
     const all = this.getItem<ClassTemplate[]>('class_templates', SEED_CLASS_TEMPLATES);
     this.setItem('class_templates', all.filter(c => c.id !== id));
+  }
+
+  // --- Lineage Templates ---
+  async listLineageTemplates(scopeType?: string, scopeId?: string): Promise<LineageTemplate[]> {
+    const all = this.getItem<LineageTemplate[]>('lineage_templates', SEED_LINEAGE_TEMPLATES);
+    if (scopeType && scopeId) {
+      return all.filter(l => (l.scopeType || 'campaign') === scopeType && (l.scopeId || 'zorvania-c1') === scopeId);
+    }
+    return all;
+  }
+
+  async getLineageTemplate(id: string): Promise<LineageTemplate | null> {
+    const all = this.getItem<LineageTemplate[]>('lineage_templates', SEED_LINEAGE_TEMPLATES);
+    return all.find(l => l.id === id) || null;
+  }
+
+  async createLineageTemplate(tmplData: Omit<LineageTemplate, 'id' | 'createdAt' | 'updatedAt'>): Promise<LineageTemplate> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LineageTemplate[]>('lineage_templates', SEED_LINEAGE_TEMPLATES);
+    const now = Date.now();
+    const newTmpl: LineageTemplate = {
+      ...tmplData,
+      id: `lin-${now}-${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: now,
+      updatedAt: now
+    };
+    all.push(newTmpl);
+    this.setItem('lineage_templates', all);
+    return newTmpl;
+  }
+
+  async updateLineageTemplate(tmpl: LineageTemplate): Promise<LineageTemplate> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LineageTemplate[]>('lineage_templates', SEED_LINEAGE_TEMPLATES);
+    const idx = all.findIndex(l => l.id === tmpl.id);
+    if (idx === -1) throw new Error('الگوی نژاد یافت نشد.');
+    const updated = { ...tmpl, updatedAt: Date.now() };
+    all[idx] = updated;
+    this.setItem('lineage_templates', all);
+    return updated;
+  }
+
+  async deleteLineageTemplate(id: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<LineageTemplate[]>('lineage_templates', SEED_LINEAGE_TEMPLATES);
+    this.setItem('lineage_templates', all.filter(l => l.id !== id));
+  }
+
+  // --- Background Templates ---
+  async listBackgroundTemplates(scopeType?: string, scopeId?: string): Promise<BackgroundTemplate[]> {
+    const all = this.getItem<BackgroundTemplate[]>('background_templates', SEED_BACKGROUND_TEMPLATES);
+    if (scopeType && scopeId) {
+      return all.filter(b => (b.scopeType || 'campaign') === scopeType && (b.scopeId || 'zorvania-c1') === scopeId);
+    }
+    return all;
+  }
+
+  async getBackgroundTemplate(id: string): Promise<BackgroundTemplate | null> {
+    const all = this.getItem<BackgroundTemplate[]>('background_templates', SEED_BACKGROUND_TEMPLATES);
+    return all.find(b => b.id === id) || null;
+  }
+
+  async createBackgroundTemplate(tmplData: Omit<BackgroundTemplate, 'id' | 'createdAt' | 'updatedAt'>): Promise<BackgroundTemplate> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<BackgroundTemplate[]>('background_templates', SEED_BACKGROUND_TEMPLATES);
+    const now = Date.now();
+    const newTmpl: BackgroundTemplate = {
+      ...tmplData,
+      id: `bg-${now}-${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: now,
+      updatedAt: now
+    };
+    all.push(newTmpl);
+    this.setItem('background_templates', all);
+    return newTmpl;
+  }
+
+  async updateBackgroundTemplate(tmpl: BackgroundTemplate): Promise<BackgroundTemplate> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<BackgroundTemplate[]>('background_templates', SEED_BACKGROUND_TEMPLATES);
+    const idx = all.findIndex(b => b.id === tmpl.id);
+    if (idx === -1) throw new Error('الگوی پیشینه یافت نشد.');
+    const updated = { ...tmpl, updatedAt: Date.now() };
+    all[idx] = updated;
+    this.setItem('background_templates', all);
+    return updated;
+  }
+
+  async deleteBackgroundTemplate(id: string): Promise<void> {
+    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const all = this.getItem<BackgroundTemplate[]>('background_templates', SEED_BACKGROUND_TEMPLATES);
+    this.setItem('background_templates', all.filter(b => b.id !== id));
   }
 
   // --- Rewards ---
@@ -3367,6 +3486,8 @@ export class LocalApi implements ApiClient {
 
   public getScopeBundle(scopeType: EntityScopeType, scopeId: string): CloneEntityBundle {
     const classes = (this.getItem<ClassTemplate[]>('class_templates', SEED_CLASS_TEMPLATES)).filter(c => (c.scopeType || 'campaign') === scopeType && (c.scopeId || 'zorvania-c1') === scopeId);
+    const lineages = (this.getItem<LineageTemplate[]>('lineage_templates', SEED_LINEAGE_TEMPLATES)).filter(l => (l.scopeType || 'campaign') === scopeType && (l.scopeId || 'zorvania-c1') === scopeId);
+    const backgrounds = (this.getItem<BackgroundTemplate[]>('background_templates', SEED_BACKGROUND_TEMPLATES)).filter(b => (b.scopeType || 'campaign') === scopeType && (b.scopeId || 'zorvania-c1') === scopeId);
     const features = (this.getItem<FeatureTemplate[]>('feature_templates', [])).filter(f => (f.scopeType || 'campaign') === scopeType && (f.scopeId || 'zorvania-c1') === scopeId);
     const weapons = (this.getItem<WeaponTemplate[]>('weapon_templates', SEED_WEAPON_TEMPLATES)).filter(w => (w.scopeType || 'campaign') === scopeType && (w.scopeId || 'zorvania-c1') === scopeId);
     const items = (this.getItem<ItemLibraryEntry[]>('items', SEED_ITEM_LIBRARY)).filter(i => (i.scopeType || 'campaign') === scopeType && (i.scopeId || 'zorvania-c1') === scopeId);
@@ -3381,6 +3502,8 @@ export class LocalApi implements ApiClient {
 
     return {
       classTemplates: classes,
+      lineageTemplates: lineages,
+      backgroundTemplates: backgrounds,
       featureTemplates: features,
       weaponTemplates: weapons,
       items,
@@ -3450,6 +3573,12 @@ export class LocalApi implements ApiClient {
     }
     if (!params.type || params.type === 'class_template') {
       allEntities.push(...bundle.classTemplates.map(c => ({ itemType: 'class_template' as const, data: c, id: c.id, name: c.name, tags: c.tags, updatedAt: c.updatedAt })));
+    }
+    if (!params.type || params.type === 'lineage_template') {
+      allEntities.push(...bundle.lineageTemplates.map(l => ({ itemType: 'lineage_template' as const, data: l, id: l.id, name: l.name, tags: l.tags, updatedAt: l.updatedAt })));
+    }
+    if (!params.type || params.type === 'background_template') {
+      allEntities.push(...bundle.backgroundTemplates.map(b => ({ itemType: 'background_template' as const, data: b, id: b.id, name: b.name, tags: b.tags, updatedAt: b.updatedAt })));
     }
     if (!params.type || params.type === 'faction') {
       allEntities.push(...bundle.factions.map(f => ({ itemType: 'faction' as const, data: f, id: f.id, name: f.name, region: f.region, tags: f.tags, updatedAt: f.updatedAt })));
@@ -3724,6 +3853,14 @@ export class LocalApi implements ApiClient {
       const existing = this.getItem<ClassTemplate[]>('class_templates', SEED_CLASS_TEMPLATES);
       this.setItem('class_templates', [...existing, ...created.classTemplates]);
     }
+    if (created.lineageTemplates && created.lineageTemplates.length > 0) {
+      const existing = this.getItem<LineageTemplate[]>('lineage_templates', SEED_LINEAGE_TEMPLATES);
+      this.setItem('lineage_templates', [...existing, ...created.lineageTemplates]);
+    }
+    if (created.backgroundTemplates && created.backgroundTemplates.length > 0) {
+      const existing = this.getItem<BackgroundTemplate[]>('background_templates', SEED_BACKGROUND_TEMPLATES);
+      this.setItem('background_templates', [...existing, ...created.backgroundTemplates]);
+    }
     if (created.featureTemplates.length > 0) {
       const existing = this.getItem<FeatureTemplate[]>('feature_templates', []);
       this.setItem('feature_templates', [...existing, ...created.featureTemplates]);
@@ -3840,6 +3977,8 @@ export class LocalApi implements ApiClient {
     removeIds('encounters', createdIds.encounters);
     removeIds('weapon_templates', createdIds.weaponTemplates);
     removeIds('class_templates', createdIds.classTemplates);
+    removeIds('lineage_templates', createdIds.lineageTemplates);
+    removeIds('background_templates', createdIds.backgroundTemplates);
     removeIds('feature_templates', createdIds.featureTemplates);
     removeIds('rewards', createdIds.rewards);
     removeIds('factions', createdIds.factions);
@@ -4572,8 +4711,21 @@ export class HttpApi implements ApiClient {
     await this.fetchJson(`/weapon-templates/${id}`, { method: 'DELETE' });
   }
 
-  async listClassTemplates(): Promise<ClassTemplate[]> {
-    return this.fetchJson<ClassTemplate[]>('/class-templates');
+  async listClassTemplates(scopeType?: string, scopeId?: string): Promise<ClassTemplate[]> {
+    const params = new URLSearchParams();
+    if (scopeType) params.set('scopeType', scopeType);
+    if (scopeId) params.set('scopeId', scopeId);
+    const qs = params.toString();
+    return this.fetchJson<ClassTemplate[]>(`/class-templates${qs ? `?${qs}` : ''}`);
+  }
+
+  async getClassTemplate(id: string): Promise<ClassTemplate | null> {
+    try {
+      return await this.fetchJson<ClassTemplate>(`/class-templates/${id}`);
+    } catch (e: any) {
+      if (e.status === 404) return null;
+      throw e;
+    }
   }
 
   async createClassTemplate(tmpl: Omit<ClassTemplate, 'id' | 'updatedAt'>): Promise<ClassTemplate> {
@@ -4592,6 +4744,78 @@ export class HttpApi implements ApiClient {
 
   async deleteClassTemplate(id: string): Promise<void> {
     await this.fetchJson(`/class-templates/${id}`, { method: 'DELETE' });
+  }
+
+  // Lineage Templates
+  async listLineageTemplates(scopeType?: string, scopeId?: string): Promise<LineageTemplate[]> {
+    const params = new URLSearchParams();
+    if (scopeType) params.set('scopeType', scopeType);
+    if (scopeId) params.set('scopeId', scopeId);
+    const qs = params.toString();
+    return this.fetchJson<LineageTemplate[]>(`/lineage-templates${qs ? `?${qs}` : ''}`);
+  }
+
+  async getLineageTemplate(id: string): Promise<LineageTemplate | null> {
+    try {
+      return await this.fetchJson<LineageTemplate>(`/lineage-templates/${id}`);
+    } catch (e: any) {
+      if (e.status === 404) return null;
+      throw e;
+    }
+  }
+
+  async createLineageTemplate(tmpl: Omit<LineageTemplate, 'id' | 'createdAt' | 'updatedAt'>): Promise<LineageTemplate> {
+    return this.fetchJson<LineageTemplate>('/lineage-templates', {
+      method: 'POST',
+      body: JSON.stringify(tmpl)
+    });
+  }
+
+  async updateLineageTemplate(tmpl: LineageTemplate): Promise<LineageTemplate> {
+    return this.fetchJson<LineageTemplate>(`/lineage-templates/${tmpl.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(tmpl)
+    });
+  }
+
+  async deleteLineageTemplate(id: string): Promise<void> {
+    await this.fetchJson(`/lineage-templates/${id}`, { method: 'DELETE' });
+  }
+
+  // Background Templates
+  async listBackgroundTemplates(scopeType?: string, scopeId?: string): Promise<BackgroundTemplate[]> {
+    const params = new URLSearchParams();
+    if (scopeType) params.set('scopeType', scopeType);
+    if (scopeId) params.set('scopeId', scopeId);
+    const qs = params.toString();
+    return this.fetchJson<BackgroundTemplate[]>(`/background-templates${qs ? `?${qs}` : ''}`);
+  }
+
+  async getBackgroundTemplate(id: string): Promise<BackgroundTemplate | null> {
+    try {
+      return await this.fetchJson<BackgroundTemplate>(`/background-templates/${id}`);
+    } catch (e: any) {
+      if (e.status === 404) return null;
+      throw e;
+    }
+  }
+
+  async createBackgroundTemplate(tmpl: Omit<BackgroundTemplate, 'id' | 'createdAt' | 'updatedAt'>): Promise<BackgroundTemplate> {
+    return this.fetchJson<BackgroundTemplate>('/background-templates', {
+      method: 'POST',
+      body: JSON.stringify(tmpl)
+    });
+  }
+
+  async updateBackgroundTemplate(tmpl: BackgroundTemplate): Promise<BackgroundTemplate> {
+    return this.fetchJson<BackgroundTemplate>(`/background-templates/${tmpl.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(tmpl)
+    });
+  }
+
+  async deleteBackgroundTemplate(id: string): Promise<void> {
+    await this.fetchJson(`/background-templates/${id}`, { method: 'DELETE' });
   }
 
   // Rewards

@@ -2,11 +2,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Campaign, ContentPack, ContentPackKind, EntityScopeType, CloneEntityType, 
   EntityRef, CloneOptions, CloneManifest, CloneJob, LocationEntry, NPC, 
-  ItemLibraryEntry, Encounter, ClassTemplate, Faction, CampaignDoc, 
-  GenericCalendarData, RuleSet, LinkedEntityDiff, RewardPackage, User
+  ItemLibraryEntry, Encounter, ClassTemplate, LineageTemplate, BackgroundTemplate, 
+  Faction, CampaignDoc, GenericCalendarData, RuleSet, LinkedEntityDiff, RewardPackage, User
 } from '../../types';
 import { api } from '../../services/api';
 import { BottomSheet } from '../mobile/BottomSheet';
+import { LineageEditorSheet } from './LineageEditorSheet';
+import { BackgroundEditorSheet } from './BackgroundEditorSheet';
+import { ClassEditorSheet } from './ClassEditorSheet';
 import { 
   Library, Search, Filter, Plus, CheckSquare, Square, Copy, Bookmark, 
   Trash2, ExternalLink, RefreshCw, Eye, EyeOff, Sparkles, FolderPlus, 
@@ -23,7 +26,7 @@ interface DmLibraryProps {
   onRefreshCampaignData?: () => void;
 }
 
-type EntityTypeFilter = 'all' | 'location' | 'npc' | 'item' | 'encounter' | 'class_template' | 'faction' | 'calendar' | 'rule_set' | 'campaign_doc';
+type EntityTypeFilter = 'all' | 'location' | 'npc' | 'item' | 'encounter' | 'class_template' | 'lineage_template' | 'background_template' | 'faction' | 'calendar' | 'rule_set' | 'campaign_doc';
 
 export const DmLibrary: React.FC<DmLibraryProps> = ({
   currentCampaignId,
@@ -127,6 +130,20 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
     isOpen: false,
     diff: null,
     chosenFields: {}
+  });
+
+  // Template Editors (Class, Lineage, Background)
+  const [classEditor, setClassEditor] = useState<{ isOpen: boolean; item: ClassTemplate | null }>({
+    isOpen: false,
+    item: null
+  });
+  const [lineageEditor, setLineageEditor] = useState<{ isOpen: boolean; item: LineageTemplate | null }>({
+    isOpen: false,
+    item: null
+  });
+  const [backgroundEditor, setBackgroundEditor] = useState<{ isOpen: boolean; item: BackgroundTemplate | null }>({
+    isOpen: false,
+    item: null
   });
 
   // Toast / feedback message
@@ -481,6 +498,10 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
         return <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#C2512B]/20 text-[#E8836B] border border-[#C2512B]/30">مواجهه</span>;
       case 'class_template':
         return <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#7FB4D6]/20 text-[#7FB4D6] border border-[#7FB4D6]/30">کلاس</span>;
+      case 'lineage_template':
+        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#D4A373]/20 text-[#D4A373] border border-[#D4A373]/30">نژاد و تبار</span>;
+      case 'background_template':
+        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#8B9D83]/20 text-[#8B9D83] border border-[#8B9D83]/30">پیشینه</span>;
       case 'faction':
         return <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30">جناح</span>;
       case 'calendar':
@@ -572,6 +593,33 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               <Bookmark className="w-4 h-4" />
               <span>ذخیره به عنوان قالب</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setClassEditor({ isOpen: true, item: null })}
+              className="px-3 py-1.5 rounded-xl bg-[#7FB4D6]/20 border border-[#7FB4D6]/40 text-[#7FB4D6] hover:bg-[#7FB4D6]/30 text-xs font-bold transition flex items-center gap-1 min-h-[36px]"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>کلاس جدید</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setLineageEditor({ isOpen: true, item: null })}
+              className="px-3 py-1.5 rounded-xl bg-[#D4A373]/20 border border-[#D4A373]/40 text-[#D4A373] hover:bg-[#D4A373]/30 text-xs font-bold transition flex items-center gap-1 min-h-[36px]"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>نژاد جدید</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setBackgroundEditor({ isOpen: true, item: null })}
+              className="px-3 py-1.5 rounded-xl bg-[#8B9D83]/20 border border-[#8B9D83]/40 text-[#8B9D83] hover:bg-[#8B9D83]/30 text-xs font-bold transition flex items-center gap-1 min-h-[36px]"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>پیشینه جدید</span>
+            </button>
           </div>
         </div>
 
@@ -651,7 +699,9 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             { id: 'npc', label: 'NPC و هیولا' },
             { id: 'item', label: 'آیتم' },
             { id: 'encounter', label: 'مواجهه' },
-            { id: 'class_template', label: 'کلاس و قابلیت' },
+            { id: 'class_template', label: 'کلاس' },
+            { id: 'lineage_template', label: 'نژاد و تبار' },
+            { id: 'background_template', label: 'پیشینه' },
             { id: 'faction', label: 'جناح' },
             { id: 'calendar', label: 'تقویم' },
             { id: 'rule_set', label: 'قوانین' },
@@ -910,6 +960,49 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 <Bookmark className="w-4 h-4" />
                 <span>ذخیره در کتابخانه‌ام</span>
               </button>
+
+              {/* Edit Template buttons */}
+              {detailItem.itemType === 'class_template' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setClassEditor({ isOpen: true, item: detailItem });
+                    setDetailItem(null);
+                  }}
+                  className="py-2.5 px-3 rounded-xl bg-[#7FB4D6]/20 border border-[#7FB4D6]/40 text-[#7FB4D6] hover:bg-[#7FB4D6]/30 font-bold text-xs flex items-center justify-center gap-1.5 min-h-[44px]"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>ویرایش کلاس</span>
+                </button>
+              )}
+
+              {detailItem.itemType === 'lineage_template' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLineageEditor({ isOpen: true, item: detailItem });
+                    setDetailItem(null);
+                  }}
+                  className="py-2.5 px-3 rounded-xl bg-[#D4A373]/20 border border-[#D4A373]/40 text-[#D4A373] hover:bg-[#D4A373]/30 font-bold text-xs flex items-center justify-center gap-1.5 min-h-[44px]"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>ویرایش نژاد</span>
+                </button>
+              )}
+
+              {detailItem.itemType === 'background_template' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBackgroundEditor({ isOpen: true, item: detailItem });
+                    setDetailItem(null);
+                  }}
+                  className="py-2.5 px-3 rounded-xl bg-[#8B9D83]/20 border border-[#8B9D83]/40 text-[#8B9D83] hover:bg-[#8B9D83]/30 font-bold text-xs flex items-center justify-center gap-1.5 min-h-[44px]"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>ویرایش پیشینه</span>
+                </button>
+              )}
 
               {/* Detach Link button if linked copy */}
               {detailItem.sourceMode === 'linked' && detailItem.sourceId && (
@@ -1386,6 +1479,81 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             </button>
           </div>
         </BottomSheet>
+      )}
+
+      {/* Lineage Editor Sheet */}
+      {lineageEditor.isOpen && (
+        <LineageEditorSheet
+          isOpen={lineageEditor.isOpen}
+          onClose={() => setLineageEditor({ isOpen: false, item: null })}
+          initialData={lineageEditor.item}
+          scopeType="campaign"
+          scopeId={currentCampaignId}
+          onSave={async (data) => {
+            if (lineageEditor.item) {
+              await api.updateLineageTemplate(lineageEditor.item.id, data);
+              showFeedback('نژاد با موفقیت به‌روزرسانی شد');
+            } else {
+              await api.createLineageTemplate({
+                ...data,
+                scopeType: 'campaign',
+                scopeId: currentCampaignId
+              } as any);
+              showFeedback('نژاد جدید با موفقیت ایجاد شد');
+            }
+            loadItems();
+          }}
+        />
+      )}
+
+      {/* Background Editor Sheet */}
+      {backgroundEditor.isOpen && (
+        <BackgroundEditorSheet
+          isOpen={backgroundEditor.isOpen}
+          onClose={() => setBackgroundEditor({ isOpen: false, item: null })}
+          initialData={backgroundEditor.item}
+          scopeType="campaign"
+          scopeId={currentCampaignId}
+          onSave={async (data) => {
+            if (backgroundEditor.item) {
+              await api.updateBackgroundTemplate(backgroundEditor.item.id, data);
+              showFeedback('پیشینه با موفقیت به‌روزرسانی شد');
+            } else {
+              await api.createBackgroundTemplate({
+                ...data,
+                scopeType: 'campaign',
+                scopeId: currentCampaignId
+              } as any);
+              showFeedback('پیشینه جدید با موفقیت ایجاد شد');
+            }
+            loadItems();
+          }}
+        />
+      )}
+
+      {/* Class Editor Sheet */}
+      {classEditor.isOpen && (
+        <ClassEditorSheet
+          isOpen={classEditor.isOpen}
+          onClose={() => setClassEditor({ isOpen: false, item: null })}
+          initialData={classEditor.item}
+          scopeType="campaign"
+          scopeId={currentCampaignId}
+          onSave={async (data) => {
+            if (classEditor.item) {
+              await api.updateClassTemplate(classEditor.item.id, data);
+              showFeedback('کلاس با موفقیت به‌روزرسانی شد');
+            } else {
+              await api.createClassTemplate({
+                ...data,
+                scopeType: 'campaign',
+                scopeId: currentCampaignId
+              } as any);
+              showFeedback('کلاس جدید با موفقیت ایجاد شد');
+            }
+            loadItems();
+          }}
+        />
       )}
     </div>
   );

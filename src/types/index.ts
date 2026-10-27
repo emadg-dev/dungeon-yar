@@ -491,6 +491,106 @@ export interface ClassFeatureByLevel {
   usage?: RechargeType;
 }
 
+export interface LineageTrait {
+  name: string;
+  description: string;
+  usage?: RechargeType | string;
+}
+
+export interface SublineageDef {
+  name: string;
+  description: string;
+  traits: LineageTrait[];
+}
+
+export interface LineageTemplate {
+  id: string;
+  scopeType?: EntityScopeType;
+  scopeId?: string;
+  sourceId?: string | null;
+  sourceMode?: 'copy' | 'linked';
+  tags?: string[];
+  name: string;
+  description: string;
+  size: string; // e.g. "متوسط (Medium)" or "کوچک (Small)"
+  speed: number; // e.g. 30
+  abilityBonuses: {
+    mode: 'fixed' | 'choose';
+    fixed?: Partial<Record<AbilityName, number>>;
+    chooseCount?: number;
+    chooseValue?: number;
+  };
+  traits: LineageTrait[];
+  languages: string[];
+  proficiencies: {
+    skills: string[];
+    weapons: string[];
+    armor: string[];
+    tools: string[];
+  };
+  resistances: string[];
+  senses: {
+    darkvision?: number;
+    blindsight?: number;
+    tremorsense?: number;
+    truesight?: number;
+    [key: string]: any;
+  };
+  sublineages: SublineageDef[];
+  nameSuggestions: string[];
+  backstoryPrompts: string[];
+  copiedAt?: number | null;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface BackgroundPersonalityTables {
+  traits: string[];
+  ideals: string[];
+  bonds: string[];
+  flaws: string[];
+}
+
+export interface BackgroundTemplate {
+  id: string;
+  scopeType?: EntityScopeType;
+  scopeId?: string;
+  sourceId?: string | null;
+  sourceMode?: 'copy' | 'linked';
+  tags?: string[];
+  name: string;
+  description: string;
+  skillProficiencies: string[];
+  toolProficiencies: string[];
+  languages: string[];
+  startingEquipment: string[] | string | { label: string; items: string[] }[];
+  featureName: string;
+  featureDescription: string;
+  personalityTables: BackgroundPersonalityTables;
+  copiedAt?: number | null;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface EquipmentChoiceOption {
+  label: string;
+  items: string[];
+}
+
+export interface EquipmentChoiceGroup {
+  id: string;
+  label: string;
+  options: EquipmentChoiceOption[];
+}
+
+export interface CompanionDef {
+  name: string;
+  type?: string;
+  acFormula?: string | AcFormula | null;
+  hpFormula?: string | null;
+  featuresByLevel?: Record<number, { name: string; description: string; usage?: string }[]>;
+}
+
 export interface ClassTemplate {
   id: string;
   name: string;
@@ -504,19 +604,43 @@ export interface ClassTemplate {
   weaponProficiencies?: string[];
   armorProf?: string;
   armorProficiencies?: string[];
-  startingEquipment: string | string[];
+  startingEquipment: string | string[] | EquipmentChoiceGroup[];
+  startingEquipmentChoices?: EquipmentChoiceGroup[];
   acFormula: string | AcFormula;
-  spellcasting?: any;
+  spellcasting?: {
+    ability: AbilityName;
+    saveDCFormula?: string;
+    slotsTable?: Record<number, number[]> | string;
+    slotsByLevel?: Record<number, number[]>;
+    cantripsKnownByLevel?: Record<number, number>;
+    spellsKnownByLevel?: Record<number, number>;
+    spellList?: { level: number; spells: string[] }[];
+    note?: string;
+  } | any;
   extraAttackLevel?: number | null;
   asiLevels: number[];
   fixedHpByLevel: number[] | Record<number, number>;
   hpFormula?: string;
-  baseAbilities?: { STR: number; DEX: number; CON: number; WIS: number; INT: number; CHA: number };
+  baseAbilities?: { STR: number; DEX: number; CON: number; WIS: number; INT: number; CHA: number } | AbilityScoreMap;
   baseAbilityScores?: AbilityScoreMap;
-  companion?: { name: string; fromLevel: number; ac?: number | null; hp: string };
+  companion?: { name: string; fromLevel: number; ac?: number | null; hp: string } | null;
+  companions?: CompanionDef[];
   resources?: any[];
-  classResources?: ClassResourceDef[];
-  subclasses: any[];
+  classResources?: {
+    name: string;
+    type?: string;
+    formulaOrDiceByLevel?: string | Record<number, string>;
+    resetType?: RechargeType;
+    description?: string;
+    id?: string;
+  }[];
+  subclasses: {
+    id?: string;
+    name: string;
+    unlockLevel: number;
+    description?: string;
+    featuresByLevel?: Record<number, { name: string; description: string; usage?: RechargeType }[]>;
+  }[];
   notes?: string;
   features?: Record<number | string, string>;
   featuresByLevel?: Record<number, ClassFeatureByLevel[]>;
@@ -524,13 +648,14 @@ export interface ClassTemplate {
   startingFeatures?: FeatureTemplate[];
   level2Options?: string[];
   starterWeaponOptions?: string[];
-  scopeType?: 'pack' | 'campaign';
+  scopeType?: EntityScopeType;
   scopeId?: string;
   sourceId?: string | null;
   sourceMode?: 'copy' | 'linked';
   copiedAt?: number | null;
   tags?: string[];
-  updatedAt?: string;
+  createdAt?: number;
+  updatedAt?: number | string;
 }
 
 export type ItemCategory = 
@@ -1327,6 +1452,8 @@ export type EntityScopeType = 'pack' | 'campaign';
 
 export type CloneEntityType = 
   | 'class_template' 
+  | 'lineage_template'
+  | 'background_template'
   | 'feature_template' 
   | 'weapon_template' 
   | 'item' 

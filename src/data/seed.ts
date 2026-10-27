@@ -377,6 +377,93 @@ export const CLASSES = [
 },
 ];
 
+const STRUCTURED_AC_MAP: Record<string, { base: number; abilityMods: ('str' | 'dex' | 'con' | 'int' | 'wis' | 'cha')[]; unarmored: boolean; note?: string }> = {
+  "فرهدار": { base: 14, abilityMods: ['dex'], unarmored: false, note: 'زره متوسط ورنا (14 + DEX mod تا سقف ۲)' },
+  "موبد آذرین": { base: 10, abilityMods: ['dex', 'wis'], unarmored: true, note: 'محافظ هامون (10 + DEX mod + WIS mod بدون زره)' },
+  "دیوانزاد": { base: 14, abilityMods: ['dex'], unarmored: false, note: 'زره برنز و فولاد سنگین ورنا (14 + min(DEX, 2))' },
+  "پیمانبان": { base: 11, abilityMods: ['dex'], unarmored: false, note: 'زره چرمی ورنا (11 + DEX mod)' },
+  "سایهخوان": { base: 10, abilityMods: ['dex'], unarmored: true, note: 'بدون زره (10 + DEX mod)' },
+  "مهآشنا": { base: 10, abilityMods: ['dex', 'wis'], unarmored: true, note: 'دفاع بدون زره (10 + DEX mod + WIS mod)' },
+};
+
+const CLASS_EQUIPMENT_CHOICES: Record<string, { id: string; label: string; options: { label: string; items: string[] }[] }[]> = {
+  "فرهدار": [
+    {
+      id: "eq-far-1",
+      label: "انتخاب سلاح اول",
+      options: [
+        { label: "گرز پیمان (سلاح ویژه)", items: ["گرز پیمان"] },
+        { label: "گرز بزرگ فرهسوز (سلاح نمایشی)", items: ["گرز بزرگ فرهسوز"] }
+      ]
+    },
+    {
+      id: "eq-far-2",
+      label: "انتخاب زره و محافظ",
+      options: [
+        { label: "زره زنجیربافت و سپر کهن", items: ["زره زنجیربافت", "سپر برنزی"] },
+        { label: "زره پولکی سبک و بسته کاوشگر", items: ["زره پولکی سبک", "کوله کاوشگر"] }
+      ]
+    }
+  ],
+  "موبد آذرین": [
+    {
+      id: "eq-aza-1",
+      label: "سلاح مقدس و عوددان",
+      options: [
+        { label: "شمشیر هلالی آتشین و عوددان نیایشگاه", items: ["شمشیر هلالی آتشین", "عوددان نیایشگاه"] },
+        { label: "داس آذرخش و نشان اخگر", items: ["داس آذرخش", "نشان اخگر"] }
+      ]
+    }
+  ],
+  "دیوانزاد": [
+    {
+      id: "eq-dev-1",
+      label: "سلاح رزم دیوان",
+      options: [
+        { label: "چکش پژواکسنگ (ویژه)", items: ["چکش پژواکسنگ"] },
+        { label: "تبر بزرگ کوهشکاف (نمایشی)", items: ["تبر بزرگ کوهشکاف"] }
+      ]
+    },
+    {
+      id: "eq-dev-2",
+      label: "زره و ابزار سنگ‌تراشی",
+      options: [
+        { label: "زره برنز سنگین و کوله سفر", items: ["زره برنزی", "کیسه خواب", "طناب کنفی"] }
+      ]
+    }
+  ],
+  "پیمانبان": [
+    {
+      id: "eq-pey-1",
+      label: "افزار شکار و بقا",
+      options: [
+        { label: "کمان کوتاه با ۲۰ تیر و زره چرمی", items: ["کمان کوتاه", "۲۰ عدد تیر", "زره چرمی"] },
+        { label: "دو عدد شمشیر کوتاه و زره چرمی", items: ["شمشیر کوتاه", "شمشیر کوتاه", "زره چرمی"] }
+      ]
+    }
+  ],
+  "سایهخوان": [
+    {
+      id: "eq-say-1",
+      label: "افزار جادو و ثبت زمان",
+      options: [
+        { label: "خنجر لغزنده و کتابچه اسپل", items: ["خنجر لغزنده", "کتابچه اسپل", "مرکب کهن"] },
+        { label: "چوبدستی بلورین و جزوه نشانه‌ها", items: ["چوبدستی بلورین", "جزوه نشانه‌ها"] }
+      ]
+    }
+  ],
+  "مهآشنا": [
+    {
+      id: "eq-meh-1",
+      label: "تجهیزات راهبانه",
+      options: [
+        { label: "۱۰ عدد Dart و قبای راهبانه", items: ["۱۰ عدد Dart", "قبای راهبانه"] },
+        { label: "شمشیر کوتاه و زنگوله مه‌آشنا", items: ["شمشیر کوتاه", "زنگوله مه‌آشنا"] }
+      ]
+    }
+  ]
+};
+
 export const SEED_CLASS_TEMPLATES: ClassTemplate[] = CLASSES.map(cls => {
   const idMap: Record<string, string> = {
     "فرهدار": "class-farrehdar",
@@ -404,6 +491,31 @@ export const SEED_CLASS_TEMPLATES: ClassTemplate[] = CLASSES.map(cls => {
     ? HALF_CASTER_SLOTS
     : cls.spellcasting?.slots || {};
 
+  const structuredAc = STRUCTURED_AC_MAP[cls.name] || {
+    base: 10,
+    abilityMods: ['dex' as const],
+    unarmored: true,
+    note: String(cls.acFormula || '10 + DEX mod')
+  };
+
+  const companionObj = (cls as any).companion ? {
+    name: (cls as any).companion.name,
+    fromLevel: (cls as any).companion.fromLevel || 4,
+    ac: (cls as any).companion.ac || null,
+    hp: (cls as any).companion.hp || '4 * level'
+  } : null;
+
+  const companionsList = companionObj ? [{
+    name: companionObj.name,
+    type: 'حیوان و روح طبیعت',
+    acFormula: { base: 12, abilityMods: ['dex' as const], unarmored: true },
+    hpFormula: companionObj.hp,
+    featuresByLevel: {
+      4: [{ name: 'پیوند جنگل', description: 'همراه در مبارزات شرکت می‌کند و نوبت مستقل دارد.' }],
+      8: [{ name: 'چابکی بیشه', description: '+۲ به تمام پرتاب‌های نجات همراه.' }]
+    }
+  }] : [];
+
   return {
     id,
     name: cls.name,
@@ -416,11 +528,20 @@ export const SEED_CLASS_TEMPLATES: ClassTemplate[] = CLASSES.map(cls => {
     weaponProf: cls.weaponProf,
     armorProf: cls.armorProf,
     startingEquipment: cls.startingEquipment,
-    acFormula: cls.acFormula,
+    startingEquipmentChoices: CLASS_EQUIPMENT_CHOICES[cls.name] || [],
+    acFormula: structuredAc,
     spellcasting: cls.spellcasting ? {
       ...cls.spellcasting,
+      ability: (cls.spellcasting.ability || 'INT').toLowerCase(),
+      slotsTable: slots,
       slotsByLevel: slots,
       saveDCFormula: cls.spellcasting.dc || '8 + prof + mod',
+      cantripsKnownByLevel: { 1: 2, 4: 3, 10: 4 },
+      spellsKnownByLevel: { 1: 4, 2: 5, 3: 6, 4: 7, 5: 8 },
+      spellList: cls.spellcasting.spells ? Object.entries(cls.spellcasting.spells).map(([lvl, spells]) => ({
+        level: lvl === 'cantrips' ? 0 : parseInt(lvl, 10),
+        spells: spells as string[]
+      })) : []
     } : null,
     extraAttackLevel: cls.extraAttackLevel,
     asiLevels: ASI_LEVELS,
@@ -435,7 +556,8 @@ export const SEED_CLASS_TEMPLATES: ClassTemplate[] = CLASSES.map(cls => {
       wis: cls.baseAbilities?.WIS || 10,
       cha: cls.baseAbilities?.CHA || 10,
     },
-    companion: (cls as any).companion,
+    companion: companionObj,
+    companions: companionsList,
     resources: cls.resources || [],
     classResources: (cls.resources || []).map((r: any, idx: number) => ({
       id: `res-${id}-${idx}`,
@@ -443,6 +565,7 @@ export const SEED_CLASS_TEMPLATES: ClassTemplate[] = CLASSES.map(cls => {
       description: r.note || r.uses || '',
       resetType: r.uses?.includes('کوتاه') ? 'short' : 'long',
       maxUsesFormula: r.uses,
+      formulaOrDiceByLevel: r.uses,
       diceByLevel: r.diceByLevel
     })),
     subclasses: (cls.subclasses || []).map((sub: any, idx: number) => ({
@@ -450,7 +573,9 @@ export const SEED_CLASS_TEMPLATES: ClassTemplate[] = CLASSES.map(cls => {
       name: sub.name,
       description: sub.desc || '',
       unlockLevel: sub.unlockLevel || 3,
-      featuresByLevel: {}
+      featuresByLevel: {
+        3: [{ name: sub.name, description: sub.desc || 'ویژگی آغازین زیرکلاس' }]
+      }
     })),
     notes: cls.notes,
     features: cls.features,
@@ -472,9 +597,15 @@ export const SEED_CLASS_TEMPLATES: ClassTemplate[] = CLASSES.map(cls => {
     ],
     level2Options: [(cls.features as any)?.[2] || 'سطح ۲'],
     starterWeaponOptions: weaponMap[cls.name] || [],
+    scopeType: 'pack',
+    scopeId: 'pack-zorvania',
     updatedAt: new Date().toISOString()
   };
 });
+
+// Seed Lineage and Background Templates (kept empty per specification: no invented lore)
+export const SEED_LINEAGE_TEMPLATES: LineageTemplate[] = [];
+export const SEED_BACKGROUND_TEMPLATES: BackgroundTemplate[] = [];
 
 export const SEED_USERS: User[] = [
   {
