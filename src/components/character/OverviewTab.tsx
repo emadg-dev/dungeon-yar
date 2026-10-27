@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Character, ClassTemplate } from '../../types';
 import { APP_NAME_LATIN } from '../../config/app';
-import { getAbilityModifier } from '../../utils/dice';
+import { deriveSheet } from '../../../shared/rules/engine';
 import { 
   Shield, Footprints, Zap, Dices, Moon, Sun, Sparkles, 
   Download, Upload, Flame, AlertTriangle, Edit3, Check, Heart
@@ -26,8 +26,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 }) => {
   const [isEditingBasics, setIsEditingBasics] = useState(false);
 
-  const dexMod = getAbilityModifier(character.abilities.dex);
-  const totalInitiative = dexMod + (character.initiativeBonus || 0);
+  const classTemplate = classTemplates?.find(t => t.id === character.classTemplateId || t.name === character.className);
+  const derived = deriveSheet({ character, classTemplate });
+  const totalInitiative = derived.initiative;
 
   const adjustSkillPoints = (delta: number) => {
     const next = Math.max(0, character.skillPoints + delta);

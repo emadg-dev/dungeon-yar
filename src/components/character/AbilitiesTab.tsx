@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Character, AbilityName, SkillDefinition } from '../../types';
-import { getAbilityModifier, getProficiencyBonus, formatModifier } from '../../utils/dice';
+import { getAbilityModifier, formatModifier } from '../../utils/dice';
+import { deriveSheet } from '../../../shared/rules/engine';
 import { Shield, Sparkles, Plus, Dices, Search, Check } from 'lucide-react';
 import { BottomSheet } from '../mobile/BottomSheet';
 
@@ -20,7 +21,8 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
   const [customSkillAbility, setCustomSkillAbility] = useState<AbilityName>('int');
   const [skillsSearch, setSkillsSearch] = useState('');
 
-  const profBonus = getProficiencyBonus(character.level);
+  const derived = deriveSheet({ character });
+  const profBonus = derived.proficiencyBonus;
 
   const abilityLabels: Record<AbilityName, { fa: string; shortFa: string; en: string }> = {
     str: { fa: 'قدرتمندی', shortFa: 'قدرت', en: 'STR' },
@@ -184,8 +186,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
           {abilityKeys.map(key => {
             const isProf = !!character.savingThrows[key];
-            const mod = getAbilityModifier(character.abilities[key]);
-            const saveBonus = mod + (isProf ? profBonus : 0);
+            const saveBonus = derived.savingThrows[key]?.modifier ?? (getAbilityModifier(character.abilities[key]) + (isProf ? profBonus : 0));
 
             return (
               <div
@@ -254,13 +255,9 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
         {/* Skills List with Proficiency Dots */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {filteredSkills.map((skill) => {
+            const skillDerived = derived.skills[skill.id] || (skill.key ? derived.skills[skill.key] : null);
             const baseMod = getAbilityModifier(character.abilities[skill.ability]);
-            let totalMod = baseMod;
-            if (skill.expertise) {
-              totalMod += profBonus * 2;
-            } else if (skill.proficient) {
-              totalMod += profBonus;
-            }
+            const totalMod = skillDerived ? skillDerived.modifier : (baseMod + (skill.expertise ? profBonus * 2 : skill.proficient ? profBonus : 0));
 
             return (
               <div
