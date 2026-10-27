@@ -76,7 +76,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
                 ...settings,
                 approval: { ...settings.approval, onCreate: e.target.checked }
               })}
-              className="w-5 h-5 accent-amber-500 rounded"
+              className="w-5 h-5 accent-[#E0A030] rounded"
             />
           </div>
 
@@ -92,7 +92,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
                 ...settings,
                 approval: { ...settings.approval, onLevelUp: e.target.checked }
               })}
-              className="w-5 h-5 accent-amber-500 rounded"
+              className="w-5 h-5 accent-[#E0A030] rounded"
             />
           </div>
 
@@ -105,7 +105,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
               type="checkbox"
               checked={settings.allowPlayerCreateCharacter}
               onChange={e => setSettings({ ...settings, allowPlayerCreateCharacter: e.target.checked })}
-              className="w-5 h-5 accent-amber-500 rounded"
+              className="w-5 h-5 accent-[#E0A030] rounded"
             />
           </div>
         </div>
@@ -189,7 +189,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
               type="checkbox"
               checked={settings.allowPlayerRollPrivate}
               onChange={e => setSettings({ ...settings, allowPlayerRollPrivate: e.target.checked })}
-              className="w-5 h-5 accent-amber-500 rounded"
+              className="w-5 h-5 accent-[#E0A030] rounded"
             />
           </div>
 
@@ -225,7 +225,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
                   ...settings,
                   encounterDefaults: { ...settings.encounterDefaults, showExactHp: e.target.checked }
                 })}
-                className="w-4 h-4 accent-amber-500 rounded"
+                className="w-4 h-4 accent-[#E0A030] rounded"
               />
               <span>نمایش عدد دقیق جان هیولاها به بازیکنان</span>
             </label>
@@ -238,7 +238,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
                   ...settings,
                   encounterDefaults: { ...settings.encounterDefaults, showAc: e.target.checked }
                 })}
-                className="w-4 h-4 accent-amber-500 rounded"
+                className="w-4 h-4 accent-[#E0A030] rounded"
               />
               <span>نمایش درجه زرهی (AC) هیولاها</span>
             </label>
@@ -251,7 +251,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
                   ...settings,
                   encounterDefaults: { ...settings.encounterDefaults, playerInitiativeRolls: e.target.checked }
                 })}
-                className="w-4 h-4 accent-amber-500 rounded"
+                className="w-4 h-4 accent-[#E0A030] rounded"
               />
               <span>ثبت مستقیم ابتکار عمل توسط خود بازیکنان</span>
             </label>
@@ -264,7 +264,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
                   ...settings,
                   encounterDefaults: { ...settings.encounterDefaults, showConditions: e.target.checked }
                 })}
-                className="w-4 h-4 accent-amber-500 rounded"
+                className="w-4 h-4 accent-[#E0A030] rounded"
               />
               <span>نمایش شرایط و وضعیت‌های فعال نبرد</span>
             </label>
@@ -294,7 +294,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
           <button
             type="submit"
             disabled={isSaving}
-            className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs hover:bg-[#F2C265] disabled:opacity-50 transition-colors flex items-center gap-2 min-h-[44px] shadow-lg shadow-amber-500/20"
+            className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs hover:bg-[#F2C265] disabled:opacity-50 transition-colors flex items-center gap-2 min-h-[44px] shadow-lg shadow-[#E0A030]/20"
           >
             {success ? <Check className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
             <span>{isSaving ? 'در حال ذخیره...' : success ? 'ذخیره شد' : 'ذخیره تنظیمات'}</span>

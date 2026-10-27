@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { User, Character } from '../types';
-import { PWAInstallPrompt } from './mobile/PWAInstallPrompt';
+import { BottomSheet } from './mobile/BottomSheet';
 import { 
   CheckCircle2, RefreshCw, Shield, BookOpen, 
-  SunMedium, Type, LogOut, ChevronDown, MoreVertical, X, Sparkles, Swords
+  SunMedium, Type, LogOut, ChevronDown, MoreVertical, Sparkles, Swords
 } from 'lucide-react';
 
 export interface HeaderProps {
@@ -261,249 +261,236 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Mobile Drawer / Quick Menu */}
+      {/* Quick Menu Modal (was a side drawer; now a bottom-sheet modal) */}
       {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-[#0E0D0C]/80 backdrop-blur-sm flex justify-end animate-fadeIn"
-          onClick={() => setMobileMenuOpen(false)}
+        <BottomSheet
+          isOpen={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+          title={currentUser?.displayName || currentUser?.name || 'منوی سریع'}
+          subtitle={currentUser ? `نقش: ${currentUser.role === 'dm' ? 'دانجن مستر' : 'بازیکن'}` : undefined}
         >
-          <div
-            className="w-72 max-w-[85vw] h-full glass-panel border-s border-[#2F2A23] p-4 flex flex-col justify-between shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-            dir="rtl"
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-[#2F2A23]">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-[8px] bg-[#E0A030] text-[#0E0D0C] font-black flex items-center justify-center">
-                    {(currentUser?.displayName || currentUser?.name)?.[0] || 'ز'}
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-bold text-[#EDE6D8] truncate">{currentUser?.displayName || currentUser?.name}</h3>
-                    <span className="text-[10px] text-[#A39A89]">
-                      نقش: {currentUser?.role === 'dm' ? 'دانجن مستر' : 'بازیکن'}
-                    </span>
-                  </div>
+          <div className="space-y-4">
+            {/* User identity summary */}
+            {currentUser && (
+              <div className="flex items-center gap-2.5 p-3 rounded-[12px] bg-[#201D19]/60 border border-[#2F2A23]">
+                <div className="w-10 h-10 rounded-[10px] bg-gradient-to-br from-[#E0A030] to-[#C2512B] text-[#0E0D0C] font-black flex items-center justify-center shrink-0">
+                  {(currentUser.displayName || currentUser.name)?.[0] || 'ز'}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-1.5 rounded-[8px] text-[#A39A89] hover:text-[#EDE6D8] touch-target"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="min-w-0">
+                  <h3 className="text-xs font-bold text-[#EDE6D8] truncate">{currentUser.displayName || currentUser.name}</h3>
+                  <span className="text-[10px] text-[#A39A89]">{currentUser.email}</span>
+                </div>
+                <span className="ms-auto w-2 h-2 rounded-full bg-[#6F9E78] shrink-0" title="آنلاین" />
               </div>
+            )}
 
-              {/* Navigation & Campaign Controls */}
-              <div className="space-y-1.5 pb-2 border-b border-[#2F2A23]">
-                {onGoHome && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onGoHome();
-                    }}
-                    className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex items-center gap-2 touch-target"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-[#E0A030]" />
-                    <span>صفحه اصلی (کمپین‌ها و کاراکترها)</span>
-                  </button>
-                )}
-
-                {onOpenCampaignSwitcher && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onOpenCampaignSwitcher();
-                    }}
-                    className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] flex items-center justify-between touch-target"
-                  >
-                    <span>جابجایی بین کمپین‌ها</span>
-                    <ChevronDown className="w-3.5 h-3.5" />
-                  </button>
-                )}
-
-                {/* DM Campaign Management Tools */}
-                {isDm && viewMode === 'campaign_space' && (
-                  <div className="space-y-1 pt-1.5 border-t border-[#2F2A23]/60">
-                    <span className="text-[10px] font-bold text-[#A39A89]">مدیریت این کمپین:</span>
-                    {onOpenCampaignSettings && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          onOpenCampaignSettings();
-                        }}
-                        className="w-full text-right py-1.5 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between"
-                      >
-                        <span>تنظیمات قوانین و واحدها</span>
-                      </button>
-                    )}
-                    {onOpenCampaignMembers && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          onOpenCampaignMembers();
-                        }}
-                        className="w-full text-right py-1.5 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between"
-                      >
-                        <span>اعضا و تعیین نقش‌ها</span>
-                      </button>
-                    )}
-                    {onOpenCampaignInvites && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          onOpenCampaignInvites();
-                        }}
-                        className="w-full text-right py-1.5 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between"
-                      >
-                        <span>ساخت و مدیریت کدهای دعوت</span>
-                      </button>
-                    )}
-                    {onOpenCampaignApprovals && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          onOpenCampaignApprovals();
-                        }}
-                        className="w-full text-right py-1.5 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between"
-                      >
-                        <span>تأیید کاراکترها و ارتقای لول</span>
-                        {pendingApprovalsCount > 0 && (
-                          <span className="px-1.5 py-0.2 rounded-full bg-[#E0A030]/20 text-[#F2C265] text-[10px] font-bold">
-                            {pendingApprovalsCount}
-                          </span>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Account Management Button */}
-              {onOpenAccount && (
+            {/* Navigation & Campaign Controls */}
+            <div className="space-y-1.5">
+              {onGoHome && (
                 <button
                   type="button"
                   onClick={() => {
                     setMobileMenuOpen(false);
-                    onOpenAccount();
+                    onGoHome();
                   }}
-                  className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex items-center justify-center gap-2 touch-target"
+                  className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex items-center gap-2 touch-target"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-[#E0A030]" />
-                  <span>مدیریت حساب کاربری و نشست‌ها</span>
+                  <span>صفحه اصلی (کمپین‌ها و کاراکترها)</span>
                 </button>
               )}
 
-              {/* Character selection if multiple */}
-              {characters.length > 0 && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#A39A89]">کاراکتر انتخابی شما:</label>
-                  <div className="space-y-1 max-h-40 overflow-y-auto">
-                    {characters.map(c => (
-                      <button
-                        key={c.id}
-                        type="button"
-                        onClick={() => {
-                          onSelectCharacter(c.id);
-                          setMobileMenuOpen(false);
-                        }}
-                        className={`w-full text-right p-2 rounded-[10px] text-xs font-bold transition flex items-center justify-between border ${
-                          activeCharacterId === c.id
-                            ? 'bg-[#E0A030]/15 text-[#E0A030] border-[#E0A030]/40'
-                            : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23]'
-                        }`}
-                      >
-                        <span className="truncate">{c.name}</span>
-                        <span className="text-[10px] text-[#A39A89]">L{c.level}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* User Switcher for playtesting */}
-              {allUsers.length > 1 && (
-                <div className="space-y-1.5 pt-2 border-t border-[#2F2A23]">
-                  <label className="text-xs font-bold text-[#A39A89]">سوئیچ کاربر برای تست بازی:</label>
-                  <div className="space-y-1 max-h-36 overflow-y-auto">
-                    {allUsers.map(u => (
-                      <button
-                        key={u.id}
-                        type="button"
-                        onClick={() => {
-                          onSwitchUser(u.id);
-                          setMobileMenuOpen(false);
-                        }}
-                        className={`w-full text-right p-1.5 rounded-[8px] text-xs font-bold transition flex items-center justify-between ${
-                          currentUser?.id === u.id
-                            ? 'bg-[#E0A030]/10 text-[#E0A030]'
-                            : 'text-[#A39A89] hover:text-[#EDE6D8]'
-                        }`}
-                      >
-                        <span className="truncate">{u.displayName || u.name}</span>
-                        <span className="text-[10px]">{u.role === 'dm' ? 'مستر' : 'بازیکن'}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Utility Toggles */}
-              <div className="space-y-2 pt-2 border-t border-[#2F2A23]">
-                {wakeLockSupported && (
-                  <button
-                    type="button"
-                    onClick={onToggleWakeLock}
-                    className="w-full flex items-center justify-between p-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] touch-target"
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <SunMedium className="w-4 h-4 text-[#E0A030]" />
-                      روشن ماندن صفحه
-                    </span>
-                    <span className="text-[10px] font-bold text-[#E0A030]">
-                      {wakeLockActive ? 'فعال' : 'غیرفعال'}
-                    </span>
-                  </button>
-                )}
-
+              {onOpenCampaignSwitcher && (
                 <button
                   type="button"
-                  onClick={onToggleFontScale}
-                  className="w-full flex items-center justify-between p-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] touch-target"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenCampaignSwitcher();
+                  }}
+                  className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] flex items-center justify-between touch-target"
                 >
-                  <span className="flex items-center gap-1.5">
-                    <Type className="w-4 h-4 text-[#E0A030]" />
-                    اندازه قلم
-                  </span>
-                  <span className="text-[10px] font-bold text-[#E0A030]">
-                    {fontScale === 'xlarge' ? 'خیلی بزرگ' : fontScale === 'large' ? 'بزرگ' : 'استاندارد'}
-                  </span>
+                  <span>جابجایی بین کمپین‌ها</span>
+                  <ChevronDown className="w-3.5 h-3.5" />
                 </button>
-              </div>
+              )}
+
+              {/* DM Campaign Management Tools */}
+              {isDm && viewMode === 'campaign_space' && (
+                <div className="space-y-1 pt-1.5 border-t border-[#2F2A23]/60">
+                  <span className="text-[10px] font-bold text-[#A39A89]">مدیریت این کمپین:</span>
+                  {onOpenCampaignSettings && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onOpenCampaignSettings();
+                      }}
+                      className="w-full text-right py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
+                    >
+                      <span>تنظیمات قوانین و واحدها</span>
+                    </button>
+                  )}
+                  {onOpenCampaignMembers && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onOpenCampaignMembers();
+                      }}
+                      className="w-full text-right py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
+                    >
+                      <span>اعضا و تعیین نقش‌ها</span>
+                    </button>
+                  )}
+                  {onOpenCampaignInvites && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onOpenCampaignInvites();
+                      }}
+                      className="w-full text-right py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
+                    >
+                      <span>ساخت و مدیریت کدهای دعوت</span>
+                    </button>
+                  )}
+                  {onOpenCampaignApprovals && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onOpenCampaignApprovals();
+                      }}
+                      className="w-full text-right py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
+                    >
+                      <span>تأیید کاراکترها و ارتقای لول</span>
+                      {pendingApprovalsCount > 0 && (
+                        <span className="px-1.5 py-0.2 rounded-full bg-[#E0A030]/20 text-[#F2C265] text-[10px] font-bold">
+                          {pendingApprovalsCount}
+                        </span>
+                      )}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Logout Action */}
-            <div className="pt-3 border-t border-[#2F2A23]">
+            {/* Account Management Button */}
+            {onOpenAccount && (
               <button
                 type="button"
                 onClick={() => {
-                  onLogout();
                   setMobileMenuOpen(false);
+                  onOpenAccount();
                 }}
-                className="w-full py-2.5 px-3 rounded-[10px] bg-[#C2512B]/15 hover:bg-[#C2512B]/25 text-[#C2512B] border border-[#C2512B]/30 text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target"
+                className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex items-center justify-center gap-2 touch-target"
               >
-                <LogOut className="w-4 h-4" />
-                <span>خروج از حساب</span>
+                <Sparkles className="w-3.5 h-3.5 text-[#E0A030]" />
+                <span>مدیریت حساب کاربری و نشست‌ها</span>
+              </button>
+            )}
+
+            {/* Character selection if multiple */}
+            {characters.length > 0 && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-[#A39A89]">کاراکتر انتخابی شما:</label>
+                <div className="space-y-1 max-h-40 overflow-y-auto">
+                  {characters.map(c => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => {
+                        onSelectCharacter(c.id);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`w-full text-right p-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-between border touch-target ${
+                        activeCharacterId === c.id
+                          ? 'bg-[#E0A030]/15 text-[#E0A030] border-[#E0A030]/40'
+                          : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23]'
+                      }`}
+                    >
+                      <span className="truncate">{c.name}</span>
+                      <span className="text-[10px] text-[#A39A89]">L{c.level}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* User Switcher for playtesting */}
+            {allUsers.length > 1 && (
+              <div className="space-y-1.5 pt-2 border-t border-[#2F2A23]">
+                <label className="text-xs font-bold text-[#A39A89]">سوئیچ کاربر برای تست بازی:</label>
+                <div className="space-y-1 max-h-36 overflow-y-auto">
+                  {allUsers.map(u => (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() => {
+                        onSwitchUser(u.id);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`w-full text-right p-2 rounded-[8px] text-xs font-bold transition flex items-center justify-between touch-target ${
+                        currentUser?.id === u.id
+                          ? 'bg-[#E0A030]/10 text-[#E0A030]'
+                          : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                      }`}
+                    >
+                      <span className="truncate">{u.displayName || u.name}</span>
+                      <span className="text-[10px]">{u.role === 'dm' ? 'مستر' : 'بازیکن'}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Utility Toggles */}
+            <div className="space-y-2 pt-2 border-t border-[#2F2A23]">
+              {wakeLockSupported && (
+                <button
+                  type="button"
+                  onClick={onToggleWakeLock}
+                  className="w-full flex items-center justify-between p-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] touch-target"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <SunMedium className="w-4 h-4 text-[#E0A030]" />
+                    روشن ماندن صفحه
+                  </span>
+                  <span className="text-[10px] font-bold text-[#E0A030]">
+                    {wakeLockActive ? 'فعال' : 'غیرفعال'}
+                  </span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={onToggleFontScale}
+                className="w-full flex items-center justify-between p-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] touch-target"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Type className="w-4 h-4 text-[#E0A030]" />
+                  اندازه قلم
+                </span>
+                <span className="text-[10px] font-bold text-[#E0A030]">
+                  {fontScale === 'xlarge' ? 'خیلی بزرگ' : fontScale === 'large' ? 'بزرگ' : 'استاندارد'}
+                </span>
               </button>
             </div>
+
+            {/* Logout Action */}
+            <button
+              type="button"
+              onClick={() => {
+                onLogout();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full py-2.5 px-3 rounded-[10px] bg-[#C2512B]/15 hover:bg-[#C2512B]/25 text-[#C2512B] border border-[#C2512B]/30 text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>خروج از حساب</span>
+            </button>
           </div>
-        </div>
+        </BottomSheet>
       )}
     </header>
   );

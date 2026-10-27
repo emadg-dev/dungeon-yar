@@ -316,7 +316,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
               id="revealedCheck"
               checked={formData.isRevealed}
               onChange={(e) => setFormData({ ...formData, isRevealed: e.target.checked })}
-              className="w-4 h-4 rounded text-amber-500 accent-amber-500"
+              className="w-4 h-4 rounded text-[#E0A030] accent-[#E0A030]"
             />
             <label htmlFor="revealedCheck" className="text-xs text-[#C9C0AE] font-bold cursor-pointer">
               آشکار برای بازیکنان (در دانشنامه کلاینت بازیکن نمایش داده شود)
@@ -399,7 +399,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
                   <button
                     onClick={() => onDeleteNpc(npc.id)}
                     title="حذف"
-                    className="p-1.5 rounded-lg bg-[#201D19] text-[#A39A89] hover:text-red-400"
+                    className="p-1.5 rounded-lg bg-[#201D19] text-[#A39A89] hover:text-[#E8836B]"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -437,7 +437,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
 
             {/* Tactics Tips for DM */}
             {npc.tacticsTips && (
-              <div className="p-2.5 rounded-xl bg-amber-950/20 border border-[#E0A030]/25 text-[11px] text-[#F2C265]">
+              <div className="p-2.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/25 text-[11px] text-[#F2C265]">
                 <strong>نکته دانجن مستر:</strong> {npc.tacticsTips}
               </div>
             )}

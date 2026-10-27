@@ -62,7 +62,7 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
     <BottomSheet isOpen={isOpen} onClose={onClose} title={`پیوستن به ${campaign.name}`}>
       <form onSubmit={handleSubmit} className="space-y-4 py-2 text-right" dir="rtl">
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-rose-300 text-xs">
+          <div className="p-3 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs">
             {errorMsg}
           </div>
         )}
@@ -181,7 +181,7 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
         <div className={`p-3 rounded-xl border flex items-center gap-2.5 text-xs ${
           requiresApproval
             ? 'bg-[#E0A030]/10 border-[#E0A030]/30 text-[#F2C265]'
-            : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+            : 'bg-[#6F9E78]/10 border-[#6F9E78]/30 text-[#6F9E78]'
         }`}>
           {requiresApproval ? (
             <>
@@ -190,7 +190,7 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
             </>
           ) : (
             <>
-              <CheckCircle className="w-4 h-4 shrink-0 text-emerald-400" />
+              <CheckCircle className="w-4 h-4 shrink-0 text-[#6F9E78]" />
               <span>ورود مستقیم؛ نیازی به تأیید اولیه دانجن مستر نیست و فوراً آماده بازی می‌شوید.</span>
             </>
           )}
@@ -207,7 +207,7 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
           <button
             type="submit"
             disabled={isSubmitting || !selectedCharId}
-            className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs hover:bg-[#F2C265] disabled:opacity-50 transition-colors flex items-center gap-2 min-h-[44px] shadow-lg shadow-amber-500/20"
+            className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs hover:bg-[#F2C265] disabled:opacity-50 transition-colors flex items-center gap-2 min-h-[44px] shadow-lg shadow-[#E0A030]/20"
           >
             <Sparkles className="w-4 h-4" />
             <span>{isSubmitting ? 'در حال ورود...' : 'ورود به کمپین'}</span>

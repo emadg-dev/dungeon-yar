@@ -106,27 +106,27 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
           </h3>
           <p className="text-xs text-[#A39A89]">
             بونوس مهارت (Proficiency): <span className="font-mono text-[#F2C265] font-bold">+{nextProf}</span>
-            {nextProf > currentProf && <span className="text-emerald-400 font-bold me-1"> (+۱ افزایش!)</span>}
+            {nextProf > currentProf && <span className="text-[#6F9E78] font-bold me-1"> (+۱ افزایش!)</span>}
           </p>
         </div>
 
         {/* Fixed HP Gain */}
         <div className="p-3.5 rounded-xl bg-[#171513] border border-[#3A342B]/80 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Heart className="w-4 h-4 text-red-400 shrink-0" />
+            <Heart className="w-4 h-4 text-[#E8836B] shrink-0" />
             <div>
               <span className="text-xs font-bold text-[#EDE6D8] block">افزایش حداکثر جان (HP)</span>
               <span className="text-[11px] text-[#A39A89]">از جدول ثابت کتاب زروانیا</span>
             </div>
           </div>
-          <div className="text-sm font-black font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2.5 py-1 rounded-lg">
+          <div className="text-sm font-black font-mono text-[#6F9E78] bg-[#6F9E78]/15 border border-[#6F9E78]/30 px-2.5 py-1 rounded-lg">
             +{hpGain} جان
           </div>
         </div>
 
         {/* Subclass Selection at Level 3 */}
         {isSubclassLevel && (
-          <div className="p-3.5 rounded-xl bg-amber-950/20 border border-[#E0A030]/40 space-y-2">
+          <div className="p-3.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/40 space-y-2">
             <div className="flex items-center gap-1.5 text-xs font-bold text-[#F2C265]">
               <Sparkles className="w-4 h-4 text-[#F2C265]" />
               <span>انتخاب زیرکلاس اختصاصی (سطح ۳):</span>

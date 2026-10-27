@@ -362,7 +362,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                   type="checkbox"
                   checked={isPrivateToDm}
                   onChange={e => setIsPrivateToDm(e.target.checked)}
-                  className="w-5 h-5 accent-amber-500 rounded cursor-pointer"
+                  className="w-5 h-5 accent-[#E0A030] rounded cursor-pointer"
                 />
               </div>
             )}
@@ -410,9 +410,9 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                       key={roll.id}
                       className={`p-3 rounded-2xl border transition-all ${
                         isCrit
-                          ? 'bg-[#E0A030]/15 border-[#E0A030]/50 shadow-md shadow-amber-500/20'
+                          ? 'bg-[#E0A030]/15 border-[#E0A030]/50 shadow-md shadow-[#E0A030]/20'
                           : isFumble
-                          ? 'bg-[#C2512B]/15 border-[#C2512B]/50 shadow-md shadow-rose-500/20'
+                          ? 'bg-[#C2512B]/15 border-[#C2512B]/50 shadow-md shadow-[#C2512B]/20'
                           : 'bg-[#171513] border-[#2F2A23]'
                       }`}
                     >
@@ -424,7 +424,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                             <span className="text-[10px] text-[#A39A89]">({roll.characterName})</span>
                           )}
                           {roll.visibility === 'dm_only' && (
-                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#C2512B]/20 text-rose-300 border border-[#C2512B]/30 flex items-center gap-0.5">
+                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#C2512B]/20 text-[#E8836B] border border-[#C2512B]/30 flex items-center gap-0.5">
                               <Lock className="w-2.5 h-2.5" /> مخفی
                             </span>
                           )}

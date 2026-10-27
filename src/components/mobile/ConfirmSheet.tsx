@@ -45,7 +45,7 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
       subtitle="تأیید اقدام"
     >
       <div className="space-y-4 text-[#EDE6D8]">
-        <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-amber-950/20 border border-[#E0A030]/30">
+        <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-[#E0A030]/15 border border-[#E0A030]/30">
           <div className="p-2 rounded-xl bg-[#E0A030]/20 text-[#F2C265] shrink-0 mt-0.5">
             <AlertTriangle className="w-5 h-5 text-[#F2C265]" />
           </div>
@@ -74,7 +74,7 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
             }}
             className={`py-3 px-4 rounded-xl text-xs font-black shadow-lg transition touch-target ${
               isDanger
-                ? 'bg-gradient-to-r from-red-700 to-amber-700 hover:from-red-600 hover:to-[#C97B4A] text-white border border-red-500/50 shadow-red-950/50'
+                ? 'bg-gradient-to-r from-[#C2512B] to-[#E0A030] hover:from-[#C2512B] hover:to-[#C97B4A] text-white border border-[#C2512B]/50 shadow-[#0E0D0C]/50'
                 : 'bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] shadow-[#2A1A0D]/40'
             }`}
           >

@@ -10,7 +10,7 @@ import {
   LocationEntry, PlayerEncounterView, Campaign, MasterCharacter, CampaignInvite, 
   CampaignMember, CharacterHistoryEvent, CharacterParticipation, CampaignRole, CampaignSettings
 } from './types';
-import { api } from './services/api';
+import { api, HttpApi } from './services/api';
 import { Header } from './components/Header';
 import { BottomNav } from './components/mobile/BottomNav';
 import { StickyHeader } from './components/common/StickyHeader';
@@ -1145,7 +1145,7 @@ export default function App() {
             initialMode={authModalState.mode}
             initialInviteCode={authModalState.inviteCode}
             initialResetToken={authModalState.resetToken}
-            onSelectPreloadedUser={handleSwitchUser}
+            onSelectPreloadedUser={api instanceof HttpApi ? undefined : handleSwitchUser}
           />
         )}
 

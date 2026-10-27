@@ -143,18 +143,18 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
           </div>
           <div className={`px-3 py-1.5 rounded-xl border ${
             aryaman.state === 'returned'
-              ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-300'
+              ? 'bg-[#6F9E78]/15 border-[#6F9E78]/50 text-[#6F9E78]'
               : aryaman.state === 'hesitant'
-              ? 'bg-amber-950/60 border-[#E0A030]/50 text-[#F2C265]'
-              : 'bg-red-950/60 border-red-500/50 text-[#E8836B]'
+              ? 'bg-[#E0A030]/15 border-[#E0A030]/50 text-[#F2C265]'
+              : 'bg-[#C2512B]/15 border-[#C2512B]/50 text-[#E8836B]'
           }`}>
             آریامن: {aryaman.stateFa}
           </div>
           <div className={`px-3 py-1.5 rounded-xl border ${
             chaosScore >= 7
-              ? 'bg-red-950 border-red-500 text-red-200 animate-pulse font-black'
+              ? 'bg-[#C2512B]/15 border-[#C2512B] text-[#E8836B] animate-pulse font-black'
               : chaosScore >= 4
-              ? 'bg-amber-950/60 border-[#E0A030] text-[#F2C265]'
+              ? 'bg-[#E0A030]/15 border-[#E0A030] text-[#F2C265]'
               : 'bg-[#201D19] border-[#3A342B] text-[#C9C0AE]'
           }`}>
             آشفتگی: {chaosScore}/10 {chaosScore >= 7 ? '(سقوط حتمی!)' : chaosScore >= 4 ? '(زخم سرنوشت)' : ''}
@@ -183,7 +183,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                   type="checkbox"
                   checked={state.truthSources[k]}
                   onChange={() => toggleTruthSource(k)}
-                  className="w-4 h-4 rounded text-amber-500 focus:ring-0 cursor-pointer"
+                  className="w-4 h-4 rounded text-[#E0A030] focus:ring-0 cursor-pointer"
                 />
                 <span className={state.truthSources[k] ? 'text-[#F2C265] font-bold' : 'text-[#A39A89]'}>
                   {truthLabels[k]}
@@ -201,9 +201,9 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
               راه‌اندازهای آریامن ({aryaman.count} از ۵)
             </span>
             <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border ${
-              aryaman.state === 'returned' ? 'bg-emerald-950 text-emerald-300 border-emerald-500/40' :
-              aryaman.state === 'hesitant' ? 'bg-amber-950 text-[#F2C265] border-[#E0A030]/40' :
-              'bg-red-950 text-[#E8836B] border-red-500/40'
+              aryaman.state === 'returned' ? 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/40' :
+              aryaman.state === 'hesitant' ? 'bg-[#E0A030]/15 text-[#F2C265] border-[#E0A030]/40' :
+              'bg-[#C2512B]/15 text-[#E8836B] border-[#C2512B]/40'
             }`}>
               {aryaman.stateFa}
             </span>
@@ -218,7 +218,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                   type="checkbox"
                   checked={state.aryamanTriggers[k]}
                   onChange={() => toggleAryamanTrigger(k)}
-                  className="w-4 h-4 rounded text-amber-500 focus:ring-0 cursor-pointer"
+                  className="w-4 h-4 rounded text-[#E0A030] focus:ring-0 cursor-pointer"
                 />
                 <span className={state.aryamanTriggers[k] ? 'text-[#F2C265] font-bold' : 'text-[#A39A89]'}>
                   {aryamanLabels[k]}
@@ -245,7 +245,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                     motherEmberObtained: !state.motherEmberObtained
                   });
                 }}
-                className="w-3.5 h-3.5 rounded text-amber-500"
+                className="w-3.5 h-3.5 rounded text-[#E0A030]"
               />
               <span>اخگر مادر به‌دست آمد</span>
             </label>
@@ -255,7 +255,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
           <div className="w-full h-2.5 bg-[#201D19] rounded-full overflow-hidden">
             <div
               className={`h-full transition-all ${
-                state.embersPercentage >= 60 ? 'bg-gradient-to-r from-[#E0A030] to-amber-300' : 'bg-[#C97B4A]'
+                state.embersPercentage >= 60 ? 'bg-gradient-to-r from-[#E0A030] to-[#F2C265]' : 'bg-[#C97B4A]'
               }`}
               style={{ width: `${state.embersPercentage}%` }}
             />
@@ -272,7 +272,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                     type="checkbox"
                     checked={src.collected}
                     onChange={() => toggleEmberSource(i)}
-                    className="w-3.5 h-3.5 rounded text-amber-500"
+                    className="w-3.5 h-3.5 rounded text-[#E0A030]"
                   />
                   <span className={src.collected ? 'text-[#EDE6D8] font-bold' : 'text-[#A39A89]'}>
                     {src.name}
@@ -287,8 +287,8 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
         {/* 4. Chaos Tracker (0 to 10) */}
         <div className="p-4 rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-3">
           <div className="flex items-center justify-between border-b border-[#2F2A23] pb-2">
-            <span className="text-xs font-black text-red-400 flex items-center gap-1.5">
-              <AlertTriangle className="w-4 h-4 text-red-400" />
+            <span className="text-xs font-black text-[#E8836B] flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 text-[#E8836B]" />
               آشفتگی ({chaosScore} از ۱۰)
             </span>
             <span className="text-[11px] text-[#A39A89]">
@@ -354,19 +354,19 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                 type="checkbox"
                 checked={state.chaos.unrestrainedThreshold}
                 onChange={toggleChaosThreshold}
-                className="w-4 h-4 rounded text-red-500"
+                className="w-4 h-4 rounded text-[#C2512B]"
               />
             </label>
 
             <div className="flex items-center justify-between p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
-              <span className="text-emerald-400">آشتی دادن جناح یا نجات متحد (-۱ کاهش):</span>
+              <span className="text-[#6F9E78]">آشتی دادن جناح یا نجات متحد (-۱ کاهش):</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => adjustChaos('reconciledOrdersOrSavedAllies', -1)}
                   className="w-6 h-6 rounded bg-[#201D19] text-[#C9C0AE] font-bold"
                 >-1</button>
-                <span className="font-mono font-bold text-emerald-300">{state.chaos.reconciledOrdersOrSavedAllies}</span>
+                <span className="font-mono font-bold text-[#6F9E78]">{state.chaos.reconciledOrdersOrSavedAllies}</span>
                 <button
                   type="button"
                   onClick={() => adjustChaos('reconciledOrdersOrSavedAllies', +1)}
@@ -390,7 +390,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                 secondHalfSealObtained: !state.secondHalfSealObtained
               });
             }}
-            className="w-4 h-4 rounded text-amber-500 cursor-pointer"
+            className="w-4 h-4 rounded text-[#E0A030] cursor-pointer"
           />
           <Key className="w-4 h-4 text-[#F2C265]" />
           <span>نیمه دوم مهر آریامن به‌دست آمد (مهر کامل شد)</span>
@@ -452,7 +452,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                 <div className="flex items-center gap-2">
                   <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md border ${
                     ending.available
-                      ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40'
+                      ? 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/40'
                       : 'bg-[#201D19]/60 text-[#A39A89] border-[#3A342B]'
                   }`}>
                     {ending.available ? 'دسترس‌پذیر' : 'قفل‌شده'}
@@ -467,7 +467,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
 
               {/* Wound notification if applicable */}
               {ending.available && ending.woundEffect && (
-                <div className="mt-2 text-[11px] text-[#F2C265] bg-amber-950/40 p-2 rounded-xl border border-[#E0A030]/30 flex items-center gap-1.5">
+                <div className="mt-2 text-[11px] text-[#F2C265] bg-[#E0A030]/15 p-2 rounded-xl border border-[#E0A030]/30 flex items-center gap-1.5">
                   <AlertTriangle className="w-3.5 h-3.5 text-[#F2C265] shrink-0" />
                   <span>{ending.woundEffect}</span>
                 </div>

@@ -57,7 +57,7 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
 
         {approvals.length === 0 ? (
           <div className="p-8 rounded-2xl border border-dashed border-[#2F2A23] text-center space-y-2">
-            <Check className="w-8 h-8 text-emerald-400 mx-auto" />
+            <Check className="w-8 h-8 text-[#6F9E78] mx-auto" />
             <h4 className="text-sm font-bold text-[#EDE6D8]">صف بررسی خالی است</h4>
             <p className="text-xs text-[#8A8374]">هیچ درخواست تأیید نشده‌ای در کمپین‌های شما وجود ندارد.</p>
           </div>
@@ -77,7 +77,7 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
                       <div className="flex items-center gap-2">
                         <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
                           item.type === 'create'
-                            ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                            ? 'bg-[#7FB4D6]/20 text-[#7FB4D6] border border-[#7FB4D6]/30'
                             : 'bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30'
                         }`}>
                           {item.type === 'create' ? 'ورود شخصیت جدید' : 'ارتقای سطح (Level Up)'}
@@ -126,7 +126,7 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
                           type="button"
                           disabled={loading}
                           onClick={() => handleAction(item, 'reject')}
-                          className="px-3 py-1.5 rounded-xl bg-[#C2512B]/20 text-rose-300 border border-[#C2512B]/30 hover:bg-[#C2512B]/30 text-xs font-bold"
+                          className="px-3 py-1.5 rounded-xl bg-[#C2512B]/20 text-[#E8836B] border border-[#C2512B]/30 hover:bg-[#C2512B]/30 text-xs font-bold"
                         >
                           رد درخواست
                         </button>
@@ -152,7 +152,7 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
                       <button
                         disabled={loading}
                         onClick={() => handleAction(item, 'approve')}
-                        className="px-4 py-1.5 rounded-xl bg-emerald-500 text-[#0E0D0C] hover:bg-emerald-400 text-xs font-bold flex items-center gap-1 min-h-[36px] shadow-md shadow-emerald-500/20"
+                        className="px-4 py-1.5 rounded-xl bg-[#6F9E78] text-[#0E0D0C] hover:bg-[#6F9E78] text-xs font-bold flex items-center gap-1 min-h-[36px] shadow-md shadow-[#6F9E78]/20"
                       >
                         <Check className="w-3.5 h-3.5" />
                         <span>تأیید رسمی</span>

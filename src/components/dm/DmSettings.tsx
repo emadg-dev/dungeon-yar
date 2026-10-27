@@ -55,7 +55,7 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
         </p>
 
         {importMessage && (
-          <div className="p-3 mb-4 rounded-xl bg-emerald-950/50 border border-emerald-500/50 text-emerald-300 text-xs font-bold flex items-center gap-2">
+          <div className="p-3 mb-4 rounded-xl bg-[#6F9E78]/15 border border-[#6F9E78]/50 text-[#6F9E78] text-xs font-bold flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4" />
             {importMessage}
           </div>

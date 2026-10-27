@@ -68,7 +68,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
                   <Shield className="w-2.5 h-2.5 text-[#F2C265]" /> AC {character.ac}
                 </span>
                 {character.exhaustion > 0 && (
-                  <span className="flex items-center gap-0.5 text-red-400 font-bold">
+                  <span className="flex items-center gap-0.5 text-[#E8836B] font-bold">
                     <AlertTriangle className="w-2.5 h-2.5" /> {character.exhaustion}
                   </span>
                 )}
@@ -81,7 +81,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
             <button
               type="button"
               onClick={() => adjustHp(-1)}
-              className="w-12 h-12 flex items-center justify-center rounded-xl bg-red-950/60 active:bg-red-900 border border-red-500/40 text-[#E8836B] font-black text-sm touch-target-lg select-none"
+              className="w-12 h-12 flex items-center justify-center rounded-xl bg-[#C2512B]/15 active:bg-[#C2512B]/15 border border-[#C2512B]/40 text-[#E8836B] font-black text-sm touch-target-lg select-none"
               title="کاهش ۱ جان"
             >
               -۱
@@ -90,7 +90,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
             {/* Current / Max HP Badge */}
             <div className="flex flex-col items-center justify-center px-2 py-1 rounded-xl bg-[#171513] border border-[#3A342B] min-w-[58px] sm:min-w-[66px] min-h-[48px]">
               <div className="flex items-center gap-1">
-                <Heart className="w-3 h-3 text-red-400 fill-red-500/30" />
+                <Heart className="w-3 h-3 text-[#E8836B] fill-[#C2512B]/30" />
                 <span className="font-mono font-black text-sm text-[#EDE6D8] num-ltr">
                   {character.hp.current}/{character.hp.max}
                 </span>
@@ -98,7 +98,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
               <div className="w-full h-1 bg-[#201D19] rounded-full overflow-hidden mt-1">
                 <div
                   className={`h-full rounded-full transition-all ${
-                    hpPercent > 50 ? 'bg-emerald-500' : hpPercent > 20 ? 'bg-[#E0A030]' : 'bg-red-500'
+                    hpPercent > 50 ? 'bg-[#6F9E78]' : hpPercent > 20 ? 'bg-[#E0A030]' : 'bg-[#C2512B]'
                   }`}
                   style={{ width: `${hpPercent}%` }}
                 />
@@ -108,7 +108,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
             <button
               type="button"
               onClick={() => adjustHp(+1)}
-              className="w-12 h-12 flex items-center justify-center rounded-xl bg-emerald-950/60 active:bg-emerald-900 border border-emerald-500/40 text-emerald-300 font-black text-sm touch-target-lg select-none"
+              className="w-12 h-12 flex items-center justify-center rounded-xl bg-[#6F9E78]/15 active:bg-[#6F9E78]/15 border border-[#6F9E78]/40 text-[#6F9E78] font-black text-sm touch-target-lg select-none"
               title="افزایش ۱ جان"
             >
               +۱

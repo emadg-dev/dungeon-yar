@@ -4407,7 +4407,9 @@ export class HttpApi implements ApiClient {
   // Campaign Settings
   async getCampaignSettings(): Promise<{ allowPlayerCreateCharacter: boolean }> {
     try {
-      return await this.fetchJson<{ allowPlayerCreateCharacter: boolean }>('/settings/campaign');
+      const cid = this.getActiveCampaignId();
+      const qs = cid ? `?campaignId=${encodeURIComponent(cid)}` : '';
+      return await this.fetchJson<{ allowPlayerCreateCharacter: boolean }>(`/settings/campaign${qs}`);
     } catch {
       return { allowPlayerCreateCharacter: false };
     }
@@ -4416,7 +4418,7 @@ export class HttpApi implements ApiClient {
   async updateCampaignSettings(settings: { allowPlayerCreateCharacter: boolean }): Promise<{ allowPlayerCreateCharacter: boolean }> {
     return this.fetchJson<{ allowPlayerCreateCharacter: boolean }>('/settings/campaign', {
       method: 'PUT',
-      body: JSON.stringify(settings)
+      body: JSON.stringify({ ...settings, campaignId: this.getActiveCampaignId() })
     });
   }
 

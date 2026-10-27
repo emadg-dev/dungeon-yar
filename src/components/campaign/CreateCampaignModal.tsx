@@ -57,7 +57,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
     <BottomSheet isOpen={isOpen} onClose={onClose} title="ایجاد کمپین جدید">
       <form onSubmit={handleSubmit} className="space-y-4 py-2 text-right" dir="rtl">
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-rose-300 text-xs">
+          <div className="p-3 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs">
             {errorMsg}
           </div>
         )}
@@ -105,7 +105,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
-                <BookOpen className="w-4 h-4 text-sky-400" />
+                <BookOpen className="w-4 h-4 text-[#7FB4D6]" />
                 <h4 className="text-xs font-bold">پایه ۵e</h4>
               </div>
               <p className="text-[10px] line-clamp-2">ساختار خالص مکانیک D&D 5e، ۶ ویژگی، مهارت‌ها و شرایط استاندارد</p>
@@ -120,7 +120,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
-                <Layers className="w-4 h-4 text-emerald-400" />
+                <Layers className="w-4 h-4 text-[#6F9E78]" />
                 <h4 className="text-xs font-bold">کمپین خالی</h4>
               </div>
               <p className="text-[10px] line-clamp-2">شروع از پایه بدون هیچ الگوی پیش‌ساخته، تنظیم تمام قواعد توسط DM</p>
@@ -161,7 +161,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
           <button
             type="submit"
             disabled={isSubmitting || !name.trim()}
-            className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs hover:bg-[#F2C265] disabled:opacity-50 transition-colors flex items-center gap-2 min-h-[44px] shadow-lg shadow-amber-500/20"
+            className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs hover:bg-[#F2C265] disabled:opacity-50 transition-colors flex items-center gap-2 min-h-[44px] shadow-lg shadow-[#E0A030]/20"
           >
             <Shield className="w-4 h-4" />
             <span>{isSubmitting ? 'در حال ایجاد...' : 'ساخت کمپین و ورود'}</span>

@@ -90,15 +90,15 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
       </div>
 
       {/* Campaign Setup Checklist (Progress Ring / Shortcut) */}
-      <div className="surface-card rounded-[14px] p-3.5 flex items-center justify-between gap-3 border border-[#2F2A23] hover:border-amber-500/40 transition">
+      <div className="surface-card rounded-[14px] p-3.5 flex items-center justify-between gap-3 border border-[#2F2A23] hover:border-[#E0A030]/40 transition">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-[#E0A030]/15 text-[#F2C265] border border-[#E0A030]/30 flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-xs text-[#EDE6D8]">چک‌لیست راه‌اندازی و آمادگی کمپین</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#6F9E78]/20 text-[#6F9E78] font-bold">
                 {activeCampaign?.wizardState?.completed?.length || 8}/۸ گام
               </span>
             </div>
@@ -112,7 +112,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           <button
             type="button"
             onClick={onOpenSetupChecklist}
-            className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold transition flex items-center gap-1 min-h-[36px]"
+            className="px-3 py-1.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#F2C265] text-xs font-bold transition flex items-center gap-1 min-h-[36px]"
           >
             <span>بازبینی چک‌لیست</span>
             <ChevronRight className="w-3.5 h-3.5" />

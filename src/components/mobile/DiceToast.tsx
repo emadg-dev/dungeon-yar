@@ -48,9 +48,9 @@ export const DiceToast: React.FC<DiceToastProps> = ({
       <div 
         className={`p-3.5 rounded-2xl border shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 ${
           latestRoll.isCritical
-            ? 'bg-amber-950/90 border-[#F2C265] text-amber-100 shadow-[0_0_25px_rgba(245,158,11,0.4)]'
+            ? 'bg-[#E0A030]/15 border-[#F2C265] text-[#F2C265] shadow-[0_0_25px_rgba(245,158,11,0.4)]'
             : latestRoll.isFumble
-            ? 'bg-red-950/90 border-red-500/70 text-red-100'
+            ? 'bg-[#C2512B]/15 border-[#C2512B]/70 text-[#E8836B]'
             : 'bg-[#151926]/95 border-[#E0A030]/30 text-[#EDE6D8]'
         }`}
       >
@@ -74,7 +74,7 @@ export const DiceToast: React.FC<DiceToastProps> = ({
                 </span>
               )}
               {latestRoll.isFumble && (
-                <span className="px-1.5 py-0.5 text-[9px] font-black bg-red-600 text-white rounded-full">
+                <span className="px-1.5 py-0.5 text-[9px] font-black bg-[#C2512B] text-white rounded-full">
                   ۱ طبیعی
                 </span>
               )}

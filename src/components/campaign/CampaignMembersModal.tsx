@@ -48,14 +48,14 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
     <BottomSheet isOpen={isOpen} onClose={onClose} title={`اعضای کمپین (${members.length})`}>
       <div className="space-y-4 py-2 text-right" dir="rtl">
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-rose-300 text-xs">
+          <div className="p-3 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs">
             {errorMsg}
           </div>
         )}
 
         {/* Transfer Ownership Confirmation Section */}
         {transferTargetId && (
-          <div className="p-4 rounded-2xl bg-amber-950/30 border border-[#E0A030]/40 space-y-3">
+          <div className="p-4 rounded-2xl bg-[#E0A030]/15 border border-[#E0A030]/40 space-y-3">
             <div className="flex items-center gap-2 text-[#F2C265] text-xs font-bold">
               <AlertTriangle className="w-4 h-4 text-[#F2C265]" />
               <span>هشدار انتقال مالکیت کمپین</span>

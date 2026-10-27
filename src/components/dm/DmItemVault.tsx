@@ -303,7 +303,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                   id="revealedItemCheck"
                   checked={formData.isRevealed}
                   onChange={(e) => setFormData({ ...formData, isRevealed: e.target.checked })}
-                  className="w-4 h-4 rounded text-amber-500 accent-amber-500"
+                  className="w-4 h-4 rounded text-[#E0A030] accent-[#E0A030]"
                 />
                 <label htmlFor="revealedItemCheck" className="text-xs text-[#C9C0AE] font-bold cursor-pointer">
                   آشکار برای بازیکنان (در دانشنامه بازیکنان نمایش داده شود)
@@ -358,7 +358,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                       </button>
                       <button
                         onClick={() => onDeleteItem(item.id)}
-                        className="p-1.5 rounded-lg bg-[#201D19] text-[#A39A89] hover:text-red-400"
+                        className="p-1.5 rounded-lg bg-[#201D19] text-[#A39A89] hover:text-[#E8836B]"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -380,7 +380,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                   )}
 
                   {item.secretNotes && (
-                    <div className="p-2.5 rounded-xl bg-red-950/20 border border-red-500/30 text-xs text-[#E8836B] mb-3">
+                    <div className="p-2.5 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-xs text-[#E8836B] mb-3">
                       <strong>راز DM:</strong> {item.secretNotes}
                     </div>
                   )}
@@ -459,7 +459,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
             </p>
 
             {giveSuccessMsg ? (
-              <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/50 text-emerald-300 text-xs text-center font-bold flex items-center justify-center gap-2">
+              <div className="p-3 rounded-xl bg-[#6F9E78]/15 border border-[#6F9E78]/50 text-[#6F9E78] text-xs text-center font-bold flex items-center justify-center gap-2">
                 <Check className="w-4 h-4" />
                 {giveSuccessMsg}
               </div>

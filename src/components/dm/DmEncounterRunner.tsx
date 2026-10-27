@@ -688,7 +688,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <form onSubmit={handleCreateEncounter} className="space-y-4 pb-2" dir="rtl">
             <div>
               <label className="block text-xs font-bold text-[#A39A89] mb-1">
-                نام نبرد <span className="text-rose-500">*</span>
+                نام نبرد <span className="text-[#C2512B]">*</span>
               </label>
               <input
                 type="text"
@@ -1033,7 +1033,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                       )}
 
                       {p.phase && (
-                        <span className="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.2 rounded-full border border-purple-500/30">
+                        <span className="text-[10px] bg-[#9B72CF]/20 text-[#9B72CF] px-1.5 py-0.2 rounded-full border border-[#9B72CF]/30">
                           {p.phase}
                         </span>
                       )}
@@ -1159,13 +1159,13 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 {(p.conditions || []).map((cond, cIdx) => (
                   <span
                     key={cIdx}
-                    className="text-[10px] bg-[#C2512B]/15 text-rose-300 border border-[#C2512B]/30 px-2 py-0.5 rounded-full flex items-center gap-1 font-bold"
+                    className="text-[10px] bg-[#C2512B]/15 text-[#E8836B] border border-[#C2512B]/30 px-2 py-0.5 rounded-full flex items-center gap-1 font-bold"
                   >
                     <span>{cond}</span>
                     <button
                       type="button"
                       onClick={() => handleToggleCondition(p, cond)}
-                      className="hover:text-rose-100"
+                      className="hover:text-[#E8836B]"
                     >
                       <X className="w-2.5 h-2.5" />
                     </button>
@@ -1228,7 +1228,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                       }}
                       className="p-1.5 rounded-[6px] bg-[#201D19] hover:bg-[#2F2A23] text-[#EDE6D8] text-right font-semibold flex items-center gap-1.5"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                      <Sparkles className="w-3.5 h-3.5 text-[#9B72CF]" />
                       <span>تغییر فاز باس</span>
                     </button>
 
@@ -1574,7 +1574,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                   else setKeypadAmount(prev => (prev.length < 4 ? prev + k : prev));
                 }}
                 className={`py-3 rounded-[10px] font-black text-lg transition touch-target flex items-center justify-center ${
-                  k === 'C' ? 'bg-[#C2512B]/20 text-rose-300' :
+                  k === 'C' ? 'bg-[#C2512B]/20 text-[#E8836B]' :
                   k === '⌫' ? 'bg-[#201D19] text-[#A39A89]' :
                   'bg-[#201D19] text-[#EDE6D8] hover:bg-[#2F2A23]'
                 }`}
@@ -1621,7 +1621,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 onClick={() => conditionTarget && handleToggleCondition(conditionTarget, cond)}
                 className={`w-full p-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-between touch-target ${
                   isApplied
-                    ? 'bg-[#C2512B]/20 text-rose-300 border border-[#C2512B]/40'
+                    ? 'bg-[#C2512B]/20 text-[#E8836B] border border-[#C2512B]/40'
                     : 'bg-[#171513] text-[#EDE6D8] border border-[#2F2A23] hover:bg-[#201D19]'
                 }`}
               >
@@ -1692,7 +1692,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <button
             type="button"
             onClick={handleFinishEndAndDistribute}
-            className="w-full py-3 rounded-[10px] bg-[#C2512B] hover:bg-rose-600 text-white font-black text-sm transition shadow-md touch-target"
+            className="w-full py-3 rounded-[10px] bg-[#C2512B] hover:bg-[#C2512B] text-white font-black text-sm transition shadow-md touch-target"
           >
             تایید و ثبت نهایی پایان نبرد
           </button>

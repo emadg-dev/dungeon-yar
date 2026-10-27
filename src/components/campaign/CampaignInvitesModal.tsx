@@ -177,7 +177,7 @@ export const CampaignInvitesModal: React.FC<CampaignInvitesModalProps> = ({
                         onClick={() => handleCopyLink(inv.code, inv.id)}
                         className="px-3 py-1.5 rounded-xl bg-[#201D19] hover:bg-[#2A2621] text-[#F2C265] text-xs font-medium flex items-center gap-1 min-h-[36px]"
                       >
-                        {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        {isCopied ? <Check className="w-3.5 h-3.5 text-[#6F9E78]" /> : <Copy className="w-3.5 h-3.5" />}
                         <span>{isCopied ? 'کپی شد' : 'کپی لینک'}</span>
                       </button>
                       <button

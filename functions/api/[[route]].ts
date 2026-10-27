@@ -753,6 +753,1298 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   // ---------------------------------------------------------
+  // Shared helpers for the multi-campaign client contract
+  // ---------------------------------------------------------
+  const actor = currentUser;
+  const parseBlob = (value: any, fallback: any) => {
+    try {
+      return value ? JSON.parse(value) : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
+  const mapCampaignRow = (r: any) => ({
+    id: r.id,
+    name: r.name,
+    description: r.description || '',
+    coverMediaId: r.cover_media_id || null,
+    tone: r.tone || undefined,
+    status: r.status,
+    ownerId: r.owner_id,
+    sourcePackId: r.source_pack_id || null,
+    settings: parseBlob(r.settings, {}),
+    wizardState: r.wizard_state ? parseBlob(r.wizard_state, null) : null,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+    myRole: r.my_role || undefined,
+    memberCount: r.member_count != null ? Number(r.member_count) : undefined,
+    characterCount: r.character_count != null ? Number(r.character_count) : undefined
+  });
+
+  const getMembershipRole = async (campId: string, userId: string) => {
+    const row = await env.DB.prepare(
+      "SELECT role FROM campaign_members WHERE campaign_id = ? AND user_id = ? AND status = 'active'"
+    ).bind(campId, userId).first();
+    return row?.role || null;
+  };
+
+  const loadCharacterBlobs = async () => {
+    const res = actor.role === 'dm'
+      ? await env.DB.prepare('SELECT id, data, revision FROM characters').all()
+      : await env.DB.prepare('SELECT id, data, revision FROM characters WHERE owner_id = ?').bind(actor.id).all();
+    return res.results || [];
+  };
+
+  const saveCharacterBlob = async (id: string, blob: any, nextRevision: number) => {
+    blob.revision = nextRevision;
+    blob.updatedAt = new Date().toISOString();
+    await env.DB.prepare('UPDATE characters SET data = ?, revision = ?, updated_at = ? WHERE id = ?')
+      .bind(JSON.stringify(blob), nextRevision, now, id).run();
+    return blob;
+  };
+
+  // ---------------------------------------------------------
+  // Home Summary (GET /api/home) — data for the post-login home screen
+  // ---------------------------------------------------------
+  if (path === '/home' && method === 'GET') {
+    // 1) Campaigns where the user holds an active membership
+    const memRes = await env.DB.prepare(
+      `SELECT c.*, m.role AS my_role,
+              (SELECT COUNT(*) FROM campaign_members cm WHERE cm.campaign_id = c.id AND cm.status = 'active') AS member_count,
+              (SELECT COUNT(*) FROM character_participations cp WHERE cp.campaign_id = c.id AND cp.status = 'active') AS character_count
+         FROM campaign_members m
+         JOIN campaigns c ON c.id = m.campaign_id
+        WHERE m.user_id = ? AND m.status = 'active' AND c.deleted_at IS NULL
+        ORDER BY c.updated_at DESC`
+    ).bind(actor.id).all();
+    const myCampaigns = (memRes.results || []).map(mapCampaignRow);
+
+    // 2) Master characters (legacy JSON-blob rows) + participation summary
+    const charRes = await env.DB.prepare('SELECT id, data FROM characters WHERE owner_id = ?').bind(actor.id).all();
+    const myCharacters: any[] = [];
+    const charIds: string[] = [];
+    for (const row of charRes.results || []) {
+      const parsed = parseBlob(row.data, null);
+      if (parsed && parsed.status !== 'archived') {
+        myCharacters.push(parsed);
+        charIds.push(row.id);
+      }
+    }
+    if (charIds.length > 0) {
+      const placeholders = charIds.map(() => '?').join(',');
+      const partRes = await env.DB.prepare(
+        `SELECT id, character_id, campaign_id, status, level FROM character_participations WHERE character_id IN (${placeholders})`
+      ).bind(...charIds).all();
+      const byChar: Record<string, any[]> = {};
+      for (const p of partRes.results || []) {
+        (byChar[p.character_id] = byChar[p.character_id] || []).push({
+          id: p.id,
+          characterId: p.character_id,
+          campaignId: p.campaign_id,
+          status: p.status,
+          level: p.level
+        });
+      }
+      for (const c of myCharacters) {
+        c.participations = byChar[c.id] || [];
+      }
+    }
+
+    const isGlobalDm = actor.role === 'dm';
+    const myDmIds = new Set(
+      myCampaigns.filter((c: any) => c.myRole === 'owner' || c.myRole === 'co_dm').map((c: any) => c.id)
+    );
+
+    // 3) Pending campaign invites visible to DMs of those campaigns
+    const inviteRes = await env.DB.prepare(
+      'SELECT * FROM campaign_invites WHERE revoked_at IS NULL ORDER BY created_at DESC'
+    ).all();
+    const pendingInvites = (inviteRes.results || [])
+      .filter((i: any) => i.expires_at > now && i.used_count < i.max_uses && (isGlobalDm || myDmIds.has(i.campaign_id)))
+      .map((i: any) => ({
+        id: i.id,
+        campaignId: i.campaign_id,
+        role: i.role,
+        label: i.label,
+        createdBy: i.created_by,
+        createdAt: i.created_at,
+        expiresAt: i.expires_at,
+        maxUses: i.max_uses,
+        usedCount: i.used_count,
+        assignParticipationId: i.assign_participation_id,
+        revokedAt: i.revoked_at
+      }));
+
+    // 4) Pending character approvals (creation / level-up) for DM campaigns
+    const apprRes = await env.DB.prepare(
+      `SELECT p.id, p.character_id, p.campaign_id, p.status, p.level, p.class_name, p.pending_level_up, p.joined_at, p.updated_at,
+              ch.name AS char_name, ch.data AS char_data, u.display_name AS player_name, c.name AS campaign_name
+         FROM character_participations p
+         JOIN characters ch ON ch.id = p.character_id
+         LEFT JOIN users u ON u.id = ch.owner_id
+         JOIN campaigns c ON c.id = p.campaign_id
+        WHERE p.status = 'pending_approval' OR (p.pending_level_up IS NOT NULL AND p.pending_level_up != '')`
+    ).all();
+    const pendingApprovals: any[] = [];
+    for (const p of apprRes.results || []) {
+      if (!isGlobalDm && !myDmIds.has(p.campaign_id)) continue;
+      const charBlob = parseBlob(p.char_data, null);
+      const levelUp = parseBlob(p.pending_level_up, null);
+      if (p.status === 'pending_approval') {
+        pendingApprovals.push({
+          campaignId: p.campaign_id,
+          campaignName: p.campaign_name,
+          type: 'create',
+          participationId: p.id,
+          characterId: p.character_id,
+          characterName: p.char_name || charBlob?.name || 'شخصیت جدید',
+          playerName: p.player_name || 'کاربر',
+          level: p.level,
+          requestedAt: p.joined_at,
+          details: { className: p.class_name, race: charBlob?.race }
+        });
+      } else if (levelUp) {
+        pendingApprovals.push({
+          campaignId: p.campaign_id,
+          campaignName: p.campaign_name,
+          type: 'level_up',
+          participationId: p.id,
+          characterId: p.character_id,
+          characterName: p.char_name || charBlob?.name || 'شخصیت',
+          playerName: p.player_name || 'کاربر',
+          level: levelUp.targetLevel || p.level,
+          requestedAt: levelUp.requestedAt || p.updated_at,
+          details: levelUp.diff
+        });
+      }
+    }
+
+    return json({
+      user: {
+        id: actor.id,
+        email: actor.email,
+        name: actor.display_name,
+        displayName: actor.display_name,
+        role: actor.role,
+        status: actor.status,
+        mustChangePassword: actor.must_change_password === 1,
+        activeCharacterId: actor.active_character_id || null,
+        avatarUrl: actor.avatar_url || null
+      },
+      myCampaigns,
+      myCharacters,
+      pendingInvites,
+      pendingApprovals
+    });
+  }
+
+  // GET /api/campaigns — campaigns the current user belongs to
+  if (path === '/campaigns' && method === 'GET') {
+    const memRes = await env.DB.prepare(
+      `SELECT c.*, m.role AS my_role,
+              (SELECT COUNT(*) FROM campaign_members cm WHERE cm.campaign_id = c.id AND cm.status = 'active') AS member_count,
+              (SELECT COUNT(*) FROM character_participations cp WHERE cp.campaign_id = c.id AND cp.status = 'active') AS character_count
+         FROM campaign_members m
+         JOIN campaigns c ON c.id = m.campaign_id
+        WHERE m.user_id = ? AND m.status = 'active' AND c.deleted_at IS NULL
+        ORDER BY c.updated_at DESC`
+    ).bind(actor.id).all();
+    return json((memRes.results || []).map(mapCampaignRow));
+  }
+
+  // GET /api/c/:id — single campaign (with membership role)
+  if (path.match(/^\/c\/[^/]+$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const row = await env.DB.prepare('SELECT * FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(campId).first();
+    if (!row) return error('کمپین مورد نظر یافت نشد.', 404);
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('کمپین مورد نظر یافت نشد.', 404);
+    const mc = await env.DB.prepare("SELECT COUNT(*) AS n FROM campaign_members WHERE campaign_id = ? AND status = 'active'").bind(campId).first();
+    const cc = await env.DB.prepare("SELECT COUNT(*) AS n FROM character_participations WHERE campaign_id = ? AND status = 'active'").bind(campId).first();
+    return json(mapCampaignRow({
+      ...row,
+      my_role: myRole || 'owner',
+      member_count: mc?.n ?? 0,
+      character_count: cc?.n ?? 0
+    }));
+  }
+
+  // GET /api/c/:id/members
+  if (path.match(/^\/c\/[^/]+\/members$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 403);
+    const res = await env.DB.prepare(
+      `SELECT m.campaign_id, m.user_id, m.role, m.status, m.joined_at, u.display_name, u.email, u.avatar_url
+         FROM campaign_members m
+         JOIN users u ON u.id = m.user_id
+        WHERE m.campaign_id = ?
+        ORDER BY m.joined_at ASC`
+    ).bind(campId).all();
+    return json((res.results || []).map((r: any) => ({
+      campaignId: r.campaign_id,
+      userId: r.user_id,
+      role: r.role,
+      status: r.status,
+      joinedAt: r.joined_at,
+      userName: r.display_name,
+      userEmail: r.email,
+      userAvatarUrl: r.avatar_url
+    })));
+  }
+
+  // GET /api/c/:id/invites (owner / co_dm only)
+  if (path.match(/^\/c\/[^/]+\/invites$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (actor.role !== 'dm' && myRole !== 'owner' && myRole !== 'co_dm') {
+      return error('دسترسی مجاز نیست.', 403);
+    }
+    const res = await env.DB.prepare(
+      'SELECT * FROM campaign_invites WHERE campaign_id = ? AND revoked_at IS NULL ORDER BY created_at DESC'
+    ).bind(campId).all();
+    return json((res.results || []).map((r: any) => ({
+      id: r.id,
+      campaignId: r.campaign_id,
+      role: r.role,
+      label: r.label,
+      createdBy: r.created_by,
+      createdAt: r.created_at,
+      expiresAt: r.expires_at,
+      maxUses: r.max_uses,
+      usedCount: r.used_count,
+      assignParticipationId: r.assign_participation_id,
+      revokedAt: r.revoked_at
+    })));
+  }
+
+  // POST /api/c/:id/invites — create a campaign invite (owner / co_dm only)
+  if (path.match(/^\/c\/[^/]+\/invites$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (actor.role !== 'dm' && myRole !== 'owner' && myRole !== 'co_dm') {
+      return error('دسترسی مجاز نیست.', 403);
+    }
+    const body = await request.json() as any;
+    const role = ['owner', 'co_dm', 'player', 'spectator'].includes(body.role) ? body.role : 'player';
+    const label = String(body.label || 'دعوت جدید').trim();
+    const expiresInDays = Math.max(1, Math.min(365, parseInt(String(body.expiresInDays || 30), 10)));
+    const maxUses = Math.max(1, parseInt(String(body.maxUses || 1), 10));
+    const assignParticipationId = body.assignParticipationId || null;
+    const rawCode = `inv-${generateRandomToken(6)}`;
+    const codeHash = await sha256Hex(rawCode);
+    const inviteId = `cinv-${Date.now()}-${generateRandomToken(4)}`;
+    const expiresAt = now + expiresInDays * 24 * 60 * 60 * 1000;
+    await env.DB.prepare(
+      `INSERT INTO campaign_invites (id, campaign_id, code_hash, role, label, created_by, created_at, expires_at, max_uses, used_count, assign_participation_id, revoked_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, NULL)`
+    ).bind(inviteId, campId, codeHash, role, label, actor.id, now, expiresAt, maxUses, assignParticipationId).run();
+    await audit('campaign-invite-create', inviteId, { campaignId: campId, role, label, maxUses, expiresAt });
+    return json({
+      id: inviteId,
+      campaignId: campId,
+      code: rawCode,
+      role,
+      label,
+      createdBy: actor.id,
+      createdAt: now,
+      expiresAt,
+      maxUses,
+      usedCount: 0,
+      assignParticipationId,
+      revokedAt: null
+    }, 201);
+  }
+
+  // DELETE /api/c/:id/invites/:inviteId — revoke a campaign invite
+  if (path.match(/^\/c\/[^/]+\/invites\/[^/]+$/) && method === 'DELETE') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const inviteId = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (actor.role !== 'dm' && myRole !== 'owner' && myRole !== 'co_dm') {
+      return error('دسترسی مجاز نیست.', 403);
+    }
+    const res = await env.DB.prepare(
+      'UPDATE campaign_invites SET revoked_at = ? WHERE id = ? AND campaign_id = ? AND revoked_at IS NULL'
+    ).bind(now, inviteId, campId).run();
+    const changes = res?.meta?.changes ?? 0;
+    if (changes === 0) return error('دعوت‌نامه یافت نشد.', 404);
+    await audit('campaign-invite-revoke', inviteId, { campaignId: campId });
+    return json({ success: true });
+  }
+
+  // POST /api/invites/accept — join a campaign via invite code (any authenticated user)
+  if (path === '/invites/accept' && method === 'POST') {
+    const body = await request.json() as any;
+    const code = String(body.code || '').trim();
+    if (!code) return error('کد دعوت را وارد کنید.');
+    const codeHash = await sha256Hex(code);
+    const inv = await env.DB.prepare(
+      'SELECT * FROM campaign_invites WHERE code_hash = ? OR id = ?'
+    ).bind(codeHash, code).first();
+    if (!inv || inv.revoked_at) return error('کد دعوت نامعتبر یا منقضی شده است.', 404);
+    if (inv.expires_at > 0 && inv.expires_at < now) return error('این کد دعوت منقضی شده است.');
+    if (inv.used_count >= inv.max_uses) return error('این کد دعوت قبلاً استفاده شده است.');
+    if (!inv.campaign_id) return error('این کد دعوت معتبر نیست.');
+    const campId = inv.campaign_id as string;
+    const camp = await env.DB.prepare('SELECT id FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(campId).first();
+    if (!camp) return error('کمپین این دعوت یافت نشد.', 404);
+    const existing = await env.DB.prepare(
+      'SELECT status FROM campaign_members WHERE campaign_id = ? AND user_id = ?'
+    ).bind(campId, actor.id).first();
+    if (existing && existing.status === 'active') return error('شما هم‌اکنون عضو این کمپین هستید.');
+    const memberRole = ['owner', 'co_dm', 'player', 'spectator'].includes(inv.role) ? inv.role : 'player';
+    await env.DB.prepare(
+      `INSERT INTO campaign_members (campaign_id, user_id, role, status, joined_at) VALUES (?, ?, ?, 'active', ?)
+       ON CONFLICT(campaign_id, user_id) DO UPDATE SET role = excluded.role, status = 'active', joined_at = excluded.joined_at`
+    ).bind(campId, actor.id, memberRole, now).run();
+    await env.DB.prepare(
+      'UPDATE campaign_invites SET used_count = used_count + 1 WHERE id = ? AND used_count < max_uses'
+    ).bind(inv.id).run();
+    await audit('campaign-invite-accept', inv.id, { campaignId: campId, role: memberRole });
+    return json({ campaignId: campId, role: memberRole });
+  }
+
+  // ---------------------------------------------------------
+  // Campaign settings (client passes the active campaign id)
+  // ---------------------------------------------------------
+  if (path === '/settings/campaign' && method === 'GET') {
+    const campId = url.searchParams.get('campaignId');
+    if (!campId) return json({ allowPlayerCreateCharacter: true });
+    const row = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(campId).first();
+    if (!row) return json({ allowPlayerCreateCharacter: true });
+    const settings = parseBlob(row.settings, {});
+    return json({ allowPlayerCreateCharacter: settings.allowPlayerCreateCharacter ?? true });
+  }
+
+  if (path === '/settings/campaign' && method === 'PUT') {
+    const body = await request.json() as any;
+    const campId = body.campaignId || url.searchParams.get('campaignId');
+    if (!campId) return error('کمپین فعال یافت نشد.');
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (actor.role !== 'dm' && myRole !== 'owner' && myRole !== 'co_dm') {
+      return error('دسترسی مجاز نیست.', 403);
+    }
+    const row = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(campId).first();
+    if (!row) return error('کمپین مورد نظر یافت نشد.', 404);
+    const settings = parseBlob(row.settings, {});
+    if (typeof body.allowPlayerCreateCharacter === 'boolean') {
+      settings.allowPlayerCreateCharacter = body.allowPlayerCreateCharacter;
+    }
+    await env.DB.prepare('UPDATE campaigns SET settings = ?, updated_at = ? WHERE id = ?')
+      .bind(JSON.stringify(settings), now, campId).run();
+    return json({ allowPlayerCreateCharacter: settings.allowPlayerCreateCharacter ?? true });
+  }
+
+  // ---------------------------------------------------------
+  // Content lists used by the campaign workspace
+  // ---------------------------------------------------------
+  if (path === '/rewards' && method === 'GET') {
+    const res = await env.DB.prepare('SELECT data FROM rewards').all();
+    return json((res.results || []).map((r: any) => parseBlob(r.data, null)).filter(Boolean));
+  }
+
+  if (path === '/weapon-templates' && method === 'GET') {
+    const res = await env.DB.prepare('SELECT data FROM weapon_templates').all();
+    return json((res.results || []).map((r: any) => parseBlob(r.data, null)).filter(Boolean));
+  }
+
+  if (path === '/class-templates' && method === 'GET') {
+    const res = await env.DB.prepare('SELECT data FROM class_templates').all();
+    return json((res.results || []).map((r: any) => parseBlob(r.data, null)).filter(Boolean));
+  }
+
+  if (path === '/campaign-notes' && method === 'GET') {
+    if (actor.role !== 'dm') return json([]);
+    const res = await env.DB.prepare('SELECT data FROM campaign_notes').all();
+    return json((res.results || []).map((r: any) => parseBlob(r.data, null)).filter(Boolean));
+  }
+
+  // ---------------------------------------------------------
+  // Group Rest / Group Resources (mutate character JSON blobs)
+  // ---------------------------------------------------------
+  if (path === '/characters/group-rest' && method === 'POST') {
+    const body = await request.json() as any;
+    const type = body.type === 'long' || body.type === 'special' ? body.type : 'short';
+    const notes = String(body.notes || '');
+    const rows = await loadCharacterBlobs();
+    const updated: any[] = [];
+    for (const row of rows) {
+      const char = parseBlob(row.data, null);
+      if (!char) continue;
+      const hp = { current: 0, max: 0, temp: 0, ...(char.hp || {}) };
+      let exhaustion = char.exhaustion || 0;
+      const features = (char.features || []).map((f: any) => {
+        if (type === 'long') return { ...f, usedCount: 0 };
+        if (type === 'short' && f.usageType === 'short') return { ...f, usedCount: 0 };
+        return f;
+      });
+      const weapons = (char.weapons || []).map((w: any) => {
+        if (type === 'long') return { ...w, abilityUsed: 0 };
+        if (type === 'short' && (w.specialAbility?.restType === 'short' || w.abilityReset === 'short')) {
+          return { ...w, abilityUsed: 0 };
+        }
+        return w;
+      });
+      if (type === 'long') {
+        hp.current = hp.max;
+        hp.temp = 0;
+        if (exhaustion > 0) exhaustion -= 1;
+      } else if (type === 'special') {
+        hp.current = Math.min(hp.max, hp.current + Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1 + 2);
+        if (exhaustion > 0) exhaustion -= 1;
+      }
+      const restEntry = {
+        id: `rest-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        date: new Date().toLocaleDateString('fa-IR'),
+        type,
+        notes: notes || (type === 'long' ? 'استراحت کامل گروهی' : type === 'short' ? 'استراحت کوتاه گروهی' : 'استراحت ویژه در اردوگاه پریان')
+      };
+      const nextRevision = Number(row.revision || 0) + 1;
+      const saved = await saveCharacterBlob(row.id, {
+        ...char,
+        hp,
+        exhaustion,
+        features,
+        weapons,
+        restLog: [restEntry, ...(char.restLog || [])]
+      }, nextRevision);
+      updated.push(saved);
+    }
+    return json(updated);
+  }
+
+  if (path === '/characters/group-resources' && method === 'POST') {
+    const body = await request.json() as any;
+    const rationsDelta = Number(body.rations || 0);
+    const oilDelta = Number(body.lanternOil || 0);
+    const rows = await loadCharacterBlobs();
+    const updated: any[] = [];
+    for (const row of rows) {
+      const char = parseBlob(row.data, null);
+      if (!char) continue;
+      const saved = await saveCharacterBlob(row.id, {
+        ...char,
+        rations: Math.max(0, (char.rations || 0) + rationsDelta),
+        lanternOil: Math.max(0, (char.lanternOil || 0) + oilDelta)
+      }, Number(row.revision || 0) + 1);
+      updated.push(saved);
+    }
+    return json(updated);
+  }
+
+  // ---------------------------------------------------------
+  // Campaign create / update / members (multi-campaign writes)
+  // ---------------------------------------------------------
+  const requireCampaignDm = async (campId: string) => {
+    const myRole = await getMembershipRole(campId, actor.id);
+    return actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+  };
+
+  // POST /api/campaigns — create a campaign (owner membership created atomically)
+  if (path === '/campaigns' && method === 'POST') {
+    const body = await request.json() as any;
+    const name = String(body.name || '').trim();
+    if (!name) return error('نام کمپین الزامی است.');
+    const campId = `camp-${Date.now()}-${generateRandomToken(4)}`;
+    const defaultSettings = {
+      units: 'feet',
+      startingLevel: 1,
+      maxEntryLevel: 20,
+      abilityScoreMethods: ['standard_array', 'point_buy', 'roll', 'manual'],
+      approval: { onCreate: false, onLevelUp: false },
+      backstoryVisibility: 'party',
+      diceVisibility: 'table',
+      allowPlayerRollPrivate: true,
+      allowPlayerCreateCharacter: true,
+      encounterDefaults: { showExactHp: false, showAc: false, showConditions: true, showDefeated: true, playerInitiativeRolls: true }
+    };
+    const settings = { ...defaultSettings, ...(body.settings || {}) };
+    const description = String(body.description || '');
+    const tone = body.tone ? String(body.tone) : null;
+    const sourcePackId = body.packId ? String(body.packId) : null;
+    await env.DB.prepare(
+      `INSERT INTO campaigns (id, name, description, tone, status, owner_id, source_pack_id, settings, created_at, updated_at)
+       VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?, ?)`
+    ).bind(campId, name, description, tone, actor.id, sourcePackId, JSON.stringify(settings), now, now).run();
+    await env.DB.prepare(
+      "INSERT INTO campaign_members (campaign_id, user_id, role, status, joined_at) VALUES (?, ?, 'owner', 'active', ?)"
+    ).bind(campId, actor.id, now).run();
+    await audit('campaign-create', campId, { name });
+    const row = await env.DB.prepare('SELECT * FROM campaigns WHERE id = ?').bind(campId).first();
+    return json(mapCampaignRow({ ...row, my_role: 'owner', member_count: 1, character_count: 0 }), 201);
+  }
+
+  // PATCH /api/c/:id — update campaign fields (owner / co_dm)
+  if (path.match(/^\/c\/[^/]+$/) && method === 'PATCH') {
+    const campId = path.split('/')[2];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+    const row = await env.DB.prepare('SELECT * FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(campId).first();
+    if (!row) return error('کمپین مورد نظر یافت نشد.', 404);
+    const body = await request.json() as any;
+    const next = {
+      name: body.name !== undefined ? String(body.name) : row.name,
+      description: body.description !== undefined ? String(body.description) : row.description,
+      tone: body.tone !== undefined ? body.tone : row.tone,
+      status: body.status !== undefined && ['draft', 'active', 'paused', 'archived'].includes(body.status) ? body.status : row.status,
+      settings: body.settings !== undefined && body.settings ? body.settings : parseBlob(row.settings, {})
+    };
+    await env.DB.prepare(
+      'UPDATE campaigns SET name = ?, description = ?, tone = ?, status = ?, settings = ?, updated_at = ? WHERE id = ?'
+    ).bind(next.name, next.description, next.tone, next.status, JSON.stringify(next.settings), now, campId).run();
+    await audit('campaign-update', campId, { fields: Object.keys(body) });
+    const updated = await env.DB.prepare('SELECT * FROM campaigns WHERE id = ?').bind(campId).first();
+    const myRole = await getMembershipRole(campId, actor.id);
+    const mc = await env.DB.prepare("SELECT COUNT(*) AS n FROM campaign_members WHERE campaign_id = ? AND status = 'active'").bind(campId).first();
+    const cc = await env.DB.prepare("SELECT COUNT(*) AS n FROM character_participations WHERE campaign_id = ? AND status = 'active'").bind(campId).first();
+    return json(mapCampaignRow({ ...updated, my_role: myRole || 'owner', member_count: mc?.n ?? 0, character_count: cc?.n ?? 0 }));
+  }
+
+  // PATCH /api/c/:id/members/:userId — change member role/status
+  if (path.match(/^\/c\/[^/]+\/members\/[^/]+$/) && method === 'PATCH') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const targetUserId = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+    const member = await env.DB.prepare(
+      'SELECT * FROM campaign_members WHERE campaign_id = ? AND user_id = ?'
+    ).bind(campId, targetUserId).first();
+    if (!member) return error('عضو مورد نظر یافت نشد.', 404);
+    const body = await request.json() as any;
+    if (member.role === 'owner' && body.role && body.role !== 'owner') {
+      return error('نمی‌توانید نقش مالک کمپین را تغییر دهید.', 400);
+    }
+    const nextRole = body.role && ['owner', 'co_dm', 'player', 'spectator'].includes(body.role) ? body.role : member.role;
+    const nextStatus = body.status && ['invited', 'active', 'left', 'removed'].includes(body.status) ? body.status : member.status;
+    await env.DB.prepare('UPDATE campaign_members SET role = ?, status = ? WHERE campaign_id = ? AND user_id = ?')
+      .bind(nextRole, nextStatus, campId, targetUserId).run();
+    await audit('campaign-member-update', targetUserId, { campaignId: campId, role: nextRole, status: nextStatus });
+    const u = await env.DB.prepare('SELECT display_name, email, avatar_url FROM users WHERE id = ?').bind(targetUserId).first();
+    return json({
+      campaignId: campId,
+      userId: targetUserId,
+      role: nextRole,
+      status: nextStatus,
+      joinedAt: member.joined_at,
+      userName: u?.display_name,
+      userEmail: u?.email,
+      userAvatarUrl: u?.avatar_url
+    });
+  }
+
+  // DELETE /api/c/:id/members/:userId — remove a member (cannot remove owner)
+  if (path.match(/^\/c\/[^/]+\/members\/[^/]+$/) && method === 'DELETE') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const targetUserId = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+    const member = await env.DB.prepare(
+      'SELECT role FROM campaign_members WHERE campaign_id = ? AND user_id = ?'
+    ).bind(campId, targetUserId).first();
+    if (!member) return error('عضو مورد نظر یافت نشد.', 404);
+    if (member.role === 'owner') return error('امکان حذف مالک کمپین وجود ندارد.', 400);
+    await env.DB.prepare("UPDATE campaign_members SET status = 'removed' WHERE campaign_id = ? AND user_id = ?")
+      .bind(campId, targetUserId).run();
+    await audit('campaign-member-remove', targetUserId, { campaignId: campId });
+    return json({ success: true });
+  }
+
+  // POST /api/c/:id/transfer-ownership — owner transfers ownership to an active member
+  if (path.match(/^\/c\/[^/]+\/transfer-ownership$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    const body = await request.json() as any;
+    const newOwnerId = String(body.newOwnerId || '');
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (actor.role !== 'dm' && myRole !== 'owner') {
+      return error('فقط مالک کمپین می‌تواند مالکیت را منتقل کند.', 403);
+    }
+    const camp = await env.DB.prepare('SELECT * FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(campId).first();
+    if (!camp) return error('کمپین مورد نظر یافت نشد.', 404);
+    const newOwnerMem = await env.DB.prepare(
+      "SELECT user_id FROM campaign_members WHERE campaign_id = ? AND user_id = ? AND status = 'active'"
+    ).bind(campId, newOwnerId).first();
+    if (!newOwnerMem) return error('شخص انتخاب‌شده باید ابتدا عضو فعال کمپین باشد.', 400);
+    if (newOwnerId === camp.owner_id) return error('این شخص هم‌اکنون مالک کمپین است.', 400);
+    await env.DB.prepare("UPDATE campaign_members SET role = 'co_dm' WHERE campaign_id = ? AND user_id = ?")
+      .bind(campId, camp.owner_id).run();
+    await env.DB.prepare("UPDATE campaign_members SET role = 'owner' WHERE campaign_id = ? AND user_id = ?")
+      .bind(campId, newOwnerId).run();
+    await env.DB.prepare('UPDATE campaigns SET owner_id = ?, updated_at = ? WHERE id = ?').bind(newOwnerId, now, campId).run();
+    await audit('campaign-transfer-ownership', campId, { newOwnerId });
+    const updated = await env.DB.prepare('SELECT * FROM campaigns WHERE id = ?').bind(campId).first();
+    const mc = await env.DB.prepare("SELECT COUNT(*) AS n FROM campaign_members WHERE campaign_id = ? AND status = 'active'").bind(campId).first();
+    const cc = await env.DB.prepare("SELECT COUNT(*) AS n FROM character_participations WHERE campaign_id = ? AND status = 'active'").bind(campId).first();
+    return json(mapCampaignRow({ ...updated, my_role: (await getMembershipRole(campId, actor.id)) || undefined, member_count: mc?.n ?? 0, character_count: cc?.n ?? 0 }));
+  }
+
+  // ---------------------------------------------------------
+  // Shared dice feed (/c/:id/dice)
+  // ---------------------------------------------------------
+  const mapDiceRoll = (r: any) => ({
+    id: r.id,
+    campaignId: r.campaign_id,
+    userId: r.user_id,
+    userName: r.user_name,
+    characterId: r.character_id,
+    characterName: r.character_name,
+    rollType: r.roll_type,
+    diceExpression: r.dice_expression,
+    total: r.total,
+    details: parseBlob(r.details, { rolls: [r.total], modifier: 0 }),
+    visibility: r.visibility,
+    createdAt: r.created_at
+  });
+
+  if (path.match(/^\/c\/[^/]+\/dice$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 403);
+    const isCampaignDm = myRole === 'owner' || myRole === 'co_dm' || actor.role === 'dm';
+    const res = await env.DB.prepare(
+      'SELECT * FROM dice_rolls WHERE campaign_id = ? ORDER BY created_at DESC, id DESC LIMIT 500'
+    ).bind(campId).all();
+    let rolls = (res.results || []).map(mapDiceRoll);
+    if (!isCampaignDm) {
+      rolls = rolls.filter((r: any) => r.visibility === 'table' || r.userId === actor.id);
+    }
+    const after = url.searchParams.get('after');
+    if (after) {
+      const idx = rolls.findIndex((r: any) => r.id === after);
+      if (idx !== -1) rolls = rolls.slice(0, idx);
+    }
+    const limit = Math.max(1, Math.min(200, parseInt(url.searchParams.get('limit') || '50', 10)));
+    return json(rolls.slice(0, limit));
+  }
+
+  if (path.match(/^\/c\/[^/]+\/dice$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 403);
+    const camp = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(campId).first();
+    if (!camp) return error('کمپین مورد نظر یافت نشد.', 404);
+    const settings = parseBlob(camp.settings, {});
+    const body = await request.json() as any;
+    let vis = body.visibility === 'dm_only' ? 'dm_only' : 'table';
+    if (actor.role !== 'dm' && vis === 'dm_only' && !settings.allowPlayerRollPrivate) vis = 'table';
+    const rollId = `roll-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const details = {
+      rolls: Array.isArray(body.results) ? body.results : [Number(body.total || 0) - Number(body.modifier || 0)],
+      modifier: Number(body.modifier || 0),
+      advantage: body.mode === 'normal' ? undefined : body.mode,
+      isCritical: !!body.nat20,
+      isFumble: !!body.nat1,
+      label: body.label || 'پرتاب تاس'
+    };
+    await env.DB.prepare(
+      `INSERT INTO dice_rolls (id, campaign_id, user_id, character_id, user_name, character_name, roll_type, dice_expression, total, details, visibility, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      rollId, campId, actor.id, actor.active_character_id || null, actor.display_name,
+      null, String(body.label || 'dice_roll'), String(body.formula || ''), Number(body.total || 0),
+      JSON.stringify(details), vis, now
+    ).run();
+    const row = await env.DB.prepare('SELECT * FROM dice_rolls WHERE id = ?').bind(rollId).first();
+    return json(mapDiceRoll(row), 201);
+  }
+
+  // ---------------------------------------------------------
+  // Media upload (portraits / covers), 150KB file + 5MB user quota
+  // ---------------------------------------------------------
+  const decodeBase64 = (b64: string): Uint8Array => {
+    const clean = b64.includes(',') ? b64.slice(b64.indexOf(',') + 1) : b64;
+    const bin = atob(clean);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  };
+
+  const encodeBase64 = (bytes: Uint8Array): string => {
+    let bin = '';
+    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  };
+
+  if (path === '/media' && method === 'POST') {
+    const body = await request.json() as any;
+    const sizeBytes = Number(body.sizeBytes || 0);
+    if (!body.mimeType || !body.dataBase64) return error('فایل نامعتبر است.');
+    if (sizeBytes > 150 * 1024) {
+      return error('حجم تصویر نباید بیش از ۱۵۰ کیلوبایت باشد. لطفاً قبل از ارسال تصویر را فشرده کنید.', 413);
+    }
+    const quota = await env.DB.prepare('SELECT COALESCE(SUM(size_bytes), 0) AS total FROM media WHERE owner_id = ?').bind(actor.id).first();
+    if (Number(quota?.total || 0) + sizeBytes > 5 * 1024 * 1024) {
+      return error('سهمیه ذخیره‌سازی شما (۵ مگابایت) پر است.', 400);
+    }
+    const bytes = decodeBase64(String(body.dataBase64));
+    const mediaId = `media-${Date.now()}-${generateRandomToken(3)}`;
+    await env.DB.prepare(
+      'INSERT INTO media (id, owner_id, mime_type, size_bytes, data, width, height, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(mediaId, actor.id, String(body.mimeType), sizeBytes, bytes, body.width ?? null, body.height ?? null, now).run();
+    const urlOut = String(body.dataBase64).startsWith('data:') ? String(body.dataBase64) : `data:${body.mimeType};base64,${body.dataBase64}`;
+    return json({ id: mediaId, url: urlOut, sizeBytes }, 201);
+  }
+
+  if (path.match(/^\/media\/[^/]+$/) && method === 'GET') {
+    const mediaId = path.split('/')[2];
+    const row = await env.DB.prepare('SELECT * FROM media WHERE id = ?').bind(mediaId).first();
+    if (!row) return error('رسانه یافت نشد.', 404);
+    let bytes: Uint8Array;
+    const d: any = row.data;
+    if (d instanceof Uint8Array) bytes = d;
+    else if (d instanceof ArrayBuffer) bytes = new Uint8Array(d);
+    else if (Array.isArray(d)) bytes = Uint8Array.from(d);
+    else if (typeof d === 'string') bytes = new TextEncoder().encode(d);
+    else bytes = new Uint8Array(0);
+    return json({
+      id: row.id,
+      ownerId: row.owner_id,
+      mimeType: row.mime_type,
+      sizeBytes: row.size_bytes,
+      dataBase64: encodeBase64(bytes),
+      width: row.width,
+      height: row.height,
+      createdAt: row.created_at
+    });
+  }
+
+  if (path.match(/^\/media\/[^/]+$/) && method === 'DELETE') {
+    const mediaId = path.split('/')[2];
+    const row = await env.DB.prepare('SELECT owner_id FROM media WHERE id = ?').bind(mediaId).first();
+    if (!row) return error('رسانه یافت نشد.', 404);
+    if (row.owner_id !== actor.id && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 403);
+    await env.DB.prepare('DELETE FROM media WHERE id = ?').bind(mediaId).run();
+    return json({ success: true });
+  }
+
+  // ---------------------------------------------------------
+  // Master character subroutes (PATCH / status / history / give-item)
+  // ---------------------------------------------------------
+  if (path.match(/^\/characters\/[^/]+$/) && method === 'PATCH') {
+    const charId = path.split('/')[2];
+    const charData = await request.json() as any;
+    const row = await env.DB.prepare('SELECT owner_id, revision FROM characters WHERE id = ?').bind(charId).first();
+    if (!row || (actor.role !== 'dm' && row.owner_id !== actor.id)) return error('شخصیت مورد نظر یافت نشد.', 404);
+    // Optimistic concurrency only when the client actually carries a revision
+    if (charData.revision != null && row.revision !== charData.revision) {
+      return error('شخصیت توسط شخص دیگری ویرایش شده است؛ لطفاً دوباره بارگذاری کنید.', 409);
+    }
+    const nextRevision = row.revision + 1;
+    const updatedChar = { ...charData, revision: nextRevision, updatedAt: new Date().toISOString() };
+    await env.DB.prepare(
+      'UPDATE characters SET name = ?, class_name = ?, level = ?, data = ?, revision = ?, updated_at = ? WHERE id = ?'
+    ).bind(
+      updatedChar.name || 'شخصیت بی‌نام',
+      updatedChar.className || '',
+      updatedChar.level || 1,
+      JSON.stringify(updatedChar),
+      nextRevision,
+      now,
+      charId
+    ).run();
+    return json(updatedChar);
+  }
+
+  if (path.match(/^\/characters\/[^/]+\/status$/) && method === 'POST') {
+    const charId = path.split('/')[2];
+    const body = await request.json() as any;
+    if (!['active', 'retired', 'dead', 'archived'].includes(body.status)) return error('وضعیت نامعتبر است.');
+    const row = await env.DB.prepare('SELECT owner_id, data, revision FROM characters WHERE id = ?').bind(charId).first();
+    if (!row || (actor.role !== 'dm' && row.owner_id !== actor.id)) return error('شخصیت مورد نظر یافت نشد.', 404);
+    const char = parseBlob(row.data, null);
+    if (!char) return error('شخصیت مورد نظر یافت نشد.', 404);
+    char.status = body.status;
+    if (body.note !== undefined) char.statusNote = body.note;
+    const saved = await saveCharacterBlob(charId, char, Number(row.revision || 0) + 1);
+    return json(saved);
+  }
+
+  if (path.match(/^\/characters\/[^/]+\/history$/) && method === 'GET') {
+    const charId = path.split('/')[2];
+    const row = await env.DB.prepare('SELECT owner_id FROM characters WHERE id = ?').bind(charId).first();
+    if (!row || (actor.role !== 'dm' && row.owner_id !== actor.id)) return error('شخصیت مورد نظر یافت نشد.', 404);
+    const res = await env.DB.prepare(
+      `SELECT h.*, c.name AS campaign_name
+         FROM character_history_events h
+         LEFT JOIN campaigns c ON c.id = h.campaign_id
+        WHERE h.character_id = ?
+        ORDER BY h.timestamp DESC`
+    ).bind(charId).all();
+    return json((res.results || []).map((r: any) => ({
+      id: r.id,
+      characterId: r.character_id,
+      campaignId: r.campaign_id,
+      campaignName: r.campaign_name || undefined,
+      eventType: r.event_type,
+      payload: parseBlob(r.payload, {}),
+      timestamp: r.timestamp
+    })));
+  }
+
+  if (path.match(/^\/characters\/[^/]+\/history$/) && method === 'POST') {
+    const charId = path.split('/')[2];
+    const row = await env.DB.prepare('SELECT owner_id FROM characters WHERE id = ?').bind(charId).first();
+    if (!row || (actor.role !== 'dm' && row.owner_id !== actor.id)) return error('شخصیت مورد نظر یافت نشد.', 404);
+    const body = await request.json() as any;
+    const eventTypes = ['joined', 'level_up', 'death', 'major_deed', 'retired', 'custom'];
+    const eventType = eventTypes.includes(body.eventType) ? body.eventType : 'custom';
+    let campaignId: string | null = null;
+    if (body.campaignId) {
+      const camp = await env.DB.prepare('SELECT id FROM campaigns WHERE id = ?').bind(body.campaignId).first();
+      campaignId = camp ? body.campaignId : null;
+    }
+    const eventId = `hist-${Date.now()}-${generateRandomToken(3)}`;
+    const payload = body.payload && typeof body.payload === 'object' ? body.payload : {};
+    await env.DB.prepare(
+      'INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(eventId, charId, campaignId, eventType, JSON.stringify(payload), now).run();
+    let campaignName: string | undefined;
+    if (campaignId) {
+      const camp = await env.DB.prepare('SELECT name FROM campaigns WHERE id = ?').bind(campaignId).first();
+      campaignName = camp?.name;
+    }
+    return json({ id: eventId, characterId: charId, campaignId, campaignName, eventType, payload, timestamp: now }, 201);
+  }
+
+  if (path.match(/^\/characters\/[^/]+\/give-item$/) && method === 'POST') {
+    if (actor.role !== 'dm') return error('فقط دانجن مستر می‌تواند شیء اهدا کند.', 403);
+    const charId = path.split('/')[2];
+    const body = await request.json() as any;
+    const item = body.item || {};
+    const row = await env.DB.prepare('SELECT data, revision FROM characters WHERE id = ?').bind(charId).first();
+    if (!row) return error('شخصیت مورد نظر یافت نشد.', 404);
+    const char = parseBlob(row.data, null);
+    if (!char) return error('شخصیت مورد نظر یافت نشد.', 404);
+    const invItem: any = {
+      id: `inv-${Date.now()}`,
+      name: item.name,
+      quantity: 1,
+      weight: 1,
+      description: item.description,
+      category: item.category === 'artifact' ? 'artifact' : item.category === 'weapon' ? 'weapon' : 'treasure',
+      equipped: false,
+      isQuestItem: item.category === 'quest',
+      isNewBadge: true,
+      mechanicalEffect: item.mechanicalEffect,
+      secretNotes: item.secretNotes,
+      weaponData: item.weaponData
+    };
+    char.inventory = [invItem, ...(char.inventory || [])];
+    if (item.category === 'weapon' || item.weaponData) {
+      const wData = item.weaponData;
+      const newWeapon = {
+        id: `w-${Date.now()}`,
+        templateId: wData?.id,
+        name: wData?.name || item.name,
+        damageDice: wData?.damageDice || '1d6',
+        damageType: wData?.damageType || 'سرد',
+        range: wData?.range || 'نزدیک',
+        properties: wData?.properties || '—',
+        kind: wData?.kind || 'special',
+        isSpecial: wData?.kind === 'special',
+        isShowy: wData?.kind === 'showy',
+        specialAbility: wData?.specialAbility,
+        abilityName: wData?.specialAbility?.name,
+        abilityDesc: wData?.specialAbility?.description,
+        abilityMaxUses: wData?.specialAbility?.usesPerRest,
+        abilityUsed: 0,
+        abilityReset: wData?.specialAbility?.restType
+      };
+      char.weapons = [newWeapon, ...(char.weapons || [])];
+    }
+    const saved = await saveCharacterBlob(charId, char, Number(row.revision || 0) + 1);
+    return json(saved);
+  }
+
+  // ---------------------------------------------------------
+  // Character participations (join campaign, approvals, level-ups)
+  // ---------------------------------------------------------
+  const PART_SELECT = `
+    SELECT p.*, c.name AS campaign_name, ch.data AS char_data
+      FROM character_participations p
+      JOIN campaigns c ON c.id = p.campaign_id
+      LEFT JOIN characters ch ON ch.id = p.character_id
+  `;
+
+  const mapParticipation = (r: any) => {
+    const charBlob = parseBlob(r.char_data, null);
+    return {
+      id: r.id,
+      characterId: r.character_id,
+      campaignId: r.campaign_id,
+      campaignName: r.campaign_name,
+      status: r.status,
+      classId: r.class_id || null,
+      className: r.class_name || '',
+      subclassName: r.subclass_name || undefined,
+      level: r.level,
+      xp: r.xp,
+      abilityScores: parseBlob(r.ability_scores, { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }),
+      currentHp: r.current_hp,
+      maxHp: r.max_hp,
+      tempHp: r.temp_hp,
+      hitDice: parseBlob(r.hit_dice, { current: 0, max: 0, die: 'd8' }),
+      acOverride: r.ac_override ?? null,
+      speedOverride: r.speed_override ?? null,
+      deathSaves: parseBlob(r.death_saves, { successes: 0, failures: 0 }),
+      conditions: parseBlob(r.conditions, []),
+      inventory: parseBlob(r.inventory, []),
+      weapons: parseBlob(r.weapons, []),
+      currency: parseBlob(r.currency, { gold: 0, silver: 0, copper: 0 }),
+      customResources: parseBlob(r.custom_resources, []),
+      spellsKnownPrepared: parseBlob(r.spells_known_prepared, undefined),
+      spellSlots: parseBlob(r.spell_slots, undefined),
+      features: parseBlob(r.features, []),
+      notes: r.notes || '',
+      dmNotes: r.dm_notes || '',
+      pendingLevelUp: parseBlob(r.pending_level_up, null),
+      joinedAt: r.joined_at,
+      updatedAt: r.updated_at,
+      characterName: charBlob?.name,
+      characterRace: charBlob?.race,
+      characterPortraitUrl: charBlob?.portraitUrl
+    };
+  };
+
+  // GET /api/c/:id/participations — list for a campaign (membership required);
+  // if :id is actually a character id (master character screen), list that character's participations.
+  if (path.match(/^\/c\/[^/]+\/participations$/) && method === 'GET') {
+    const cid = path.split('/')[2];
+    const camp = await env.DB.prepare('SELECT id FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(cid).first();
+    if (camp) {
+      const myRole = await getMembershipRole(cid, actor.id);
+      if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 403);
+      const res = await env.DB.prepare(`${PART_SELECT} WHERE p.campaign_id = ? ORDER BY p.joined_at DESC`).bind(cid).all();
+      return json((res.results || []).map(mapParticipation));
+    }
+    const char = await env.DB.prepare('SELECT owner_id FROM characters WHERE id = ?').bind(cid).first();
+    if (!char || (char.owner_id !== actor.id && actor.role !== 'dm')) return json([]);
+    const res = await env.DB.prepare(`${PART_SELECT} WHERE p.character_id = ? ORDER BY p.joined_at DESC`).bind(cid).all();
+    return json((res.results || []).map(mapParticipation));
+  }
+
+  // POST /api/c/:id/participations — bring a master character into a campaign
+  if (path.match(/^\/c\/[^/]+\/participations$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    const body = await request.json() as any;
+    const camp = await env.DB.prepare('SELECT * FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(campId).first();
+    if (!camp) return error('کمپین یافت نشد.', 404);
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('ابتدا باید به این کمپین بپیوندید.', 403);
+    if (!body.characterId) return error('شخصیت را انتخاب کنید.');
+
+    const settings = parseBlob(camp.settings, {});
+    const maxLevel = Number(settings.maxEntryLevel || 20);
+    let level = 1;
+    if (body.entryMode === 'campaign_start') {
+      level = Number(settings.startingLevel || 1);
+    } else if (body.entryMode === 'new_level') {
+      level = Math.min(Math.max(1, Number(body.entryLevel || 1)), maxLevel);
+    } else if (body.entryMode === 'same_level') {
+      level = Math.min(Number(body.entryLevel || 1), maxLevel);
+    }
+
+    const existing = await env.DB.prepare(
+      'SELECT id FROM character_participations WHERE campaign_id = ? AND character_id = ?'
+    ).bind(campId, body.characterId).first();
+    if (existing) return error('این شخصیت در این کمپین حضور دارد.', 400);
+
+    const charRow = await env.DB.prepare('SELECT owner_id, data FROM characters WHERE id = ?').bind(body.characterId).first();
+    if (!charRow || (actor.role !== 'dm' && charRow.owner_id !== actor.id)) {
+      return error('شخصیت مبدأ یافت نشد.', 404);
+    }
+    const charBlob = parseBlob(charRow.data, null);
+    const hp = 10 + (level - 1) * 6;
+    const initialStatus = settings.approval?.onCreate ? 'pending_approval' : 'active';
+    const partId = `part-${Date.now()}-${generateRandomToken(3)}`;
+    const abilityScores = JSON.stringify({ str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 });
+    const hitDice = JSON.stringify({ current: level, max: level, die: 'd8' });
+    const deathSaves = JSON.stringify({ successes: 0, failures: 0 });
+    const currency = JSON.stringify({ gold: 10, silver: 0, copper: 0 });
+    await env.DB.prepare(
+      `INSERT INTO character_participations
+         (id, character_id, campaign_id, status, class_id, class_name, subclass_name, level, xp, ability_scores,
+          current_hp, max_hp, temp_hp, hit_dice, ac_override, speed_override, death_saves, conditions, inventory,
+          weapons, currency, custom_resources, spells_known_prepared, spell_slots, features, notes, dm_notes,
+          pending_level_up, joined_at, updated_at)
+       VALUES (?, ?, ?, ?, NULL, ?, NULL, ?, 0, ?, ?, ?, 0, ?, NULL, NULL, ?, '[]', '[]', '[]', ?, '[]', NULL, NULL, '[]', '', '', NULL, ?, ?)`
+    ).bind(
+      partId, body.characterId, campId, initialStatus, 'ماجراجو', level, abilityScores,
+      hp, hp, hitDice, deathSaves, currency, now, now
+    ).run();
+    await env.DB.prepare(
+      `INSERT INTO campaign_members (campaign_id, user_id, role, status, joined_at) VALUES (?, ?, 'player', 'active', ?)
+       ON CONFLICT(campaign_id, user_id) DO NOTHING`
+    ).bind(campId, actor.id, now).run();
+    const campName = camp.name;
+    await env.DB.prepare(
+      'INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(
+      `hist-${Date.now()}-${generateRandomToken(3)}`, body.characterId, campId, 'joined',
+      JSON.stringify({
+        title: `پیوستن به کمپین ${campName}`,
+        description: `ورود در حالت ${body.entryMode === 'campaign_start' ? 'شروع کمپین' : 'سطح ' + level} (سطح ${level})`,
+        level
+      }),
+      now
+    ).run();
+    await audit('participation-create', partId, { campaignId: campId, characterId: body.characterId, status: initialStatus });
+    const created = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    return json(mapParticipation(created), 201);
+  }
+
+  // PATCH /api/c/:id/participations/:pid — update participation fields
+  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+$/) && method === 'PATCH') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const partId = parts[4];
+    const part = await env.DB.prepare('SELECT * FROM character_participations WHERE id = ? AND campaign_id = ?').bind(partId, campId).first();
+    if (!part) return error('مشارکت شخصیت یافت نشد.', 404);
+    const myRole = await getMembershipRole(campId, actor.id);
+    const charRow = await env.DB.prepare('SELECT owner_id FROM characters WHERE id = ?').bind(part.character_id).first();
+    const isCharOwner = charRow?.owner_id === actor.id;
+    if (actor.role !== 'dm' && myRole !== 'owner' && myRole !== 'co_dm' && !isCharOwner) {
+      return error('دسترسی مجاز نیست.', 403);
+    }
+    const body = await request.json() as any;
+    const colMap: Record<string, string> = {
+      status: 'status', level: 'level', xp: 'xp', className: 'class_name', subclassName: 'subclass_name',
+      classId: 'class_id', currentHp: 'current_hp', maxHp: 'max_hp', tempHp: 'temp_hp',
+      acOverride: 'ac_override', speedOverride: 'speed_override', notes: 'notes', dmNotes: 'dm_notes',
+      abilityScores: 'ability_scores', hitDice: 'hit_dice', deathSaves: 'death_saves', conditions: 'conditions',
+      inventory: 'inventory', weapons: 'weapons', currency: 'currency', customResources: 'custom_resources',
+      spellsKnownPrepared: 'spells_known_prepared', spellSlots: 'spell_slots', features: 'features',
+      pendingLevelUp: 'pending_level_up'
+    };
+    const sets: string[] = [];
+    const binds: any[] = [];
+    for (const [key, col] of Object.entries(colMap)) {
+      if (body[key] === undefined) continue;
+      if (key === 'status' && !['pending_approval', 'active', 'rejected', 'retired', 'dead'].includes(body[key])) {
+        return error('وضعیت نامعتبر است.');
+      }
+      const value = body[key];
+      sets.push(`${col} = ?`);
+      binds.push(value !== null && typeof value === 'object' ? JSON.stringify(value) : value);
+    }
+    if (sets.length > 0) {
+      sets.push('updated_at = ?');
+      binds.push(now);
+      binds.push(partId, campId);
+      await env.DB.prepare(`UPDATE character_participations SET ${sets.join(', ')} WHERE id = ? AND campaign_id = ?`).bind(...binds).run();
+    }
+    const updated = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    return json(mapParticipation(updated));
+  }
+
+  // POST /api/c/:id/participations/:pid/{approve|reject|request_changes} — DM review
+  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+\/(approve|reject|request_changes)$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const partId = parts[4];
+    const action = parts[5];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+    const part = await env.DB.prepare('SELECT * FROM character_participations WHERE id = ? AND campaign_id = ?').bind(partId, campId).first();
+    if (!part) return error('مشارکت شخصیت یافت نشد.', 404);
+    const body = await request.json().catch(() => ({})) as any;
+    const comment = body?.comment || '';
+    const pending = parseBlob(part.pending_level_up, null);
+    let nextStatus = part.status;
+    let nextLevel = part.level;
+    let nextPending: any = null;
+    if (action === 'approve') {
+      if (pending) {
+        nextLevel = Number(pending.targetLevel || part.level);
+        nextPending = null;
+        const camp = await env.DB.prepare('SELECT name FROM campaigns WHERE id = ?').bind(campId).first();
+        await env.DB.prepare(
+          'INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp) VALUES (?, ?, ?, ?, ?, ?)'
+        ).bind(
+          `hist-lvl-${Date.now()}-${generateRandomToken(3)}`, part.character_id, campId, 'level_up',
+          JSON.stringify({
+            title: `ارتقای سطح به ${nextLevel} تأیید شد`,
+            oldLevel: part.level,
+            newLevel: nextLevel,
+            description: comment || 'تأیید ارتقای سطح توسط دانجن مستر',
+            campaignName: camp?.name
+          }),
+          now
+        ).run();
+      } else {
+        nextStatus = 'active';
+      }
+    } else if (action === 'reject') {
+      nextPending = null;
+      if (!pending) nextStatus = 'rejected';
+    }
+    await env.DB.prepare(
+      'UPDATE character_participations SET status = ?, level = ?, pending_level_up = ?, updated_at = ? WHERE id = ? AND campaign_id = ?'
+    ).bind(nextStatus, nextLevel, nextPending ? JSON.stringify(nextPending) : null, now, partId, campId).run();
+    await audit(`participation-${action}`, partId, { campaignId: campId, comment });
+    const updated = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    return json(mapParticipation(updated));
+  }
+
+  // POST /api/c/:id/participations/:pid/level-up-request
+  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+\/level-up-request$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const partId = parts[4];
+    const part = await env.DB.prepare('SELECT * FROM character_participations WHERE id = ? AND campaign_id = ?').bind(partId, campId).first();
+    if (!part) return error('مشارکت شخصیت یافت نشد.', 404);
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 403);
+    const camp = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ?').bind(campId).first();
+    const settings = parseBlob(camp?.settings, {});
+    const body = await request.json() as any;
+    const targetLevel = Number(body.targetLevel || part.level + 1);
+    if (targetLevel < 1 || targetLevel > Number(settings.maxEntryLevel || 20)) {
+      return error('سطح هدف خارج از محدوده مجاز کمپین است.');
+    }
+    if (settings.approval?.onLevelUp) {
+      const pending = { targetLevel, diff: body.diff || {}, requestedAt: now };
+      await env.DB.prepare('UPDATE character_participations SET pending_level_up = ?, updated_at = ? WHERE id = ? AND campaign_id = ?')
+        .bind(JSON.stringify(pending), now, partId, campId).run();
+    } else {
+      await env.DB.prepare('UPDATE character_participations SET level = ?, updated_at = ? WHERE id = ? AND campaign_id = ?')
+        .bind(targetLevel, now, partId, campId).run();
+    }
+    const updated = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    return json(mapParticipation(updated));
+  }
+
+  // POST /api/c/:id/participations/:pid/status — set participation status
+  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+\/status$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const partId = parts[4];
+    const part = await env.DB.prepare('SELECT * FROM character_participations WHERE id = ? AND campaign_id = ?').bind(partId, campId).first();
+    if (!part) return error('مشارکت شخصیت یافت نشد.', 404);
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (actor.role !== 'dm' && myRole !== 'owner' && myRole !== 'co_dm') return error('دسترسی مجاز نیست.', 403);
+    const body = await request.json() as any;
+    if (!['pending_approval', 'active', 'rejected', 'retired', 'dead'].includes(body.status)) {
+      return error('وضعیت نامعتبر است.');
+    }
+    await env.DB.prepare('UPDATE character_participations SET status = ?, updated_at = ? WHERE id = ? AND campaign_id = ?')
+      .bind(body.status, now, partId, campId).run();
+    const updated = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    return json(mapParticipation(updated));
+  }
+
+  // ---------------------------------------------------------
+  // Items CRUD (DM) — create handler above also gets scope_id fix
+  // ---------------------------------------------------------
+  if (path.match(/^\/items\/[^/]+$/) && method === 'PUT') {
+    if (actor.role !== 'dm') return error('فقط دانجن مستر می‌تواند ویرایش کند.', 403);
+    const itemId = path.split('/')[2];
+    const row = await env.DB.prepare('SELECT id FROM items WHERE id = ?').bind(itemId).first();
+    if (!row) return error('شیء مورد نظر یافت نشد.', 404);
+    const data = await request.json() as any;
+    const updated = { ...data, id: itemId, updatedAt: new Date().toISOString() };
+    await env.DB.prepare(
+      'UPDATE items SET name = ?, category = ?, is_revealed = ?, data = ?, updated_at = ? WHERE id = ?'
+    ).bind(updated.name || 'شیء', updated.category || 'general', updated.isRevealed ? 1 : 0, JSON.stringify(updated), now, itemId).run();
+    return json(updated);
+  }
+
+  if (path.match(/^\/items\/[^/]+$/) && method === 'DELETE') {
+    if (actor.role !== 'dm') return error('فقط دانجن مستر می‌تواند حذف کند.', 403);
+    const itemId = path.split('/')[2];
+    const res = await env.DB.prepare('DELETE FROM items WHERE id = ?').bind(itemId).run();
+    if ((res?.meta?.changes ?? 0) === 0) return error('شیء مورد نظر یافت نشد.', 404);
+    await audit('item-delete', itemId, {});
+    return json({ success: true });
+  }
+
+  // ---------------------------------------------------------
+  // Rewards CRUD + distribution (DM)
+  // ---------------------------------------------------------
+  if (path === '/rewards' && method === 'POST') {
+    if (actor.role !== 'dm') return error('فقط دانجن مستر می‌تواند پاداش بسازد.', 403);
+    const body = await request.json() as any;
+    const rewardId = `rew-${Date.now()}-${generateRandomToken(3)}`;
+    const newRew = {
+      ...body,
+      id: rewardId,
+      createdAt: new Date().toISOString()
+    };
+    await env.DB.prepare(
+      'INSERT INTO rewards (id, scope_type, scope_id, created_by, title, data, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).bind(rewardId, 'campaign', 'zorvania-c1', actor.id, newRew.title || 'پاداش', JSON.stringify(newRew), now).run();
+    return json(newRew, 201);
+  }
+
+  if (path.match(/^\/rewards\/[^/]+\/distribute$/) && method === 'POST') {
+    if (actor.role !== 'dm') return error('فقط دانجن مستر می‌تواند پاداش توزیع کند.', 403);
+    const rewardId = path.split('/')[2];
+    const body = await request.json() as any;
+    const charIds: string[] = Array.isArray(body.characterIds) ? body.characterIds : [];
+    const rewRow = await env.DB.prepare('SELECT data FROM rewards WHERE id = ?').bind(rewardId).first();
+    if (!rewRow) return error('پاداش مورد نظر یافت نشد.', 404);
+    const rew = parseBlob(rewRow.data, {}) || {};
+    const rows = await loadCharacterBlobs();
+    const updated: any[] = [];
+    for (const row of rows) {
+      const char = parseBlob(row.data, null);
+      if (!char) continue;
+      if (!charIds.includes(row.id)) {
+        updated.push(char);
+        continue;
+      }
+      const currencies = { gold: 0, silver: 0, copper: 0, ...(char.currencies || {}) };
+      currencies.gold = Number(currencies.gold || 0) + Number(rew.gold || 0);
+      currencies.silver = Number(currencies.silver || 0) + Number(rew.silver || 0);
+      const newItems = (rew.items || []).map((it: any) => ({
+        ...it,
+        id: `inv-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`
+      }));
+      char.currencies = currencies;
+      char.inventory = [...newItems, ...(char.inventory || [])];
+      const saved = await saveCharacterBlob(row.id, char, Number(row.revision || 0) + 1);
+      updated.push(saved);
+    }
+    return json(updated);
+  }
+
+  // ---------------------------------------------------------
+  // Campaign notes CRUD (DM)
+  // ---------------------------------------------------------
+  if (path === '/campaign-notes' && method === 'POST') {
+    if (actor.role !== 'dm') return error('فقط دانجن مستر می‌تواند یادداشت بنویسد.', 403);
+    const body = await request.json() as any;
+    const noteId = `cn-${Date.now()}-${generateRandomToken(3)}`;
+    const newNote = { ...body, id: noteId, updatedAt: new Date().toISOString() };
+    await env.DB.prepare(
+      'INSERT INTO campaign_notes (id, scope_type, scope_id, title, category, session_number, data, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(noteId, 'campaign', 'zorvania-c1', newNote.title || 'یادداشت', newNote.category || 'session', newNote.sessionNumber || null, JSON.stringify(newNote), now).run();
+    return json(newNote, 201);
+  }
+
+  if (path.match(/^\/campaign-notes\/[^/]+$/) && method === 'PUT') {
+    if (actor.role !== 'dm') return error('فقط دانجن مستر می‌تواند ویرایش کند.', 403);
+    const noteId = path.split('/')[2];
+    const row = await env.DB.prepare('SELECT id FROM campaign_notes WHERE id = ?').bind(noteId).first();
+    if (!row) return error('یادداشت مورد نظر یافت نشد.', 404);
+    const body = await request.json() as any;
+    const updated = { ...body, id: noteId, updatedAt: new Date().toISOString() };
+    await env.DB.prepare(
+      'UPDATE campaign_notes SET title = ?, category = ?, session_number = ?, data = ?, updated_at = ? WHERE id = ?'
+    ).bind(updated.title || 'یادداشت', updated.category || 'session', updated.sessionNumber || null, JSON.stringify(updated), now, noteId).run();
+    return json(updated);
+  }
+
+  if (path.match(/^\/campaign-notes\/[^/]+$/) && method === 'DELETE') {
+    if (actor.role !== 'dm') return error('فقط دانجن مستر می‌تواند حذف کند.', 403);
+    const noteId = path.split('/')[2];
+    const res = await env.DB.prepare('DELETE FROM campaign_notes WHERE id = ?').bind(noteId).run();
+    if ((res?.meta?.changes ?? 0) === 0) return error('یادداشت مورد نظر یافت نشد.', 404);
+    await audit('campaign-note-delete', noteId, {});
+    return json({ success: true });
+  }
+
+  // ---------------------------------------------------------
   // Account (Self) Routes
   // ---------------------------------------------------------
 
@@ -1392,8 +2684,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const id = `npc-${Date.now()}`;
     const newNpc = { ...data, id, updatedAt: new Date().toISOString() };
     await env.DB.prepare(
-      'INSERT INTO npcs (id, name, type, is_revealed, location_tag, session_tag, data, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-    ).bind(id, newNpc.name, newNpc.type, newNpc.isRevealed ? 1 : 0, newNpc.locationTag || '', newNpc.sessionTag || '', JSON.stringify(newNpc), now).run();
+      'INSERT INTO npcs (id, scope_type, scope_id, name, type, is_revealed, location_tag, session_tag, data, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(id, 'campaign', 'zorvania-c1', newNpc.name, newNpc.type, newNpc.isRevealed ? 1 : 0, newNpc.locationTag || '', newNpc.sessionTag || '', JSON.stringify(newNpc), now).run();
     return json(newNpc, 201);
   }
 
@@ -1435,8 +2727,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const id = `item-${Date.now()}`;
     const newItem = { ...data, id, updatedAt: new Date().toISOString() };
     await env.DB.prepare(
-      'INSERT INTO items (id, name, category, is_revealed, data, updated_at) VALUES (?, ?, ?, ?, ?, ?)'
-    ).bind(id, newItem.name, newItem.category, newItem.isRevealed ? 1 : 0, JSON.stringify(newItem), now).run();
+      'INSERT INTO items (id, scope_type, scope_id, name, category, is_revealed, data, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(id, 'campaign', 'zorvania-c1', newItem.name, newItem.category, newItem.isRevealed ? 1 : 0, JSON.stringify(newItem), now).run();
     return json(newItem, 201);
   }
 
@@ -1518,9 +2810,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const t = Date.now();
 
     await env.DB.prepare(
-      `INSERT INTO locations (id, name, region, description, image_url, dm_notes, revealed, parent_id, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(id, locName, region, desc, imgUrl, dmNotes, revealed, parentId, t, t).run();
+      `INSERT INTO locations (id, scope_type, scope_id, name, region, description, image_url, dm_notes, revealed, parent_id, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(id, 'campaign', 'zorvania-c1', locName, region, desc, imgUrl, dmNotes, revealed, parentId, t, t).run();
 
     await audit('create_location', id, { name: locName, region });
     return json({
@@ -1970,10 +3262,10 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
     await env.DB.prepare(
       `INSERT INTO encounters (
-         id, name, location_id, status, round, current_participant_id, session_tag,
+         id, scope_type, scope_id, name, location_id, status, round, current_participant_id, session_tag,
          settings, version, dm_notes, started_at, ended_at, created_by, created_at, updated_at
-       ) VALUES (?, ?, ?, 'draft', 0, NULL, ?, ?, 1, ?, NULL, NULL, ?, ?, ?)`
-    ).bind(id, encName, locationId, sessionTag, settings, dmNotes, currentUser?.id || null, t, t).run();
+       ) VALUES (?, ?, ?, ?, ?, 'draft', 0, NULL, ?, ?, 1, ?, NULL, NULL, ?, ?, ?)`
+    ).bind(id, 'campaign', 'zorvania-c1', encName, locationId, sessionTag, settings, dmNotes, currentUser?.id || null, t, t).run();
 
     const created = await buildDmEncounterSnapshot({
       id, name: encName, location_id: locationId, status: 'draft', round: 0,

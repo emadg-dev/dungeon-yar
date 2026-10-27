@@ -14,7 +14,7 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({ isOnline, offlineC
       className="fixed bottom-16 inset-x-3 z-30 max-w-sm mx-auto"
       dir="rtl"
     >
-      <div className="p-2.5 rounded-xl bg-amber-950/90 border border-[#E0A030]/40 text-[#F2C265] text-xs shadow-xl backdrop-blur-md flex items-center justify-between gap-2">
+      <div className="p-2.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/40 text-[#F2C265] text-xs shadow-xl backdrop-blur-md flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <WifiOff className="w-4 h-4 text-[#F2C265] shrink-0" />
           <span>حالت آفلاین (داده‌ها در حافظه دستگاه ذخیره می‌شوند)</span>

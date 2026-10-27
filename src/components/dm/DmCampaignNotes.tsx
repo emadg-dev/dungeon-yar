@@ -255,7 +255,7 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
                   </button>
                   <button
                     onClick={() => onDeleteNote(n.id)}
-                    className="p-1.5 rounded-lg bg-[#201D19] text-[#A39A89] hover:text-red-400"
+                    className="p-1.5 rounded-lg bg-[#201D19] text-[#A39A89] hover:text-[#E8836B]"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>

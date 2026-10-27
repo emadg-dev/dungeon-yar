@@ -278,7 +278,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
         <form onSubmit={handleSave} className="space-y-4 pb-2" dir="rtl">
           <div>
             <label className="block text-xs font-bold text-[#A39A89] mb-1">
-              نام مکان <span className="text-rose-500">*</span>
+              نام مکان <span className="text-[#C2512B]">*</span>
             </label>
             <input
               type="text"

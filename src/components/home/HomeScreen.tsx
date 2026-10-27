@@ -42,18 +42,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       case 'owner':
         return <span className="px-2 py-0.5 text-xs rounded-full bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30">مالک کمپین</span>;
       case 'co_dm':
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">دستیار دانجن مستر</span>;
+        return <span className="px-2 py-0.5 text-xs rounded-full bg-[#9B72CF]/20 text-[#9B72CF] border border-[#9B72CF]/30">دستیار دانجن مستر</span>;
       case 'spectator':
         return <span className="px-2 py-0.5 text-xs rounded-full bg-[#2A2621] text-[#C9C0AE] border border-[#3A342B]">تماشاچی</span>;
       default:
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">ماجراجو</span>;
+        return <span className="px-2 py-0.5 text-xs rounded-full bg-[#6F9E78]/20 text-[#6F9E78] border border-[#6F9E78]/30">ماجراجو</span>;
     }
   };
 
   const getStatusBadge = (status?: string) => {
     switch (status) {
       case 'active':
-        return <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>;
+        return <span className="w-2 h-2 rounded-full bg-[#6F9E78] animate-pulse"></span>;
       case 'paused':
         return <span className="w-2 h-2 rounded-full bg-[#E0A030]"></span>;
       case 'archived':
@@ -74,12 +74,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 پلتفرم چندکمپینی زروانیا ۵e
               </span>
               {currentUser?.platformRole === 'admin' && (
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#9B72CF]/20 text-[#9B72CF] border border-[#9B72CF]/30">
                   مدیر سیستم
                 </span>
               )}
             </div>
-            <h1 className="text-2xl font-bold text-amber-100 mt-2">
+            <h1 className="text-2xl font-bold text-[#F2C265] mt-2">
               خوش آمدید، {currentUser?.displayName || currentUser?.name || 'ماجراجو'}
             </h1>
             <p className="text-xs sm:text-sm text-[#A39A89] mt-1 max-w-lg">
@@ -95,7 +95,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {pendingApprovals.length > 0 && (
           <div className="mt-4 pt-4 border-t border-[#E0A030]/15 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-[#F2C265] animate-ping"></div>
               <span className="text-sm font-semibold text-[#F2C265]">
                 {pendingApprovals.length} درخواست تأیید در انتظار بررسی دانجن مستر
               </span>
@@ -209,7 +209,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </p>
             <button
               onClick={onOpenCreateCampaign}
-              className="px-4 py-2 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-sm hover:bg-[#F2C265] transition-all shadow-lg shadow-amber-500/20"
+              className="px-4 py-2 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-sm hover:bg-[#F2C265] transition-all shadow-lg shadow-[#E0A030]/20"
             >
               ساخت اولین کمپین
             </button>

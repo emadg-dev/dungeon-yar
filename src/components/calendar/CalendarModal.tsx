@@ -52,7 +52,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
             <Clock className="w-4 h-4 text-[#F2C265] shrink-0" />
             <span>زمان جاری در جهان زروانیا</span>
           </div>
-          <div className="text-lg font-black text-amber-100">
+          <div className="text-lg font-black text-[#F2C265]">
             {formatWorldDate(calendar)}
           </div>
           {calendar.currentFestival && (
@@ -65,8 +65,8 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
 
         {/* Off-Day folk belief note */}
         {currentOffDayDef && (
-          <div className="p-3.5 rounded-xl bg-purple-950/40 border border-purple-500/40 text-purple-200 text-xs space-y-1">
-            <div className="font-bold flex items-center gap-1.5 text-purple-300">
+          <div className="p-3.5 rounded-xl bg-[#9B72CF]/15 border border-[#9B72CF]/40 text-[#9B72CF] text-xs space-y-1">
+            <div className="font-bold flex items-center gap-1.5 text-[#9B72CF]">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>روز برون‌گاه: {currentOffDayDef.name}</span>
             </div>
@@ -141,17 +141,17 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
 
         {/* 5 Off-Days of Vapasān */}
         <div className="space-y-2">
-          <h4 className="text-xs font-bold text-purple-300 flex items-center gap-1">
-            <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+          <h4 className="text-xs font-bold text-[#9B72CF] flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5 text-[#9B72CF] shrink-0" />
             <span>۵ روز برون‌گاه پس از ۳۰ واپسان (خارج از سال‌شمار)</span>
           </h4>
           <div className="space-y-1.5 max-h-48 overflow-y-auto p-1">
             {CALENDAR_OFF_DAYS.map(off => (
               <div
                 key={off.id}
-                className="p-2.5 rounded-xl bg-[#141622] border border-purple-500/20 text-xs space-y-1"
+                className="p-2.5 rounded-xl bg-[#141622] border border-[#9B72CF]/20 text-xs space-y-1"
               >
-                <div className="font-bold text-purple-200">{off.name}</div>
+                <div className="font-bold text-[#9B72CF]">{off.name}</div>
                 <div className="text-[11px] text-[#A39A89] leading-relaxed">{off.folkBelief}</div>
               </div>
             ))}

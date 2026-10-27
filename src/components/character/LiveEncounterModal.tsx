@@ -140,7 +140,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
       <div className="flex-1 overflow-y-auto p-3.5 space-y-3.5 pb-24">
         {/* Connection Offline Banner (§3) */}
         {isOffline && (
-          <div className="p-2.5 rounded-[12px] bg-[#C2512B]/20 border border-[#C2512B]/40 flex items-center gap-2 text-xs text-rose-300">
+          <div className="p-2.5 rounded-[12px] bg-[#C2512B]/20 border border-[#C2512B]/40 flex items-center gap-2 text-xs text-[#E8836B]">
             <WifiOff className="w-4 h-4 shrink-0" />
             <span>آفلاین — آخرین وضعیت دریافت شده نمایش داده می‌شود.</span>
           </div>
@@ -205,7 +205,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
                 <button
                   type="button"
                   onClick={() => onUpdateCharacterHp(Math.max(0, activeCharacter.hp.current - 1))}
-                  className="w-8 h-8 rounded-[8px] bg-[#201D19] hover:bg-[#C2512B]/20 text-rose-300 font-black text-sm transition touch-target border border-[#2F2A23] flex items-center justify-center"
+                  className="w-8 h-8 rounded-[8px] bg-[#201D19] hover:bg-[#C2512B]/20 text-[#E8836B] font-black text-sm transition touch-target border border-[#2F2A23] flex items-center justify-center"
                   title="کاهش ۱ سلامت"
                 >
                   -۱
@@ -321,7 +321,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
                           <span className={`font-bold ${
                             p.healthStatus === 'سالم' ? 'text-[#6F9E78]' :
                             p.healthStatus === 'زخمی' ? 'text-[#E0A030]' :
-                            p.healthStatus === 'نیمه‌جان' ? 'text-orange-400' : 'text-[#D66138]'
+                            p.healthStatus === 'نیمه‌جان' ? 'text-[#C97B4A]' : 'text-[#D66138]'
                           }`}>
                             {p.healthStatus}
                           </span>
@@ -357,7 +357,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
                       {p.conditions.map((c, idx) => (
                         <span
                           key={idx}
-                          className="text-[10px] bg-[#C2512B]/15 text-rose-300 border border-[#C2512B]/30 px-2 py-0.5 rounded-full"
+                          className="text-[10px] bg-[#C2512B]/15 text-[#E8836B] border border-[#C2512B]/30 px-2 py-0.5 rounded-full"
                         >
                           {c}
                         </span>

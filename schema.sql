@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT UNIQUE NOT NULL,
   display_name TEXT NOT NULL,
   password_hash TEXT NOT NULL,
+  role TEXT CHECK (role IN ('player', 'dm')) DEFAULT 'player',
   platform_role TEXT CHECK (platform_role IN ('admin', 'user')) DEFAULT 'user',
   status TEXT CHECK (status IN ('active', 'disabled')) DEFAULT 'active',
   must_change_password INTEGER DEFAULT 0,
@@ -21,6 +22,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_platform_role ON users(platform_role);
 CREATE INDEX IF NOT EXISTS idx_users_status ON users(status);
 
@@ -140,7 +142,7 @@ CREATE INDEX IF NOT EXISTS idx_campaign_invites_campaign ON campaign_invites(cam
 CREATE TABLE IF NOT EXISTS rule_sets (
   id TEXT PRIMARY KEY,
   scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL,
-  scope_id TEXT NOT NULL,
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
   abilities TEXT NOT NULL,
   skills TEXT NOT NULL,
   saves TEXT NOT NULL,
@@ -155,27 +157,20 @@ CREATE TABLE IF NOT EXISTS rule_sets (
 
 CREATE INDEX IF NOT EXISTS idx_rule_sets_scope ON rule_sets(scope_type, scope_id);
 
--- 9. Characters table (Master Identity)
+-- 9. Characters table (Master Identity) — legacy JSON-blob shape (contract with functions/api)
 CREATE TABLE IF NOT EXISTS characters (
   id TEXT PRIMARY KEY,
-  owner_id TEXT NOT NULL,
+  owner_id TEXT,
   name TEXT NOT NULL,
-  portrait_media_id TEXT,
-  portrait_url TEXT,
-  race TEXT NOT NULL,
-  appearance TEXT,
-  backstory TEXT NOT NULL,
-  status TEXT CHECK (status IN ('active', 'retired', 'dead', 'archived')) DEFAULT 'active',
-  status_note TEXT,
-  created_at INTEGER NOT NULL,
+  class_name TEXT,
+  level INTEGER DEFAULT 1,
+  data TEXT NOT NULL,
+  revision INTEGER NOT NULL DEFAULT 1,
   updated_at INTEGER NOT NULL,
-  deleted_at INTEGER,
-  FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (portrait_media_id) REFERENCES media(id) ON DELETE SET NULL
+  FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_characters_owner ON characters(owner_id);
-CREATE INDEX IF NOT EXISTS idx_characters_status ON characters(status);
 
 -- 10. Character Participations table (Play state per campaign)
 CREATE TABLE IF NOT EXISTS character_participations (
@@ -256,7 +251,7 @@ CREATE INDEX IF NOT EXISTS idx_dice_rolls_campaign ON dice_rolls(campaign_id, cr
 CREATE TABLE IF NOT EXISTS class_templates (
   id TEXT PRIMARY KEY,
   scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
-  scope_id TEXT NOT NULL,
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
   source_id TEXT,
   source_mode TEXT CHECK (source_mode IN ('copy', 'linked')) DEFAULT 'copy',
   created_by TEXT,
@@ -271,7 +266,7 @@ CREATE INDEX IF NOT EXISTS idx_class_templates_scope ON class_templates(scope_ty
 CREATE TABLE IF NOT EXISTS feature_templates (
   id TEXT PRIMARY KEY,
   scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
-  scope_id TEXT NOT NULL,
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
   source_id TEXT,
   source_mode TEXT CHECK (source_mode IN ('copy', 'linked')) DEFAULT 'copy',
   created_by TEXT,
@@ -286,7 +281,7 @@ CREATE INDEX IF NOT EXISTS idx_feature_templates_scope ON feature_templates(scop
 CREATE TABLE IF NOT EXISTS weapon_templates (
   id TEXT PRIMARY KEY,
   scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
-  scope_id TEXT NOT NULL,
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
   source_id TEXT,
   source_mode TEXT CHECK (source_mode IN ('copy', 'linked')) DEFAULT 'copy',
   created_by TEXT,
@@ -302,7 +297,7 @@ CREATE INDEX IF NOT EXISTS idx_weapon_templates_scope ON weapon_templates(scope_
 CREATE TABLE IF NOT EXISTS items (
   id TEXT PRIMARY KEY,
   scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
-  scope_id TEXT NOT NULL,
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
   source_id TEXT,
   source_mode TEXT CHECK (source_mode IN ('copy', 'linked')) DEFAULT 'copy',
   created_by TEXT,
@@ -320,7 +315,7 @@ CREATE INDEX IF NOT EXISTS idx_items_revealed ON items(is_revealed);
 CREATE TABLE IF NOT EXISTS rewards (
   id TEXT PRIMARY KEY,
   scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
-  scope_id TEXT NOT NULL,
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
   source_id TEXT,
   source_mode TEXT CHECK (source_mode IN ('copy', 'linked')) DEFAULT 'copy',
   created_by TEXT,
@@ -335,7 +330,7 @@ CREATE INDEX IF NOT EXISTS idx_rewards_scope ON rewards(scope_type, scope_id);
 CREATE TABLE IF NOT EXISTS npcs (
   id TEXT PRIMARY KEY,
   scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
-  scope_id TEXT NOT NULL,
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
   source_id TEXT,
   source_mode TEXT CHECK (source_mode IN ('copy', 'linked')) DEFAULT 'copy',
   created_by TEXT,
@@ -355,7 +350,7 @@ CREATE INDEX IF NOT EXISTS idx_npcs_revealed ON npcs(is_revealed);
 CREATE TABLE IF NOT EXISTS locations (
   id TEXT PRIMARY KEY,
   scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
-  scope_id TEXT NOT NULL,
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
   source_id TEXT,
   source_mode TEXT CHECK (source_mode IN ('copy', 'linked')) DEFAULT 'copy',
   created_by TEXT,
@@ -378,7 +373,7 @@ CREATE INDEX IF NOT EXISTS idx_locations_revealed ON locations(revealed);
 CREATE TABLE IF NOT EXISTS calendars (
   id TEXT PRIMARY KEY,
   scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
-  scope_id TEXT NOT NULL,
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
   source_id TEXT,
   name TEXT NOT NULL,
   months TEXT NOT NULL,
@@ -404,7 +399,7 @@ CREATE TABLE IF NOT EXISTS calendar_states (
 CREATE TABLE IF NOT EXISTS codex_docs (
   id TEXT PRIMARY KEY,
   scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
-  scope_id TEXT NOT NULL,
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
   source_id TEXT,
   title TEXT NOT NULL,
   category TEXT NOT NULL,
@@ -420,7 +415,7 @@ CREATE INDEX IF NOT EXISTS idx_codex_scope ON codex_docs(scope_type, scope_id);
 CREATE TABLE IF NOT EXISTS campaign_notes (
   id TEXT PRIMARY KEY,
   scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
-  scope_id TEXT NOT NULL,
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
   title TEXT NOT NULL,
   category TEXT NOT NULL,
   session_number TEXT,
@@ -434,7 +429,7 @@ CREATE INDEX IF NOT EXISTS idx_campaign_notes_scope ON campaign_notes(scope_type
 CREATE TABLE IF NOT EXISTS encounters (
   id TEXT PRIMARY KEY,
   scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
-  scope_id TEXT NOT NULL,
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
   name TEXT NOT NULL,
   location_id TEXT,
   status TEXT CHECK (status IN ('draft', 'active', 'paused', 'ended')) DEFAULT 'draft',
@@ -544,7 +539,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_log_campaign ON audit_log(campaign_id);
 CREATE TABLE IF NOT EXISTS factions (
   id TEXT PRIMARY KEY,
   scope_type TEXT CHECK (scope_type IN ('pack', 'campaign')) NOT NULL DEFAULT 'campaign',
-  scope_id TEXT NOT NULL,
+  scope_id TEXT NOT NULL DEFAULT 'zorvania-c1',
   name TEXT NOT NULL,
   description TEXT NOT NULL,
   attitude TEXT,
@@ -609,4 +604,68 @@ CREATE TABLE IF NOT EXISTS clone_jobs (
 
 CREATE INDEX IF NOT EXISTS idx_clone_jobs_user ON clone_jobs(user_id);
 CREATE INDEX IF NOT EXISTS idx_clone_jobs_target ON clone_jobs(target_scope_type, target_scope_id);
+
+-- ---------------------------------------------------------
+-- Legacy tables still queried by functions/api/[[route]].ts
+-- (see migrations/004_restore_legacy_contract.sql)
+-- ---------------------------------------------------------
+
+-- 38. Account invites (global registration codes)
+CREATE TABLE IF NOT EXISTS invites (
+  id TEXT PRIMARY KEY,
+  code_hash TEXT UNIQUE NOT NULL,
+  label TEXT,
+  created_by TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL,
+  max_uses INTEGER DEFAULT 1,
+  used_count INTEGER DEFAULT 0,
+  assign_character_id TEXT,
+  revoked_at INTEGER,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_invites_code_hash ON invites(code_hash);
+
+-- 39. Password resets
+CREATE TABLE IF NOT EXISTS password_resets (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  token_hash TEXT UNIQUE NOT NULL,
+  created_by TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL,
+  used_at INTEGER,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 40. Campaign calendar (single-row legacy calendar)
+CREATE TABLE IF NOT EXISTS campaign_calendar (
+  id TEXT PRIMARY KEY DEFAULT 'zorvania-calendar',
+  year INTEGER NOT NULL DEFAULT 1500,
+  month INTEGER NOT NULL DEFAULT 1,
+  day INTEGER NOT NULL DEFAULT 1,
+  is_off_day INTEGER NOT NULL DEFAULT 0,
+  off_day_index INTEGER DEFAULT 0,
+  current_festival TEXT,
+  updated_at INTEGER NOT NULL
+);
+
+-- 41. Campaign endings (single-row JSON)
+CREATE TABLE IF NOT EXISTS campaign_endings (
+  id TEXT PRIMARY KEY DEFAULT 'zorvania-endings',
+  data TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+-- 42. Shan Shin encounters (knowledge-domain encounters)
+CREATE TABLE IF NOT EXISTS shanshin_encounters (
+  id INTEGER PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  mechanics_note TEXT,
+  dm_advice TEXT,
+  updated_at INTEGER NOT NULL
+);
 

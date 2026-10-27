@@ -119,11 +119,11 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="px-4 py-2 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs hover:bg-[#F2C265] disabled:opacity-50 transition-colors flex items-center gap-1.5 min-h-[44px] shadow-lg shadow-amber-500/20"
+          className="px-4 py-2 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs hover:bg-[#F2C265] disabled:opacity-50 transition-colors flex items-center gap-1.5 min-h-[44px] shadow-lg shadow-[#E0A030]/20"
         >
           {saveSuccess ? (
             <>
-              <Check className="w-4 h-4 text-emerald-950" />
+              <Check className="w-4 h-4 text-[#0E0D0C]" />
               <span>ذخیره شد</span>
             </>
           ) : (
@@ -148,7 +148,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
         <div className="flex-1 text-center sm:text-right space-y-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-amber-100">{charData.name}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-[#F2C265]">{charData.name}</h1>
               <p className="text-xs text-[#A39A89] mt-0.5">{charData.race} | شناسنامه کلان پلتفرم زروانیا</p>
             </div>
             {/* Status Selector */}
@@ -371,7 +371,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                           onClick={() => handleUpdateSection(section.id, { shareWithParty: !section.shareWithParty })}
                           className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors min-h-[36px] ${
                             section.shareWithParty
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                              ? 'bg-[#6F9E78]/20 text-[#6F9E78] border border-[#6F9E78]/30'
                               : 'bg-[#201D19] text-[#A39A89] border border-[#3A342B]'
                           }`}
                         >
@@ -400,17 +400,17 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           </div>
 
           {/* DM-Only Secrets & Hooks */}
-          <div className="rounded-2xl bg-[#1A1210] border border-red-500/20 p-5 space-y-4">
-            <h3 className="text-sm font-bold text-rose-300 flex items-center gap-2">
+          <div className="rounded-2xl bg-[#1A1210] border border-[#C2512B]/20 p-5 space-y-4">
+            <h3 className="text-sm font-bold text-[#E8836B] flex items-center gap-2">
               <Lock className="w-4 h-4 text-[#D66138]" />
               رازها و قلاب‌های داستانی محرمانه (فقط دانجن مستر)
             </h3>
-            <p className="text-xs text-rose-200/60">
+            <p className="text-xs text-[#E8836B]/60">
               این بخش هرگز به دیگر بازیکنان نشان داده نمی‌شود؛ سرور این فیلدها را برای بازیکنان سانسور می‌کند.
             </p>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs text-rose-200/80 mb-1">رازهای مگو (Secrets)</label>
+                <label className="block text-xs text-[#E8836B]/80 mb-1">رازهای مگو (Secrets)</label>
                 <textarea
                   value={charData.backstory?.dmOnly?.secrets || ''}
                   onChange={e => setCharData({
@@ -421,12 +421,12 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                     }
                   })}
                   rows={2}
-                  className="w-full bg-[#131110] border border-rose-900/40 rounded-xl p-2.5 text-xs text-[#EDE6D8] focus:border-[#C2512B] focus:outline-none"
+                  className="w-full bg-[#131110] border border-[#C2512B]/60 rounded-xl p-2.5 text-xs text-[#EDE6D8] focus:border-[#C2512B] focus:outline-none"
                   placeholder="رازی تاریک از گذشته یا اصل و نسب..."
                 />
               </div>
               <div>
-                <label className="block text-xs text-rose-200/80 mb-1">قلاب‌های داستانی (Plot Hooks)</label>
+                <label className="block text-xs text-[#E8836B]/80 mb-1">قلاب‌های داستانی (Plot Hooks)</label>
                 <textarea
                   value={charData.backstory?.dmOnly?.hooks || ''}
                   onChange={e => setCharData({
@@ -437,7 +437,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                     }
                   })}
                   rows={2}
-                  className="w-full bg-[#131110] border border-rose-900/40 rounded-xl p-2.5 text-xs text-[#EDE6D8] focus:border-[#C2512B] focus:outline-none"
+                  className="w-full bg-[#131110] border border-[#C2512B]/60 rounded-xl p-2.5 text-xs text-[#EDE6D8] focus:border-[#C2512B] focus:outline-none"
                   placeholder="انگیزه‌های شخصی که DM می‌تواند در ماجرا دخالت دهد..."
                 />
               </div>
@@ -522,7 +522,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                       </div>
                       {event.campaignName && (
                         <div className="text-[11px] text-[#A39A89] flex items-center gap-1">
-                          <Compass className="w-3 h-3 text-amber-500" />
+                          <Compass className="w-3 h-3 text-[#E0A030]" />
                           <span>کمپین: {event.campaignName}</span>
                         </div>
                       )}

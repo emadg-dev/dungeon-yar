@@ -472,23 +472,23 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
   const renderTypeBadge = (type: string) => {
     switch (type) {
       case 'location':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">مکان</span>;
+        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#6F9E78]/20 text-[#6F9E78] border border-[#6F9E78]/30">مکان</span>;
       case 'npc':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/30">NPC / هیولا</span>;
+        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#9B72CF]/20 text-[#9B72CF] border border-[#9B72CF]/30">NPC / هیولا</span>;
       case 'item':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30">آیتم / سلاح</span>;
+        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30">آیتم / سلاح</span>;
       case 'encounter':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30">مواجهه</span>;
+        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#C2512B]/20 text-[#E8836B] border border-[#C2512B]/30">مواجهه</span>;
       case 'class_template':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30">کلاس</span>;
+        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#7FB4D6]/20 text-[#7FB4D6] border border-[#7FB4D6]/30">کلاس</span>;
       case 'faction':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-600/20 text-amber-400 border border-amber-600/30">جناح</span>;
+        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30">جناح</span>;
       case 'calendar':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">گاه‌شمار</span>;
+        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#7FB4D6]/20 text-[#7FB4D6] border border-[#7FB4D6]/30">گاه‌شمار</span>;
       case 'rule_set':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-500/20 text-slate-300 border border-slate-500/30">قوانین</span>;
+        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#2F2A23]/20 text-[#EDE6D8] border border-[#2F2A23]/30">قوانین</span>;
       case 'campaign_doc':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">سند</span>;
+        return <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#9B72CF]/20 text-[#9B72CF] border border-[#9B72CF]/30">سند</span>;
       default:
         return null;
     }
@@ -506,8 +506,8 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
           }}
           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition ${
             isUpdated 
-              ? 'bg-amber-500 text-slate-950 animate-pulse hover:bg-amber-400' 
-              : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              ? 'bg-[#E0A030] text-[#0E0D0C] animate-pulse hover:bg-[#F2C265]' 
+              : 'bg-[#2F2A23] text-[#EDE6D8] hover:bg-[#3A342B]'
           }`}
         >
           <Sparkles className="w-3 h-3" />
@@ -522,7 +522,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
     <div className="space-y-4 pb-20 text-right" dir="rtl">
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold shadow-2xl flex items-center gap-2">
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-[#E0A030] text-[#0E0D0C] px-4 py-2 rounded-xl text-xs font-bold shadow-2xl flex items-center gap-2">
           <Check className="w-4 h-4" />
           <span>{toast}</span>
         </div>
@@ -532,9 +532,9 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
       <div className="surface-card rounded-2xl p-4 border border-[#2F2A23] space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Library className="w-5 h-5 text-amber-400" />
-            <h2 className="text-base font-bold text-slate-100">کتابخانه و مخزن محتوا (DM Library)</h2>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+            <Library className="w-5 h-5 text-[#F2C265]" />
+            <h2 className="text-base font-bold text-[#EDE6D8]">کتابخانه و مخزن محتوا (DM Library)</h2>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-[#2F2A23] text-[#EDE6D8]">
               {totalCount} مورد
             </span>
           </div>
@@ -546,8 +546,8 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               onClick={() => setMultiSelectMode(!multiSelectMode)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 min-h-[36px] ${
                 multiSelectMode 
-                  ? 'bg-amber-500 text-slate-950 shadow-md' 
-                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
+                  ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md' 
+                  : 'bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8]'
               }`}
             >
               <CheckSquare className="w-4 h-4" />
@@ -557,7 +557,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <button
               type="button"
               onClick={() => setPackExportImportOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-1.5 min-h-[36px]"
+              className="px-3 py-1.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] text-xs font-bold transition flex items-center gap-1.5 min-h-[36px]"
               title="صدور یا درون‌ریزی بسته"
             >
               <Upload className="w-4 h-4" />
@@ -567,7 +567,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <button
               type="button"
               onClick={() => setSaveTemplateModalOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 hover:bg-amber-500/25 text-xs font-bold transition flex items-center gap-1.5 min-h-[36px]"
+              className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#F2C265] hover:bg-[#E0A030]/25 text-xs font-bold transition flex items-center gap-1.5 min-h-[36px]"
             >
               <Bookmark className="w-4 h-4" />
               <span>ذخیره به عنوان قالب</span>
@@ -577,14 +577,14 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
         {/* Source Switcher Buttons */}
         <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#2F2A23]">
-          <span className="text-xs text-slate-400 ml-1">منبع:</span>
+          <span className="text-xs text-[#A39A89] ml-1">منبع:</span>
           <button
             type="button"
             onClick={() => setSource('current_campaign')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
               source === 'current_campaign'
-                ? 'bg-amber-500 text-slate-950 font-extrabold'
-                : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300'
+                ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold'
+                : 'bg-[#2F2A23]/80 hover:bg-[#2F2A23] text-[#EDE6D8]'
             }`}
           >
             این کمپین
@@ -594,8 +594,8 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             onClick={() => setSource('my_library')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
               source === 'my_library'
-                ? 'bg-amber-500 text-slate-950 font-extrabold'
-                : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300'
+                ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold'
+                : 'bg-[#2F2A23]/80 hover:bg-[#2F2A23] text-[#EDE6D8]'
             }`}
           >
             کتابخانه‌ی من
@@ -605,8 +605,8 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             onClick={() => setSource('pack-zorvania')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
               source === 'pack-zorvania'
-                ? 'bg-amber-500 text-slate-950 font-extrabold'
-                : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300'
+                ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold'
+                : 'bg-[#2F2A23]/80 hover:bg-[#2F2A23] text-[#EDE6D8]'
             }`}
           >
             بسته زروانیا
@@ -616,8 +616,8 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             onClick={() => setSource('pack-srd-5e')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
               source === 'pack-srd-5e'
-                ? 'bg-amber-500 text-slate-950 font-extrabold'
-                : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300'
+                ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold'
+                : 'bg-[#2F2A23]/80 hover:bg-[#2F2A23] text-[#EDE6D8]'
             }`}
           >
             پایه ۵e (SRD)
@@ -631,8 +631,8 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               onClick={() => setSource(p.id)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
                 source === p.id
-                  ? 'bg-amber-500 text-slate-950 font-extrabold'
-                  : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300'
+                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold'
+                  : 'bg-[#2F2A23]/80 hover:bg-[#2F2A23] text-[#EDE6D8]'
               }`}
             >
               {p.name}
@@ -663,8 +663,8 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               onClick={() => setTypeFilter(chip.id as EntityTypeFilter)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition min-h-[36px] ${
                 typeFilter === chip.id
-                  ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
-                  : 'bg-slate-900 border border-slate-800 text-slate-300 hover:border-slate-700'
+                  ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
+                  : 'bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#3A342B]'
               }`}
             >
               {chip.label}
@@ -676,13 +676,13 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
           {/* Search Input */}
           <div className="sm:col-span-2 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute right-3 top-3 pointer-events-none" />
+            <Search className="w-4 h-4 text-[#A39A89] absolute right-3 top-3 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="جستجو بر اساس نام، برچسب یا توصیف..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl pr-9 pl-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-amber-500 min-h-[40px]"
+              className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl pr-9 pl-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[40px]"
             />
           </div>
 
@@ -691,7 +691,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <select
               value={regionFilter}
               onChange={e => setRegionFilter(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 min-h-[40px]"
+              className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[40px]"
             >
               <option value="">همه اقلیم‌ها</option>
               <option value="ورنا">ورنا</option>
@@ -708,7 +708,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value as any)}
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 min-h-[40px]"
+              className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[40px]"
             >
               <option value="newest">جدیدترین</option>
               <option value="name">بر اساس نام الفبایی</option>
@@ -720,14 +720,14 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
       {/* Main Entities List / Grid */}
       {loading ? (
-        <div className="p-8 text-center text-slate-400 text-xs">در حال بارگذاری محتوا...</div>
+        <div className="p-8 text-center text-[#A39A89] text-xs">در حال بارگذاری محتوا...</div>
       ) : items.length === 0 ? (
         <div className="surface-card rounded-2xl p-8 text-center space-y-3 border border-[#2F2A23]">
-          <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto">
+          <div className="w-12 h-12 rounded-full bg-[#E0A030]/10 text-[#F2C265] flex items-center justify-center mx-auto">
             <Library className="w-6 h-6" />
           </div>
-          <h3 className="text-sm font-bold text-slate-200">موردی یافت نشد</h3>
-          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+          <h3 className="text-sm font-bold text-[#EDE6D8]">موردی یافت نشد</h3>
+          <p className="text-xs text-[#A39A89] max-w-sm mx-auto">
             هیچ موجودیتی با فیلترهای مشخص‌شده در این منبع پیدا نشد. منبع یا عبارت جستجو را تغییر دهید.
           </p>
         </div>
@@ -747,19 +747,19 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 }}
                 className={`relative rounded-2xl p-4 border transition-all cursor-pointer shadow-md flex flex-col justify-between ${
                   isSelected
-                    ? 'bg-amber-500/10 border-amber-500 ring-1 ring-amber-500'
-                    : 'bg-[#171513] border-[#2F2A23] hover:border-amber-500/40'
+                    ? 'bg-[#E0A030]/10 border-[#E0A030] ring-1 ring-[#E0A030]'
+                    : 'bg-[#171513] border-[#2F2A23] hover:border-[#E0A030]/40'
                 }`}
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
                       {multiSelectMode && (
-                        <div className="text-amber-400">
-                          {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-slate-500" />}
+                        <div className="text-[#F2C265]">
+                          {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-[#A39A89]" />}
                         </div>
                       )}
-                      <h4 className="text-sm font-bold text-slate-100 hover:text-amber-300 transition-colors line-clamp-1">
+                      <h4 className="text-sm font-bold text-[#EDE6D8] hover:text-[#F2C265] transition-colors line-clamp-1">
                         {item.name || item.title}
                       </h4>
                     </div>
@@ -770,31 +770,31 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                         type="button"
                         onClick={(e) => handleToggleFavorite(e, item)}
                         className={`p-1 rounded-lg transition ${
-                          item.isFavorite ? 'text-amber-400' : 'text-slate-600 hover:text-slate-400'
+                          item.isFavorite ? 'text-[#F2C265]' : 'text-[#8A8374] hover:text-[#A39A89]'
                         }`}
                         title="علاقه‌مندی"
                       >
-                        <Star className={`w-4 h-4 ${item.isFavorite ? 'fill-amber-400' : ''}`} />
+                        <Star className={`w-4 h-4 ${item.isFavorite ? 'fill-[#F2C265]' : ''}`} />
                       </button>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-[#A39A89] mt-2 line-clamp-2 leading-relaxed">
                     {item.description || item.body || item.mechanicalEffect || 'بدون توضیحات تکمیلی.'}
                   </p>
                 </div>
 
-                <div className="mt-3 pt-2.5 border-t border-[#2F2A23]/60 flex items-center justify-between text-[11px] text-slate-400">
+                <div className="mt-3 pt-2.5 border-t border-[#2F2A23]/60 flex items-center justify-between text-[11px] text-[#A39A89]">
                   <div className="flex items-center gap-2">
                     {item.region && (
-                      <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">
+                      <span className="px-2 py-0.5 rounded-md bg-[#2F2A23] text-[#EDE6D8]">
                         {item.region}
                       </span>
                     )}
                     {renderLinkBadge(item)}
                   </div>
 
-                  <div className="flex items-center gap-1 text-amber-400 text-xs font-semibold">
+                  <div className="flex items-center gap-1 text-[#F2C265] text-xs font-semibold">
                     <span>مشاهده جزئیات</span>
                     <ChevronLeftIcon className="w-3.5 h-3.5" />
                   </div>
@@ -807,8 +807,8 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
       {/* Sticky Action Bar in Multi-Select Mode */}
       {multiSelectMode && selectedRefs.length > 0 && (
-        <div className="fixed bottom-16 sm:bottom-6 left-3 right-3 sm:left-auto sm:right-1/2 sm:translate-x-1/2 z-40 bg-[#1A1815] border border-amber-500/50 rounded-2xl p-3 shadow-2xl flex items-center justify-between gap-3 max-w-xl">
-          <div className="text-xs font-bold text-amber-300">
+        <div className="fixed bottom-16 sm:bottom-6 left-3 right-3 sm:left-auto sm:right-1/2 sm:translate-x-1/2 z-40 bg-[#1A1815] border border-[#E0A030]/50 rounded-2xl p-3 shadow-2xl flex items-center justify-between gap-3 max-w-xl">
+          <div className="text-xs font-bold text-[#F2C265]">
             {selectedRefs.length} مورد انتخاب شده
           </div>
 
@@ -825,7 +825,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <button
               type="button"
               onClick={handleBatchSaveToMyLibrary}
-              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1 min-h-[36px]"
+              className="px-3 py-1.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] text-xs font-bold flex items-center gap-1 min-h-[36px]"
             >
               <Bookmark className="w-3.5 h-3.5" />
               <span>ذخیره در کتابخانه‌ام</span>
@@ -846,7 +846,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               <div className="flex items-center gap-2">
                 {renderTypeBadge(detailItem.itemType)}
                 {detailItem.region && (
-                  <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 text-xs">
+                  <span className="px-2 py-0.5 rounded-md bg-[#2F2A23] text-[#EDE6D8] text-xs">
                     اقلیم: {detailItem.region}
                   </span>
                 )}
@@ -854,24 +854,24 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               {renderLinkBadge(detailItem)}
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-200 leading-relaxed whitespace-pre-wrap">
+            <div className="p-3 rounded-xl bg-[#201D19]/60 border border-[#2F2A23] text-xs text-[#EDE6D8] leading-relaxed whitespace-pre-wrap">
               {detailItem.description || detailItem.body || detailItem.mechanicalEffect || 'توضیحاتی ثبت نشده است.'}
             </div>
 
             {/* DM Secret Notes if present */}
             {(detailItem.dmNotes || detailItem.secretNotes) && (
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200">
+              <div className="p-3 rounded-xl bg-[#E0A030]/10 border border-[#E0A030]/30 text-xs text-[#F2C265]">
                 <span className="font-bold block mb-1">یادداشت‌های محرمانه دانجن مستر:</span>
-                <p className="text-slate-300">{detailItem.dmNotes || detailItem.secretNotes}</p>
+                <p className="text-[#EDE6D8]">{detailItem.dmNotes || detailItem.secretNotes}</p>
               </div>
             )}
 
             {/* Tags */}
             {detailItem.tags && detailItem.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 items-center">
-                <span className="text-[11px] text-slate-400">برچسب‌ها:</span>
+                <span className="text-[11px] text-[#A39A89]">برچسب‌ها:</span>
                 {detailItem.tags.map((t: string) => (
-                  <span key={t} className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 text-[10px]">
+                  <span key={t} className="px-2 py-0.5 rounded-md bg-[#2F2A23] text-[#EDE6D8] text-[10px]">
                     #{t}
                   </span>
                 ))}
@@ -879,7 +879,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             )}
 
             {/* Actions Footer */}
-            <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center gap-2">
+            <div className="pt-3 border-t border-[#2F2A23] flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={() => {
@@ -905,7 +905,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                     showFeedback(e.message || 'خطا در ذخیره');
                   }
                 }}
-                className="flex-1 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 min-h-[44px]"
+                className="flex-1 py-2.5 px-3 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] font-bold text-xs flex items-center justify-center gap-1.5 min-h-[44px]"
               >
                 <Bookmark className="w-4 h-4" />
                 <span>ذخیره در کتابخانه‌ام</span>
@@ -916,7 +916,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 <button
                   type="button"
                   onClick={() => handleDetachLink(detailItem)}
-                  className="py-2.5 px-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 hover:bg-rose-500/25 font-bold text-xs min-h-[44px]"
+                  className="py-2.5 px-3 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] hover:bg-[#C2512B]/25 font-bold text-xs min-h-[44px]"
                 >
                   قطع پیوند
                 </button>
@@ -939,43 +939,43 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
         >
           <div className="space-y-4 py-2 text-right" dir="rtl">
             {/* Step Indicators */}
-            <div className="flex items-center justify-between text-xs font-bold text-slate-400 border-b border-slate-800 pb-2">
-              <span className={importSheet.step === 1 ? 'text-amber-400 font-black' : ''}>۱. انتخاب</span>
-              <span className={importSheet.step === 2 ? 'text-amber-400 font-black' : ''}>۲. تنظیمات تبدیل</span>
-              <span className={importSheet.step === 3 ? 'text-amber-400 font-black' : ''}>۳. پیش‌نمایش</span>
+            <div className="flex items-center justify-between text-xs font-bold text-[#A39A89] border-b border-[#2F2A23] pb-2">
+              <span className={importSheet.step === 1 ? 'text-[#F2C265] font-black' : ''}>۱. انتخاب</span>
+              <span className={importSheet.step === 2 ? 'text-[#F2C265] font-black' : ''}>۲. تنظیمات تبدیل</span>
+              <span className={importSheet.step === 3 ? 'text-[#F2C265] font-black' : ''}>۳. پیش‌نمایش</span>
             </div>
 
             {/* STEP 1: Selection & Dependencies */}
             {importSheet.step === 1 && (
               <div className="space-y-3">
-                <p className="text-xs text-slate-300">
+                <p className="text-xs text-[#EDE6D8]">
                   تعداد {importSheet.selectedRefs.length} موجودیت برای انتقال به مقصد انتخاب شده است.
                 </p>
 
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <div className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] space-y-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={importSheet.includeDependencies}
                       onChange={e => setImportSheet(prev => ({ ...prev, includeDependencies: e.target.checked }))}
-                      className="w-4 h-4 accent-amber-500 rounded"
+                      className="w-4 h-4 accent-[#E0A030] rounded"
                     />
-                    <span className="text-xs font-bold text-slate-200">
+                    <span className="text-xs font-bold text-[#EDE6D8]">
                       شامل تمام وابستگی‌ها (Dependency Resolution)
                     </span>
                   </label>
-                  <p className="text-[11px] text-slate-400 pr-6">
+                  <p className="text-[11px] text-[#A39A89] pr-6">
                     به‌طور خودکار هیولاها و آیتم‌های مواجهه، یا قابلیت‌ها و سلاح‌های کلاس کپی و لینک‌دهی می‌شوند.
                   </p>
 
-                  <label className="flex items-center gap-2 cursor-pointer pt-2 border-t border-slate-800">
+                  <label className="flex items-center gap-2 cursor-pointer pt-2 border-t border-[#2F2A23]">
                     <input
                       type="checkbox"
                       checked={importSheet.includeChildren}
                       onChange={e => setImportSheet(prev => ({ ...prev, includeChildren: e.target.checked }))}
-                      className="w-4 h-4 accent-amber-500 rounded"
+                      className="w-4 h-4 accent-[#E0A030] rounded"
                     />
-                    <span className="text-xs font-bold text-slate-200">
+                    <span className="text-xs font-bold text-[#EDE6D8]">
                       شامل زیرمجموعه‌ها و فرزندان مکان‌ها (Children)
                     </span>
                   </label>
@@ -995,14 +995,14 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             {importSheet.step === 2 && (
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-slate-300">وضعیت پدیداری (Visibility)</label>
+                  <label className="block text-xs font-bold text-[#EDE6D8]">وضعیت پدیداری (Visibility)</label>
                   <select
                     value={importSheet.options.visibility}
                     onChange={e => setImportSheet(prev => ({
                       ...prev,
                       options: { ...prev.options, visibility: e.target.value as any }
                     }))}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 min-h-[40px]"
+                    className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[40px]"
                   >
                     <option value="hidden">مخفی (فقط در دید دانجن مستر - پیش‌فرض)</option>
                     <option value="keep">حفظ وضعیت قبلی پدیداری</option>
@@ -1010,14 +1010,14 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-slate-300">مدیریت تداخل نام (Name Conflicts)</label>
+                  <label className="block text-xs font-bold text-[#EDE6D8]">مدیریت تداخل نام (Name Conflicts)</label>
                   <select
                     value={importSheet.options.nameConflict}
                     onChange={e => setImportSheet(prev => ({
                       ...prev,
                       options: { ...prev.options, nameConflict: e.target.value as any }
                     }))}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 min-h-[40px]"
+                    className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[40px]"
                   >
                     <option value="rename">تغییر نام با پسوند (کپی) - پیش‌فرض</option>
                     <option value="skip">صرف‌نظر از کپی موجودیت تکراری (Skip)</option>
@@ -1025,21 +1025,21 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-slate-300">نوع کپی و اتصال (Link Mode - Part B)</label>
+                  <label className="block text-xs font-bold text-[#EDE6D8]">نوع کپی و اتصال (Link Mode - Part B)</label>
                   <select
                     value={importSheet.options.keepLink}
                     onChange={e => setImportSheet(prev => ({
                       ...prev,
                       options: { ...prev.options, keepLink: e.target.value as any }
                     }))}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 min-h-[40px]"
+                    className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[40px]"
                   >
                     <option value="copy">کپی کاملاً مستقل (Copy - پیش‌فرض)</option>
                     <option value="linked">کپی پیونددار با اعلام تغییرات منبع (Linked Copy)</option>
                   </select>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <div className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] space-y-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -1048,9 +1048,9 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                         ...prev,
                         options: { ...prev.options, stripDmSecrets: e.target.checked }
                       }))}
-                      className="w-4 h-4 accent-amber-500 rounded"
+                      className="w-4 h-4 accent-[#E0A030] rounded"
                     />
-                    <span className="text-xs font-bold text-slate-200">حذف یادداشت‌های محرمانه مستر (Strip Secrets)</span>
+                    <span className="text-xs font-bold text-[#EDE6D8]">حذف یادداشت‌های محرمانه مستر (Strip Secrets)</span>
                   </label>
 
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -1061,9 +1061,9 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                         ...prev,
                         options: { ...prev.options, resetState: e.target.checked }
                       }))}
-                      className="w-4 h-4 accent-amber-500 rounded"
+                      className="w-4 h-4 accent-[#E0A030] rounded"
                     />
-                    <span className="text-xs font-bold text-slate-200">بازنشانی HP و تبدیل مواجهه‌ها به پیش‌نویس (Reset State)</span>
+                    <span className="text-xs font-bold text-[#EDE6D8]">بازنشانی HP و تبدیل مواجهه‌ها به پیش‌نویس (Reset State)</span>
                   </label>
                 </div>
 
@@ -1071,7 +1071,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   <button
                     type="button"
                     onClick={() => setImportSheet(prev => ({ ...prev, step: 1 }))}
-                    className="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs min-h-[48px]"
+                    className="py-3 px-4 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] font-bold text-xs min-h-[48px]"
                   >
                     بازگشت
                   </button>
@@ -1092,11 +1092,11 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 {importSheet.resultJob ? (
                   /* Result Screen */
                   <div className="text-center py-4 space-y-3">
-                    <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
+                    <div className="w-12 h-12 rounded-full bg-[#6F9E78]/20 text-[#6F9E78] flex items-center justify-center mx-auto">
                       <Check className="w-6 h-6" />
                     </div>
-                    <h3 className="text-base font-bold text-emerald-300">عملیات با موفقیت انجام شد</h3>
-                    <p className="text-xs text-slate-300">
+                    <h3 className="text-base font-bold text-[#6F9E78]">عملیات با موفقیت انجام شد</h3>
+                    <p className="text-xs text-[#EDE6D8]">
                       مجموع {importSheet.resultJob.manifest.totalCount} موجودیت به مقصد منتقل گردید.
                     </p>
 
@@ -1104,7 +1104,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                       <button
                         type="button"
                         onClick={() => handleUndoClone(importSheet.resultJob!.id)}
-                        className="py-2.5 px-4 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-bold hover:bg-rose-500/25 min-h-[44px]"
+                        className="py-2.5 px-4 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs font-bold hover:bg-[#C2512B]/25 min-h-[44px]"
                       >
                         لغو عملیات (Undo)
                       </button>
@@ -1119,18 +1119,18 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   </div>
                 ) : (
                   <>
-                    <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-                      <div className="flex items-center justify-between text-xs font-bold text-slate-200">
+                    <div className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] space-y-2">
+                      <div className="flex items-center justify-between text-xs font-bold text-[#EDE6D8]">
                         <span>کل موجودیت‌های تولیدی:</span>
-                        <span className="text-amber-400 text-sm">{importSheet.manifest?.totalCount || 0} مورد</span>
+                        <span className="text-[#F2C265] text-sm">{importSheet.manifest?.totalCount || 0} مورد</span>
                       </div>
 
                       {/* Counts breakdown */}
-                      <div className="grid grid-cols-2 gap-1 text-[11px] text-slate-400 pt-2 border-t border-slate-800">
+                      <div className="grid grid-cols-2 gap-1 text-[11px] text-[#A39A89] pt-2 border-t border-[#2F2A23]">
                         {Object.entries(importSheet.manifest?.countsByType || {}).map(([type, count]) => (
                           <div key={type} className="flex justify-between">
                             <span>{type}:</span>
-                            <span className="text-slate-200 font-semibold">{count}</span>
+                            <span className="text-[#EDE6D8] font-semibold">{count}</span>
                           </div>
                         ))}
                       </div>
@@ -1138,12 +1138,12 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
                     {/* Conflicts & Warnings */}
                     {importSheet.manifest?.warnings && importSheet.manifest.warnings.length > 0 && (
-                      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 space-y-1">
+                      <div className="p-3 rounded-xl bg-[#E0A030]/10 border border-[#E0A030]/30 text-xs text-[#F2C265] space-y-1">
                         <div className="flex items-center gap-1 font-bold">
-                          <AlertTriangle className="w-4 h-4 text-amber-400" />
+                          <AlertTriangle className="w-4 h-4 text-[#F2C265]" />
                           <span>هشدارها و تداخل‌ها:</span>
                         </div>
-                        <ul className="list-disc list-inside text-[11px] text-slate-300 space-y-0.5">
+                        <ul className="list-disc list-inside text-[11px] text-[#EDE6D8] space-y-0.5">
                           {importSheet.manifest.warnings.map((w, idx) => (
                             <li key={idx}>{w.message}</li>
                           ))}
@@ -1155,7 +1155,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                       <button
                         type="button"
                         onClick={() => setImportSheet(prev => ({ ...prev, step: 2 }))}
-                        className="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs min-h-[48px]"
+                        className="py-3 px-4 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] font-bold text-xs min-h-[48px]"
                       >
                         بازگشت
                       </button>
@@ -1184,14 +1184,14 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
           title={`تطبیق تغییرات: ${linkedDiffModal.diff.sourceName}`}
         >
           <div className="space-y-4 py-2 text-right" dir="rtl">
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-[#EDE6D8]">
               نسخه مبدأ این موجودیت تغییر یافته است. فیلدهای مورد نظر خود را انتخاب کنید و دکمه اعمال را بزنید:
             </p>
 
             <div className="space-y-2">
               {linkedDiffModal.diff.diffs.map(d => (
-                <div key={d.field} className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-                  <div className="text-xs font-bold text-amber-300">{d.labelFa}</div>
+                <div key={d.field} className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] space-y-2">
+                  <div className="text-xs font-bold text-[#F2C265]">{d.labelFa}</div>
                   <div className="grid grid-cols-2 gap-2 text-[11px]">
                     <div 
                       onClick={() => setLinkedDiffModal(prev => ({
@@ -1200,8 +1200,8 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                       }))}
                       className={`p-2 rounded-lg border cursor-pointer ${
                         linkedDiffModal.chosenFields[d.field] === 'local'
-                          ? 'border-amber-500 bg-amber-500/10 text-amber-200'
-                          : 'border-slate-800 bg-slate-950 text-slate-400'
+                          ? 'border-[#E0A030] bg-[#E0A030]/10 text-[#F2C265]'
+                          : 'border-[#2F2A23] bg-[#0E0D0C] text-[#A39A89]'
                       }`}
                     >
                       <span className="font-bold block mb-1">نسخه من (کمپین):</span>
@@ -1215,8 +1215,8 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                       }))}
                       className={`p-2 rounded-lg border cursor-pointer ${
                         linkedDiffModal.chosenFields[d.field] === 'source'
-                          ? 'border-emerald-500 bg-emerald-500/10 text-emerald-200'
-                          : 'border-slate-800 bg-slate-950 text-slate-400'
+                          ? 'border-[#6F9E78] bg-[#6F9E78]/10 text-[#6F9E78]'
+                          : 'border-[#2F2A23] bg-[#0E0D0C] text-[#A39A89]'
                       }`}
                     >
                       <span className="font-bold block mb-1">نسخه مبدأ جدید:</span>
@@ -1231,7 +1231,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               <button
                 type="button"
                 onClick={() => setLinkedDiffModal({ isOpen: false, diff: null, chosenFields: {} })}
-                className="py-3 px-4 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold min-h-[48px]"
+                className="py-3 px-4 rounded-xl bg-[#2F2A23] text-[#EDE6D8] text-xs font-bold min-h-[48px]"
               >
                 انصراف
               </button>
@@ -1256,12 +1256,12 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
         >
           <div className="space-y-4 py-2 text-right" dir="rtl">
             {/* Export section */}
-            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-              <h4 className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                <Download className="w-4 h-4 text-amber-400" />
+            <div className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] space-y-2">
+              <h4 className="text-xs font-bold text-[#EDE6D8] flex items-center gap-1.5">
+                <Download className="w-4 h-4 text-[#F2C265]" />
                 <span>صدور بسته به فایل JSON</span>
               </h4>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-[#A39A89]">
                 بسته مورد نظر را برای اشتراک‌گذاری یا نسخه پشتیبان دانلود کنید:
               </p>
               <div className="flex flex-wrap gap-2 pt-1">
@@ -1270,7 +1270,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                     key={p.id}
                     type="button"
                     onClick={() => handleExportPack(p.id)}
-                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold flex items-center gap-1 min-h-[36px]"
+                    className="px-3 py-1.5 rounded-lg bg-[#2F2A23] hover:bg-[#3A342B] text-[#F2C265] text-xs font-bold flex items-center gap-1 min-h-[36px]"
                   >
                     <span>{p.name}</span>
                     <Download className="w-3.5 h-3.5" />
@@ -1280,12 +1280,12 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             </div>
 
             {/* Import section */}
-            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
-              <h4 className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                <Upload className="w-4 h-4 text-amber-400" />
+            <div className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] space-y-2">
+              <h4 className="text-xs font-bold text-[#EDE6D8] flex items-center gap-1.5">
+                <Upload className="w-4 h-4 text-[#F2C265]" />
                 <span>درون‌ریزی فایل بسته (Import JSON)</span>
               </h4>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-[#A39A89]">
                 محتوای فایل JSON با فرمت zorvania-pack/1 را در کادر زیر جای‌گذاری کنید:
               </p>
               <textarea
@@ -1293,17 +1293,17 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 onChange={e => setImportJsonText(e.target.value)}
                 placeholder='{"format": "zorvania-pack/1", ...}'
                 rows={4}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 font-mono focus:outline-none focus:border-amber-500"
+                className="w-full bg-[#0E0D0C] border border-[#2F2A23] rounded-xl p-2.5 text-xs text-[#EDE6D8] font-mono focus:outline-none focus:border-[#E0A030]"
               />
 
               {importError && (
-                <div className="p-2 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 text-[11px]">
+                <div className="p-2 rounded-lg bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-[11px]">
                   {importError}
                 </div>
               )}
 
               {importPreviewManifest && (
-                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs space-y-1">
+                <div className="p-3 rounded-xl bg-[#6F9E78]/10 border border-[#6F9E78]/30 text-[#6F9E78] text-xs space-y-1">
                   <div className="font-bold">پیش‌نمایش معتبر: {importPreviewManifest.totalCount} مورد یافت شد.</div>
                   <button
                     type="button"
@@ -1320,7 +1320,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   type="button"
                   disabled={!importJsonText.trim()}
                   onClick={handlePreviewImportPack}
-                  className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold min-h-[44px]"
+                  className="w-full py-2.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] text-xs font-bold min-h-[44px]"
                 >
                   بررسی و اعتبارسنجی فایل (Preview)
                 </button>
@@ -1338,40 +1338,40 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
           title="ذخیره کمپین به عنوان قالب"
         >
           <div className="space-y-4 py-2 text-right" dir="rtl">
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-[#EDE6D8] leading-relaxed">
               با ایجاد قالب کمپین، ساختار دنیا، تنظیمات قوانین، تقویم و سند جلسه صفر به صورت یک بسته آماده برای ساخت کمپین‌های جدید بازتولید می‌شود.
             </p>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">نام قالب *</label>
+              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">نام قالب *</label>
               <input
                 type="text"
                 value={templateName}
                 onChange={e => setTemplateName(e.target.value)}
                 placeholder="مثلاً: قالب کمپین ماجراجویی کویر خاموش"
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-amber-500 min-h-[40px]"
+                className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[40px]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">توضیحات</label>
+              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">توضیحات</label>
               <textarea
                 value={templateDesc}
                 onChange={e => setTemplateDesc(e.target.value)}
                 placeholder="توضیحاتی برای استفاده‌کنندگان از این قالب..."
                 rows={3}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-amber-500"
+                className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl p-2.5 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
               />
             </div>
 
-            <label className="flex items-center gap-2 cursor-pointer p-3 rounded-xl bg-slate-900 border border-slate-800">
+            <label className="flex items-center gap-2 cursor-pointer p-3 rounded-xl bg-[#201D19] border border-[#2F2A23]">
               <input
                 type="checkbox"
                 checked={templateStripSecrets}
                 onChange={e => setTemplateStripSecrets(e.target.checked)}
-                className="w-4 h-4 accent-amber-500 rounded"
+                className="w-4 h-4 accent-[#E0A030] rounded"
               />
-              <span className="text-xs font-bold text-slate-200">
+              <span className="text-xs font-bold text-[#EDE6D8]">
                 حذف اطلاعات محرمانه دانجن مستر از قالب (Strip Secrets)
               </span>
             </label>

@@ -147,7 +147,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
                       {comp.type === 'construct' ? <Bot className="w-5 h-5" /> : <Trees className="w-5 h-5" />}
                     </div>
                     <div>
-                      <h4 className="font-black text-xs text-amber-100">{comp.name}</h4>
+                      <h4 className="font-black text-xs text-[#F2C265]">{comp.name}</h4>
                       <div className="flex items-center gap-2 text-[10px] text-[#A39A89]">
                         <span className="flex items-center gap-0.5">
                           <Shield className="w-2.5 h-2.5 text-[#F2C265]" /> AC {comp.ac}
@@ -159,7 +159,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
                   <button
                     type="button"
                     onClick={() => handleDeleteCompanion(comp.id)}
-                    className="p-1 text-[#8A8374] hover:text-red-400 transition"
+                    className="p-1 text-[#8A8374] hover:text-[#E8836B] transition"
                     title="حذف"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -170,7 +170,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
                 <div className="p-2.5 rounded-xl bg-[#131110] border border-[#2F2A23] space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-[#C9C0AE] flex items-center gap-1">
-                      <Heart className="w-3 h-3 text-red-400" /> جان (HP)
+                      <Heart className="w-3 h-3 text-[#E8836B]" /> جان (HP)
                     </span>
                     <span className="font-mono text-xs font-bold text-[#EDE6D8]">
                       {comp.hp.current} / {comp.hp.max}
@@ -181,7 +181,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
                   <div className="w-full h-1.5 bg-[#201D19] rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all ${
-                        hpPercent > 50 ? 'bg-emerald-500' : hpPercent > 20 ? 'bg-[#E0A030]' : 'bg-red-500'
+                        hpPercent > 50 ? 'bg-[#6F9E78]' : hpPercent > 20 ? 'bg-[#E0A030]' : 'bg-[#C2512B]'
                       }`}
                       style={{ width: `${hpPercent}%` }}
                     />
@@ -192,28 +192,28 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
                     <button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, -5)}
-                      className="w-8 h-8 rounded-lg bg-red-950/50 active:bg-red-900 border border-red-500/30 text-[#E8836B] text-xs font-bold touch-target select-none"
+                      className="w-8 h-8 rounded-lg bg-[#C2512B]/15 active:bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs font-bold touch-target select-none"
                     >
                       -۵
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, -1)}
-                      className="w-8 h-8 rounded-lg bg-red-950/50 active:bg-red-900 border border-red-500/30 text-[#E8836B] text-xs font-bold touch-target select-none"
+                      className="w-8 h-8 rounded-lg bg-[#C2512B]/15 active:bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs font-bold touch-target select-none"
                     >
                       -۱
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, +1)}
-                      className="w-8 h-8 rounded-lg bg-emerald-950/50 active:bg-emerald-900 border border-emerald-500/30 text-emerald-300 text-xs font-bold touch-target select-none"
+                      className="w-8 h-8 rounded-lg bg-[#6F9E78]/15 active:bg-[#6F9E78]/15 border border-[#6F9E78]/30 text-[#6F9E78] text-xs font-bold touch-target select-none"
                     >
                       +۱
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, +5)}
-                      className="w-8 h-8 rounded-lg bg-emerald-950/50 active:bg-emerald-900 border border-emerald-500/30 text-emerald-300 text-xs font-bold touch-target select-none"
+                      className="w-8 h-8 rounded-lg bg-[#6F9E78]/15 active:bg-[#6F9E78]/15 border border-[#6F9E78]/30 text-[#6F9E78] text-xs font-bold touch-target select-none"
                     >
                       +۵
                     </button>
