@@ -242,7 +242,8 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
-                className="flex items-center gap-1.5 py-1 px-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#EDE6D8] hover:border-[#E0A030] transition touch-target"
+                className="flex items-center gap-1.5 py-1 px-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#EDE6D8] hover:border-[#E0A030] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E0A030]/50 active:scale-95 transition touch-target"
+                title={currentUser.displayName || currentUser.name}
               >
                 <span className="w-2 h-2 rounded-full bg-[#6F9E78]" />
                 <span className="truncate max-w-[80px] sm:max-w-[120px]">{currentUser.displayName || currentUser.name}</span>
@@ -262,13 +263,14 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Quick Menu Modal (was a side drawer; now a bottom-sheet modal) */}
+      {/* Quick Menu Modal (centered modal, rendered via portal to be top-most) */}
       {mobileMenuOpen && (
         <BottomSheet
           isOpen={mobileMenuOpen}
           onClose={() => setMobileMenuOpen(false)}
           title={currentUser?.displayName || currentUser?.name || 'منوی سریع'}
           subtitle={currentUser ? `نقش: ${currentUser.role === 'dm' ? 'دانجن مستر' : 'بازیکن'}` : undefined}
+          centered
         >
           <div className="space-y-4">
             {/* User identity summary */}

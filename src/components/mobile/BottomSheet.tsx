@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 interface BottomSheetProps {
@@ -9,6 +10,7 @@ interface BottomSheetProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   fullHeight?: boolean;
+  centered?: boolean;
 }
 
 export const BottomSheet: React.FC<BottomSheetProps> = ({
@@ -19,6 +21,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   children,
   footer,
   fullHeight = false,
+  centered = false,
 }) => {
   const [dragOffset, setDragOffset] = useState<number>(0);
   const touchStartY = useRef<number | null>(null);
@@ -73,14 +76,15 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     }
   };
 
-  // Drag down to close gesture
+  // Drag down to close gesture (only for bottom-anchored sheets)
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (centered) return;
     touchStartY.current = e.touches[0].clientY;
     isDragging.current = true;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging.current || touchStartY.current === null) return;
+    if (centered || !isDragging.current || touchStartY.current === null) return;
     const currentY = e.touches[0].clientY;
     const deltaY = currentY - touchStartY.current;
     // Only drag down
@@ -90,6 +94,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   };
 
   const handleTouchEnd = () => {
+    if (centered) return;
     if (dragOffset > 75) {
       setDragOffset(0);
       handleClose();
@@ -102,29 +107,39 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div 
-      className="fixed inset-0 z-[40] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200 overflow-hidden"
+      className={`fixed inset-0 z-[100] flex ${
+        centered 
+          ? 'items-center justify-center p-3 sm:p-4' 
+          : 'items-end sm:items-center justify-center p-0 sm:p-4'
+      } bg-black/85 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto`}
       onClick={(e) => {
         if (e.target === e.currentTarget) handleClose();
       }}
     >
       <div
-        className={`w-full max-w-lg z-[41] glass-card bg-[#171513]/90 border-t sm:border border-[#E0A030]/25 rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col text-[#EDE6D8] animate-in slide-in-from-bottom duration-200 overflow-hidden ${
-          fullHeight ? 'h-[92dvh] sm:h-[88dvh]' : 'max-h-[92dvh] sm:max-h-[88dvh]'
+        className={`w-full max-w-lg z-[101] glass-card bg-[#171513]/95 ${
+          centered
+            ? 'border border-[#E0A030]/30 rounded-2xl my-auto animate-in zoom-in-95'
+            : 'border-t sm:border border-[#E0A030]/25 rounded-t-3xl sm:rounded-2xl animate-in slide-in-from-bottom'
+        } shadow-2xl flex flex-col text-[#EDE6D8] duration-200 overflow-hidden ${
+          fullHeight ? 'h-[92dvh] sm:h-[88dvh]' : 'max-h-[90dvh] sm:max-h-[88dvh]'
         }`}
-        style={dragOffset > 0 ? { transform: `translateY(${dragOffset}px)`, transition: 'none' } : undefined}
+        style={(!centered && dragOffset > 0) ? { transform: `translateY(${dragOffset}px)`, transition: 'none' } : undefined}
         dir="rtl"
       >
-        {/* Mobile Drag Indicator Bar (Touch Target for swipe down) */}
-        <div 
-          className="w-full flex justify-center pt-2.5 pb-2 sm:hidden shrink-0 bg-[#131110]/90 cursor-grab active:cursor-grabbing touch-none select-none"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          <div className="w-12 h-1.5 rounded-full bg-[#A39A89]/50" />
-        </div>
+        {/* Mobile Drag Indicator Bar (only for bottom sheet mode) */}
+        {!centered && (
+          <div 
+            className="w-full flex justify-center pt-2.5 pb-2 sm:hidden shrink-0 bg-[#131110]/90 cursor-grab active:cursor-grabbing touch-none select-none"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div className="w-12 h-1.5 rounded-full bg-[#A39A89]/50" />
+          </div>
+        )}
 
         {/* Header */}
         <div 
@@ -148,7 +163,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         </div>
 
         {/* Scrollable Content with ample bottom padding so buttons never cut off */}
-        <div className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-5 py-4 space-y-4 pb-14 sm:pb-6 focus:outline-none">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-5 py-4 space-y-4 pb-8 sm:pb-6 focus:outline-none">
           {children}
         </div>
 
@@ -158,9 +173,14 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             {footer}
           </div>
         ) : (
-          <div className="h-[env(safe-area-inset-bottom,0px)] shrink-0 sm:hidden" />
+          !centered && <div className="h-[env(safe-area-inset-bottom,0px)] shrink-0 sm:hidden" />
         )}
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+  return modalContent;
 };
