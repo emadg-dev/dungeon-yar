@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
+import { APP_NAME_FA } from '../../config/app';
 import { Download, Share2, PlusSquare, X } from 'lucide-react';
 
 export const PWAInstallPrompt: React.FC = () => {
@@ -44,7 +45,7 @@ export const PWAInstallPrompt: React.FC = () => {
           >
             <div className="w-full max-w-sm max-h-[90dvh] overflow-y-auto rounded-2xl bg-[#171513] border border-[#E0A030]/30 p-5 text-[#EDE6D8] shadow-2xl space-y-3" dir="rtl">
               <div className="flex items-center justify-between border-b border-[#2F2A23] pb-2">
-                <h4 className="font-bold text-sm text-[#F2C265]">نصب زروانیا روی آیفون و آیپد</h4>
+                <h4 className="font-bold text-sm text-[#F2C265]">نصب {APP_NAME_FA} روی آیفون و آیپد</h4>
                 <button type="button" onClick={() => setShowIOSGuide(false)} className="text-[#A39A89] p-2 touch-target hover:text-[#EDE6D8]">
                   <X className="w-4 h-4" />
                 </button>
@@ -63,7 +64,7 @@ export const PWAInstallPrompt: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-[#E0A030] text-[#0E0D0C] font-bold flex items-center justify-center shrink-0 text-[10px]">۳</span>
-                  <span>اکنون زروانیا به صورت تمام‌صفحه و آفلاین در صفحه اصلی قرار می‌گیرد.</span>
+                  <span>اکنون {APP_NAME_FA} به صورت تمام‌صفحه و آفلاین در صفحه اصلی قرار می‌گیرد.</span>
                 </div>
               </div>
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '../types';
+import { APP_NAME_FA } from '../config/app';
 import { SEED_USERS } from '../data/seed';
 import { api } from '../services/api';
 import { Shield, Sparkles, KeyRound, Mail, UserPlus, LogIn, Eye, EyeOff, X, HelpCircle, Check, AlertCircle } from 'lucide-react';
@@ -165,7 +166,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
 
           <h2 className="text-xl font-black text-[#EDE6D8] tracking-tight">
-            درگاه احراز هویت زروانیا
+            درگاه احراز هویت {APP_NAME_FA}
           </h2>
           <p className="text-xs text-[#A39A89] mt-1">
             {mode === 'login' && 'ورود ماجراجویان و دانجن مستر به گاهشمار وقایع'}

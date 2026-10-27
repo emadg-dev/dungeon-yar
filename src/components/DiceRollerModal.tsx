@@ -155,7 +155,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
     <BottomSheet
       isOpen={isOpen}
       onClose={onClose}
-      title="تاس‌های زروانیا و میز بازی"
+      title="کیسه تاس و میز بازی"
       subtitle="پرتاب تاس‌های D&D 5e و فید مشترک میز بازی"
     >
       <div className="space-y-4 text-xs text-[#EDE6D8]" dir="rtl">

@@ -57,6 +57,7 @@ import {
   WizardState,
   LinkedEntityDiff
 } from '../types';
+import { APP_NAME_FA } from '../config/app';
 import {
   SEED_USERS,
   SEED_CHARACTERS,
@@ -2952,7 +2953,7 @@ export class LocalApi implements ApiClient {
       id: `hist-create-${Date.now()}`,
       characterId: newId,
       eventType: 'created' as any,
-      payload: { title: 'آفرینش شخصیت', description: 'شناسنامه و هویت کلان شخصیت در زروانیا ثبت شد.' },
+      payload: { title: 'آفرینش شخصیت', description: `شناسنامه و هویت کلان شخصیت در ${APP_NAME_FA} ثبت شد.` },
       timestamp: Date.now()
     });
     this.setItem('character_history_events', allHist);

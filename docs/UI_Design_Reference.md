@@ -34,10 +34,10 @@ Jib-be-jib uses HSL-based CSS variables for consistent light/dark theming:
 }
 ```
 
-**Recommendation for Zorvania:**
+**Recommendation for DungeonYar:**
 - Replace hard hex colors (`#0E0D0C`, `#171513`, `#2F2A23`) with a CSS-variable-based system.
 - Define `--bg`, `--surface`, `--surface-card`, `--text`, `--accent`, `--accent-foreground`, `--border`, `--radius`.
-- Keep Zorvania’s warm amber accent (`#E0A030`) as `--primary` but add a complementary muted surface palette.
+- Keep DungeonYar’s warm amber accent (`#E0A030`) as `--primary` but add a complementary muted surface palette.
 
 ---
 
@@ -65,9 +65,9 @@ Jib-be-jib defines `.glass-panel` in `index.css`:
 Used on: sidebar (`aside`), mobile header (`header`), bottom dock.
 
 **Recommendation:**
-- Add a `.glass-card` / `.glass-panel` utility to Zorvania’s `index.css` to replace flat `#171513` cards.
+- Add a `.glass-card` / `.glass-panel` utility to DungeonYar’s `index.css` to replace flat `#171513` cards.
 - Apply to `StickyHeader`, character sheet cards, DM dashboard, and modals.
-- Example for Zorvania dark glass:
+- Example for DungeonYar dark glass:
   ```css
   background: rgba(23, 21, 19, 0.85);
   border: 1px solid rgba(255,255,255,0.06);
@@ -93,7 +93,7 @@ html {
 Decorative soft radial orbs (`body::before`, `body::after`) add depth.
 
 **Recommendation:**
-- Replace Zorvania’s flat `#0E0D0C` with a very subtle warm gradient:
+- Replace DungeonYar’s flat `#0E0D0C` with a very subtle warm gradient:
   ```css
   background: linear-gradient(135deg, #0E0D0C 0%, #12100F 40%, #0E0D0C 100%);
   ```
@@ -114,7 +114,7 @@ Decorative soft radial orbs (`body::before`, `body::after`) add depth.
 - `shadow-sm`, never heavy drop shadows.
 - No solid dark borders; borders are `border-border` (semi-transparent).
 
-**Recommendation:** Update Zorvania `StickyHeader` and tab cards to use rounded-2xl with glass-panel styling instead of flat dark cards.
+**Recommendation:** Update DungeonYar `StickyHeader` and tab cards to use rounded-2xl with glass-panel styling instead of flat dark cards.
 
 ### Button (`core.tsx`)
 - Base: `inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold`
@@ -123,7 +123,7 @@ Decorative soft radial orbs (`body::before`, `body::after`) add depth.
 - Disabled: `disabled:pointer-events-none disabled:opacity-50`
 - Variant styles: `primary` (indigo with shadow-lg), `secondary`, `outline` (transparent bg + border), `ghost` (hover bg only)
 
-**Recommendation:** Apply button styling pattern to Zorvania action buttons (Save, Rest, Dice, etc.) — especially the `min-h-11`, `rounded-xl`, `focus-visible:ring`, and `active:scale-[.98]`.
+**Recommendation:** Apply button styling pattern to DungeonYar action buttons (Save, Rest, Dice, etc.) — especially the `min-h-11`, `rounded-xl`, `focus-visible:ring`, and `active:scale-[.98]`.
 
 ### Input / Select / Textarea (`core.tsx`)
 - `h-11` (44px touch-friendly height)
@@ -132,13 +132,13 @@ Decorative soft radial orbs (`body::before`, `body::after`) add depth.
 - Focus: `focus:border-ring focus:ring-4 focus:ring-ring/20`
 - `backdrop-filter: blur(8px)` in `.select-control`
 
-**Recommendation:** Ensure all Zorvania form inputs (character name, notes, etc.) have `min-h-11`, `rounded-xl`, and visible focus rings. Currently some inputs may be smaller.
+**Recommendation:** Ensure all DungeonYar form inputs (character name, notes, etc.) have `min-h-11`, `rounded-xl`, and visible focus rings. Currently some inputs may be smaller.
 
 ### Skeleton (`Skeleton.tsx`)
 - Uses `animate-pulse` with `rounded-xl bg-muted`.
 - Component-level skeletons: `CardSkeleton`, `StatsCardSkeleton`, `ChartSkeleton`, `TableSkeleton`, `DashboardSkeleton`, `PageSkeleton`.
 
-**Recommendation:** The `TabSkeleton` we created for Zorvania aligns well. Consider adding `CardSkeleton` and `StatsCardSkeleton` patterns for DM dashboard and character overview cards.
+**Recommendation:** The `TabSkeleton` we created for DungeonYar aligns well. Consider adding `CardSkeleton` and `StatsCardSkeleton` patterns for DM dashboard and character overview cards.
 
 ---
 
@@ -169,7 +169,7 @@ Decorative soft radial orbs (`body::before`, `body::after`) add depth.
 - Active item has gradient pill + shadow + scale.
 - Hover: `hover:color` change + subtle bg tint.
 
-**Recommendation for Zorvania BottomNav:**
+**Recommendation for DungeonYar BottomNav:**
 - Replace flat `bg-[#171513]/95` with a `glass-panel`-style bottom track using `backdrop-filter: blur(16px)`.
 - Active state: gradient background (`#E0A030` → `#F2C265`) instead of just text color change.
 - Add `scale(1.05)` on active, `scale(0.9)` on active press.
@@ -188,14 +188,14 @@ Decorative soft radial orbs (`body::before`, `body::after`) add depth.
 - Icon: `rounded-full bg-amber-100` (or indigo/emerald/rose based on variant)
 - Footer: centered buttons with gap-2 (`flex justify-center gap-2`)
 
-**Recommendation:** Update `ConfirmLeaveDialog` in Zorvania to use this pattern — rounded-2xl, centered header, icon container with amber bg (`bg-[#E0A030]/15` instead of flat), and centered footer buttons.
+**Recommendation:** Update `ConfirmLeaveDialog` in DungeonYar to use this pattern — rounded-2xl, centered header, icon container with amber bg (`bg-[#E0A030]/15` instead of flat), and centered footer buttons.
 
 ### Form Dialog (`FormDialog.tsx`)
 - `max-w-lg`, `max-h-[85vh] flex flex-col`
 - Header at top (`px-5 pt-5 pb-0`), body scrollable (`flex-1 overflow-y-auto px-5 py-4`), footer (`border-t border-border px-5 py-3`)
 - Close button: absolute top-right (`end-3 top-3`)
 
-**Recommendation:** Any multi-step forms in Zorvania could use this scrollable form-dialog layout (e.g., advanced rest modal, invite creation).
+**Recommendation:** Any multi-step forms in DungeonYar could use this scrollable form-dialog layout (e.g., advanced rest modal, invite creation).
 
 ---
 
@@ -209,7 +209,7 @@ font-family: "Shabnam", "IRANSans", Tahoma, Arial, sans-serif;
 - `text-2xl font-bold tracking-tight` for page titles.
 - `text-sm text-muted-foreground` for subtitles.
 
-**Recommendation:** Zorvania already uses Vazirmatn (good for Persian). Could add `"Shabnam",` as a secondary option in CSS `font-family`. Ensure `font-weight: 400/600/800` mapping works properly.
+**Recommendation:** DungeonYar already uses Vazirmatn (good for Persian). Could add `"Shabnam",` as a secondary option in CSS `font-family`. Ensure `font-weight: 400/600/800` mapping works properly.
 
 ---
 
@@ -224,7 +224,7 @@ font-family: "Shabnam", "IRANSans", Tahoma, Arial, sans-serif;
 - Responsive max-width: `max-w-7xl mx-auto`
 - Mobile dock: `fixed bottom-0.75rem lg:hidden`
 
-**Recommendation:** The current Zorvania app uses `Header` component. Consider:
+**Recommendation:** The current DungeonYar app uses `Header` component. Consider:
 - Making the desktop header more compact (like jib-be-jib mobile header) or creating a sidebar layout for desktop.
 - Using `max-w-7xl mx-auto` for content areas.
 - Adding a footer credit line (optional).
@@ -237,7 +237,7 @@ font-family: "Shabnam", "IRANSans", Tahoma, Arial, sans-serif;
 - Toggle theme: `Sun`/`Moon` icons.
 - Both buttons: `flex min-h-10 items-center gap-1 rounded-xl p-2 text-muted-foreground hover:bg-accent`
 
-**Recommendation:** Zorvania could add a light theme option using the same CSS-variable approach (currently only dark). The amber accent (`#E0A030`) works well in both light and dark.
+**Recommendation:** DungeonYar could add a light theme option using the same CSS-variable approach (currently only dark). The amber accent (`#E0A030`) works well in both light and dark.
 
 ---
 
@@ -249,11 +249,11 @@ font-family: "Shabnam", "IRANSans", Tahoma, Arial, sans-serif;
 - Disabled state: `pointer-events-none opacity-50`.
 - Dialog overlay: `backdrop-blur-sm` for depth.
 
-**Recommendation:** Already partially implemented in Zorvania (added `min-h-[44px]`, `focus-visible:ring-2`, `aria-pressed`, `aria-label`). Consider upgrading `focus-visible:ring` intensity and adding `aria-busy` to the save/loading states.
+**Recommendation:** Already partially implemented in DungeonYar (added `min-h-[44px]`, `focus-visible:ring-2`, `aria-pressed`, `aria-label`). Consider upgrading `focus-visible:ring` intensity and adding `aria-busy` to the save/loading states.
 
 ---
 
-## 11. Key Takeaways / Actionable Updates for Zorvania
+## 11. Key Takeaways / Actionable Updates for DungeonYar
 
 | Area | Current State | Jib-be-jib Pattern | Action |
 |---|---|---|---|
@@ -270,7 +270,7 @@ font-family: "Shabnam", "IRANSans", Tahoma, Arial, sans-serif;
 
 ---
 
-## 12. Sample Design Token Updates for Zorvania
+## 12. Sample Design Token Updates for DungeonYar
 
 Proposed `index.css` additions:
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, Character } from '../types';
+import { APP_NAME_FA, APP_NAME_LATIN, APP_TAGLINE } from '../config/app';
 import { BottomSheet } from './mobile/BottomSheet';
 import { 
   CheckCircle2, RefreshCw, Shield, BookOpen, 
@@ -78,12 +79,12 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-7xl mx-auto px-2.5 sm:px-4 py-2 flex items-center justify-between gap-2">
         {/* Brand & Campaign Switcher / Breadcrumb */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          {/* Zorvania Seal Logo Mark */}
+          {/* Brand Seal Logo Mark */}
           <button
             type="button"
             onClick={onGoHome}
             className="relative flex items-center justify-center w-8 h-8 rounded-[10px] bg-gradient-to-br from-[#E0A030] to-[#C2512B] border border-[#F2C265]/40 shadow-[0_0_12px_rgba(224,160,48,0.3)] shrink-0 hover:scale-105 transition-transform"
-            title="صفحه اصلی زروانیا"
+            title={APP_NAME_FA}
           >
             <span className="text-base font-black text-[#0E0D0C] leading-none">ز</span>
           </button>
@@ -140,7 +141,7 @@ export const Header: React.FC<HeaderProps> = ({
           ) : (
             <div className="truncate">
               <h1 className="text-xs sm:text-sm font-black tracking-wide text-[#EDE6D8] truncate">
-                زروانیا <span className="text-[#E0A030] text-[11px] font-bold sm:inline hidden">• پلتفرم کمپین‌های D&D 5e</span>
+                {APP_NAME_FA} <span className="text-[#E0A030] text-[11px] font-bold sm:inline hidden">• {APP_TAGLINE}</span>
               </h1>
             </div>
           )}

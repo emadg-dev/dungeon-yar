@@ -1,5 +1,6 @@
 import React from 'react';
 import { Campaign, MasterCharacter, CampaignInvite, User } from '../../types';
+import { APP_NAME_FA } from '../../config/app';
 import { 
   Plus, Compass, Users, Scroll, CheckCircle2, Shield, Sparkles, 
   ChevronLeft, Award, Clock, ArrowRight, UserCheck 
@@ -71,7 +72,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30">
-                پلتفرم چندکمپینی زروانیا ۵e
+                پلتفرم چندکمپینی {APP_NAME_FA} ۵e
               </span>
               {currentUser?.platformRole === 'admin' && (
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#9B72CF]/20 text-[#9B72CF] border border-[#9B72CF]/30">
