@@ -1,0 +1,1 @@
+npx wrangler d1 execute zorvania-db --local --file=tmp/seed-http.sql 2>&1 | Select-Object -Last 3

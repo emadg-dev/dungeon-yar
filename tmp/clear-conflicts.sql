@@ -1,0 +1,22 @@
+-- Clear conflicting tables before seed application (dependency-safe order)
+DELETE FROM encounter_participants;
+DELETE FROM dice_rolls;
+DELETE FROM character_participations;
+DELETE FROM character_history_events;
+DELETE FROM notes;
+DELETE FROM encounters;
+DELETE FROM campaigns;
+DELETE FROM campaign_members;
+DELETE FROM users;
+DELETE FROM characters;
+DELETE FROM content_packs;
+DELETE FROM items;
+DELETE FROM weapon_templates;
+DELETE FROM class_templates;
+DELETE FROM rewards;
+DELETE FROM campaign_notes;
+DELETE FROM npcs;
+DELETE FROM locations;
+DELETE FROM factions;
+DELETE FROM rule_sets;
+DELETE FROM calendars;
