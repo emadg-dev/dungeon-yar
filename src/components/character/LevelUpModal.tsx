@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Character, ClassTemplate } from '../../types';
-import { FIXED_HP, ASI_LEVELS } from '../../data/seed';
-import { getProficiencyBonus } from '../../utils/dice';
+import { ASI_LEVELS } from '../../data/seed';
+import { proficiencyBonus, computeMaxHp } from '../../../shared/rules/engine';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { ArrowUpCircle, Shield, Heart, Sparkles, Check, Plus } from 'lucide-react';
 
@@ -21,14 +21,22 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
   onConfirmLevelUp,
 }) => {
   const nextLevel = character.level + 1;
-  const currentProf = getProficiencyBonus(character.level);
-  const nextProf = getProficiencyBonus(nextLevel);
+  const currentProf = proficiencyBonus(character.level);
+  const nextProf = proficiencyBonus(nextLevel);
 
-  // Fixed HP calculation from world book FIXED_HP table
-  const classNameClean = character.className.split(' ')[0];
-  const hpTable = (FIXED_HP as Record<string, number[]>)[classNameClean] || [character.hp.max];
-  const nextFixedHpBase = hpTable[nextLevel - 1] ?? (character.hp.max + 6);
-  const currentFixedHpBase = hpTable[character.level - 1] ?? character.hp.max;
+  // Fixed HP calculation from rules engine
+  const nextFixedHpBase = computeMaxHp({
+    className: character.className,
+    level: nextLevel,
+    abilities: character.abilities,
+    classTemplate
+  });
+  const currentFixedHpBase = computeMaxHp({
+    className: character.className,
+    level: character.level,
+    abilities: character.abilities,
+    classTemplate
+  });
   const hpGain = Math.max(1, nextFixedHpBase - currentFixedHpBase);
 
   // ASI detection

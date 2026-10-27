@@ -11,6 +11,26 @@
 
 export type AbilityName = 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha';
 
+export interface AbilityScoreMap {
+  str: number;
+  dex: number;
+  con: number;
+  int: number;
+  wis: number;
+  cha: number;
+  [key: string]: number | undefined;
+}
+
+export type AbilityScoresInput = Record<string, number> | AbilityScoreMap | {
+  str?: number;
+  dex?: number;
+  con?: number;
+  int?: number;
+  wis?: number;
+  cha?: number;
+  [key: string]: any;
+};
+
 export interface ACFormula {
   base: number;
   abilityMods?: AbilityName[] | string[];
@@ -23,7 +43,7 @@ export interface ACParams {
   acFormula?: ACFormula | string | null;
   className?: string;
   classTemplateId?: string;
-  abilities: Record<string, number>;
+  abilities: AbilityScoresInput;
   inventory?: Array<{
     category?: string;
     equipped?: boolean;
@@ -41,7 +61,7 @@ export interface ACParams {
 export interface ComputeHpParams {
   className?: string;
   level: number;
-  abilities?: Record<string, number>;
+  abilities?: AbilityScoresInput;
   conModifier?: number;
   hpMode?: 'fixed_table' | 'average' | 'roll';
   settings?: {
@@ -59,7 +79,7 @@ export interface DeriveSheetInput {
     className?: string;
     classTemplateId?: string;
     subclassName?: string;
-    abilities: Record<string, number>;
+    abilities: AbilityScoresInput;
     savingThrows?: Record<string, boolean>;
     skills?: Array<{
       id?: string;
@@ -251,7 +271,7 @@ export function proficiencyBonus(
  * Computes saving throw values and proficiencies.
  */
 export function computeSaves(
-  abilities: Record<string, number>,
+  abilities: AbilityScoresInput,
   saveProficiencies: Record<string, boolean> | string[] = {},
   profBonus: number = 2
 ): Record<AbilityName, { modifier: number; proficient: boolean }> {
@@ -266,8 +286,9 @@ export function computeSaves(
     return Boolean(saveProficiencies[key] || saveProficiencies[key.toUpperCase()]);
   };
 
+  const abRecord = abilities as Record<string, number>;
   for (const k of keys) {
-    const score = abilities[k] ?? abilities[k.toUpperCase()] ?? 10;
+    const score = abRecord[k] ?? abRecord[k.toUpperCase()] ?? 10;
     const baseMod = abilityModifier(score);
     const proficient = isProf(k);
     result[k] = {
@@ -279,12 +300,34 @@ export function computeSaves(
   return result;
 }
 
+export const STANDARD_5E_SKILLS: Record<string, { ability: AbilityName; nameFa: string }> = {
+  athletics: { ability: 'str', nameFa: 'ورزشکاری (Athletics)' },
+  acrobatics: { ability: 'dex', nameFa: 'آکروباتیک (Acrobatics)' },
+  sleight_of_hand: { ability: 'dex', nameFa: 'تردستی (Sleight of Hand)' },
+  stealth: { ability: 'dex', nameFa: 'پنهان‌کاری (Stealth)' },
+  arcana: { ability: 'int', nameFa: 'علوم کهن (Arcana)' },
+  history: { ability: 'int', nameFa: 'تاریخ (History)' },
+  investigation: { ability: 'int', nameFa: 'جستجو و تحقیق (Investigation)' },
+  nature: { ability: 'int', nameFa: 'طبیعت (Nature)' },
+  religion: { ability: 'int', nameFa: 'ادیان (Religion)' },
+  animal_handling: { ability: 'wis', nameFa: 'مهار حیوانات (Animal Handling)' },
+  insight: { ability: 'wis', nameFa: 'درک نیت (Insight)' },
+  medicine: { ability: 'wis', nameFa: 'پزشکی (Medicine)' },
+  perception: { ability: 'wis', nameFa: 'ادراک و هوشیاری (Perception)' },
+  survival: { ability: 'wis', nameFa: 'بقا و ردیابی (Survival)' },
+  deception: { ability: 'cha', nameFa: 'فریب‌کاری (Deception)' },
+  intimidation: { ability: 'cha', nameFa: 'ارعاب و تهدید (Intimidation)' },
+  performance: { ability: 'cha', nameFa: 'نمایش و اجرا (Performance)' },
+  persuasion: { ability: 'cha', nameFa: 'متقاعدسازی (Persuasion)' }
+};
+
 /**
  * Computes skill modifiers handling normal proficiency, expertise, and custom bonuses.
+ * Supports both array of skill definitions and record/map of skill proficiencies.
  */
 export function computeSkills(
-  abilities: Record<string, number>,
-  skills: Array<{
+  abilities: AbilityScoresInput,
+  skillsOrProficiencies: Array<{
     id?: string;
     key?: string;
     ability: string;
@@ -292,53 +335,117 @@ export function computeSkills(
     expertise?: boolean;
     bonus?: number;
     nameFa?: string;
-  }> = [],
+  }> | Record<string, boolean | string> = [],
   profBonus: number = 2
 ): Record<string, { modifier: number; proficient: boolean; expertise: boolean; labelFa?: string }> {
   const result: Record<string, { modifier: number; proficient: boolean; expertise: boolean; labelFa?: string }> = {};
+  const abRecord = abilities as Record<string, number>;
 
-  for (const s of skills) {
-    const key = (s.key || s.id || '').toLowerCase();
-    if (!key) continue;
+  if (Array.isArray(skillsOrProficiencies)) {
+    for (const s of skillsOrProficiencies) {
+      const key = (s.key || s.id || '').toLowerCase();
+      if (!key) continue;
 
-    const abilityKey = (s.ability || 'str').toLowerCase();
-    const score = abilities[abilityKey] ?? abilities[abilityKey.toUpperCase()] ?? 10;
-    const baseMod = abilityModifier(score);
+      const abilityKey = (s.ability || 'str').toLowerCase();
+      const score = abRecord[abilityKey] ?? abRecord[abilityKey.toUpperCase()] ?? 10;
+      const baseMod = abilityModifier(score);
 
-    const proficient = Boolean(s.proficient);
-    const expertise = Boolean(s.expertise);
-    const customBonus = s.bonus || 0;
+      const proficient = Boolean(s.proficient);
+      const expertise = Boolean(s.expertise);
+      const customBonus = s.bonus || 0;
 
-    const profMultiplier = expertise ? 2 : proficient ? 1 : 0;
-    const modifier = baseMod + (profMultiplier * profBonus) + customBonus;
+      const profMultiplier = expertise ? 2 : proficient ? 1 : 0;
+      const modifier = baseMod + (profMultiplier * profBonus) + customBonus;
 
-    result[key] = {
-      modifier,
-      proficient,
-      expertise,
-      labelFa: s.nameFa
-    };
+      result[key] = {
+        modifier,
+        proficient,
+        expertise,
+        labelFa: s.nameFa
+      };
+    }
+  } else if (skillsOrProficiencies && typeof skillsOrProficiencies === 'object') {
+    for (const [key, meta] of Object.entries(STANDARD_5E_SKILLS)) {
+      const profVal = skillsOrProficiencies[key] ?? skillsOrProficiencies[key.toUpperCase()];
+      const proficient = profVal === true || profVal === 'proficient' || profVal === 'expertise';
+      const expertise = profVal === 'expertise' || profVal === 'expert';
+      const score = abRecord[meta.ability] ?? abRecord[meta.ability.toUpperCase()] ?? 10;
+      const baseMod = abilityModifier(score);
+      const profMultiplier = expertise ? 2 : proficient ? 1 : 0;
+
+      result[key] = {
+        modifier: baseMod + (profMultiplier * profBonus),
+        proficient,
+        expertise,
+        labelFa: meta.nameFa
+      };
+    }
   }
 
   return result;
 }
 
 /**
- * Computes Initiative.
+ * Computes Initiative from DEX modifier or abilities object + optional bonus.
  */
-export function computeInitiative(dexModifier: number, bonus: number = 0): number {
-  return dexModifier + (bonus || 0);
+export function computeInitiative(
+  dexModifierOrAbilities: number | AbilityScoresInput,
+  bonus: number = 0
+): number {
+  let dexMod: number;
+  if (typeof dexModifierOrAbilities === 'number') {
+    dexMod = dexModifierOrAbilities;
+  } else if (dexModifierOrAbilities && typeof dexModifierOrAbilities === 'object') {
+    const abRecord = dexModifierOrAbilities as Record<string, number>;
+    const rawDex = abRecord.dex ?? abRecord.DEX ?? 10;
+    dexMod = abilityModifier(rawDex);
+  } else {
+    dexMod = 0;
+  }
+  return dexMod + (bonus || 0);
 }
 
 /**
  * Evaluates Armor Class (AC) based on structured acFormula, equipped gear, or unarmored defense.
+ * Supports both single ACParams object or positional (acFormula, abilities, equipmentState).
  */
-export function computeAC(params: ACParams): number {
+export function computeAC(
+  paramsOrFormula: ACParams | ACFormula | string | null,
+  maybeAbilities?: AbilityScoresInput,
+  maybeEquipmentState?: {
+    hasShield?: boolean;
+    hasArmor?: boolean;
+    armorType?: 'light' | 'medium' | 'heavy' | 'none';
+    inventory?: any[];
+    manualOverride?: number | null;
+    className?: string;
+  }
+): number {
+  let params: ACParams;
+  if (
+    paramsOrFormula &&
+    typeof paramsOrFormula === 'object' &&
+    'abilities' in paramsOrFormula &&
+    !('base' in paramsOrFormula)
+  ) {
+    params = paramsOrFormula as ACParams;
+  } else {
+    params = {
+      acFormula: paramsOrFormula as any,
+      abilities: maybeAbilities || {},
+      hasShield: maybeEquipmentState?.hasShield,
+      hasArmor: maybeEquipmentState?.hasArmor,
+      armorType: maybeEquipmentState?.armorType,
+      inventory: maybeEquipmentState?.inventory,
+      manualOverride: maybeEquipmentState?.manualOverride,
+      className: maybeEquipmentState?.className
+    };
+  }
   if (params.manualOverride !== undefined && params.manualOverride !== null && params.manualOverride > 0) {
     return params.manualOverride;
   }
 
-  const abilities = params.abilities || {};
+  const abilities = (params.abilities || {}) as Record<string, number>;
   const dexMod = abilityModifier(abilities.dex ?? 10);
   const wisMod = abilityModifier(abilities.wis ?? 10);
   const conMod = abilityModifier(abilities.con ?? 10);
@@ -346,7 +453,7 @@ export function computeAC(params: ACParams): number {
 
   // Check inventory for equipped armor / shield
   let equippedArmorBaseAc: number | null = null;
-  let equippedArmorType: 'light' | 'medium' | 'heavy' | 'shield' | null = params.armorType || null;
+  let equippedArmorType: 'light' | 'medium' | 'heavy' | 'shield' | 'none' | null = params.armorType || null;
   let hasShield = Boolean(params.hasShield);
 
   if (params.inventory && Array.isArray(params.inventory)) {
@@ -530,21 +637,36 @@ export function computeMaxHp(params: ComputeHpParams): number {
 
 /**
  * Computes Spell Save DC and Spell Attack Bonus.
+ * Supports both:
+ *   computeSpellDcAndAttack(spellAbilityMod, pb, bonus)
+ *   computeSpellDcAndAttack(abilityKey, abilityScoreOrMod, pb, bonus)
  */
 export function computeSpellDcAndAttack(
-  abilityKey: string,
-  abilityScoreOrMod: number,
-  profBonus: number,
-  bonus: number = 0
+  abilityKeyOrMod: string | number,
+  abilityScoreOrPb: number = 2,
+  profBonusOrBonus: number = 0,
+  bonusArg: number = 0
 ): { dc: number; attackBonus: number } {
-  // If passed score (> 5), calculate modifier; otherwise treat as mod
-  const mod = (abilityScoreOrMod > 5 || abilityScoreOrMod < -5)
-    ? abilityModifier(abilityScoreOrMod)
-    : abilityScoreOrMod;
+  let mod: number;
+  let pb: number;
+  let bonus: number;
+
+  if (typeof abilityKeyOrMod === 'number') {
+    // Called as: computeSpellDcAndAttack(spellAbilityMod, pb, bonus)
+    mod = abilityKeyOrMod;
+    pb = abilityScoreOrPb;
+    bonus = profBonusOrBonus;
+  } else {
+    // Called as: computeSpellDcAndAttack(abilityKey, abilityScoreOrMod, pb, bonus)
+    const rawVal = abilityScoreOrPb;
+    mod = (rawVal > 5 || rawVal < -5) ? abilityModifier(rawVal) : rawVal;
+    pb = profBonusOrBonus;
+    bonus = bonusArg;
+  }
 
   return {
-    dc: 8 + profBonus + mod + bonus,
-    attackBonus: profBonus + mod + bonus
+    dc: 8 + pb + mod + bonus,
+    attackBonus: pb + mod + bonus
   };
 }
 
@@ -600,20 +722,27 @@ export function martialArtsDie(level: number): string {
 
 /**
  * Computes companion AC and HP formulas.
+ * Supports:
+ *   computeCompanion(classDef, level, conMod)
+ *   computeCompanion(classDef, level, abilitiesObject)
  * e.g. دیوانزاد companion at level 3 with CON mod +3 -> HP 12 and AC 15.
  */
 export function computeCompanion(
   companionDefOrClass: any,
   level: number,
-  abilities: Record<string, number> | { con?: number; conMod?: number } = {}
+  abilitiesOrConMod: number | Record<string, number> | { con?: number; conMod?: number } = {}
 ): { name: string; ac: number; maxHp: number; type?: string } {
   const safeLevel = Math.max(1, Math.min(20, Math.floor(level || 1)));
 
   let conMod = 0;
-  if ('conMod' in abilities && typeof abilities.conMod === 'number') {
-    conMod = abilities.conMod;
-  } else if ('con' in abilities && typeof abilities.con === 'number') {
-    conMod = abilities.con > 5 ? abilityModifier(abilities.con) : abilities.con;
+  if (typeof abilitiesOrConMod === 'number') {
+    conMod = abilitiesOrConMod;
+  } else if (abilitiesOrConMod && typeof abilitiesOrConMod === 'object') {
+    if ('conMod' in abilitiesOrConMod && typeof abilitiesOrConMod.conMod === 'number') {
+      conMod = abilitiesOrConMod.conMod;
+    } else if ('con' in abilitiesOrConMod && typeof abilitiesOrConMod.con === 'number') {
+      conMod = abilitiesOrConMod.con > 5 ? abilityModifier(abilitiesOrConMod.con) : abilitiesOrConMod.con;
+    }
   }
 
   const rawName = typeof companionDefOrClass === 'string'
@@ -660,15 +789,16 @@ export function computeCompanion(
 export function computeClassResources(
   classTemplateOrName: any,
   level: number,
-  abilities: Record<string, number> = {}
+  abilities: AbilityScoresInput = {}
 ): Record<string, { name: string; max: number; currentDice?: string; resetType?: string; formula?: string }> {
   const safeLevel = Math.max(1, Math.min(20, Math.floor(level || 1)));
   const normalized = normalizeClassName(
     typeof classTemplateOrName === 'string' ? classTemplateOrName : classTemplateOrName?.name
   );
 
-  const intMod = abilityModifier(abilities.int ?? 10);
-  const conMod = abilityModifier(abilities.con ?? 10);
+  const abRecord = abilities as Record<string, number>;
+  const intMod = abilityModifier(abRecord.int ?? 10);
+  const conMod = abilityModifier(abRecord.con ?? 10);
 
   const result: Record<string, any> = {};
 
@@ -898,7 +1028,7 @@ export function deriveSheet(input: DeriveSheetInput): DerivedSheet {
     classTemplateId: character.classTemplateId || classTemplate?.id,
     abilities,
     inventory: character.inventory,
-    manualOverride: character.acManualOverride ?? (character.ac > 0 ? character.ac : null)
+    manualOverride: character.acManualOverride ?? ((character.ac && character.ac > 0) ? character.ac : null)
   });
 
   const maxHp = computeMaxHp({

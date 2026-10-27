@@ -1,7 +1,8 @@
 import { DiceRollResult } from '../types';
+import { abilityModifier, proficiencyBonus } from '../../shared/rules/engine';
 
 export function getAbilityModifier(score: number): number {
-  return Math.floor((score - 10) / 2);
+  return abilityModifier(score);
 }
 
 export function formatModifier(mod: number): string {
@@ -11,7 +12,7 @@ export function formatModifier(mod: number): string {
 }
 
 export function getProficiencyBonus(level: number): number {
-  return Math.ceil(1 + (level || 1) / 4);
+  return proficiencyBonus(level);
 }
 
 export function rollDice(

@@ -240,6 +240,27 @@ describe('Rules Engine - Acceptance Tests & Canon Fixtures', () => {
       const res = computeSpellDcAndAttack('int', 16, 2);
       expect(res.dc).toBe(13); // 8 + 2 + 3
       expect(res.attackBonus).toBe(5); // 2 + 3
+
+      // Direct 3-arg overload: computeSpellDcAndAttack(mod, pb, bonus)
+      const res3 = computeSpellDcAndAttack(3, 2, 1);
+      expect(res3.dc).toBe(14); // 8 + 2 + 3 + 1
+      expect(res3.attackBonus).toBe(6); // 2 + 3 + 1
+    });
+
+    it('computes initiative from abilities object', () => {
+      expect(computeInitiative({ dex: 16 }, 2)).toBe(5);
+    });
+
+    it('computes skills from map/record of proficiencies', () => {
+      const skills = computeSkills({ dex: 14, str: 10 }, { stealth: 'expertise', athletics: true }, 2);
+      expect(skills.stealth.modifier).toBe(6); // 2 (dex) + 4 (expertise)
+      expect(skills.athletics.modifier).toBe(2); // 0 (str) + 2 (prof)
+    });
+
+    it('computes companion with direct number conMod', () => {
+      const companion = computeCompanion('دیوانزاد', 3, 3);
+      expect(companion.ac).toBe(15);
+      expect(companion.maxHp).toBe(12);
     });
   });
 

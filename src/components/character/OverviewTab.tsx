@@ -433,6 +433,19 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               />
             ))}
           </div>
+        ) : Object.keys(derived.classResources).length > 0 ? (
+          <div className="space-y-3">
+            {Object.entries(derived.classResources).map(([k, res]) => (
+              <PipTracker
+                key={k}
+                label={`${res.name}${res.currentDice ? ` (${res.currentDice})` : ''}`}
+                current={res.max}
+                max={Math.max(1, res.max)}
+                resetType={(res.resetType as any) || 'short'}
+                onToggle={() => {}}
+              />
+            ))}
+          </div>
         ) : (
           <div className="space-y-3">
             <PipTracker

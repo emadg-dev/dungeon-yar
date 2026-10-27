@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Character, Companion } from '../../types';
+import { deriveSheet, computeCompanion } from '../../../shared/rules/engine';
 import { Bot, Trees, Heart, Shield, Swords, Plus, Trash2, Sparkles } from 'lucide-react';
 import { BottomSheet } from '../mobile/BottomSheet';
 
@@ -20,12 +21,19 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
   const [newCompHp, setNewCompHp] = useState(15);
   const [newCompAtk, setNewCompAtk] = useState('ضربه تماسی (+۴، 1d6+2)');
 
-  // Default companions based on character class & level
-  const conMod = Math.floor(((character.abilities.con || 10) - 10) / 2);
+  // Default companions based on character class & level derived from rules engine
+  const derived = deriveSheet({ character });
+  const conMod = derived.abilityModifiers.con;
   const isSaman = character.className.includes('دیوانزاد') || character.name.includes('سامان');
   const isMana = character.className.includes('پیمان') || character.name.includes('مانا');
 
-  const constructMaxHp = Math.max(10, 2 * character.level + 2 * conMod);
+  const companionDerived = derived.companion;
+  const constructMaxHp = companionDerived && isSaman ? companionDerived.maxHp : (2 * character.level + 2 * conMod);
+  const constructAc = companionDerived && isSaman ? companionDerived.ac : 15;
+
+  const manaCompDerived = computeCompanion('پیمانبان', character.level, { conMod });
+  const manaMaxHp = manaCompDerived ? manaCompDerived.maxHp : (3 * character.level + conMod);
+  const manaAc = manaCompDerived ? manaCompDerived.ac : 13;
 
   // Initialize companions if not present and eligible
   const companions: Companion[] = character.companions && character.companions.length > 0
@@ -34,9 +42,9 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
     ? [
         {
           id: 'comp-saman-construct',
-          name: 'سازه همراه دیوانزاد',
+          name: companionDerived?.name || 'سازه همراه دیوانزاد',
           type: 'construct',
-          ac: 15,
+          ac: constructAc,
           hp: { max: constructMaxHp, current: constructMaxHp },
           attack: {
             name: 'کوبش بازوی برنزی',
@@ -51,10 +59,10 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
     ? [
         {
           id: 'comp-mana-forest',
-          name: 'همراه جنگل ورنا',
+          name: manaCompDerived?.name || 'همراه جنگل ورنا',
           type: 'forest',
-          ac: 13,
-          hp: { max: 18, current: 18 },
+          ac: manaAc,
+          hp: { max: manaMaxHp, current: manaMaxHp },
           attack: {
             name: 'نیش خاردار / چنگال ریشه',
             toHit: '+۴',

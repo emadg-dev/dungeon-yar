@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Character, Weapon, Feature, WeaponTemplate, Companion } from '../../types';
-import { getAbilityModifier, getProficiencyBonus } from '../../utils/dice';
+import { deriveSheet } from '../../../shared/rules/engine';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { ConfirmSheet } from '../mobile/ConfirmSheet';
 import { 
@@ -50,9 +50,10 @@ export const CombatTab: React.FC<CombatTabProps> = ({
   const [featureUsage, setFeatureUsage] = useState<'none' | 'short' | 'long'>('short');
   const [featureMaxUses, setFeatureMaxUses] = useState(1);
 
-  const profBonus = getProficiencyBonus(character.level);
-  const strMod = getAbilityModifier(character.abilities.str);
-  const dexMod = getAbilityModifier(character.abilities.dex);
+  const derived = deriveSheet({ character });
+  const profBonus = derived.proficiencyBonus;
+  const strMod = derived.abilityModifiers.str;
+  const dexMod = derived.abilityModifiers.dex;
 
   // Weapon ability pip toggle
   const toggleWeaponAbilityUse = (weaponId: string, index: number) => {

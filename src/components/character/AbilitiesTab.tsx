@@ -255,8 +255,9 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
         {/* Skills List with Proficiency Dots */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {filteredSkills.map((skill) => {
-            const skillDerived = derived.skills[skill.id] || (skill.key ? derived.skills[skill.key] : null);
-            const baseMod = getAbilityModifier(character.abilities[skill.ability]);
+            const skillKey = ('key' in skill ? (skill as any).key : null);
+            const skillDerived = derived.skills[skill.id] || (skillKey ? derived.skills[skillKey] : null);
+            const baseMod = derived.abilityModifiers[skill.ability] ?? getAbilityModifier(character.abilities[skill.ability]);
             const totalMod = skillDerived ? skillDerived.modifier : (baseMod + (skill.expertise ? profBonus * 2 : skill.proficient ? profBonus : 0));
 
             return (
