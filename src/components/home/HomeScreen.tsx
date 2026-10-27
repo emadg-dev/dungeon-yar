@@ -1,9 +1,9 @@
 import React from 'react';
-import { Campaign, MasterCharacter, CampaignInvite, User } from '../../types';
+import { Campaign, MasterCharacter, CampaignInvite, User, CharacterParticipation } from '../../types';
 import { APP_NAME_FA } from '../../config/app';
 import { 
   Plus, Compass, Users, Scroll, CheckCircle2, Shield, Sparkles, 
-  ChevronLeft, Award, Clock, ArrowRight, UserCheck 
+  ChevronLeft, Award, Clock, ArrowRight, UserCheck, Wand2 
 } from 'lucide-react';
 
 interface HomeScreenProps {
@@ -12,10 +12,13 @@ interface HomeScreenProps {
   myCharacters: MasterCharacter[];
   pendingInvites: CampaignInvite[];
   pendingApprovals: any[];
+  draftParticipations?: CharacterParticipation[];
   onSelectCampaign: (campaignId: string) => void;
   onOpenCreateCampaign: () => void;
   onOpenCharacterMaster: (characterId: string) => void;
   onOpenCreateCharacter: () => void;
+  onOpenCharacterWizard?: (campaignId?: string) => void;
+  onResumeDraft?: (draft: CharacterParticipation) => void;
   onOpenApprovals: () => void;
   onAcceptInvite: (code: string) => void;
 }
@@ -26,10 +29,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   myCharacters,
   pendingInvites,
   pendingApprovals,
+  draftParticipations = [],
   onSelectCampaign,
   onOpenCreateCampaign,
   onOpenCharacterMaster,
   onOpenCreateCharacter,
+  onOpenCharacterWizard,
+  onResumeDraft,
   onOpenApprovals,
   onAcceptInvite
 }) => {
@@ -261,6 +267,76 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         )}
       </section>
 
+      {/* Draft Character Participations Section (Step 3.3 Wizard Drafts) */}
+      {draftParticipations.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-[#F2C265]" />
+            <h2 className="text-lg font-bold text-[#EDE6D8]">پیش‌نویس کاراکترها (در حال ساخت)</h2>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30 font-bold">
+              {draftParticipations.length}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {draftParticipations.map(draft => {
+              const camp = myCampaigns.find(c => c.id === draft.campaignId);
+              const char = myCharacters.find(c => c.id === draft.characterId);
+              const step = draft.build?.step || 1;
+              const percent = Math.round((step / 8) * 100);
+              const displayName = char?.name || draft.build?.masterData?.name || 'کاراکتر در حال ساخت';
+              const displayClass = draft.className || 'کلاس مشخص‌نشده';
+
+              return (
+                <div
+                  key={draft.id}
+                  className="rounded-2xl bg-[#171513] border border-[#E0A030]/30 p-4 flex flex-col justify-between shadow-lg"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30 font-bold shrink-0">
+                          پیش‌نویس کاراکتر
+                        </span>
+                        <h3 className="text-sm font-bold text-[#EDE6D8] truncate">
+                          {displayName}
+                        </h3>
+                      </div>
+                      <p className="text-xs text-[#A39A89] mt-1 truncate">
+                        {displayClass} • کمپین: {camp?.name || 'نامشخص'}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-xl bg-[#131110] border border-[#2F2A23] text-xs font-bold text-[#F2C265]">
+                      <span>گام {step} از ۸</span>
+                    </div>
+                  </div>
+
+                  <div className="w-full bg-[#201D19] h-1.5 rounded-full mt-3 overflow-hidden">
+                    <div 
+                      className="bg-[#E0A030] h-full rounded-full transition-all duration-300" 
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+
+                  <div className="mt-3 pt-2.5 border-t border-[#2F2A23] flex items-center justify-between">
+                    <span className="text-[11px] text-[#8A8374]">سطح: {draft.level || 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => onResumeDraft && onResumeDraft(draft)}
+                      className="px-3.5 py-1.5 rounded-xl btn-primary-amber text-xs font-bold shadow-md flex items-center gap-1 min-h-[36px]"
+                    >
+                      <span>ادامه (Resume)</span>
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* Master Characters Section */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
@@ -271,13 +347,24 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               {myCharacters.length}
             </span>
           </div>
-          <button
-            onClick={onOpenCreateCharacter}
-            className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/25 transition-colors flex items-center gap-1.5 min-h-[44px]"
-          >
-            <Plus className="w-4 h-4" />
-            شخصیت جدید
-          </button>
+          <div className="flex items-center gap-2">
+            {onOpenCharacterWizard && (
+              <button
+                onClick={() => onOpenCharacterWizard()}
+                className="px-3 py-1.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-bold hover:bg-[#F2C265] transition-colors flex items-center gap-1.5 min-h-[44px] shadow-sm"
+              >
+                <Sparkles className="w-4 h-4" />
+                ساخت کاراکتر با ویزارد
+              </button>
+            )}
+            <button
+              onClick={onOpenCreateCharacter}
+              className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/25 transition-colors flex items-center gap-1.5 min-h-[44px]"
+            >
+              <Plus className="w-4 h-4" />
+              شناسنامه ساده
+            </button>
+          </div>
         </div>
 
         {myCharacters.length === 0 ? (

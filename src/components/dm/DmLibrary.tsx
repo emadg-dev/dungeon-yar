@@ -1486,12 +1486,12 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
         <LineageEditorSheet
           isOpen={lineageEditor.isOpen}
           onClose={() => setLineageEditor({ isOpen: false, item: null })}
-          initialData={lineageEditor.item}
+          lineage={lineageEditor.item}
           scopeType="campaign"
           scopeId={currentCampaignId}
           onSave={async (data) => {
             if (lineageEditor.item) {
-              await api.updateLineageTemplate(lineageEditor.item.id, data);
+              await api.updateLineageTemplate({ ...lineageEditor.item, ...data });
               showFeedback('نژاد با موفقیت به‌روزرسانی شد');
             } else {
               await api.createLineageTemplate({
@@ -1511,12 +1511,12 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
         <BackgroundEditorSheet
           isOpen={backgroundEditor.isOpen}
           onClose={() => setBackgroundEditor({ isOpen: false, item: null })}
-          initialData={backgroundEditor.item}
+          background={backgroundEditor.item}
           scopeType="campaign"
           scopeId={currentCampaignId}
           onSave={async (data) => {
             if (backgroundEditor.item) {
-              await api.updateBackgroundTemplate(backgroundEditor.item.id, data);
+              await api.updateBackgroundTemplate({ ...backgroundEditor.item, ...data });
               showFeedback('پیشینه با موفقیت به‌روزرسانی شد');
             } else {
               await api.createBackgroundTemplate({
@@ -1541,7 +1541,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
           scopeId={currentCampaignId}
           onSave={async (data) => {
             if (classEditor.item) {
-              await api.updateClassTemplate(classEditor.item.id, data);
+              await api.updateClassTemplate({ ...classEditor.item, ...data } as any);
               showFeedback('کلاس با موفقیت به‌روزرسانی شد');
             } else {
               await api.createClassTemplate({

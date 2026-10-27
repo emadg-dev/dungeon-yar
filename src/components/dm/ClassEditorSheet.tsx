@@ -128,7 +128,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
     name: string;
     unlockLevel: number;
     featuresByLevel: Record<number, any[]>;
-  }>>(initialData?.subclasses || []);
+  }>>((initialData?.subclasses as any) || []);
 
   // Companions
   const [companions, setCompanions] = useState<CompanionDef[]>(initialData?.companions || []);
@@ -139,7 +139,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
       return [...initialData.fixedHpByLevel];
     }
     // Generate default based on hitDie
-    const die = initialData?.hitDie || 8;
+    const die = typeof initialData?.hitDie === 'string' ? (parseInt(initialData.hitDie.replace(/\D/g, ''), 10) || 8) : (initialData?.hitDie || 8);
     const conBonus = 2;
     const avg = Math.floor(die / 2) + 1;
     const arr: number[] = [die + conBonus];
@@ -942,7 +942,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="text"
-                    value={comp.acFormula || ''}
+                    value={typeof comp.acFormula === 'string' ? comp.acFormula : (comp.acFormula?.base ? String(comp.acFormula.base) : '')}
                     onChange={e => {
                       const val = e.target.value;
                       setCompanions(prev => prev.map((c, i) => i === cIdx ? { ...c, acFormula: val } : c));

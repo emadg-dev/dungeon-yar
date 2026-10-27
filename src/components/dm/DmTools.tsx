@@ -59,6 +59,7 @@ interface DmToolsProps {
   activeDmTab?: any;
   onSelectDmTab?: (tab: any) => void;
   onRefreshCharacters?: () => void;
+  onCreateCharacterForPlayer?: () => void;
 }
 
 export const DmTools: React.FC<DmToolsProps> = ({
@@ -102,7 +103,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
   isHttpMode,
   activeDmTab: controlledDmTab,
   onSelectDmTab,
-  onRefreshCharacters
+  onRefreshCharacters,
+  onCreateCharacterForPlayer
 }) => {
   const [internalDmTab, setInternalDmTab] = useState<'dashboard' | 'encounters' | 'library' | 'narrative' | 'more'>('dashboard');
   const [librarySubTab, setLibrarySubTab] = useState<'library_hub' | 'npcs' | 'items' | 'locations'>('library_hub');
@@ -171,6 +173,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
           onUpdateGroupResources={onUpdateGroupResources}
           onInspectCharacter={onInspectCharacter}
           onRollDice={onRollDice}
+          onCreateForPlayer={onCreateCharacterForPlayer}
         />
       )}
 

@@ -8,7 +8,8 @@ import {
   User, Character, CharacterNote, NPC, ItemLibraryEntry, 
   RewardPackage, CampaignNote, Encounter, WeaponTemplate, ClassTemplate, DiceRollResult,
   LocationEntry, PlayerEncounterView, Campaign, MasterCharacter, CampaignInvite, 
-  CampaignMember, CharacterHistoryEvent, CharacterParticipation, CampaignRole, CampaignSettings
+  CampaignMember, CharacterHistoryEvent, CharacterParticipation, CampaignRole, CampaignSettings,
+  LineageTemplate, BackgroundTemplate
 } from './types';
 import { api, HttpApi } from './services/api';
 import { pageTitle } from './config/app';
@@ -49,6 +50,7 @@ const CampaignSettingsModal = React.lazy(() => import('./components/campaign/Cam
 const CampaignMembersModal = React.lazy(() => import('./components/campaign/CampaignMembersModal').then(m => ({ default: m.CampaignMembersModal })));
 const CampaignInvitesModal = React.lazy(() => import('./components/campaign/CampaignInvitesModal').then(m => ({ default: m.CampaignInvitesModal })));
 const CampaignApprovalsModal = React.lazy(() => import('./components/campaign/CampaignApprovalsModal').then(m => ({ default: m.CampaignApprovalsModal })));
+const CharacterCreationWizardModal = React.lazy(() => import('./components/character-wizard/CharacterCreationWizardModal').then(m => ({ default: m.CharacterCreationWizardModal })));
 
 // Loading skeleton fallback for tabs
 const TabSkeleton = () => (
@@ -141,6 +143,19 @@ export default function App() {
   const [campaignInvitesOpen, setCampaignInvitesOpen] = useState(false);
   const [campaignApprovalsOpen, setCampaignApprovalsOpen] = useState(false);
 
+  // Character Creation Wizard (Step 3.3)
+  const [characterWizardModal, setCharacterWizardModal] = useState<{
+    isOpen: boolean;
+    campaign: Campaign | null;
+    draftParticipation?: CharacterParticipation | null;
+  }>({
+    isOpen: false,
+    campaign: null
+  });
+  const [draftParticipations, setDraftParticipations] = useState<CharacterParticipation[]>([]);
+  const [availableLineages, setAvailableLineages] = useState<LineageTemplate[]>([]);
+  const [availableBackgrounds, setAvailableBackgrounds] = useState<BackgroundTemplate[]>([]);
+
   // Dice & Rest Modals
   const [diceModalOpen, setDiceModalOpen] = useState(false);
   const [presetRoll, setPresetRoll] = useState<{ sides: number; count: number; modifier: number; label: string } | null>(null);
@@ -219,12 +234,47 @@ export default function App() {
       setMyCharacters(summary.myCharacters || []);
       setPendingInvites(summary.pendingInvites || []);
       setPendingApprovals(summary.pendingApprovals || []);
+      const drafts = await api.listDraftParticipations().catch(() => []);
+      setDraftParticipations(drafts);
     } catch (err: any) {
       if (err?.status === 401 || err?.message?.includes('نشست')) {
         setSessionExpiredSheetOpen(true);
       }
       console.error('Home data load error:', err);
     }
+  };
+
+  // Helper to open Step 3.3 Character Creation Wizard
+  const handleOpenCharacterWizard = async (campaignId?: string, draft?: CharacterParticipation | null) => {
+    let targetCampaign = myCampaigns.find(c => c.id === campaignId) || (activeCampaign?.id === campaignId ? activeCampaign : null) || activeCampaign || myCampaigns[0];
+    if (!targetCampaign && campaignId) {
+      try {
+        targetCampaign = (await api.getCampaign(campaignId)) || undefined;
+      } catch {}
+    }
+    if (!targetCampaign) {
+      showToast('برای ساخت کاراکتر، ابتدا یک کمپین بسازید یا به کمپین بپیوندید.');
+      return;
+    }
+
+    try {
+      const [classes, lins, bgs] = await Promise.all([
+        api.listClassTemplates('campaign', targetCampaign.id).catch(() => []),
+        api.listLineageTemplates('campaign', targetCampaign.id).catch(() => []),
+        api.listBackgroundTemplates('campaign', targetCampaign.id).catch(() => [])
+      ]);
+      if (classes.length > 0) setClassTemplates(classes);
+      setAvailableLineages(lins);
+      setAvailableBackgrounds(bgs);
+    } catch (e) {
+      console.warn('Failed loading templates for wizard:', e);
+    }
+
+    setCharacterWizardModal({
+      isOpen: true,
+      campaign: targetCampaign,
+      draftParticipation: draft || null
+    });
   };
 
   // Load Master Character Screen Data
@@ -674,6 +724,7 @@ export default function App() {
               myCharacters={myCharacters}
               pendingInvites={pendingInvites}
               pendingApprovals={pendingApprovals}
+              draftParticipations={draftParticipations}
               onSelectCampaign={handleSelectCampaign}
               onOpenCreateCampaign={() => {
                 setWizardDraftCampaign(null);
@@ -690,6 +741,8 @@ export default function App() {
                 showToast('پرونده شخصیت جدید ایجاد گردید.');
                 window.location.hash = `#/characters/${newChar.id}`;
               }}
+              onOpenCharacterWizard={(campId) => handleOpenCharacterWizard(campId)}
+              onResumeDraft={(draft) => handleOpenCharacterWizard(draft.campaignId, draft)}
               onOpenApprovals={() => setCampaignApprovalsOpen(true)}
               onAcceptInvite={handleAcceptInvite}
             />
@@ -838,6 +891,7 @@ export default function App() {
                   activeDmTab={activeDmTab}
                   onSelectDmTab={handleSelectDmTab}
                   onRefreshCharacters={() => activeCampaignId && loadCampaignWorkspace(activeCampaignId)}
+                  onCreateCharacterForPlayer={() => handleOpenCharacterWizard(activeCampaign?.id)}
                 />
               ) : activeCharacter ? (
                 /* Player Character Sheet */
@@ -1053,6 +1107,13 @@ export default function App() {
             campaign={joinCampaignModal.campaign}
             myCharacters={myCharacters}
             preSelectedCharacterId={joinCampaignModal.characterId}
+            onOpenWizard={() => {
+              const camp = joinCampaignModal.campaign;
+              setJoinCampaignModal({ isOpen: false, campaign: null });
+              if (camp) {
+                handleOpenCharacterWizard(camp.id);
+              }
+            }}
             onJoin={async (joinData) => {
               if (!joinCampaignModal.campaign) return;
               await api.createParticipation(joinCampaignModal.campaign.id, joinData);
@@ -1062,6 +1123,43 @@ export default function App() {
               if (activeCampaignId === joinCampaignModal.campaign.id) {
                 await loadCampaignWorkspace(joinCampaignModal.campaign.id);
               }
+            }}
+          />
+        )}
+
+        {/* Character Creation Wizard Modal (Step 3.3) */}
+        {characterWizardModal.isOpen && characterWizardModal.campaign && (
+          <CharacterCreationWizardModal
+            isOpen={characterWizardModal.isOpen}
+            onClose={() => setCharacterWizardModal({ isOpen: false, campaign: null, draftParticipation: null })}
+            campaign={characterWizardModal.campaign}
+            existingDraft={characterWizardModal.draftParticipation}
+            allowedClasses={classTemplates}
+            availableLineages={availableLineages}
+            availableBackgrounds={availableBackgrounds}
+            onSaveDraft={async (draftData) => {
+              if (!characterWizardModal.campaign) return;
+              await api.saveDraftParticipation(characterWizardModal.campaign.id, draftData);
+              const drafts = await api.listDraftParticipations().catch(() => []);
+              setDraftParticipations(drafts);
+              showToast('پیش‌نویس کاراکتر با موفقیت ذخیره گردید.');
+            }}
+            onSubmitCharacter={async (payload) => {
+              if (!characterWizardModal.campaign) return;
+              const result = await api.submitCharacterWizard(characterWizardModal.campaign.id, payload);
+              showToast(
+                result.status === 'pending_approval'
+                  ? 'کاراکتر ساخته شد و در انتظار تأیید دانجن مستر قرار گرفت.'
+                  : 'کاراکتر با موفقیت وارد کمپین شد!'
+              );
+              setCharacterWizardModal({ isOpen: false, campaign: null, draftParticipation: null });
+              await loadHomeData();
+              if (activeCampaignId === characterWizardModal.campaign.id) {
+                await loadCampaignWorkspace(characterWizardModal.campaign.id);
+              }
+            }}
+            onServerRollAbilities={async () => {
+              return await api.rollWizardAbilities();
             }}
           />
         )}

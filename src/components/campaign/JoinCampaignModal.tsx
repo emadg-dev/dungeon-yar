@@ -14,6 +14,7 @@ interface JoinCampaignModalProps {
     entryMode: 'campaign_start' | 'same_level' | 'new_level';
     entryLevel?: number;
   }) => Promise<void>;
+  onOpenWizard?: () => void;
 }
 
 export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
@@ -22,7 +23,8 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
   campaign,
   myCharacters,
   preSelectedCharacterId,
-  onJoin
+  onJoin,
+  onOpenWizard
 }) => {
   const [selectedCharId, setSelectedCharId] = useState<string>(
     preSelectedCharacterId || myCharacters[0]?.id || ''
@@ -69,9 +71,39 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
 
         {/* Character Selection */}
         <div>
-          <label className="block text-xs font-bold text-[#C9C0AE] mb-2">انتخاب شخصیت کلان</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-bold text-[#C9C0AE]">انتخاب شخصیت کلان</label>
+            {onOpenWizard && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenWizard();
+                }}
+                className="text-xs font-bold text-[#F2C265] hover:underline flex items-center gap-1 min-h-[36px]"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>یا ساخت شخصیت با ویزارد</span>
+              </button>
+            )}
+          </div>
           {myCharacters.length === 0 ? (
-            <p className="text-xs text-[#D66138]">ابتدا یک شخصیت در داشبورد ایجاد کنید.</p>
+            <div className="p-4 rounded-xl bg-[#171513] border border-dashed border-[#2F2A23] text-center space-y-2">
+              <p className="text-xs text-[#A39A89]">شما هنوز شخصیتی ثبت نکرده‌اید.</p>
+              {onOpenWizard && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenWizard();
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-bold hover:bg-[#F2C265] transition-colors inline-flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  ساخت شخصیت با ویزارد ۸ مرحله‌ای
+                </button>
+              )}
+            </div>
           ) : (
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {myCharacters.map(char => {

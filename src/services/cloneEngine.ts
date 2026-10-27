@@ -131,8 +131,11 @@ export class DependencyResolver {
             }
           }
           if (cls.starterWeaponOptions) {
-            for (const wId of cls.starterWeaponOptions) {
-              deps.push({ type: 'weapon_template', id: wId });
+            for (const w of cls.starterWeaponOptions) {
+              const wId = typeof w === 'string' ? w : (w as any).id || (w as any).name;
+              if (wId) {
+                deps.push({ type: 'weapon_template', id: wId });
+              }
             }
           }
         }
