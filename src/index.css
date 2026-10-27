@@ -60,7 +60,7 @@
 :root {
   /* -------------------------------------------------------------
      Design Tokens — HSL variable system (Jib-be-jib pattern,
-     adapted to Zorvania's warm amber-on-charcoal fantasy palette)
+     adapted to warm amber-on-charcoal fantasy palette)
      ------------------------------------------------------------- */
   --h-bg: 28 11% 5%;            /* #0E0D0C deep charcoal */
   --h-surface: 30 9% 8%;        /* #171513 raised surface */
@@ -293,7 +293,7 @@
   }
 }
 
-/* Zorvania fantasy theme utilities */
+/* Fantasy theme utilities */
 .parchment-border {
   border: 1px solid rgba(217, 119, 6, 0.25);
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.6), 0 0 15px -3px rgba(217, 119, 6, 0.08);
@@ -325,7 +325,7 @@
   justify-content: center;
 }
 
-/* Zorvania 3% subtle noise texture over the warm gradient */
+/* 3% subtle noise texture over the warm gradient */
 .noise-bg {
   background-color: transparent;
   background-image: radial-gradient(rgba(224, 160, 48, 0.035) 1px, transparent 0), radial-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 0);
@@ -379,7 +379,7 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-/* Explicit glass-card utility (Jib-be-jib §12 sample, Zorvania dark glass) */
+/* Explicit glass-card utility (Jib-be-jib §12 sample, dark glass) */
 .glass-card {
   border-radius: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.06);

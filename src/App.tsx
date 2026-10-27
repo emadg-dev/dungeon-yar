@@ -11,6 +11,7 @@ import {
   CampaignMember, CharacterHistoryEvent, CharacterParticipation, CampaignRole, CampaignSettings
 } from './types';
 import { api, HttpApi } from './services/api';
+import { pageTitle } from './config/app';
 import { Header } from './components/Header';
 import { BottomNav } from './components/mobile/BottomNav';
 import { StickyHeader } from './components/common/StickyHeader';
@@ -166,6 +167,21 @@ export default function App() {
     }
     localStorage.setItem('zorvania_font_scale', fontScale);
   }, [fontScale]);
+
+  // Synchronize document.title at runtime with pageTitle()
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      if (viewMode === 'home') {
+        document.title = pageTitle();
+      } else if (viewMode === 'character_master') {
+        document.title = pageTitle(selectedMasterChar ? selectedMasterChar.name : 'پرونده شخصیت');
+      } else if (viewMode === 'campaign_space' && activeCampaign) {
+        document.title = pageTitle(activeCampaign.name);
+      } else {
+        document.title = pageTitle();
+      }
+    }
+  }, [viewMode, selectedMasterChar, activeCampaign]);
 
   const toggleFontScale = () => {
     setFontScale(prev => {

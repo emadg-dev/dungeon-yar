@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, UserSession, Character } from '../types';
+import { APP_NAME_LATIN } from '../config/app';
 import { api } from '../services/api';
 import { 
   X, User as UserIcon, Mail, KeyRound, Smartphone, Download, 
@@ -168,7 +169,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
       const dlUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = dlUrl;
-      a.download = `zorvania-export-${currentUser.displayName || currentUser.name}-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `${APP_NAME_LATIN.toLowerCase()}-export-${currentUser.displayName || currentUser.name}-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

@@ -1,5 +1,5 @@
 /**
- * Cloudflare Pages Functions Backend for Zorvania TTRPG
+ * Cloudflare Pages Functions Backend for Multi-Campaign TTRPG Platform
  * Complete Account & User System with PBKDF2 WebCrypto, session tokens,
  * D1 database storage, CSRF protection, rate limiting, and RBAC authorization.
  */

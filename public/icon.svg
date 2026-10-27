@@ -31,7 +31,7 @@
   <circle cx="256" cy="436" r="6" fill="#fef08a" filter="url(#glow)" />
   <circle cx="76" cy="256" r="6" fill="#fef08a" filter="url(#glow)" />
 
-  <!-- Persian letter "ز" for Zorvania (زروانیا) -->
+  <!-- Arcane emblem icon mark -->
   <g filter="url(#glow)" transform="translate(256, 270)">
     <!-- Main curve of letter Ze -->
     <path d="M 60,-65 C 50,-5 20,65 -60,85 C -75,88 -85,82 -80,72 C -65,45 -25,-10 10,-75 C 20,-95 65,-95 60,-65 Z" fill="url(#amberGold)" />

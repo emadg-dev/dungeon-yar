@@ -1,5 +1,5 @@
 /**
- * Zorvania Clone Engine (Phase 2 Core Service)
+ * Multi-Campaign Clone Engine (Phase 2 Core Service)
  * Handles dependency resolution, ID remapping, transform pipelines,
  * name conflict handling, dry-run previews, atomic batch cloning, and undo.
  */

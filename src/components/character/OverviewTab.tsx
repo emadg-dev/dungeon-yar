@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Character, ClassTemplate } from '../../types';
+import { APP_NAME_LATIN } from '../../config/app';
 import { getAbilityModifier } from '../../utils/dice';
 import { 
   Shield, Footprints, Zap, Dices, Moon, Sun, Sparkles, 
@@ -69,7 +70,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(character, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `${character.name}_zorvania.json`);
+    downloadAnchor.setAttribute("download", `${character.name}_${APP_NAME_LATIN.toLowerCase()}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();

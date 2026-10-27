@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MasterCharacter, CharacterHistoryEvent, CharacterParticipation, BackstorySection } from '../../types';
+import { APP_NAME_FA } from '../../config/app';
 import { 
   ArrowRight, Shield, Award, Calendar, BookOpen, Clock, Plus, 
   Trash2, Eye, EyeOff, Lock, Sparkles, Check, Edit3, Image, Compass 
@@ -149,7 +150,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-[#F2C265]">{charData.name}</h1>
-              <p className="text-xs text-[#A39A89] mt-0.5">{charData.race} | شناسنامه کلان پلتفرم زروانیا</p>
+              <p className="text-xs text-[#A39A89] mt-0.5">{charData.race} | شناسنامه کلان پلتفرم {APP_NAME_FA}</p>
             </div>
             {/* Status Selector */}
             <select

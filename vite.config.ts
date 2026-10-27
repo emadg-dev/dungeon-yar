@@ -1,22 +1,58 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
-import {VitePWA} from 'vite-plugin-pwa';
+import { defineConfig, Plugin } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
+import { APP_NAME_FA, APP_SHORT_NAME, APP_TAGLINE, pageTitle } from './src/config/app.ts';
+
+function htmlBrandPlugin(): Plugin {
+  return {
+    name: 'html-brand-plugin',
+    transformIndexHtml(html) {
+      return html
+        .replace(/<title>.*?<\/title>/i, `<title>${pageTitle()}</title>`)
+        .replace(/%APP_TITLE%/g, pageTitle())
+        .replace(/%APP_DESCRIPTION%/g, APP_TAGLINE)
+        .replace(/%APP_NAME_FA%/g, APP_NAME_FA)
+        .replace(/%APP_SHORT_NAME%/g, APP_SHORT_NAME)
+        .replace(
+          /<meta\s+name=["']description["']\s+content=["'][^"']*["']/i,
+          `<meta name="description" content="${APP_TAGLINE}"`
+        )
+        .replace(
+          /<meta\s+name=["']apple-mobile-web-app-title["']\s+content=["'][^"']*["']/i,
+          `<meta name="apple-mobile-web-app-title" content="${APP_SHORT_NAME}"`
+        )
+        .replace(
+          /<meta\s+name=["']application-name["']\s+content=["'][^"']*["']/i,
+          `<meta name="application-name" content="${APP_SHORT_NAME}"`
+        )
+        .replace(
+          /<meta\s+property=["']og:title["']\s+content=["'][^"']*["']/i,
+          `<meta property="og:title" content="${pageTitle()}"`
+        )
+        .replace(
+          /<meta\s+property=["']og:description["']\s+content=["'][^"']*["']/i,
+          `<meta property="og:description" content="${APP_TAGLINE}"`
+        );
+    },
+  };
+}
 
 export default defineConfig(() => {
   return {
     plugins: [
       react(),
       tailwindcss(),
+      htmlBrandPlugin(),
       VitePWA({
         registerType: 'prompt',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
         manifest: {
           id: '/',
-          name: 'زروانیا',
-          short_name: 'زروانیا',
-          description: 'اپلیکیشن همراه نقش‌آفرینی رومیزی زروانیا: کاراکترشیت فارسی، کوله‌پشتی و ابزارهای دانجن مستر',
+          name: APP_NAME_FA,
+          short_name: APP_SHORT_NAME,
+          description: APP_TAGLINE,
           theme_color: '#0E0D0C',
           background_color: '#0E0D0C',
           display: 'standalone',
@@ -85,7 +121,7 @@ export default defineConfig(() => {
     ],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve('.'),
       },
     },
     server: {

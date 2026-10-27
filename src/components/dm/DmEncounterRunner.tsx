@@ -531,7 +531,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
         {/* Header Bar */}
         <div className="flex items-center justify-between gap-2">
           <div>
-            <h2 className="text-base font-extrabold text-[#EDE6D8]">مدیریت مبارزات زروانیا</h2>
+            <h2 className="text-base font-extrabold text-[#EDE6D8]">مدیریت مبارزات کمپین</h2>
             <p className="text-xs text-[#A39A89]">کنترل نبردهای زنده، ترتیب ابتکار عمل و اشتراک با بازیکنان</p>
           </div>
 
