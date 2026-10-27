@@ -38,21 +38,37 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
   const [name, setName] = useState(initialData?.name || '');
   const [title, setTitle] = useState(initialData?.title || '');
   const [description, setDescription] = useState(initialData?.description || '');
-  const [hitDie, setHitDie] = useState<number>(initialData?.hitDie || 8);
-  const [savingThrows, setSavingThrows] = useState<string[]>(initialData?.savingThrows || ['str', 'con']);
+  const [hitDie, setHitDie] = useState<number>(
+    typeof initialData?.hitDie === 'number'
+      ? initialData.hitDie
+      : (parseInt(String(initialData?.hitDie || 8).replace(/\D/g, ''), 10) || 8)
+  );
+  const [savingThrows, setSavingThrows] = useState<string[]>(
+    initialData?.savingThrows || initialData?.saves || ['str', 'con']
+  );
   
   const [baseAbilities, setBaseAbilities] = useState<Record<string, number>>(
-    initialData?.baseAbilities || initialData?.baseAbilityScores || {
+    (initialData?.baseAbilities as Record<string, number>) ||
+    ((initialData?.baseAbilityScores as unknown) as Record<string, number>) || {
       str: 14, dex: 12, con: 14, int: 10, wis: 12, cha: 10
     }
   );
 
   // Skills & Equipment
-  const [skillChoices, setSkillChoices] = useState<{ count: number; from: string[] }>(
-    initialData?.skillChoices || { count: 2, from: ['athletics', 'perception', 'survival', 'intimidation'] }
+  const [skillChoices, setSkillChoices] = useState<{ count: number; from: string[] }>({
+    count: initialData?.skillChoices?.count || 2,
+    from: initialData?.skillChoices?.from || initialData?.skillChoices?.options || ['athletics', 'perception', 'survival', 'intimidation']
+  });
+  const [weaponProf, setWeaponProf] = useState<string[]>(
+    Array.isArray(initialData?.weaponProf)
+      ? initialData.weaponProf
+      : (typeof initialData?.weaponProf === 'string' ? [initialData.weaponProf] : ['سلاح‌های ساده', 'سلاح‌های جنگی'])
   );
-  const [weaponProf, setWeaponProf] = useState<string[]>(initialData?.weaponProf || ['سلاح‌های ساده', 'سلاح‌های جنگی']);
-  const [armorProf, setArmorProf] = useState<string[]>(initialData?.armorProf || ['سبک', 'متوسط', 'سپر']);
+  const [armorProf, setArmorProf] = useState<string[]>(
+    Array.isArray(initialData?.armorProf)
+      ? initialData.armorProf
+      : (typeof initialData?.armorProf === 'string' ? [initialData.armorProf] : ['سبک', 'متوسط', 'سپر'])
+  );
   
   const [startingEquipmentChoices, setStartingEquipmentChoices] = useState<EquipmentChoiceGroup[]>(
     initialData?.startingEquipmentChoices || [
@@ -67,9 +83,13 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
     ]
   );
 
-  const [starterWeaponOptions, setStarterWeaponOptions] = useState<Array<{ name: string; kind: 'special' | 'showy'; description?: string }>>(
-    initialData?.starterWeaponOptions || []
-  );
+  const [starterWeaponOptions, setStarterWeaponOptions] = useState<Array<{ name: string; kind: 'special' | 'showy'; description?: string }>>(() => {
+    if (!initialData?.starterWeaponOptions) return [];
+    return (initialData.starterWeaponOptions as any[]).map(item => {
+      if (typeof item === 'string') return { name: item, kind: 'special' as const };
+      return item;
+    });
+  });
 
   // AC & Resources
   const [acFormula, setAcFormula] = useState<{
@@ -96,7 +116,15 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
     type: string;
     formulaOrDiceByLevel: string | Record<number, string | number>;
     resetType?: 'short' | 'long';
-  }>>(initialData?.classResources || []);
+  }>>(() => {
+    if (!initialData?.classResources) return [];
+    return initialData.classResources.map(r => ({
+      name: r.name,
+      type: r.type || 'resource',
+      formulaOrDiceByLevel: r.formulaOrDiceByLevel || '',
+      resetType: (r.resetType === 'long' || r.resetType === 'short') ? r.resetType : undefined
+    }));
+  });
 
   // Spells
   const [spellcastingEnabled, setSpellcastingEnabled] = useState<boolean>(Boolean(initialData?.spellcasting));

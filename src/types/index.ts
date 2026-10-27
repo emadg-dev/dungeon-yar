@@ -584,7 +584,7 @@ export interface LineageTemplate {
   sourceMode?: 'copy' | 'linked';
   tags?: string[];
   name: string;
-  description: string;
+  description?: string;
   size: string; // e.g. "متوسط (Medium)" or "کوچک (Small)"
   speed: number; // e.g. 30
   abilityBonuses: {
@@ -601,17 +601,17 @@ export interface LineageTemplate {
     armor: string[];
     tools: string[];
   };
-  resistances: string[];
-  senses: {
+  resistances?: string[];
+  senses?: {
     darkvision?: number;
     blindsight?: number;
     tremorsense?: number;
     truesight?: number;
     [key: string]: any;
   };
-  sublineages: SublineageDef[];
-  nameSuggestions: string[];
-  backstoryPrompts: string[];
+  sublineages?: SublineageDef[];
+  nameSuggestions?: string[];
+  backstoryPrompts?: string[];
   copiedAt?: number | null;
   createdAt: number;
   updatedAt: number;
@@ -671,6 +671,7 @@ export interface ClassTemplate {
   description?: string;
   hitDie: string | number;
   saves?: string[];
+  savingThrows?: string[];
   savingThrowProficiencies?: AbilityName[];
   skillChoices: { count: number; options?: string[]; from?: string[] };
   weaponProf?: string | string[];
@@ -1554,7 +1555,7 @@ export interface CloneOptions {
   includeChildren?: boolean;
   stripDmSecrets?: boolean;
   resetState?: boolean;
-  visibility?: 'hidden' | 'keep';
+  visibility?: 'hidden' | 'keep' | 'revealed';
   nameConflict?: 'rename' | 'skip';
   keepLink?: 'copy' | 'linked';
   nameSuffix?: string;

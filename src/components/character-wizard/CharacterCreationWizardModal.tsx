@@ -125,7 +125,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
     existingDraft?.abilityScores || { str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8 }
   );
   const [pointBuyScores, setPointBuyScores] = useState<AbilityScoreMap>(
-    (existingDraft?.build?.pointBuy?.scores as AbilityScoreMap) || { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }
+    ((existingDraft?.build?.pointBuy?.scores as unknown) as AbilityScoreMap) || { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 }
   );
   const [serverRolls, setServerRolls] = useState<{ dice: number[][]; scores: number[]; assigned?: Record<string, number> } | null>(
     existingDraft?.build?.rolls || null
