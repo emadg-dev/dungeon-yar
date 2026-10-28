@@ -166,6 +166,7 @@ CREATE TABLE IF NOT EXISTS characters (
   level INTEGER DEFAULT 1,
   data TEXT NOT NULL,
   revision INTEGER NOT NULL DEFAULT 1,
+  ready_for_review INTEGER DEFAULT 0,
   updated_at INTEGER NOT NULL,
   FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL
 );
@@ -267,6 +268,34 @@ CREATE TABLE IF NOT EXISTS sheet_change_requests (
 
 CREATE INDEX IF NOT EXISTS idx_sheet_changes_campaign ON sheet_change_requests(campaign_id, status);
 CREATE INDEX IF NOT EXISTS idx_sheet_changes_participation ON sheet_change_requests(participation_id);
+
+-- 10e. Character Revisions table (Step 3.5 — keeps last 10 revisions)
+CREATE TABLE IF NOT EXISTS character_revisions (
+  id TEXT PRIMARY KEY,
+  character_id TEXT NOT NULL,
+  backstory TEXT NOT NULL,
+  changed_by TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE,
+  FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_char_revisions_char ON character_revisions(character_id, created_at DESC);
+
+-- 10f. Backstory Comments table (Step 3.5 — threaded resolvable section comments)
+CREATE TABLE IF NOT EXISTS backstory_comments (
+  id TEXT PRIMARY KEY,
+  character_id TEXT NOT NULL,
+  section_id TEXT NOT NULL,
+  author_id TEXT NOT NULL,
+  body TEXT NOT NULL,
+  resolved INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE CASCADE,
+  FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_backstory_comments_char ON backstory_comments(character_id, section_id, created_at ASC);
 
 -- 11. Character History Events table (Cross-campaign deeds and progression)
 CREATE TABLE IF NOT EXISTS character_history_events (

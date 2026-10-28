@@ -1,31 +1,61 @@
 import React, { useState } from 'react';
-import { MasterCharacter, CharacterHistoryEvent, CharacterParticipation, BackstorySection } from '../../types';
+import { 
+  MasterCharacter, CharacterHistoryEvent, CharacterParticipation, BackstorySection,
+  Campaign, LineageTemplate, BackgroundTemplate, NPC, CharacterRevision, BackstoryComment
+} from '../../types';
 import { APP_NAME_FA } from '../../config/app';
 import { 
   ArrowRight, Shield, Award, Calendar, BookOpen, Clock, Plus, 
-  Trash2, Eye, EyeOff, Lock, Sparkles, Check, Edit3, Image, Compass 
+  Trash2, Eye, EyeOff, Lock, Sparkles, Check, Edit3, Image, Compass, Printer 
 } from 'lucide-react';
+import { BackstoryEditor } from './BackstoryEditor';
 
 interface MasterCharacterScreenProps {
   character: MasterCharacter;
   history: CharacterHistoryEvent[];
   participations: CharacterParticipation[];
+  campaign?: Campaign | null;
+  lineageTemplate?: LineageTemplate | null;
+  backgroundTemplate?: BackgroundTemplate | null;
+  allBackgroundTemplates?: BackgroundTemplate[];
+  availableNpcs?: NPC[];
+  isDm?: boolean;
   onBack: () => void;
   onSaveCharacter: (updated: MasterCharacter) => Promise<void>;
   onAddMilestone: (event: Omit<CharacterHistoryEvent, 'id' | 'timestamp'>) => Promise<void>;
   onOpenJoinCampaign: (characterId: string) => void;
   onSelectCampaignParticipation: (campaignId: string, participationId: string) => void;
+  onLoadRevisions?: () => Promise<CharacterRevision[]>;
+  onRestoreRevision?: (revisionId: string) => Promise<MasterCharacter>;
+  onToggleReadyForReview?: (ready: boolean) => Promise<MasterCharacter>;
+  onLoadComments?: () => Promise<BackstoryComment[]>;
+  onCreateComment?: (sectionId: string, body: string) => Promise<BackstoryComment>;
+  onResolveComment?: (commentId: string, resolved: boolean) => Promise<BackstoryComment>;
+  onReviewBackstory?: (status: 'approved' | 'changes_requested', comment?: string) => Promise<MasterCharacter>;
 }
 
 export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
   character,
   history,
   participations,
+  campaign,
+  lineageTemplate,
+  backgroundTemplate,
+  allBackgroundTemplates = [],
+  availableNpcs = [],
+  isDm = false,
   onBack,
   onSaveCharacter,
   onAddMilestone,
   onOpenJoinCampaign,
-  onSelectCampaignParticipation
+  onSelectCampaignParticipation,
+  onLoadRevisions,
+  onRestoreRevision,
+  onToggleReadyForReview,
+  onLoadComments,
+  onCreateComment,
+  onResolveComment,
+  onReviewBackstory
 }) => {
   const [activeTab, setActiveTab] = useState<'identity' | 'history' | 'campaigns'>('identity');
   const [charData, setCharData] = useState<MasterCharacter>(character);
@@ -117,23 +147,35 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           <span>بازگشت به خانه</span>
         </button>
 
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="px-4 py-2 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs hover:bg-[#F2C265] disabled:opacity-50 transition-colors flex items-center gap-1.5 min-h-[44px] shadow-lg shadow-[#E0A030]/20"
-        >
-          {saveSuccess ? (
-            <>
-              <Check className="w-4 h-4 text-[#0E0D0C]" />
-              <span>ذخیره شد</span>
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-4 h-4" />
-              <span>{isSaving ? 'در حال ذخیره...' : 'ذخیره شناسنامه'}</span>
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="px-3 py-2 rounded-xl bg-[#131110] border border-[#2F2A23] text-[#A39A89] hover:text-[#F2C265] font-bold text-xs transition-colors flex items-center gap-1.5 min-h-[44px]"
+            title="چاپ شناسنامه و پیشینه در قالب A4"
+          >
+            <Printer className="w-4 h-4 text-[#E0A030]" />
+            <span className="hidden sm:inline">چاپ A4</span>
+          </button>
+
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-4 py-2 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs hover:bg-[#F2C265] disabled:opacity-50 transition-colors flex items-center gap-1.5 min-h-[44px] shadow-lg shadow-[#E0A030]/20"
+          >
+            {saveSuccess ? (
+              <>
+                <Check className="w-4 h-4 text-[#0E0D0C]" />
+                <span>ذخیره شد</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                <span>{isSaving ? 'در حال ذخیره...' : 'ذخیره شناسنامه'}</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Character Identity Hero Card */}
@@ -263,187 +305,28 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
             </div>
           </div>
 
-          {/* Personality & Pillars */}
-          <div className="rounded-2xl bg-[#171513] border border-[#2F2A23] p-5 space-y-4">
-            <h3 className="text-sm font-bold text-[#F2C265] flex items-center gap-2">
-              <BookOpen className="w-4 h-4" />
-              ارکان شخصیتی و روحی
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs text-[#A39A89] mb-1">ویژگی‌های رفتاری (Personality Traits)</label>
-                <textarea
-                  value={charData.backstory?.personality?.traits || ''}
-                  onChange={e => setCharData({
-                    ...charData,
-                    backstory: {
-                      ...charData.backstory,
-                      personality: { ...(charData.backstory?.personality || { traits: '', ideals: '', bonds: '', flaws: '' }), traits: e.target.value }
-                    }
-                  })}
-                  rows={2}
-                  className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl p-2.5 text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-[#A39A89] mb-1">آرمان‌ها و باورها (Ideals)</label>
-                <textarea
-                  value={charData.backstory?.personality?.ideals || ''}
-                  onChange={e => setCharData({
-                    ...charData,
-                    backstory: {
-                      ...charData.backstory,
-                      personality: { ...(charData.backstory?.personality || { traits: '', ideals: '', bonds: '', flaws: '' }), ideals: e.target.value }
-                    }
-                  })}
-                  rows={2}
-                  className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl p-2.5 text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-[#A39A89] mb-1">پیمان‌ها و دلبستگی‌ها (Bonds)</label>
-                <textarea
-                  value={charData.backstory?.personality?.bonds || ''}
-                  onChange={e => setCharData({
-                    ...charData,
-                    backstory: {
-                      ...charData.backstory,
-                      personality: { ...(charData.backstory?.personality || { traits: '', ideals: '', bonds: '', flaws: '' }), bonds: e.target.value }
-                    }
-                  })}
-                  rows={2}
-                  className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl p-2.5 text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-[#A39A89] mb-1">نقایص و هراس‌ها (Flaws)</label>
-                <textarea
-                  value={charData.backstory?.personality?.flaws || ''}
-                  onChange={e => setCharData({
-                    ...charData,
-                    backstory: {
-                      ...charData.backstory,
-                      personality: { ...(charData.backstory?.personality || { traits: '', ideals: '', bonds: '', flaws: '' }), flaws: e.target.value }
-                    }
-                  })}
-                  rows={2}
-                  className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl p-2.5 text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Structured Backstory Sections */}
-          <div className="rounded-2xl bg-[#171513] border border-[#2F2A23] p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[#F2C265] flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
-                بخش‌های ساختاریافته پیشینه
-              </h3>
-              <button
-                onClick={handleAddSection}
-                className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/25 transition-colors flex items-center gap-1 min-h-[44px]"
-              >
-                <Plus className="w-4 h-4" />
-                افزودن بخش
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {(charData.backstory?.sections || []).length === 0 ? (
-                <p className="text-xs text-[#8A8374] text-center py-4 border border-dashed border-[#2F2A23] rounded-xl">
-                  هنوز بخشی برای پیشینه افزوده نشده است.
-                </p>
-              ) : (
-                charData.backstory.sections.map(section => (
-                  <div key={section.id} className="p-4 rounded-xl bg-[#131110]/80 border border-[#2F2A23] space-y-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <input
-                        type="text"
-                        value={section.title}
-                        onChange={e => handleUpdateSection(section.id, { title: e.target.value })}
-                        className="bg-transparent text-sm font-bold text-[#F2C265] focus:outline-none flex-1 border-b border-transparent focus:border-[#E0A030]"
-                        placeholder="عنوان بخش (مثلاً دوران کودکی در ورنا)..."
-                      />
-                      <div className="flex items-center gap-2">
-                        {/* Share with party toggle */}
-                        <button
-                          type="button"
-                          onClick={() => handleUpdateSection(section.id, { shareWithParty: !section.shareWithParty })}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors min-h-[36px] ${
-                            section.shareWithParty
-                              ? 'bg-[#6F9E78]/20 text-[#6F9E78] border border-[#6F9E78]/30'
-                              : 'bg-[#201D19] text-[#A39A89] border border-[#3A342B]'
-                          }`}
-                        >
-                          {section.shareWithParty ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                          <span>{section.shareWithParty ? 'مشترک با یاران' : 'فقط دانجن مستر'}</span>
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSection(section.id)}
-                          className="p-1.5 text-[#D66138] hover:bg-[#C2512B]/20 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                    <textarea
-                      value={section.text}
-                      onChange={e => handleUpdateSection(section.id, { text: e.target.value })}
-                      rows={3}
-                      className="w-full bg-[#0E0D0C]/60 border border-[#2F2A23] rounded-lg p-2.5 text-xs text-[#C9C0AE] focus:outline-none focus:border-[#E0A030] leading-relaxed"
-                      placeholder="متن رویدادها، جزئیات گذشته یا خاطرات..."
-                    />
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* DM-Only Secrets & Hooks */}
-          <div className="rounded-2xl bg-[#1A1210] border border-[#C2512B]/20 p-5 space-y-4">
-            <h3 className="text-sm font-bold text-[#E8836B] flex items-center gap-2">
-              <Lock className="w-4 h-4 text-[#D66138]" />
-              رازها و قلاب‌های داستانی محرمانه (فقط دانجن مستر)
-            </h3>
-            <p className="text-xs text-[#E8836B]/60">
-              این بخش هرگز به دیگر بازیکنان نشان داده نمی‌شود؛ سرور این فیلدها را برای بازیکنان سانسور می‌کند.
-            </p>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs text-[#E8836B]/80 mb-1">رازهای مگو (Secrets)</label>
-                <textarea
-                  value={charData.backstory?.dmOnly?.secrets || ''}
-                  onChange={e => setCharData({
-                    ...charData,
-                    backstory: {
-                      ...charData.backstory,
-                      dmOnly: { ...(charData.backstory?.dmOnly || { secrets: '', hooks: '' }), secrets: e.target.value }
-                    }
-                  })}
-                  rows={2}
-                  className="w-full bg-[#131110] border border-[#C2512B]/60 rounded-xl p-2.5 text-xs text-[#EDE6D8] focus:border-[#C2512B] focus:outline-none"
-                  placeholder="رازی تاریک از گذشته یا اصل و نسب..."
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-[#E8836B]/80 mb-1">قلاب‌های داستانی (Plot Hooks)</label>
-                <textarea
-                  value={charData.backstory?.dmOnly?.hooks || ''}
-                  onChange={e => setCharData({
-                    ...charData,
-                    backstory: {
-                      ...charData.backstory,
-                      dmOnly: { ...(charData.backstory?.dmOnly || { secrets: '', hooks: '' }), hooks: e.target.value }
-                    }
-                  })}
-                  rows={2}
-                  className="w-full bg-[#131110] border border-[#C2512B]/60 rounded-xl p-2.5 text-xs text-[#EDE6D8] focus:border-[#C2512B] focus:outline-none"
-                  placeholder="انگیزه‌های شخصی که DM می‌تواند در ماجرا دخالت دهد..."
-                />
-              </div>
-            </div>
-          </div>
+          {/* Full Backstory Suite (Step 3.5) */}
+          <BackstoryEditor
+            character={charData}
+            campaign={campaign}
+            lineageTemplate={lineageTemplate}
+            backgroundTemplate={backgroundTemplate}
+            allBackgroundTemplates={allBackgroundTemplates}
+            availableNpcs={availableNpcs}
+            isDm={isDm}
+            onUpdateCharacter={async (updated) => {
+              setCharData(updated);
+              await onSaveCharacter(updated);
+            }}
+            onLoadRevisions={onLoadRevisions || (async () => [])}
+            onRestoreRevision={onRestoreRevision || (async () => charData)}
+            onToggleReadyForReview={onToggleReadyForReview || (async (r) => ({ ...charData, readyForReview: r }))}
+            onLoadComments={onLoadComments || (async () => [])}
+            onCreateComment={onCreateComment || (async () => ({} as any))}
+            onResolveComment={onResolveComment || (async () => ({} as any))}
+            onReviewBackstory={onReviewBackstory}
+            onPrint={() => window.print()}
+          />
         </div>
       )}
 
@@ -599,6 +482,140 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           </div>
         </div>
       )}
+
+      {/* A4 RTL Printable Sheet and Backstory (visible only during window.print()) */}
+      <div className="hidden print:block font-sans text-black bg-white p-8 leading-relaxed max-w-[210mm] mx-auto" dir="rtl">
+        {/* Print Header */}
+        <div className="border-b-2 border-black pb-4 mb-6 flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-black text-black">{charData.name}</h1>
+            <p className="text-xs text-gray-700 mt-1">
+              نژاد یا تبار: {charData.race || 'نامشخص'} | وضعیت: {charData.status === 'active' ? 'فعال' : charData.status} | پلتفرم {APP_NAME_FA}
+            </p>
+            {participations.length > 0 && (
+              <p className="text-xs text-gray-600 mt-0.5">
+                کمپین‌های مرتبط: {participations.map(p => `${p.campaignName || 'کمپین'} (${p.className || 'ماجراجو'} سطح ${p.level})`).join('، ')}
+              </p>
+            )}
+          </div>
+          {charData.portraitUrl && (
+            <img 
+              src={charData.portraitUrl} 
+              alt={charData.name} 
+              className="w-20 h-20 object-cover border border-black rounded"
+            />
+          )}
+        </div>
+
+        {/* Appearance */}
+        {charData.appearance && (
+          <div className="mb-4">
+            <h2 className="text-xs font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-1.5 text-gray-900">سیمای ظاهری</h2>
+            <p className="text-xs text-gray-800 leading-normal whitespace-pre-wrap">{charData.appearance}</p>
+          </div>
+        )}
+
+        {/* Backstory Summary & Origin */}
+        {(charData.backstory?.summary || charData.backstory?.origin) && (
+          <div className="mb-4 space-y-2">
+            <h2 className="text-xs font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-1.5 text-gray-900">خلاصه پیشینه و خاستگاه</h2>
+            {charData.backstory?.summary && (
+              <p className="text-xs text-gray-800 whitespace-pre-wrap"><strong>چکیده:</strong> {charData.backstory.summary}</p>
+            )}
+            {charData.backstory?.origin && (
+              <p className="text-xs text-gray-800 whitespace-pre-wrap"><strong>خاستگاه و ریشه‌ها:</strong> {charData.backstory.origin}</p>
+            )}
+          </div>
+        )}
+
+        {/* Personality */}
+        {charData.backstory?.personality && (
+          <div className="mb-4">
+            <h2 className="text-xs font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-1.5 text-gray-900">ارکان روحی و شخصیتی</h2>
+            <div className="grid grid-cols-2 gap-3 text-xs text-gray-800">
+              <div className="p-2 border border-gray-200 rounded">
+                <strong>ویژگی‌های رفتاری:</strong>
+                <p className="mt-0.5">{charData.backstory.personality.traits || '—'}</p>
+              </div>
+              <div className="p-2 border border-gray-200 rounded">
+                <strong>آرمان‌ها و باورها:</strong>
+                <p className="mt-0.5">{charData.backstory.personality.ideals || '—'}</p>
+              </div>
+              <div className="p-2 border border-gray-200 rounded">
+                <strong>پیمان‌ها و دلبستگی‌ها:</strong>
+                <p className="mt-0.5">{charData.backstory.personality.bonds || '—'}</p>
+              </div>
+              <div className="p-2 border border-gray-200 rounded">
+                <strong>نقایص و هراس‌ها:</strong>
+                <p className="mt-0.5">{charData.backstory.personality.flaws || '—'}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Goals */}
+        {charData.backstory?.goals && (
+          <div className="mb-4">
+            <h2 className="text-xs font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-1.5 text-gray-900">اهداف و آرزوها</h2>
+            <p className="text-xs text-gray-800 whitespace-pre-wrap">{charData.backstory.goals}</p>
+          </div>
+        )}
+
+        {/* Relationships */}
+        {(charData.backstory?.relationships || []).length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-xs font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-1.5 text-gray-900">روابط و پیوندها</h2>
+            <ul className="list-disc list-inside text-xs text-gray-800 space-y-1">
+              {charData.backstory!.relationships!.map((rel, idx) => (
+                <li key={idx}>
+                  <strong>{rel.name}:</strong> {rel.note}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Timeline */}
+        {(charData.backstory?.timeline || []).length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-xs font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-1.5 text-gray-900">خط زمان و وقایع کلیدی</h2>
+            <div className="space-y-1.5 text-xs text-gray-800">
+              {charData.backstory!.timeline!.map((item, idx) => (
+                <div key={idx} className="flex gap-2">
+                  <span className="font-bold min-w-[80px]">{item.period || item.label}:</span>
+                  <span>{item.event || item.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Custom Sections */}
+        {(charData.backstory?.sections || []).length > 0 && (
+          <div className="mb-4 space-y-3">
+            <h2 className="text-xs font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-1.5 text-gray-900">بخش‌های تکمیلی</h2>
+            {charData.backstory!.sections!.map(sec => (
+              <div key={sec.id} className="text-xs text-gray-800">
+                <h3 className="font-bold text-gray-900">{sec.title}</h3>
+                <p className="whitespace-pre-wrap">{sec.text}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* DM Only Notes (printed only if isDm) */}
+        {isDm && charData.backstory?.dmOnly && (
+          <div className="mt-4 pt-3 border-t-2 border-dashed border-red-500">
+            <h2 className="text-xs font-bold text-red-700 mb-1.5">یادداشت‌های محرمانه دانجن‌مستر (اسرار و قلاب‌ها)</h2>
+            {charData.backstory.dmOnly.secrets && (
+              <p className="text-xs text-gray-800 mb-1"><strong>رازهای نهان:</strong> {charData.backstory.dmOnly.secrets}</p>
+            )}
+            {charData.backstory.dmOnly.hooks && (
+              <p className="text-xs text-gray-800"><strong>قلاب‌های روایی:</strong> {charData.backstory.dmOnly.hooks}</p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -98,6 +98,23 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
 
           <div className="flex items-center justify-between p-2 rounded-xl bg-[#0E0D0C]/40">
             <div>
+              <span className="text-xs font-semibold text-[#EDE6D8] block">الزام تکمیل پیشینه برای تأیید ورود</span>
+              <span className="text-[10px] text-[#A39A89]">ورود شخصیت تنها پس از نگارش پیشینه و بازبینی ممکن باشد</span>
+            </div>
+            <input
+              type="checkbox"
+              checked={Boolean(settings.approval?.backstoryRequiredForApproval ?? settings.backstoryRequiredForApproval)}
+              onChange={e => setSettings({
+                ...settings,
+                backstoryRequiredForApproval: e.target.checked,
+                approval: { ...settings.approval, backstoryRequiredForApproval: e.target.checked }
+              })}
+              className="w-5 h-5 accent-[#E0A030] rounded"
+            />
+          </div>
+
+          <div className="flex items-center justify-between p-2 rounded-xl bg-[#0E0D0C]/40">
+            <div>
               <span className="text-xs font-semibold text-[#EDE6D8] block">مجوز ساخت شخصیت توسط بازیکن</span>
               <span className="text-[10px] text-[#A39A89]">بازیکنان می‌توانند مستقیماً شخصیت اضافه کنند</span>
             </div>

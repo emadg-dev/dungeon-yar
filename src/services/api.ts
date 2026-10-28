@@ -63,11 +63,15 @@ import {
   XpAward,
   SheetChangeRequest,
   LevelUpPayload,
-  LevelUpDiff
+  LevelUpDiff,
+  CharacterRevision,
+  BackstoryComment,
+  MasterBackstory
 } from '../types';
 import { rollAbilityScores } from '../../shared/rules/engine';
 import { computeAuthoritativeParticipation, createSnapshot, pruneSnapshots } from '../../shared/rules/wizardEngine';
 import { computeLevelUpDiff, isLevelUpReady, isFieldLockedForPlayer, XP_THRESHOLDS } from '../../shared/rules/levelUpEngine';
+import { pruneCharacterRevisions } from '../../shared/rules/backstoryEngine';
 import { APP_NAME_FA } from '../config/app';
 import {
   SEED_USERS,
@@ -512,6 +516,16 @@ export interface ApiClient {
   reviewSheetChangeRequest(campaignId: string, requestId: string, action: 'approve' | 'reject', comment?: string): Promise<SheetChangeRequest>;
   dmOverrideParticipation(campaignId: string, participationId: string, data: Partial<CharacterParticipation>, reason?: string): Promise<CharacterParticipation>;
   toggleRespecWindow(campaignId: string, participationId: string, open: boolean): Promise<CharacterParticipation>;
+
+  // Step 3.5: Backstory Tools
+  listCharacterRevisions(characterId: string): Promise<CharacterRevision[]>;
+  createCharacterRevision(characterId: string, backstory: MasterBackstory): Promise<CharacterRevision>;
+  restoreCharacterRevision(characterId: string, revisionId: string): Promise<MasterCharacter>;
+  toggleCharacterReadyForReview(characterId: string, ready: boolean): Promise<MasterCharacter>;
+  listBackstoryComments(characterId: string): Promise<BackstoryComment[]>;
+  createBackstoryComment(characterId: string, sectionId: string, body: string): Promise<BackstoryComment>;
+  resolveBackstoryComment(characterId: string, commentId: string, resolved: boolean): Promise<BackstoryComment>;
+  reviewCharacterBackstory(characterId: string, status: 'approved' | 'changes_requested', comment?: string): Promise<MasterCharacter>;
 
   // Media
   uploadMedia(file: { name?: string; mimeType: string; sizeBytes: number; dataBase64: string; width?: number; height?: number; campaignId?: string }): Promise<{ id: string; url: string; sizeBytes: number }>;
@@ -2710,6 +2724,19 @@ export class LocalApi implements ApiClient {
             requestedAt: p.pendingChange.requestedAt || Date.now(),
             details: p.pendingChange
           });
+        } else if (char?.readyForReview && char.reviewStatus !== 'approved') {
+          pendingApprovals.push({
+            campaignId: p.campaignId,
+            campaignName: camp?.name || 'کمپین',
+            type: 'backstory_review',
+            participationId: p.id,
+            characterId: p.characterId,
+            characterName: char?.name || p.className || 'شخصیت',
+            playerName,
+            level: p.level,
+            requestedAt: char.updatedAt || Date.now(),
+            details: { backstory: char.backstory }
+          });
         }
       });
     }
@@ -3129,9 +3156,15 @@ export class LocalApi implements ApiClient {
     const idx = all.findIndex(c => c.id === char.id);
     if (idx === -1) throw { status: 404, message: 'شخصیت یافت نشد.' };
 
+    const oldChar = all[idx];
     char.updatedAt = Date.now();
     all[idx] = char;
     this.setItem('master_characters', all);
+
+    // Save revision if backstory changed
+    if (char.backstory && JSON.stringify(oldChar?.backstory) !== JSON.stringify(char.backstory)) {
+      await this.createCharacterRevision(char.id, char.backstory);
+    }
 
     // Sync shared identity to existing participations
     const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
@@ -3146,6 +3179,121 @@ export class LocalApi implements ApiClient {
       }
     });
     this.setItem('character_participations', allParts);
+
+    return char;
+  }
+
+  // Step 3.5: Backstory Tools
+  async listCharacterRevisions(characterId: string): Promise<CharacterRevision[]> {
+    const all = this.getItem<CharacterRevision[]>('character_revisions', []);
+    return pruneCharacterRevisions(all.filter(r => r.characterId === characterId));
+  }
+
+  async createCharacterRevision(characterId: string, backstory: MasterBackstory): Promise<CharacterRevision> {
+    const user = this.currentUser || SEED_USERS[0];
+    const newRev: CharacterRevision = {
+      id: `rev-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      characterId,
+      backstory,
+      changedBy: user.id,
+      createdAt: Date.now()
+    };
+    const all = this.getItem<CharacterRevision[]>('character_revisions', []);
+    const charRevs = [newRev, ...all.filter(r => r.characterId === characterId)];
+    const otherRevs = all.filter(r => r.characterId !== characterId);
+    const pruned = pruneCharacterRevisions(charRevs, 10);
+    this.setItem('character_revisions', [...pruned, ...otherRevs]);
+    return newRev;
+  }
+
+  async restoreCharacterRevision(characterId: string, revisionId: string): Promise<MasterCharacter> {
+    const allRev = this.getItem<CharacterRevision[]>('character_revisions', []);
+    const targetRev = allRev.find(r => r.id === revisionId && r.characterId === characterId);
+    if (!targetRev) throw { status: 404, message: 'ویرایش پیشینه یافت نشد.' };
+
+    const char = await this.getMasterCharacter(characterId);
+    if (!char) throw { status: 404, message: 'شخصیت یافت نشد.' };
+
+    char.backstory = JSON.parse(JSON.stringify(targetRev.backstory));
+    await this.updateMasterCharacter(char);
+    return char;
+  }
+
+  async toggleCharacterReadyForReview(characterId: string, ready: boolean): Promise<MasterCharacter> {
+    const char = await this.getMasterCharacter(characterId);
+    if (!char) throw { status: 404, message: 'شخصیت یافت نشد.' };
+    char.readyForReview = ready;
+    char.reviewStatus = ready ? 'pending' : 'none';
+    await this.updateMasterCharacter(char);
+    return char;
+  }
+
+  async listBackstoryComments(characterId: string): Promise<BackstoryComment[]> {
+    const all = this.getItem<BackstoryComment[]>('backstory_comments', []);
+    const users = this.getItem<User[]>('users', SEED_USERS);
+    return all
+      .filter(c => c.characterId === characterId)
+      .map(c => {
+        const u = users.find(user => user.id === c.authorId);
+        return {
+          ...c,
+          authorName: u?.displayName || u?.name || 'کاربر',
+          authorRole: u?.role === 'dm' ? 'دانجن مستر' : 'بازیکن'
+        };
+      })
+      .sort((a, b) => a.createdAt - b.createdAt);
+  }
+
+  async createBackstoryComment(characterId: string, sectionId: string, body: string): Promise<BackstoryComment> {
+    const user = this.currentUser || SEED_USERS[0];
+    const newComment: BackstoryComment = {
+      id: `comm-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      characterId,
+      sectionId,
+      authorId: user.id,
+      authorName: user.displayName || user.name,
+      authorRole: user.role === 'dm' ? 'دانجن مستر' : 'بازیکن',
+      body: body.trim(),
+      resolved: false,
+      createdAt: Date.now()
+    };
+    const all = this.getItem<BackstoryComment[]>('backstory_comments', []);
+    all.push(newComment);
+    this.setItem('backstory_comments', all);
+    return newComment;
+  }
+
+  async resolveBackstoryComment(characterId: string, commentId: string, resolved: boolean): Promise<BackstoryComment> {
+    const all = this.getItem<BackstoryComment[]>('backstory_comments', []);
+    const comm = all.find(c => c.id === commentId && c.characterId === characterId);
+    if (!comm) throw { status: 404, message: 'دیدگاه یافت نشد.' };
+    comm.resolved = resolved;
+    this.setItem('backstory_comments', all);
+    return comm;
+  }
+
+  async reviewCharacterBackstory(characterId: string, status: 'approved' | 'changes_requested', comment?: string): Promise<MasterCharacter> {
+    const char = await this.getMasterCharacter(characterId);
+    if (!char) throw { status: 404, message: 'شخصیت یافت نشد.' };
+    char.reviewStatus = status;
+    char.reviewComment = comment;
+    if (status === 'approved') {
+      char.readyForReview = false;
+    }
+    await this.updateMasterCharacter(char);
+
+    const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+    allHist.push({
+      id: `hist-review-${Date.now()}`,
+      characterId,
+      eventType: 'major_deed',
+      payload: {
+        title: status === 'approved' ? 'تأیید رسمی پیشینه داستانی' : 'درخواست اصلاح پیشینه',
+        description: comment || (status === 'approved' ? 'پیشینه و خاستگاه شخصیت توسط دانجن مستر تأیید شد.' : 'دانجن مستر یادداشت‌هایی برای بهبود پیشینه درج کرد.')
+      },
+      timestamp: Date.now()
+    });
+    this.setItem('character_history_events', allHist);
 
     return char;
   }
@@ -6330,6 +6478,56 @@ export class HttpApi implements ApiClient {
     return this.fetchJson<any>(`/c/${cId}/linked-detach`, {
       method: 'POST',
       body: JSON.stringify({ entityType, entityId })
+    });
+  }
+
+  // Step 3.5: Backstory Tools
+  async listCharacterRevisions(characterId: string): Promise<CharacterRevision[]> {
+    return this.fetchJson<CharacterRevision[]>(`/characters/${characterId}/revisions`);
+  }
+
+  async createCharacterRevision(characterId: string, backstory: MasterBackstory): Promise<CharacterRevision> {
+    return this.fetchJson<CharacterRevision>(`/characters/${characterId}/revisions`, {
+      method: 'POST',
+      body: JSON.stringify({ backstory })
+    });
+  }
+
+  async restoreCharacterRevision(characterId: string, revisionId: string): Promise<MasterCharacter> {
+    return this.fetchJson<MasterCharacter>(`/characters/${characterId}/revisions/${revisionId}/restore`, {
+      method: 'POST'
+    });
+  }
+
+  async toggleCharacterReadyForReview(characterId: string, ready: boolean): Promise<MasterCharacter> {
+    return this.fetchJson<MasterCharacter>(`/characters/${characterId}/ready-for-review`, {
+      method: 'POST',
+      body: JSON.stringify({ ready })
+    });
+  }
+
+  async listBackstoryComments(characterId: string): Promise<BackstoryComment[]> {
+    return this.fetchJson<BackstoryComment[]>(`/characters/${characterId}/backstory-comments`);
+  }
+
+  async createBackstoryComment(characterId: string, sectionId: string, body: string): Promise<BackstoryComment> {
+    return this.fetchJson<BackstoryComment>(`/characters/${characterId}/backstory-comments`, {
+      method: 'POST',
+      body: JSON.stringify({ sectionId, body })
+    });
+  }
+
+  async resolveBackstoryComment(characterId: string, commentId: string, resolved: boolean): Promise<BackstoryComment> {
+    return this.fetchJson<BackstoryComment>(`/characters/${characterId}/backstory-comments/${commentId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ resolved })
+    });
+  }
+
+  async reviewCharacterBackstory(characterId: string, status: 'approved' | 'changes_requested', comment?: string): Promise<MasterCharacter> {
+    return this.fetchJson<MasterCharacter>(`/characters/${characterId}/backstory-review`, {
+      method: 'POST',
+      body: JSON.stringify({ status, comment })
     });
   }
 

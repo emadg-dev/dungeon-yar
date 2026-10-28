@@ -35,7 +35,9 @@ export interface CampaignSettings {
   approval: {
     onCreate: boolean;
     onLevelUp: boolean;
+    backstoryRequiredForApproval?: boolean;
   };
+  backstoryRequiredForApproval?: boolean;
   backstoryVisibility: 'dm_only' | 'party';
   diceVisibility: 'table' | 'dm_only';
   allowPlayerRollPrivate: boolean;
@@ -160,6 +162,22 @@ export interface BackstorySection {
   title: string;
   text: string;
   shareWithParty: boolean;
+  prompt?: string;
+}
+
+export interface BackstoryRelationship {
+  name: string;
+  npcRef?: string;
+  note: string;
+  shareWithParty?: boolean;
+}
+
+export interface BackstoryTimelineEntry {
+  label: string;
+  text: string;
+  period?: string;
+  event?: string;
+  shareWithParty?: boolean;
 }
 
 export interface MasterBackstory {
@@ -172,20 +190,33 @@ export interface MasterBackstory {
     flaws: string;
   };
   goals: string;
-  relationships: {
-    name: string;
-    npcRef?: string;
-    note: string;
-  }[];
-  timeline: {
-    label: string;
-    text: string;
-  }[];
+  relationships: BackstoryRelationship[];
+  timeline: BackstoryTimelineEntry[];
   sections: BackstorySection[];
   dmOnly: {
     secrets: string;
     hooks: string;
   };
+}
+
+export interface CharacterRevision {
+  id: string;
+  characterId: string;
+  backstory: MasterBackstory;
+  changedBy: string;
+  createdAt: number;
+}
+
+export interface BackstoryComment {
+  id: string;
+  characterId: string;
+  sectionId: string;
+  authorId: string;
+  authorName?: string;
+  authorRole?: string;
+  body: string;
+  resolved: boolean;
+  createdAt: number;
 }
 
 export interface MasterCharacter {
@@ -199,6 +230,9 @@ export interface MasterCharacter {
   backstory: MasterBackstory;
   status: 'active' | 'retired' | 'dead' | 'archived';
   statusNote?: string;
+  readyForReview?: boolean;
+  reviewStatus?: 'none' | 'pending' | 'approved' | 'changes_requested';
+  reviewComment?: string;
   createdAt: number;
   updatedAt: number;
   deletedAt?: number | null;
@@ -458,7 +492,7 @@ export interface HomeSummaryResponse {
   pendingApprovals: {
     campaignId: string;
     campaignName: string;
-    type: 'create' | 'level_up' | 'sheet_change';
+    type: 'create' | 'level_up' | 'sheet_change' | 'backstory_review';
     participationId: string;
     characterId: string;
     characterName: string;
