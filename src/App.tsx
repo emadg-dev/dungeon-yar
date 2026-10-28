@@ -9,10 +9,11 @@ import {
   RewardPackage, CampaignNote, Encounter, WeaponTemplate, ClassTemplate, DiceRollResult,
   LocationEntry, PlayerEncounterView, Campaign, MasterCharacter, CampaignInvite, 
   CampaignMember, CharacterHistoryEvent, CharacterParticipation, CampaignRole, CampaignSettings,
-  LineageTemplate, BackgroundTemplate
+  LineageTemplate, BackgroundTemplate, Session, SessionStatus, SessionRsvpChoice
 } from './types';
 import { api, HttpApi } from './services/api';
 import { pageTitle } from './config/app';
+import { partitionSessions } from '../shared/rules/sessionEngine';
 import { Header } from './components/Header';
 import { BottomNav } from './components/mobile/BottomNav';
 import { StickyHeader } from './components/common/StickyHeader';
@@ -53,6 +54,11 @@ const CampaignApprovalsModal = React.lazy(() => import('./components/campaign/Ca
 const CharacterCreationWizardModal = React.lazy(() => import('./components/character-wizard/CharacterCreationWizardModal').then(m => ({ default: m.CharacterCreationWizardModal })));
 const LevelUpModal = React.lazy(() => import('./components/character/LevelUpModal').then(m => ({ default: m.LevelUpModal })));
 const SheetChangeRequestModal = React.lazy(() => import('./components/character/SheetChangeRequestModal').then(m => ({ default: m.SheetChangeRequestModal })));
+
+// Step 4.1: Sessions & Scheduling Sheets
+const SessionListSheet = React.lazy(() => import('./components/session/SessionListSheet').then(m => ({ default: m.SessionListSheet })));
+const SessionEditorSheet = React.lazy(() => import('./components/session/SessionEditorSheet').then(m => ({ default: m.SessionEditorSheet })));
+const SessionAttendanceModal = React.lazy(() => import('./components/session/SessionAttendanceModal').then(m => ({ default: m.SessionAttendanceModal })));
 
 // Loading skeleton fallback for tabs
 const TabSkeleton = () => (
@@ -162,6 +168,24 @@ export default function App() {
   const [campaignParticipations, setCampaignParticipations] = useState<CharacterParticipation[]>([]);
   const [levelUpModalOpen, setLevelUpModalOpen] = useState(false);
   const [sheetChangeRequestOpen, setSheetChangeRequestOpen] = useState(false);
+
+  // Step 4.1: Sessions & Scheduling State
+  const [campaignSessions, setCampaignSessions] = useState<Session[]>([]);
+  const [sessionListOpen, setSessionListOpen] = useState(false);
+  const [sessionEditorModal, setSessionEditorModal] = useState<{
+    isOpen: boolean;
+    session?: Session | null;
+  }>({
+    isOpen: false,
+    session: null
+  });
+  const [attendanceModal, setAttendanceModal] = useState<{
+    isOpen: boolean;
+    session: Session | null;
+  }>({
+    isOpen: false,
+    session: null
+  });
 
   // Dice & Rest Modals
   const [diceModalOpen, setDiceModalOpen] = useState(false);
@@ -384,6 +408,9 @@ export default function App() {
 
       const activeEnc = await api.getActiveEncounter().catch(() => null);
       setActiveLiveEncounter(activeEnc);
+
+      const sessList = await api.listSessions(campaignId).catch(() => []);
+      setCampaignSessions(sessList);
 
       const campSettings = await api.getCampaignSettings().catch(() => ({
         allowPlayerCreateCharacter: camp.settings?.allowPlayerCreateCharacter ?? true
@@ -672,6 +699,100 @@ export default function App() {
       window.location.hash = `#c/${res.campaignId}/overview`;
     } catch (err: any) {
       showToast(err.message || 'کد دعوت نامعتبر یا منقضی شده است.');
+    }
+  };
+
+  // Step 4.1 Session Handlers
+  const handleRsvpSession = async (sessionId: string, status: SessionRsvpChoice, note?: string) => {
+    if (!activeCampaignId) return;
+    try {
+      await api.rsvpSession(activeCampaignId, sessionId, status, note);
+      const updatedList = await api.listSessions(activeCampaignId).catch(() => []);
+      setCampaignSessions(updatedList);
+      showToast('پاسخ حضور در جلسه ثبت شد.');
+    } catch (e: any) {
+      showToast(e.message || 'خطا در ثبت پاسخ حضور.');
+    }
+  };
+
+  const handleVoteSessionPoll = async (sessionId: string, optionId: string, choice: SessionRsvpChoice) => {
+    if (!activeCampaignId) return;
+    try {
+      await api.voteSessionPoll(activeCampaignId, sessionId, optionId, choice);
+      const updatedList = await api.listSessions(activeCampaignId).catch(() => []);
+      setCampaignSessions(updatedList);
+      showToast('رأی شما در نظرسنجی تاریخ جلسه ثبت شد.');
+    } catch (e: any) {
+      showToast(e.message || 'خطا در ثبت رأی.');
+    }
+  };
+
+  const handleConfirmPollOption = async (sessionId: string, optionId: string) => {
+    if (!activeCampaignId) return;
+    try {
+      await api.confirmSessionPoll(activeCampaignId, sessionId, optionId);
+      const updatedList = await api.listSessions(activeCampaignId).catch(() => []);
+      setCampaignSessions(updatedList);
+      showToast('تاریخ جلسه نهایی و تثبیت شد.');
+    } catch (e: any) {
+      showToast(e.message || 'خطا در نهایی‌سازی تاریخ جلسه.');
+    }
+  };
+
+  const handleSaveSession = async (data: {
+    sessionId?: string;
+    title: string;
+    number?: number;
+    scheduledAt?: string | null;
+    durationMinutes?: number;
+    placeText?: string;
+    onlineUrl?: string;
+    status?: SessionStatus;
+    inWorldDate?: string | null;
+    dmNotes?: string;
+    pollOptions?: Array<{ startsAt: string }>;
+  }) => {
+    if (!activeCampaignId) return;
+    try {
+      if (data.sessionId) {
+        await api.updateSession(activeCampaignId, data.sessionId, data);
+        showToast('جلسه با موفقیت به‌روزرسانی شد.');
+      } else {
+        await api.createSession(activeCampaignId, data);
+        showToast('جلسه جدید با موفقیت برنامه‌ریزی شد.');
+      }
+      const updatedList = await api.listSessions(activeCampaignId).catch(() => []);
+      setCampaignSessions(updatedList);
+      setSessionEditorModal({ isOpen: false, session: null });
+    } catch (e: any) {
+      showToast(e.message || 'خطا در ذخیره جلسه.');
+    }
+  };
+
+  const handleDeleteSession = async (sessionId: string) => {
+    if (!activeCampaignId) return;
+    try {
+      await api.deleteSession(activeCampaignId, sessionId);
+      setCampaignSessions(prev => prev.filter(s => s.id !== sessionId));
+      showToast('جلسه حذف گردید.');
+      setSessionEditorModal({ isOpen: false, session: null });
+    } catch (e: any) {
+      showToast(e.message || 'خطا در حذف جلسه.');
+    }
+  };
+
+  const handleSubmitAttendance = async (
+    sessionId: string,
+    attendance: Array<{ participationId: string; attended: boolean }>
+  ) => {
+    if (!activeCampaignId) return;
+    try {
+      await api.recordSessionAttendance(activeCampaignId, sessionId, attendance);
+      showToast('حضور و غیاب ثبت و جلسه پایان یافت.');
+      setAttendanceModal({ isOpen: false, session: null });
+      await loadCampaignWorkspace(activeCampaignId);
+    } catch (e: any) {
+      showToast(e.message || 'خطا در ثبت حضور و غیاب.');
     }
   };
 
@@ -986,6 +1107,14 @@ export default function App() {
                     showToast('تغییرات مستقیم دانجن مستر اعمال و در لاگ ثبت شد.');
                     await loadCampaignWorkspace(activeCampaignId);
                   }}
+                  sessions={campaignSessions}
+                  onRsvpSession={handleRsvpSession}
+                  onVoteSessionPoll={handleVoteSessionPoll}
+                  onConfirmPollOption={handleConfirmPollOption}
+                  onOpenSessionList={() => setSessionListOpen(true)}
+                  onOpenCreateSession={() => setSessionEditorModal({ isOpen: true, session: null })}
+                  onOpenAttendance={(s) => setAttendanceModal({ isOpen: true, session: s })}
+                  onEditSession={(s) => setSessionEditorModal({ isOpen: true, session: s })}
                 />
               ) : activeCharacter ? (
                 /* Player Character Sheet */
@@ -1003,6 +1132,17 @@ export default function App() {
                       xp={activeParticipation?.xp}
                       onOpenLevelUp={() => setLevelUpModalOpen(true)}
                       onOpenSheetChangeRequest={() => setSheetChangeRequestOpen(true)}
+                      nextSession={partitionSessions(campaignSessions).nextSession}
+                      campaign={activeCampaign}
+                      currentUser={currentUser}
+                      userRole={activeCampaign?.myRole || (currentUser?.role === 'dm' ? 'owner' : 'player')}
+                      onRsvpSession={handleRsvpSession}
+                      onVoteSessionPoll={handleVoteSessionPoll}
+                      onConfirmPollOption={handleConfirmPollOption}
+                      onOpenSessionList={() => setSessionListOpen(true)}
+                      onOpenCreateSession={() => setSessionEditorModal({ isOpen: true, session: null })}
+                      onOpenAttendance={(s) => setAttendanceModal({ isOpen: true, session: s })}
+                      onEditSession={(s) => setSessionEditorModal({ isOpen: true, session: s })}
                     />
                   )}
 
@@ -1397,6 +1537,57 @@ export default function App() {
               showToast('درخواست تغییر برگه برای دانجن مستر ارسال گردید.');
               await loadCampaignWorkspace(activeCampaign.id);
             }}
+          />
+        )}
+
+        {/* Session List Bottom Sheet (Step 4.1) */}
+        {sessionListOpen && activeCampaign && (
+          <SessionListSheet
+            isOpen={sessionListOpen}
+            onClose={() => setSessionListOpen(false)}
+            sessions={campaignSessions}
+            campaign={activeCampaign}
+            currentUser={currentUser}
+            userRole={activeCampaign.myRole || (currentUser?.role === 'dm' ? 'owner' : 'player')}
+            onOpenCreateSession={() => {
+              setSessionListOpen(false);
+              setSessionEditorModal({ isOpen: true, session: null });
+            }}
+            onEditSession={(s) => {
+              setSessionListOpen(false);
+              setSessionEditorModal({ isOpen: true, session: s });
+            }}
+            onDeleteSession={async (sid) => {
+              await handleDeleteSession(sid);
+            }}
+            onOpenAttendance={(s) => {
+              setSessionListOpen(false);
+              setAttendanceModal({ isOpen: true, session: s });
+            }}
+          />
+        )}
+
+        {/* Session Editor / Create Sheet (Step 4.1) */}
+        {sessionEditorModal.isOpen && activeCampaign && (
+          <SessionEditorSheet
+            isOpen={sessionEditorModal.isOpen}
+            onClose={() => setSessionEditorModal({ isOpen: false, session: null })}
+            sessionToEdit={sessionEditorModal.session}
+            campaignId={activeCampaign.id}
+            onSave={handleSaveSession}
+          />
+        )}
+
+        {/* Session Attendance Checklist Modal (Step 4.1) */}
+        {attendanceModal.isOpen && attendanceModal.session && activeCampaign && (
+          <SessionAttendanceModal
+            isOpen={attendanceModal.isOpen}
+            onClose={() => setAttendanceModal({ isOpen: false, session: null })}
+            session={attendanceModal.session}
+            campaignId={activeCampaign.id}
+            characters={characters}
+            participations={campaignParticipations}
+            onSubmitAttendance={handleSubmitAttendance}
           />
         )}
 

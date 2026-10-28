@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate, LocationEntry, Campaign, CharacterParticipation } from '../../types';
+import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate, LocationEntry, Campaign, CharacterParticipation, Session, SessionRsvpChoice } from '../../types';
 import { DmDashboard } from './DmDashboard';
 import { DmEncounterRunner } from './DmEncounterRunner';
 import { DmLibrary } from './DmLibrary';
@@ -66,6 +66,14 @@ interface DmToolsProps {
   onUndoLevelUp?: (participationId: string) => Promise<void>;
   onToggleRespecWindow?: (participationId: string, open: boolean) => Promise<void>;
   onDmOverride?: (participationId: string, updates: any, reason: string) => Promise<void>;
+  sessions?: Session[];
+  onRsvpSession?: (sessionId: string, status: SessionRsvpChoice, note?: string) => Promise<void>;
+  onVoteSessionPoll?: (sessionId: string, optionId: string, choice: SessionRsvpChoice) => Promise<void>;
+  onConfirmPollOption?: (sessionId: string, optionId: string) => Promise<void>;
+  onOpenSessionList?: () => void;
+  onOpenCreateSession?: () => void;
+  onOpenAttendance?: (session: Session) => void;
+  onEditSession?: (session: Session) => void;
 }
 
 export const DmTools: React.FC<DmToolsProps> = ({
@@ -116,7 +124,15 @@ export const DmTools: React.FC<DmToolsProps> = ({
   onToggleMilestoneLevelUp,
   onUndoLevelUp,
   onToggleRespecWindow,
-  onDmOverride
+  onDmOverride,
+  sessions,
+  onRsvpSession,
+  onVoteSessionPoll,
+  onConfirmPollOption,
+  onOpenSessionList,
+  onOpenCreateSession,
+  onOpenAttendance,
+  onEditSession
 }) => {
   const [internalDmTab, setInternalDmTab] = useState<'dashboard' | 'encounters' | 'library' | 'narrative' | 'more'>('dashboard');
   const [librarySubTab, setLibrarySubTab] = useState<'library_hub' | 'npcs' | 'items' | 'locations'>('library_hub');
@@ -193,6 +209,15 @@ export const DmTools: React.FC<DmToolsProps> = ({
           onToggleRespecWindow={onToggleRespecWindow}
           onDmOverride={onDmOverride}
           onRefreshCampaign={onRefreshCharacters}
+          sessions={sessions}
+          currentUser={currentUser}
+          onRsvpSession={onRsvpSession}
+          onVoteSessionPoll={onVoteSessionPoll}
+          onConfirmPollOption={onConfirmPollOption}
+          onOpenSessionList={onOpenSessionList}
+          onOpenCreateSession={onOpenCreateSession}
+          onOpenAttendance={onOpenAttendance}
+          onEditSession={onEditSession}
         />
       )}
 

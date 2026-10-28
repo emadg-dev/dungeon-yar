@@ -65,7 +65,16 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
   onUndoLevelUp,
   onToggleRespecWindow,
   onDmOverride,
-  onRefreshCampaign
+  onRefreshCampaign,
+  sessions = [],
+  currentUser,
+  onRsvpSession,
+  onVoteSessionPoll,
+  onConfirmPollOption,
+  onOpenSessionList,
+  onOpenCreateSession,
+  onOpenAttendance,
+  onEditSession
 }) => {
   const [worldDay, setWorldDay] = useState(14);
   const [worldMonth, setWorldMonth] = useState('آبان');
@@ -141,6 +150,23 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
+
+      {/* Step 4.1: Next Session / Scheduling Card for DM */}
+      {onOpenSessionList && (
+        <NextSessionCard
+          session={partitionSessions(sessions).nextSession || null}
+          campaign={activeCampaign || null}
+          currentUser={currentUser || null}
+          userRole="owner"
+          onRsvp={onRsvpSession || (async () => {})}
+          onVotePoll={onVoteSessionPoll || (async () => {})}
+          onConfirmPollOption={onConfirmPollOption}
+          onOpenSessionList={onOpenSessionList}
+          onOpenCreateSession={onOpenCreateSession}
+          onOpenAttendance={onOpenAttendance}
+          onEditSession={onEditSession}
+        />
+      )}
 
       {/* Campaign Setup Checklist (Progress Ring / Shortcut) */}
       <div className="surface-card rounded-[14px] p-3.5 flex items-center justify-between gap-3 border border-[#2F2A23] hover:border-[#E0A030]/40 transition">

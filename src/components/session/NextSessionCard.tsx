@@ -96,7 +96,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
 
   // Poll handling
   const poll = session.poll;
-  const pollTallies = poll ? calculatePollTally(poll, poll.options) : [];
+  const pollTallies = poll ? calculatePollTally(poll, poll.votes || []) : {};
 
   // RSVP status
   const currentRsvp = typeof session.myRsvp === 'string' 
@@ -278,7 +278,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
           </div>
 
           <div className="space-y-2.5">
-            {pollTallies.map((tally) => {
+            {Object.values(pollTallies).map((tally) => {
               const optDt = formatSessionDateTime(tally.startsAt, timezone);
               const myVote = poll.votes?.find(v => v.userId === currentUser?.id && v.optionId === tally.optionId)?.choice;
 
