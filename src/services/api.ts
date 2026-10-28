@@ -66,12 +66,43 @@ import {
   LevelUpDiff,
   CharacterRevision,
   BackstoryComment,
-  MasterBackstory
+  MasterBackstory,
+  Session,
+  SessionStatus,
+  SessionRsvpChoice,
+  SessionRsvp,
+  SessionPoll,
+  SessionPollOption,
+  SessionPollVote,
+  SessionAttendance,
+  SessionRecap,
+  SessionRecapVisibility,
+  SessionRecapStatus,
+  SessionHighlight
 } from '../types';
 import { rollAbilityScores } from '../../shared/rules/engine';
 import { computeAuthoritativeParticipation, createSnapshot, pruneSnapshots } from '../../shared/rules/wizardEngine';
 import { computeLevelUpDiff, isLevelUpReady, isFieldLockedForPlayer, XP_THRESHOLDS } from '../../shared/rules/levelUpEngine';
 import { pruneCharacterRevisions } from '../../shared/rules/backstoryEngine';
+import {
+  filterSessionForViewer,
+  canUserRsvp,
+  canUserVote,
+  canManageSessions,
+  validatePollOptions,
+  calculatePollTally,
+  buildAttendanceHistoryEvent
+} from '../../shared/rules/sessionEngine';
+import {
+  filterRecapForViewer,
+  filterRecapsForViewer,
+  filterHighlightForViewer,
+  canUserCreateRecap,
+  canUserEditRecap,
+  validateRecapPayload,
+  searchRecaps,
+  buildHighlightHistoryEvent
+} from '../../shared/rules/recapEngine';
 import { APP_NAME_FA } from '../config/app';
 import {
   SEED_USERS,
@@ -97,7 +128,10 @@ import {
   SEED_CAMPAIGN_DICE_ROLLS,
   SEED_FACTIONS,
   SEED_CAMPAIGN_DOCS,
-  SEED_GENERIC_CALENDAR
+  SEED_GENERIC_CALENDAR,
+  SEED_SESSIONS,
+  SEED_RECAPS,
+  SEED_HIGHLIGHTS
 } from '../data/seed';
 import {
   CloneRequest,
@@ -309,6 +343,8 @@ export interface ApiClient {
   changePassword(currentPassword: string, newPassword: string): Promise<void>;
   changeEmail(currentPassword: string, newEmail: string): Promise<User>;
   listSessions(): Promise<UserSession[]>;
+  listSessions(campaignId: string): Promise<Session[]>;
+  listCampaignSessions(campaignId: string): Promise<Session[]>;
   revokeSession(sessionId: string): Promise<void>;
   setActiveCharacter(characterId: string | null): Promise<void>;
   exportMyData(): Promise<any>;
@@ -595,6 +631,61 @@ export interface ApiClient {
 
   // V2 Migration
   migrateV2(dryRun?: boolean): Promise<{ success: boolean; report: any }>;
+
+  // Step 4.1: Sessions & Scheduling
+  getSession(campaignId: string, sessionId: string): Promise<Session>;
+  createSession(campaignId: string, data: {
+    title: string;
+    number?: number;
+    scheduledAt?: string | null;
+    durationMinutes?: number;
+    placeText?: string;
+    onlineUrl?: string;
+    status?: SessionStatus;
+    inWorldDate?: string | null;
+    dmNotes?: string;
+    pollOptions?: Array<{ startsAt: string }>;
+  }): Promise<Session>;
+  updateSession(campaignId: string, sessionId: string, data: Partial<Session>): Promise<Session>;
+  deleteSession(campaignId: string, sessionId: string): Promise<void>;
+  rsvpSession(campaignId: string, sessionId: string, status: SessionRsvpChoice, note?: string): Promise<SessionRsvp>;
+  voteSessionPoll(campaignId: string, sessionId: string, optionId: string, choice: SessionRsvpChoice): Promise<SessionPoll>;
+  confirmSessionPoll(campaignId: string, sessionId: string, optionId: string): Promise<Session>;
+  recordSessionAttendance(campaignId: string, sessionId: string, attendance: Array<{ participationId: string; attended: boolean }>): Promise<{ success: boolean; session?: Session }>;
+
+  // Step 4.2: Session Recaps & Highlights
+  listRecaps(campaignId: string, options?: { sessionId?: string; search?: string }): Promise<SessionRecap[]>;
+  getLatestRecap(campaignId: string): Promise<SessionRecap | null>;
+  createRecap(campaignId: string, data: Partial<SessionRecap>): Promise<SessionRecap>;
+  updateRecap(campaignId: string, recapId: string, data: Partial<SessionRecap>): Promise<SessionRecap>;
+  deleteRecap(campaignId: string, recapId: string): Promise<void>;
+  listHighlights(campaignId: string, sessionId?: string): Promise<SessionHighlight[]>;
+  createHighlight(campaignId: string, data: Partial<SessionHighlight>): Promise<SessionHighlight>;
+  deleteHighlight(campaignId: string, highlightId: string): Promise<void>;
+  closeSession(campaignId: string, sessionId: string, data: {
+    recap?: {
+      title: string;
+      body: string;
+      visibility?: SessionRecapVisibility;
+      status?: SessionRecapStatus;
+      linkedNpcIds?: string[];
+      linkedLocationIds?: string[];
+      linkedQuestIds?: string[];
+    };
+    xpAward?: {
+      amount: number;
+      reason?: string;
+      isPartyWide?: boolean;
+      participationId?: string;
+    };
+    milestoneLevelUps?: string[];
+    highlights?: Array<{
+      participationId?: string;
+      characterId?: string;
+      text: string;
+      visibleToPlayer?: boolean;
+    }>;
+  }): Promise<{ session: Session; recap?: SessionRecap; highlights?: SessionHighlight[] }>;
 }
 
 // ----------------------------------------------------------------------
@@ -675,6 +766,7 @@ export class LocalApi implements ApiClient {
     this.setItem('character_participations', SEED_CHARACTER_PARTICIPATIONS);
     this.setItem('character_history_events', SEED_HISTORY_EVENTS);
     this.setItem('dice_rolls', SEED_CAMPAIGN_DICE_ROLLS);
+    this.setItem('sessions', SEED_SESSIONS);
     this.setItem('active_campaign_id', 'zorvania-c1');
     this.setItem('campaign_invites', [
       {
@@ -934,9 +1026,14 @@ export class LocalApi implements ApiClient {
     return user;
   }
 
-  async listSessions(): Promise<UserSession[]> {
+  async listSessions(): Promise<UserSession[]>;
+  async listSessions(campaignId: string): Promise<Session[]>;
+  async listSessions(campaignId?: string): Promise<any> {
+    if (campaignId) {
+      return this.listCampaignSessions(campaignId);
+    }
     if (!this.currentUser) return [];
-    const sessions = this.getItem<UserSession[]>('sessions', []);
+    const sessions = this.getItem<UserSession[]>('auth_sessions', []);
     return sessions.filter(s => s.userId === this.currentUser!.id).map((s, idx) => ({
       ...s,
       isCurrent: idx === 0
@@ -944,8 +1041,8 @@ export class LocalApi implements ApiClient {
   }
 
   async revokeSession(sessionId: string): Promise<void> {
-    const sessions = this.getItem<UserSession[]>('sessions', []);
-    this.setItem('sessions', sessions.filter(s => s.id !== sessionId));
+    const sessions = this.getItem<UserSession[]>('auth_sessions', []);
+    this.setItem('auth_sessions', sessions.filter(s => s.id !== sessionId));
   }
 
   async setActiveCharacter(characterId: string | null): Promise<void> {
@@ -5131,6 +5228,493 @@ export class LocalApi implements ApiClient {
     }
     return { success: true, report };
   }
+
+  // Step 4.1: Sessions & Scheduling (LocalApi)
+  async listCampaignSessions(campaignId: string): Promise<Session[]> {
+    const all = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+    const campaignSessions = all.filter(s => s.campaignId === campaignId);
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const isDm = this.currentUser?.role === 'dm' || myMember?.role === 'owner' || myMember?.role === 'co_dm';
+    const viewerRole = isDm ? 'dm' : myMember?.role || 'player';
+
+    return campaignSessions
+      .sort((a, b) => {
+        if (!a.scheduledAt && b.scheduledAt) return 1;
+        if (a.scheduledAt && !b.scheduledAt) return -1;
+        if (a.scheduledAt && b.scheduledAt) {
+          return new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
+        }
+        return a.number - b.number;
+      })
+      .map(s => {
+        const myRsvp = s.rsvps?.find(r => r.userId === this.currentUser?.id)?.status;
+        return filterSessionForViewer({ ...s, myRsvp }, viewerRole);
+      });
+  }
+
+  async getSession(campaignId: string, sessionId: string): Promise<Session> {
+    const list = await this.listCampaignSessions(campaignId);
+    const s = list.find(x => x.id === sessionId);
+    if (!s) throw new Error('جلسه یافت نشد.');
+    return s;
+  }
+
+  async createSession(campaignId: string, data: {
+    title: string;
+    number?: number;
+    scheduledAt?: string | null;
+    durationMinutes?: number;
+    placeText?: string;
+    onlineUrl?: string;
+    status?: SessionStatus;
+    inWorldDate?: string | null;
+    dmNotes?: string;
+    pollOptions?: Array<{ startsAt: string }>;
+  }): Promise<Session> {
+    const all = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+    const campaignSessions = all.filter(s => s.campaignId === campaignId);
+    const maxNum = campaignSessions.reduce((max, s) => Math.max(max, s.number), 0);
+    const number = data.number || (maxNum + 1);
+
+    const sid = `ses-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const scheduledAt = data.scheduledAt || null;
+    const status: SessionStatus = data.status || (scheduledAt ? 'confirmed' : 'planned');
+
+    let poll: SessionPoll | undefined = undefined;
+    if (data.pollOptions && data.pollOptions.length > 0) {
+      const pVal = validatePollOptions(data.pollOptions);
+      if (!pVal.valid) throw new Error(pVal.error || 'گزینه‌های نظرسنجی نامعتبر است.');
+      const pollId = `poll-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+      poll = {
+        id: pollId,
+        sessionId: sid,
+        options: data.pollOptions.map((opt, i) => ({ id: `opt-${i + 1}`, startsAt: opt.startsAt })),
+        status: 'open',
+        votes: [],
+        totalVotes: 0,
+        userVotes: {}
+      };
+    }
+
+    const newSession: Session = {
+      id: sid,
+      campaignId,
+      number,
+      title: data.title.trim(),
+      scheduledAt,
+      durationMinutes: data.durationMinutes || 240,
+      placeText: data.placeText || undefined,
+      onlineUrl: data.onlineUrl || undefined,
+      status,
+      inWorldDate: data.inWorldDate || undefined,
+      dmNotes: data.dmNotes || undefined,
+      createdBy: this.currentUser?.id || 'user-dm',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      rsvps: [],
+      poll,
+      attendance: []
+    };
+
+    all.push(newSession);
+    this.setItem('sessions', all);
+    return newSession;
+  }
+
+  async updateSession(campaignId: string, sessionId: string, data: Partial<Session>): Promise<Session> {
+    const all = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+    const idx = all.findIndex(s => s.id === sessionId && s.campaignId === campaignId);
+    if (idx === -1) throw new Error('جلسه یافت نشد.');
+
+    const updated = {
+      ...all[idx],
+      ...data,
+      updatedAt: Date.now()
+    };
+    all[idx] = updated;
+    this.setItem('sessions', all);
+    return updated;
+  }
+
+  async deleteSession(campaignId: string, sessionId: string): Promise<void> {
+    const all = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+    const filtered = all.filter(s => !(s.id === sessionId && s.campaignId === campaignId));
+    this.setItem('sessions', filtered);
+  }
+
+  async rsvpSession(campaignId: string, sessionId: string, status: SessionRsvpChoice, note?: string): Promise<SessionRsvp> {
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    if (!canUserRsvp(myMember?.role as any) && this.currentUser?.role !== 'dm') {
+      throw new Error('تماشاچیان مجاز به ثبت حضور نیستند.');
+    }
+
+    const all = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+    const s = all.find(x => x.id === sessionId && x.campaignId === campaignId);
+    if (!s) throw new Error('جلسه یافت نشد.');
+
+    const userId = this.currentUser?.id || 'user-player';
+    const rsvps = s.rsvps || [];
+    const existingIdx = rsvps.findIndex(r => r.userId === userId);
+    const rsvpObj: SessionRsvp = {
+      sessionId,
+      userId,
+      status,
+      note: note || undefined,
+      updatedAt: Date.now(),
+      userName: this.currentUser?.displayName || 'کاربر',
+      userAvatarUrl: this.currentUser?.avatarUrl
+    };
+
+    if (existingIdx >= 0) {
+      rsvps[existingIdx] = rsvpObj;
+    } else {
+      rsvps.push(rsvpObj);
+    }
+    s.rsvps = rsvps;
+    s.myRsvp = status;
+    s.updatedAt = Date.now();
+    this.setItem('sessions', all);
+    return rsvpObj;
+  }
+
+  async voteSessionPoll(campaignId: string, sessionId: string, optionId: string, choice: SessionRsvpChoice): Promise<SessionPoll> {
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    if (!canUserVote(myMember?.role as any) && this.currentUser?.role !== 'dm') {
+      throw new Error('تماشاچیان مجاز به رأی‌دهی نیستند.');
+    }
+
+    const all = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+    const s = all.find(x => x.id === sessionId && x.campaignId === campaignId);
+    if (!s || !s.poll) throw new Error('نظرسنجی یافت نشد.');
+    if (s.poll.status !== 'open') throw new Error('نظرسنجی بسته شده است.');
+
+    const userId = this.currentUser?.id || 'user-player';
+    const votes = s.poll.votes || [];
+    const existingIdx = votes.findIndex(v => v.userId === userId && v.optionId === optionId);
+    const voteObj: SessionPollVote = {
+      pollId: s.poll.id,
+      optionId,
+      userId,
+      choice,
+      userName: this.currentUser?.displayName || 'کاربر'
+    };
+
+    if (existingIdx >= 0) {
+      votes[existingIdx] = voteObj;
+    } else {
+      votes.push(voteObj);
+    }
+    s.poll.votes = votes;
+    s.poll.totalVotes = votes.length;
+    s.poll.userVotes = s.poll.userVotes || {};
+    s.poll.userVotes[optionId] = choice;
+    s.updatedAt = Date.now();
+    this.setItem('sessions', all);
+    return s.poll;
+  }
+
+  async confirmSessionPoll(campaignId: string, sessionId: string, optionId: string): Promise<Session> {
+    const all = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+    const s = all.find(x => x.id === sessionId && x.campaignId === campaignId);
+    if (!s || !s.poll) throw new Error('نظرسنجی یافت نشد.');
+
+    const opt = s.poll.options.find(o => o.id === optionId);
+    if (!opt) throw new Error('گزینه انتخابی یافت نشد.');
+
+    s.scheduledAt = opt.startsAt;
+    s.status = 'confirmed';
+    s.poll.status = 'closed';
+    s.updatedAt = Date.now();
+    this.setItem('sessions', all);
+    return s;
+  }
+
+  async recordSessionAttendance(campaignId: string, sessionId: string, attendance: Array<{ participationId: string; attended: boolean }>): Promise<{ success: boolean; session?: Session }> {
+    const all = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+    const s = all.find(x => x.id === sessionId && x.campaignId === campaignId);
+    if (!s) throw new Error('جلسه یافت نشد.');
+
+    s.status = 'done';
+    s.attendance = attendance.map(a => ({
+      sessionId,
+      participationId: a.participationId,
+      attended: !!a.attended
+    }));
+    s.updatedAt = Date.now();
+    this.setItem('sessions', all);
+
+    // Increment sessions_attended and add history event
+    const participations = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const historyEvents = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+
+    for (const item of attendance) {
+      if (!item.attended) continue;
+      const part = participations.find(p => p.id === item.participationId);
+      if (part) {
+        part.sessionsAttended = (part.sessionsAttended || 0) + 1;
+        const hist = buildAttendanceHistoryEvent(s.number, s.title, sessionId, campaignId);
+        historyEvents.push({
+          id: hist.id,
+          characterId: part.characterId,
+          campaignId,
+          eventType: hist.eventType,
+          payload: hist.payload,
+          timestamp: Date.now()
+        });
+      }
+    }
+    this.setItem('character_participations', participations);
+    this.setItem('character_history_events', historyEvents);
+
+    return { success: true, session: s };
+  }
+
+  // Step 4.2: Session Recaps & Highlights (LocalApi)
+  async listRecaps(campaignId: string, options?: { sessionId?: string; search?: string }): Promise<SessionRecap[]> {
+    const all = this.getItem<SessionRecap[]>('session_recaps', SEED_RECAPS);
+    let list = all.filter(r => r.campaignId === campaignId);
+
+    if (options?.sessionId) {
+      list = list.filter(r => r.sessionId === options.sessionId);
+    }
+    if (options?.search) {
+      list = searchRecaps(list, options.search);
+    }
+
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const isDm = this.currentUser?.role === 'dm' || myMember?.role === 'owner' || myMember?.role === 'co_dm';
+
+    const filtered = filterRecapsForViewer(list, isDm, this.currentUser?.id);
+    return filtered.sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  async getLatestRecap(campaignId: string): Promise<SessionRecap | null> {
+    const list = await this.listRecaps(campaignId);
+    return list[0] || null;
+  }
+
+  async createRecap(campaignId: string, data: Partial<SessionRecap>): Promise<SessionRecap> {
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const campaigns = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = campaigns.find(c => c.id === campaignId);
+    const userRole = myMember?.role || (this.currentUser?.role === 'dm' ? 'owner' : 'player');
+
+    if (!canUserCreateRecap(userRole as any, camp?.settings?.allowPlayerRecaps)) {
+      throw new Error('شما دسترسی لازم برای نگارش خلاصه جلسه را ندارید.');
+    }
+
+    const val = validateRecapPayload({ title: data.title, body: data.body });
+    if (!val.valid) throw new Error(val.error || 'اطلاعات خلاصه نامعتبر است.');
+
+    const sessions = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+    const s = sessions.find(sess => sess.id === data.sessionId);
+
+    const newRecap: SessionRecap = {
+      id: `recap-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      sessionId: data.sessionId || '',
+      campaignId,
+      authorId: this.currentUser?.id || 'user-dm',
+      authorName: this.currentUser?.displayName || this.currentUser?.name || 'دانجن مستر',
+      sessionNumber: s?.number || data.sessionNumber,
+      sessionTitle: s?.title || data.sessionTitle,
+      title: data.title!.trim(),
+      body: data.body!.trim(),
+      visibility: data.visibility || 'party',
+      status: data.status || 'published',
+      linkedNpcIds: data.linkedNpcIds || [],
+      linkedLocationIds: data.linkedLocationIds || [],
+      linkedQuestIds: data.linkedQuestIds || [],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+
+    const all = this.getItem<SessionRecap[]>('session_recaps', SEED_RECAPS);
+    all.unshift(newRecap);
+    this.setItem('session_recaps', all);
+    return newRecap;
+  }
+
+  async updateRecap(campaignId: string, recapId: string, data: Partial<SessionRecap>): Promise<SessionRecap> {
+    const all = this.getItem<SessionRecap[]>('session_recaps', SEED_RECAPS);
+    const idx = all.findIndex(r => r.id === recapId && r.campaignId === campaignId);
+    if (idx === -1) throw new Error('خلاصه جلسه یافت نشد.');
+
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const userRole = myMember?.role || (this.currentUser?.role === 'dm' ? 'owner' : 'player');
+
+    if (!canUserEditRecap(all[idx], userRole as any, this.currentUser?.id)) {
+      throw new Error('شما مجاز به ویرایش این خلاصه نیستید.');
+    }
+
+    const updated: SessionRecap = {
+      ...all[idx],
+      ...data,
+      updatedAt: Date.now()
+    };
+    all[idx] = updated;
+    this.setItem('session_recaps', all);
+    return updated;
+  }
+
+  async deleteRecap(campaignId: string, recapId: string): Promise<void> {
+    const all = this.getItem<SessionRecap[]>('session_recaps', SEED_RECAPS);
+    const target = all.find(r => r.id === recapId && r.campaignId === campaignId);
+    if (!target) return;
+
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const userRole = myMember?.role || (this.currentUser?.role === 'dm' ? 'owner' : 'player');
+
+    if (!canUserEditRecap(target, userRole as any, this.currentUser?.id)) {
+      throw new Error('شما مجاز به حذف این خلاصه نیستید.');
+    }
+
+    const filtered = all.filter(r => r.id !== recapId);
+    this.setItem('session_recaps', filtered);
+  }
+
+  async listHighlights(campaignId: string, sessionId?: string): Promise<SessionHighlight[]> {
+    const all = this.getItem<SessionHighlight[]>('session_highlights', SEED_HIGHLIGHTS);
+    let list = all.filter(h => h.campaignId === campaignId);
+    if (sessionId) {
+      list = list.filter(h => h.sessionId === sessionId);
+    }
+
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const isDm = this.currentUser?.role === 'dm' || myMember?.role === 'owner' || myMember?.role === 'co_dm';
+
+    return list
+      .map(h => filterHighlightForViewer(h, isDm))
+      .filter((h): h is SessionHighlight => h !== null);
+  }
+
+  async createHighlight(campaignId: string, data: Partial<SessionHighlight>): Promise<SessionHighlight> {
+    if (!data.text || !data.text.trim()) throw new Error('متن رویداد برجسته نمی‌تواند خالی باشد.');
+
+    const participations = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = data.participationId ? participations.find(p => p.id === data.participationId) : null;
+
+    const newHl: SessionHighlight = {
+      id: `hl-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      sessionId: data.sessionId || '',
+      campaignId,
+      participationId: data.participationId || null,
+      characterId: data.characterId || part?.characterId || null,
+      characterName: data.characterName || part?.characterName,
+      text: data.text.trim(),
+      visibleToPlayer: data.visibleToPlayer ?? true,
+      createdAt: Date.now()
+    };
+
+    const all = this.getItem<SessionHighlight[]>('session_highlights', SEED_HIGHLIGHTS);
+    all.push(newHl);
+    this.setItem('session_highlights', all);
+
+    // If linked to character, create a milestone history event
+    if (newHl.characterId) {
+      const sessions = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+      const s = sessions.find(sess => sess.id === newHl.sessionId);
+      const historyEvents = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+      const hist = buildHighlightHistoryEvent(newHl, s?.number);
+      historyEvents.push({
+        id: `hist-hl-${Date.now()}`,
+        characterId: newHl.characterId,
+        campaignId,
+        eventType: hist.eventType,
+        payload: {
+          title: hist.title,
+          description: hist.description
+        },
+        timestamp: hist.timestamp
+      });
+      this.setItem('character_history_events', historyEvents);
+    }
+
+    return newHl;
+  }
+
+  async deleteHighlight(campaignId: string, highlightId: string): Promise<void> {
+    const all = this.getItem<SessionHighlight[]>('session_highlights', SEED_HIGHLIGHTS);
+    this.setItem('session_highlights', all.filter(h => h.id !== highlightId));
+  }
+
+  async closeSession(campaignId: string, sessionId: string, data: {
+    recap?: {
+      title: string;
+      body: string;
+      visibility?: SessionRecapVisibility;
+      status?: SessionRecapStatus;
+      linkedNpcIds?: string[];
+      linkedLocationIds?: string[];
+      linkedQuestIds?: string[];
+    };
+    xpAward?: {
+      amount: number;
+      reason?: string;
+      isPartyWide?: boolean;
+      participationId?: string;
+    };
+    milestoneLevelUps?: string[];
+    highlights?: Array<{
+      participationId?: string;
+      characterId?: string;
+      text: string;
+      visibleToPlayer?: boolean;
+    }>;
+  }): Promise<{ session: Session; recap?: SessionRecap; highlights?: SessionHighlight[] }> {
+    const allSessions = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+    const s = allSessions.find(sess => sess.id === sessionId && sess.campaignId === campaignId);
+    if (!s) throw new Error('جلسه یافت نشد.');
+
+    s.status = 'done';
+    s.updatedAt = Date.now();
+    this.setItem('sessions', allSessions);
+
+    let createdRecap: SessionRecap | undefined = undefined;
+    if (data.recap && data.recap.title && data.recap.body) {
+      createdRecap = await this.createRecap(campaignId, {
+        ...data.recap,
+        sessionId,
+        sessionNumber: s.number,
+        sessionTitle: s.title
+      });
+    }
+
+    if (data.xpAward && data.xpAward.amount > 0) {
+      await this.awardXp(campaignId, data.xpAward);
+    }
+
+    if (data.milestoneLevelUps && data.milestoneLevelUps.length > 0) {
+      for (const pId of data.milestoneLevelUps) {
+        await this.setMilestoneLevelUp(campaignId, pId, true);
+      }
+    }
+
+    const createdHighlights: SessionHighlight[] = [];
+    if (data.highlights && data.highlights.length > 0) {
+      for (const hl of data.highlights) {
+        if (hl.text && hl.text.trim()) {
+          const res = await this.createHighlight(campaignId, {
+            sessionId,
+            participationId: hl.participationId,
+            characterId: hl.characterId,
+            text: hl.text,
+            visibleToPlayer: hl.visibleToPlayer ?? true
+          });
+          createdHighlights.push(res);
+        }
+      }
+    }
+
+    return { session: s, recap: createdRecap, highlights: createdHighlights };
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -5245,7 +5829,12 @@ export class HttpApi implements ApiClient {
     });
   }
 
-  async listSessions(): Promise<UserSession[]> {
+  async listSessions(): Promise<UserSession[]>;
+  async listSessions(campaignId: string): Promise<Session[]>;
+  async listSessions(campaignId?: string): Promise<any> {
+    if (campaignId) {
+      return this.listCampaignSessions(campaignId);
+    }
     return this.fetchJson<UserSession[]>('/me/sessions');
   }
 
@@ -6535,6 +7124,132 @@ export class HttpApi implements ApiClient {
     return this.fetchJson<{ success: boolean; report: any }>('/admin/migrate-v2', {
       method: 'POST',
       body: JSON.stringify({ dryRun })
+    });
+  }
+
+  // Step 4.1: Sessions & Scheduling (HttpApi)
+  async listCampaignSessions(campaignId: string): Promise<Session[]> {
+    return this.fetchJson<Session[]>(`/c/${campaignId}/sessions`);
+  }
+
+  async getSession(campaignId: string, sessionId: string): Promise<Session> {
+    return this.fetchJson<Session>(`/c/${campaignId}/sessions/${sessionId}`);
+  }
+
+  async createSession(campaignId: string, data: {
+    title: string;
+    number?: number;
+    scheduledAt?: string | null;
+    durationMinutes?: number;
+    placeText?: string;
+    onlineUrl?: string;
+    status?: SessionStatus;
+    inWorldDate?: string | null;
+    dmNotes?: string;
+    pollOptions?: Array<{ startsAt: string }>;
+  }): Promise<Session> {
+    return this.fetchJson<Session>(`/c/${campaignId}/sessions`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateSession(campaignId: string, sessionId: string, data: Partial<Session>): Promise<Session> {
+    return this.fetchJson<Session>(`/c/${campaignId}/sessions/${sessionId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteSession(campaignId: string, sessionId: string): Promise<void> {
+    await this.fetchJson(`/c/${campaignId}/sessions/${sessionId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async rsvpSession(campaignId: string, sessionId: string, status: SessionRsvpChoice, note?: string): Promise<SessionRsvp> {
+    return this.fetchJson<SessionRsvp>(`/c/${campaignId}/sessions/${sessionId}/rsvp`, {
+      method: 'POST',
+      body: JSON.stringify({ status, note })
+    });
+  }
+
+  async voteSessionPoll(campaignId: string, sessionId: string, optionId: string, choice: SessionRsvpChoice): Promise<SessionPoll> {
+    return this.fetchJson<SessionPoll>(`/c/${campaignId}/sessions/${sessionId}/poll/vote`, {
+      method: 'POST',
+      body: JSON.stringify({ optionId, choice })
+    });
+  }
+
+  async confirmSessionPoll(campaignId: string, sessionId: string, optionId: string): Promise<Session> {
+    return this.fetchJson<Session>(`/c/${campaignId}/sessions/${sessionId}/poll/confirm`, {
+      method: 'POST',
+      body: JSON.stringify({ optionId })
+    });
+  }
+
+  async recordSessionAttendance(campaignId: string, sessionId: string, attendance: Array<{ participationId: string; attended: boolean }>): Promise<{ success: boolean; session?: Session }> {
+    return this.fetchJson<{ success: boolean; session?: Session }>(`/c/${campaignId}/sessions/${sessionId}/attendance`, {
+      method: 'POST',
+      body: JSON.stringify({ attendance })
+    });
+  }
+
+  // Step 4.2: Session Recaps & Highlights
+  async listRecaps(campaignId: string, options?: { sessionId?: string; search?: string }): Promise<SessionRecap[]> {
+    const params = new URLSearchParams();
+    if (options?.sessionId) params.append('sessionId', options.sessionId);
+    if (options?.search) params.append('search', options.search);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return this.fetchJson<SessionRecap[]>(`/c/${campaignId}/recaps${qs}`);
+  }
+
+  async getLatestRecap(campaignId: string): Promise<SessionRecap | null> {
+    return this.fetchJson<SessionRecap | null>(`/c/${campaignId}/recaps/latest`);
+  }
+
+  async createRecap(campaignId: string, data: Partial<SessionRecap>): Promise<SessionRecap> {
+    return this.fetchJson<SessionRecap>(`/c/${campaignId}/recaps`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateRecap(campaignId: string, recapId: string, data: Partial<SessionRecap>): Promise<SessionRecap> {
+    return this.fetchJson<SessionRecap>(`/c/${campaignId}/recaps/${recapId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteRecap(campaignId: string, recapId: string): Promise<void> {
+    await this.fetchJson(`/c/${campaignId}/recaps/${recapId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async listHighlights(campaignId: string, sessionId?: string): Promise<SessionHighlight[]> {
+    const qs = sessionId ? `?sessionId=${sessionId}` : '';
+    return this.fetchJson<SessionHighlight[]>(`/c/${campaignId}/highlights${qs}`);
+  }
+
+  async createHighlight(campaignId: string, data: Partial<SessionHighlight>): Promise<SessionHighlight> {
+    return this.fetchJson<SessionHighlight>(`/c/${campaignId}/highlights`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteHighlight(campaignId: string, highlightId: string): Promise<void> {
+    await this.fetchJson(`/c/${campaignId}/highlights/${highlightId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async closeSession(campaignId: string, sessionId: string, data: any): Promise<{ session: Session; recap?: SessionRecap; highlights?: SessionHighlight[] }> {
+    return this.fetchJson<{ session: Session; recap?: SessionRecap; highlights?: SessionHighlight[] }>(`/c/${campaignId}/sessions/${sessionId}/close`, {
+      method: 'POST',
+      body: JSON.stringify(data)
     });
   }
 }

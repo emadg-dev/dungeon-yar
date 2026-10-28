@@ -32,6 +32,7 @@ export interface CampaignSettings {
   conAdjustFixedTable?: boolean;
   allowCustomLineage?: boolean;
   sheetLock?: 'locked_core' | 'free';
+  timezone?: string;
   approval: {
     onCreate: boolean;
     onLevelUp: boolean;
@@ -56,6 +57,7 @@ export interface CampaignSettings {
   };
   houseRules?: string;
   allowPlayerCreateCharacter: boolean;
+  allowPlayerRecaps?: boolean;
   encounterDefaults: {
     showExactHp: boolean;
     showAc: boolean;
@@ -345,6 +347,7 @@ export interface CharacterParticipation {
   dmNotes?: string;
   build?: CharacterBuild | null;
   sheetLocked?: boolean;
+  sessionsAttended?: number;
   levelUpAvailable?: boolean;
   joinedAt: number;
   updatedAt: number;
@@ -435,10 +438,11 @@ export interface CharacterHistoryEvent {
   characterId: string;
   campaignId?: string | null;
   campaignName?: string;
-  eventType: 'joined' | 'level_up' | 'death' | 'major_deed' | 'retired' | 'custom';
+  eventType: 'joined' | 'level_up' | 'death' | 'major_deed' | 'retired' | 'custom' | 'milestone';
   payload: {
     title?: string;
     description?: string;
+    sessionNumber?: number;
     level?: number;
     campaignName?: string;
     oldLevel?: number;
@@ -446,6 +450,9 @@ export interface CharacterHistoryEvent {
     notes?: string;
     [key: string]: any;
   };
+  title?: string;
+  description?: string;
+  sessionNumber?: number;
   timestamp: number;
 }
 
@@ -1739,3 +1746,115 @@ export interface LinkedEntityDiff {
   diffs: FieldDiff[];
 }
 
+// ==========================================
+// Step 4.1: Sessions & Scheduling
+// ==========================================
+export type SessionStatus = 'planned' | 'confirmed' | 'done' | 'cancelled';
+export type SessionRsvpChoice = 'yes' | 'maybe' | 'no';
+export type SessionPollStatus = 'open' | 'closed';
+
+export interface SessionRsvp {
+  sessionId: string;
+  userId: string;
+  userName?: string;
+  userDisplayName?: string;
+  userAvatarUrl?: string;
+  status: SessionRsvpChoice;
+  note?: string | null;
+  updatedAt: number;
+}
+
+export interface SessionPollOption {
+  id: string;
+  startsAt: string; // ISO string in UTC
+}
+
+export interface SessionPollVote {
+  pollId: string;
+  optionId: string;
+  userId: string;
+  userName?: string;
+  choice: SessionRsvpChoice;
+  updatedAt?: number;
+}
+
+export interface SessionPoll {
+  id: string;
+  sessionId: string;
+  options: SessionPollOption[];
+  status: SessionPollStatus;
+  createdAt?: number;
+  votes?: SessionPollVote[];
+  myVotes?: Record<string, SessionRsvpChoice>;
+  userVotes?: Record<string, SessionRsvpChoice>;
+  totalVotes?: number;
+}
+
+export interface SessionAttendance {
+  sessionId: string;
+  participationId: string;
+  characterName?: string;
+  playerName?: string;
+  attended: boolean;
+}
+
+export interface Session {
+  id: string;
+  campaignId: string;
+  number: number;
+  title: string;
+  scheduledAt?: string | null; // ISO string in UTC
+  durationMinutes: number;
+  placeText?: string | null;
+  onlineUrl?: string | null;
+  status: SessionStatus;
+  inWorldDate?: string | null;
+  dmNotes?: string | null;
+  createdBy: string;
+  createdAt: number;
+  updatedAt: number;
+
+  // Joined / populated for UI
+  rsvps?: SessionRsvp[];
+  poll?: SessionPoll | null;
+  attendance?: SessionAttendance[];
+  myRsvp?: SessionRsvpChoice | SessionRsvp | null;
+  recaps?: SessionRecap[];
+  highlights?: SessionHighlight[];
+}
+
+// Step 4.2: Session Recaps & Highlights
+export type SessionRecapVisibility = 'party' | 'dm_only';
+export type SessionRecapStatus = 'draft' | 'published';
+
+export interface SessionRecap {
+  id: string;
+  sessionId: string;
+  campaignId: string;
+  authorId: string;
+  authorName?: string;
+  sessionNumber?: number;
+  sessionTitle?: string;
+  title: string;
+  body: string; // rich text or markdown
+  visibility: SessionRecapVisibility;
+  status: SessionRecapStatus;
+  linkedNpcIds?: string[];
+  linkedLocationIds?: string[];
+  linkedQuestIds?: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface SessionHighlight {
+  id: string;
+  sessionId: string;
+  campaignId: string;
+  participationId?: string | null;
+  characterId?: string | null;
+  characterName?: string;
+  playerName?: string;
+  text: string;
+  visibleToPlayer: boolean | number;
+  createdAt: number;
+}

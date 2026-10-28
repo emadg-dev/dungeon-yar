@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
-import { Campaign, Character, CharacterNote, CharacterParticipation } from '../../types';
+import { 
+  Campaign, Character, CharacterNote, CharacterParticipation, 
+  Session, SessionRsvpChoice, User, SessionRecap, NPC, LocationEntry, CampaignNote 
+} from '../../types';
 import { 
   Users, Heart, Shield, Zap, Sparkles, Moon, Sun, 
   Calendar, Award, Plus, Eye, Dices, ChevronRight, CheckCircle2,
-  ArrowUpCircle, RotateCcw, Edit3, Lock, Unlock, Clock
+  ArrowUpCircle, RotateCcw, Edit3, Lock, Unlock, Clock, BookOpen
 } from 'lucide-react';
 import { HPBar } from '../common/HPBar';
 import { XpAwardModal } from './XpAwardModal';
 import { SnapshotRestoreModal } from './SnapshotRestoreModal';
 import { DmOverrideModal } from './DmOverrideModal';
+import { NextSessionCard } from '../session/NextSessionCard';
+import { PreviouslyOnCard } from '../session/PreviouslyOnCard';
+import { partitionSessions } from '../../../shared/rules/sessionEngine';
 
 interface DmDashboardProps {
   characters: Character[];
@@ -34,6 +40,24 @@ interface DmDashboardProps {
   onToggleRespecWindow?: (participationId: string, open: boolean) => Promise<void>;
   onDmOverride?: (participationId: string, updates: any, reason: string) => Promise<void>;
   onRefreshCampaign?: () => void;
+  // Step 4.1: Sessions & Scheduling
+  sessions?: Session[];
+  currentUser?: User | null;
+  onRsvpSession?: (sessionId: string, status: SessionRsvpChoice, note?: string) => Promise<void>;
+  onVoteSessionPoll?: (sessionId: string, optionId: string, choice: SessionRsvpChoice) => Promise<void>;
+  onConfirmPollOption?: (sessionId: string, optionId: string) => Promise<void>;
+  onOpenSessionList?: () => void;
+  onOpenCreateSession?: () => void;
+  onOpenAttendance?: (session: Session) => void;
+  onEditSession?: (session: Session) => void;
+  onOpenClosingSheet?: (session: Session) => void;
+  latestRecap?: SessionRecap | null;
+  onOpenRecapArchive?: () => void;
+  onOpenCreateRecap?: () => void;
+  onEditRecap?: (recap: SessionRecap) => void;
+  npcs?: NPC[];
+  locations?: LocationEntry[];
+  campaignNotes?: CampaignNote[];
 }
 
 export const DmDashboard: React.FC<DmDashboardProps> = ({
@@ -53,7 +77,24 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
   onUndoLevelUp,
   onToggleRespecWindow,
   onDmOverride,
-  onRefreshCampaign
+  onRefreshCampaign,
+  sessions = [],
+  currentUser,
+  onRsvpSession,
+  onVoteSessionPoll,
+  onConfirmPollOption,
+  onOpenSessionList,
+  onOpenCreateSession,
+  onOpenAttendance,
+  onEditSession,
+  onOpenClosingSheet,
+  latestRecap,
+  onOpenRecapArchive,
+  onOpenCreateRecap,
+  onEditRecap,
+  npcs = [],
+  locations = [],
+  campaignNotes = []
 }) => {
   const [worldDay, setWorldDay] = useState(14);
   const [worldMonth, setWorldMonth] = useState('آبان');
@@ -129,6 +170,40 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
+
+      {/* Step 4.1: Next Session / Scheduling Card for DM */}
+      {onOpenSessionList && (
+        <NextSessionCard
+          session={partitionSessions(sessions).nextSession || null}
+          campaign={activeCampaign || null}
+          currentUser={currentUser || null}
+          userRole="owner"
+          onRsvp={onRsvpSession || (async () => {})}
+          onVotePoll={onVoteSessionPoll || (async () => {})}
+          onConfirmPollOption={onConfirmPollOption}
+          onOpenSessionList={onOpenSessionList}
+          onOpenCreateSession={onOpenCreateSession}
+          onOpenAttendance={onOpenAttendance}
+          onEditSession={onEditSession}
+          onOpenClosingSheet={onOpenClosingSheet}
+        />
+      )}
+
+      {/* Step 4.2: Previously on... / Latest Recap Card for DM */}
+      {onOpenRecapArchive && (
+        <PreviouslyOnCard
+          recap={latestRecap || null}
+          campaign={activeCampaign || null}
+          currentUser={currentUser || null}
+          userRole="owner"
+          npcs={npcs}
+          locations={locations}
+          campaignNotes={campaignNotes}
+          onOpenArchive={onOpenRecapArchive}
+          onOpenCreateRecap={onOpenCreateRecap}
+          onEditRecap={onEditRecap}
+        />
+      )}
 
       {/* Campaign Setup Checklist (Progress Ring / Shortcut) */}
       <div className="surface-card rounded-[14px] p-3.5 flex items-center justify-between gap-3 border border-[#2F2A23] hover:border-[#E0A030]/40 transition">

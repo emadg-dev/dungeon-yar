@@ -7,7 +7,22 @@
 import { computeAuthoritativeParticipation, createSnapshot, pruneSnapshots } from '../../shared/rules/wizardEngine';
 import { rollAbilityScores } from '../../shared/rules/engine';
 import { computeLevelUpDiff, isLevelUpReady, isFieldLockedForPlayer, XP_THRESHOLDS } from '../../shared/rules/levelUpEngine';
-import type { CharacterParticipation, LevelUpPayload, XpAward, SheetChangeRequest } from '../../src/types';
+import {
+  filterSessionForViewer,
+  canUserRsvp,
+  canUserVote,
+  canManageSessions,
+  validatePollOptions,
+  buildAttendanceHistoryEvent,
+  calculatePollTally
+} from '../../shared/rules/sessionEngine';
+import {
+  canUserCreateRecap,
+  canUserEditRecap,
+  validateRecapPayload,
+  buildHighlightHistoryEvent
+} from '../../shared/rules/recapEngine';
+import type { CharacterParticipation, LevelUpPayload, XpAward, SheetChangeRequest, Session, SessionStatus, SessionRsvpChoice, SessionRecap, SessionHighlight } from '../../src/types';
 
 interface Env {
   DB: any; // Cloudflare D1Database binding
@@ -349,7 +364,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
               u.must_change_password as u_must_change_password, u.created_at as u_created_at, 
               u.last_login_at as u_last_login_at, u.deleted_at as u_deleted_at, 
               u.active_character_id as u_active_character_id, u.avatar_url as u_avatar_url
-       FROM sessions s
+       FROM auth_sessions s
        JOIN users u ON s.user_id = u.id
        WHERE s.token_hash = ? AND s.revoked_at IS NULL AND s.expires_at > ? AND s.absolute_expires_at > ?
          AND u.status = 'active' AND u.deleted_at IS NULL`
@@ -388,7 +403,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       if (now - currentSession.last_seen_at > SLIDING_EXTEND_THRESHOLD_MS) {
         const nextExpires = Math.min(now + SLIDING_EXPIRY_MS, currentSession.absolute_expires_at);
         await env.DB.prepare(
-          'UPDATE sessions SET last_seen_at = ?, expires_at = ? WHERE id = ?'
+          'UPDATE auth_sessions SET last_seen_at = ?, expires_at = ? WHERE id = ?'
         ).bind(now, nextExpires, currentSession.id).run();
 
         const remainingSeconds = Math.max(1, Math.floor((nextExpires - now) / 1000));
@@ -526,7 +541,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       const absoluteExpiresAt = now + ABSOLUTE_MAX_MS;
 
       await env.DB.prepare(
-        `INSERT INTO sessions (id, user_id, token_hash, created_at, last_seen_at, expires_at, absolute_expires_at, user_agent, ip_hash)
+        `INSERT INTO auth_sessions (id, user_id, token_hash, created_at, last_seen_at, expires_at, absolute_expires_at, user_agent, ip_hash)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(sessionId, userId, tokenHash, now, now, expiresAt, absoluteExpiresAt, userAgent.substring(0, 200), clientIpHash).run();
 
@@ -609,7 +624,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       const absoluteExpiresAt = now + ABSOLUTE_MAX_MS;
 
       await env.DB.prepare(
-        `INSERT INTO sessions (id, user_id, token_hash, created_at, last_seen_at, expires_at, absolute_expires_at, user_agent, ip_hash)
+        `INSERT INTO auth_sessions (id, user_id, token_hash, created_at, last_seen_at, expires_at, absolute_expires_at, user_agent, ip_hash)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(sessionId, userRow.id, tokenHash, now, now, expiresAt, absoluteExpiresAt, userAgent.substring(0, 200), clientIpHash).run();
 
@@ -637,7 +652,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // POST /api/auth/logout
   if (path === '/auth/logout' && method === 'POST') {
     if (currentSession && env.DB) {
-      await env.DB.prepare('UPDATE sessions SET revoked_at = ? WHERE id = ?').bind(now, currentSession.id).run();
+      await env.DB.prepare('UPDATE auth_sessions SET revoked_at = ? WHERE id = ?').bind(now, currentSession.id).run();
       await audit('logout', currentUser?.id);
     }
     return json({ message: 'با موفقیت خارج شدید.' }, 200, { 'Set-Cookie': clearSessionCookie() });
@@ -646,7 +661,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // POST /api/auth/logout-all
   if (path === '/auth/logout-all' && method === 'POST') {
     if (!currentUser) return error('ابتدا وارد شوید.', 401);
-    await env.DB.prepare('UPDATE sessions SET revoked_at = ? WHERE user_id = ?').bind(now, currentUser.id).run();
+    await env.DB.prepare('UPDATE auth_sessions SET revoked_at = ? WHERE user_id = ?').bind(now, currentUser.id).run();
     await audit('logout-all', currentUser.id);
     return json({ message: 'تمام نشست‌های فعال شما خاتمه یافتند.' }, 200, { 'Set-Cookie': clearSessionCookie() });
   }
@@ -714,7 +729,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       // Mark token as used, update password, revoke all existing sessions
       await env.DB.prepare('UPDATE password_resets SET used_at = ? WHERE id = ?').bind(now, resetRow.id).run();
       await env.DB.prepare('UPDATE users SET password_hash = ?, must_change_password = 0 WHERE id = ?').bind(newHash, targetUser.id).run();
-      await env.DB.prepare('UPDATE sessions SET revoked_at = ? WHERE user_id = ?').bind(now, targetUser.id).run();
+      await env.DB.prepare('UPDATE auth_sessions SET revoked_at = ? WHERE user_id = ?').bind(now, targetUser.id).run();
 
       // Create new session
       const rawToken = generateRandomToken(32);
@@ -724,7 +739,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       const absoluteExpiresAt = now + ABSOLUTE_MAX_MS;
 
       await env.DB.prepare(
-        `INSERT INTO sessions (id, user_id, token_hash, created_at, last_seen_at, expires_at, absolute_expires_at, user_agent, ip_hash)
+        `INSERT INTO auth_sessions (id, user_id, token_hash, created_at, last_seen_at, expires_at, absolute_expires_at, user_agent, ip_hash)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).bind(sessionId, targetUser.id, newSessionTokenHash, now, now, expiresAt, absoluteExpiresAt, userAgent.substring(0, 200), clientIpHash).run();
 
@@ -3310,7 +3325,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
     // Revoke all OTHER sessions
     if (currentSession) {
-      await env.DB.prepare('UPDATE sessions SET revoked_at = ? WHERE user_id = ? AND id != ?').bind(now, currentUser.id, currentSession.id).run();
+      await env.DB.prepare('UPDATE auth_sessions SET revoked_at = ? WHERE user_id = ? AND id != ?').bind(now, currentUser.id, currentSession.id).run();
     }
 
     await audit('password-change', currentUser.id);
@@ -3352,7 +3367,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // GET /api/me/sessions
   if (path === '/me/sessions' && method === 'GET') {
     const res = await env.DB.prepare(
-      'SELECT id, user_id, created_at, last_seen_at, expires_at, absolute_expires_at, user_agent, ip_hash FROM sessions WHERE user_id = ? AND revoked_at IS NULL AND expires_at > ? ORDER BY last_seen_at DESC'
+      'SELECT id, user_id, created_at, last_seen_at, expires_at, absolute_expires_at, user_agent, ip_hash FROM auth_sessions WHERE user_id = ? AND revoked_at IS NULL AND expires_at > ? ORDER BY last_seen_at DESC'
     ).bind(currentUser.id, now).all();
 
     const sessions = (res.results || []).map((s: any) => ({
@@ -3372,7 +3387,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (path.match(/^\/me\/sessions\/[^/]+$/) && method === 'DELETE') {
     const targetSessionId = path.split('/')[3];
     await env.DB.prepare(
-      'UPDATE sessions SET revoked_at = ? WHERE id = ? AND user_id = ?'
+      'UPDATE auth_sessions SET revoked_at = ? WHERE id = ? AND user_id = ?'
     ).bind(now, targetSessionId, currentUser.id).run();
 
     if (targetSessionId === currentSession?.id) {
@@ -3462,7 +3477,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     }
 
     const sessRes = await env.DB.prepare(
-      'SELECT user_id, COUNT(*) as c FROM sessions WHERE revoked_at IS NULL AND expires_at > ? GROUP BY user_id'
+      'SELECT user_id, COUNT(*) as c FROM auth_sessions WHERE revoked_at IS NULL AND expires_at > ? GROUP BY user_id'
     ).bind(now).all();
     const sessionCountByUser: Record<string, number> = {};
     for (const s of (sessRes.results || [])) {
@@ -3533,7 +3548,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
     // If disabled, revoke all sessions
     if (nextStatus === 'disabled') {
-      await env.DB.prepare('UPDATE sessions SET revoked_at = ? WHERE user_id = ?').bind(now, targetUserId).run();
+      await env.DB.prepare('UPDATE auth_sessions SET revoked_at = ? WHERE user_id = ?').bind(now, targetUserId).run();
     }
 
     await audit('user-update', targetUserId, { displayName: nextDisplayName, role: nextRole, status: nextStatus });
@@ -3576,7 +3591,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // POST /api/users/:id/revoke-sessions
   if (path.match(/^\/users\/[^/]+\/revoke-sessions$/) && method === 'POST') {
     const targetUserId = path.split('/')[2];
-    await env.DB.prepare('UPDATE sessions SET revoked_at = ? WHERE user_id = ?').bind(now, targetUserId).run();
+    await env.DB.prepare('UPDATE auth_sessions SET revoked_at = ? WHERE user_id = ?').bind(now, targetUserId).run();
     await audit('revoke-user-sessions', targetUserId);
     return json({ success: true, message: 'تمام نشست‌های کاربر با موفقیت لغو شدند.' });
   }
@@ -3626,7 +3641,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
     // Soft delete: status=disabled, deleted_at=now, sessions revoked, characters unassigned
     await env.DB.prepare('UPDATE users SET deleted_at = ?, status = ? WHERE id = ?').bind(now, 'disabled', targetUserId).run();
-    await env.DB.prepare('UPDATE sessions SET revoked_at = ? WHERE user_id = ?').bind(now, targetUserId).run();
+    await env.DB.prepare('UPDATE auth_sessions SET revoked_at = ? WHERE user_id = ?').bind(now, targetUserId).run();
     await env.DB.prepare('UPDATE characters SET owner_id = NULL WHERE owner_id = ?').bind(targetUserId).run();
 
     await audit('user-delete', targetUserId);
@@ -5560,6 +5575,877 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const id = path.split('/')[2];
     await env.DB.prepare('DELETE FROM background_templates WHERE id = ?').bind(id).run();
     return json({ success: true });
+  }
+
+  // ---------------------------------------------------------
+  // STEP 4.1: SESSIONS AND SCHEDULING
+  // ---------------------------------------------------------
+  const loadFullSession = async (campId: string, sid: string, viewerRole: any) => {
+    const s = await env.DB.prepare('SELECT * FROM sessions WHERE id = ? AND campaign_id = ?').bind(sid, campId).first();
+    if (!s) return null;
+
+    // RSVPs with user profile info
+    const rsvpRes = await env.DB.prepare(
+      `SELECT r.session_id, r.user_id, r.status, r.note, r.updated_at, u.display_name, u.avatar_url
+         FROM session_rsvps r
+         LEFT JOIN users u ON u.id = r.user_id
+        WHERE r.session_id = ?`
+    ).bind(sid).all();
+    const rsvps = (rsvpRes.results || []).map((r: any) => ({
+      sessionId: r.session_id,
+      userId: r.user_id,
+      status: r.status,
+      note: r.note || undefined,
+      updatedAt: r.updated_at,
+      userName: r.display_name || undefined,
+      userAvatarUrl: r.avatar_url || undefined
+    }));
+
+    // Poll if any
+    let poll: any = undefined;
+    const pollRow = await env.DB.prepare('SELECT * FROM session_polls WHERE session_id = ?').bind(sid).first();
+    if (pollRow) {
+      const voteRes = await env.DB.prepare(
+        `SELECT v.poll_id, v.option_id, v.user_id, v.choice, u.display_name
+           FROM session_poll_votes v
+           LEFT JOIN users u ON u.id = v.user_id
+          WHERE v.poll_id = ?`
+      ).bind(pollRow.id).all();
+      const votes = (voteRes.results || []).map((v: any) => ({
+        pollId: v.poll_id,
+        optionId: v.option_id,
+        userId: v.user_id,
+        choice: v.choice,
+        userName: v.display_name || undefined
+      }));
+      const options = parseBlob(pollRow.options, []);
+      const userVotes: Record<string, string> = {};
+      for (const v of votes) {
+        if (v.userId === actor.id) {
+          userVotes[v.optionId] = v.choice;
+        }
+      }
+      poll = {
+        id: pollRow.id,
+        sessionId: sid,
+        options,
+        status: pollRow.status,
+        votes,
+        totalVotes: votes.length,
+        userVotes
+      };
+    }
+
+    // Attendance if any
+    const attRes = await env.DB.prepare('SELECT * FROM session_attendance WHERE session_id = ?').bind(sid).all();
+    const attendance = (attRes.results || []).map((a: any) => ({
+      sessionId: a.session_id,
+      participationId: a.participation_id,
+      attended: Number(a.attended) === 1
+    }));
+
+    const myRsvp = rsvps.find((r: any) => r.userId === actor.id)?.status;
+
+    const sessionObj: Session = {
+      id: s.id,
+      campaignId: s.campaign_id,
+      number: Number(s.number),
+      title: s.title,
+      scheduledAt: s.scheduled_at || null,
+      durationMinutes: s.duration_minutes ? Number(s.duration_minutes) : 240,
+      placeText: s.place_text || undefined,
+      onlineUrl: s.online_url || undefined,
+      status: s.status as SessionStatus,
+      inWorldDate: s.in_world_date || undefined,
+      dmNotes: s.dm_notes || undefined,
+      createdBy: s.created_by,
+      createdAt: s.created_at,
+      updatedAt: s.updated_at,
+      rsvps,
+      myRsvp,
+      poll,
+      attendance
+    };
+
+    const isDm = actor.role === 'dm' || viewerRole === 'owner' || viewerRole === 'co_dm';
+    return filterSessionForViewer(sessionObj, isDm ? 'dm' : viewerRole || 'player');
+  };
+
+  // GET /api/c/:id/sessions — list all sessions in a campaign
+  if (path.match(/^\/c\/[^/]+\/sessions$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('کمپین مورد نظر یافت نشد.', 404);
+
+    const sRes = await env.DB.prepare(
+      `SELECT id FROM sessions
+        WHERE campaign_id = ?
+        ORDER BY CASE WHEN scheduled_at IS NULL THEN 1 ELSE 0 END, scheduled_at ASC, number ASC, created_at ASC`
+    ).bind(campId).all();
+
+    const list: Session[] = [];
+    for (const r of (sRes.results || [])) {
+      const full = await loadFullSession(campId, (r as any).id, myRole);
+      if (full) list.push(full);
+    }
+    return json(list);
+  }
+
+  // POST /api/c/:id/sessions — create a new session (DM only, optionally with poll dates)
+  if (path.match(/^\/c\/[^/]+\/sessions$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    if (!(await requireCampaignDm(campId))) return error('فقط دانجن مستر مجاز به ایجاد جلسه است.', 403);
+
+    const body = await request.json() as any;
+    const title = String(body.title || '').trim();
+    if (!title) return error('عنوان جلسه الزامی است.', 400);
+
+    let sessionNum = Number(body.number);
+    if (!sessionNum || isNaN(sessionNum)) {
+      const maxRow = await env.DB.prepare('SELECT MAX(number) as mn FROM sessions WHERE campaign_id = ?').bind(campId).first();
+      sessionNum = ((maxRow?.mn as number) || 0) + 1;
+    }
+
+    const sid = `ses-${Date.now()}-${generateRandomToken(4)}`;
+    const scheduledAt = body.scheduledAt ? String(body.scheduledAt) : null;
+    const duration = body.durationMinutes ? Number(body.durationMinutes) : 240;
+    const placeText = body.placeText ? String(body.placeText) : null;
+    const onlineUrl = body.onlineUrl ? String(body.onlineUrl) : null;
+    const inWorldDate = body.inWorldDate ? String(body.inWorldDate) : null;
+    const dmNotes = body.dmNotes ? String(body.dmNotes) : null;
+    const status: SessionStatus = body.status && ['planned', 'confirmed', 'done', 'cancelled'].includes(body.status)
+      ? body.status
+      : (scheduledAt ? 'confirmed' : 'planned');
+
+    // Poll options handling (2 to 5 dates)
+    const pollOptions = body.pollOptions;
+    if (pollOptions && Array.isArray(pollOptions) && pollOptions.length > 0) {
+      const pVal = validatePollOptions(pollOptions);
+      if (!pVal.valid) {
+        return error(pVal.error || 'گزینه‌های نظرسنجی تاریخ نامعتبر است.', 400);
+      }
+      const pollId = `poll-${Date.now()}-${generateRandomToken(4)}`;
+      const formattedOpts = pollOptions.map((o: any, idx: number) => ({
+        id: o.id || `opt-${idx + 1}`,
+        startsAt: String(o.startsAt)
+      }));
+
+      await env.DB.prepare(
+        `INSERT INTO session_polls (id, session_id, options, status)
+         VALUES (?, ?, ?, 'open')`
+      ).bind(pollId, sid, JSON.stringify(formattedOpts)).run();
+    }
+
+    await env.DB.prepare(
+      `INSERT INTO sessions (
+        id, campaign_id, number, title, scheduled_at, duration_minutes,
+        place_text, online_url, status, in_world_date, dm_notes, created_by,
+        created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      sid, campId, sessionNum, title, scheduledAt, duration,
+      placeText, onlineUrl, status, inWorldDate, dmNotes, actor.id,
+      now, now
+    ).run();
+
+    await audit('session-create', sid, { campaignId: campId, number: sessionNum, title });
+    const created = await loadFullSession(campId, sid, 'owner');
+    return json(created, 201);
+  }
+
+  // GET /api/c/:id/sessions/:sid — single session
+  if (path.match(/^\/c\/[^/]+\/sessions\/[^/]+$/) && method === 'GET') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const sid = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+
+    const s = await loadFullSession(campId, sid, myRole);
+    if (!s) return error('جلسه مورد نظر یافت نشد.', 404);
+    return json(s);
+  }
+
+  // PATCH /api/c/:id/sessions/:sid — update session details
+  if (path.match(/^\/c\/[^/]+\/sessions\/[^/]+$/) && method === 'PATCH') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const sid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const existing = await env.DB.prepare('SELECT * FROM sessions WHERE id = ? AND campaign_id = ?').bind(sid, campId).first();
+    if (!existing) return error('جلسه مورد نظر یافت نشد.', 404);
+
+    const body = await request.json() as any;
+    const title = body.title !== undefined ? String(body.title).trim() : existing.title;
+    const number = body.number !== undefined ? Number(body.number) : existing.number;
+    const scheduledAt = body.scheduledAt !== undefined ? (body.scheduledAt ? String(body.scheduledAt) : null) : existing.scheduled_at;
+    const duration = body.durationMinutes !== undefined ? Number(body.durationMinutes) : existing.duration_minutes;
+    const placeText = body.placeText !== undefined ? (body.placeText ? String(body.placeText) : null) : existing.place_text;
+    const onlineUrl = body.onlineUrl !== undefined ? (body.onlineUrl ? String(body.onlineUrl) : null) : existing.online_url;
+    const status = body.status !== undefined && ['planned', 'confirmed', 'done', 'cancelled'].includes(body.status) ? body.status : existing.status;
+    const inWorldDate = body.inWorldDate !== undefined ? (body.inWorldDate ? String(body.inWorldDate) : null) : existing.in_world_date;
+    const dmNotes = body.dmNotes !== undefined ? (body.dmNotes ? String(body.dmNotes) : null) : existing.dm_notes;
+
+    await env.DB.prepare(
+      `UPDATE sessions SET
+        title = ?, number = ?, scheduled_at = ?, duration_minutes = ?,
+        place_text = ?, online_url = ?, status = ?, in_world_date = ?,
+        dm_notes = ?, updated_at = ?
+       WHERE id = ? AND campaign_id = ?`
+    ).bind(
+      title, number, scheduledAt, duration,
+      placeText, onlineUrl, status, inWorldDate,
+      dmNotes, now, sid, campId
+    ).run();
+
+    await audit('session-update', sid, { campaignId: campId });
+    const updated = await loadFullSession(campId, sid, 'owner');
+    return json(updated);
+  }
+
+  // DELETE /api/c/:id/sessions/:sid — delete a session
+  if (path.match(/^\/c\/[^/]+\/sessions\/[^/]+$/) && method === 'DELETE') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const sid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    await env.DB.prepare('DELETE FROM session_attendance WHERE session_id = ?').bind(sid).run();
+    const poll = await env.DB.prepare('SELECT id FROM session_polls WHERE session_id = ?').bind(sid).first();
+    if (poll) {
+      await env.DB.prepare('DELETE FROM session_poll_votes WHERE poll_id = ?').bind(poll.id).run();
+      await env.DB.prepare('DELETE FROM session_polls WHERE id = ?').bind(poll.id).run();
+    }
+    await env.DB.prepare('DELETE FROM session_rsvps WHERE session_id = ?').bind(sid).run();
+    await env.DB.prepare('DELETE FROM sessions WHERE id = ? AND campaign_id = ?').bind(sid, campId).run();
+
+    await audit('session-delete', sid, { campaignId: campId });
+    return json({ success: true });
+  }
+
+  // POST /api/c/:id/sessions/:sid/rsvp — submit RSVP (Player or DM; Spectators blocked with 403)
+  if (path.match(/^\/c\/[^/]+\/sessions\/[^/]+\/rsvp$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const sid = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+
+    if (!canUserRsvp(myRole as any) && actor.role !== 'dm') {
+      return error('تماشاچیان یا کاربران بدون عضویت مجاز به ثبت حضور نیستند.', 403);
+    }
+
+    const s = await env.DB.prepare('SELECT * FROM sessions WHERE id = ? AND campaign_id = ?').bind(sid, campId).first();
+    if (!s) return error('جلسه مورد نظر یافت نشد.', 404);
+    if (s.status === 'cancelled') return error('جلسه لغو شده است.', 400);
+
+    const body = await request.json() as any;
+    const rsvpStatus = body.status as SessionRsvpChoice;
+    if (!['yes', 'no', 'maybe'].includes(rsvpStatus)) {
+      return error('وضعیت حضور نامعتبر است (باید yes، no یا maybe باشد).', 400);
+    }
+    const note = body.note ? String(body.note).trim() : null;
+
+    await env.DB.prepare(
+      `INSERT INTO session_rsvps (session_id, user_id, status, note, updated_at)
+       VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(session_id, user_id) DO UPDATE SET
+         status = excluded.status,
+         note = excluded.note,
+         updated_at = excluded.updated_at`
+    ).bind(sid, actor.id, rsvpStatus, note, now).run();
+
+    await audit('session-rsvp', sid, { status: rsvpStatus, note });
+    return json({
+      sessionId: sid,
+      userId: actor.id,
+      status: rsvpStatus,
+      note: note || undefined,
+      updatedAt: now
+    });
+  }
+
+  // POST /api/c/:id/sessions/:sid/poll/vote — cast vote in date poll (Spectators blocked with 403)
+  if (path.match(/^\/c\/[^/]+\/sessions\/[^/]+\/poll\/vote$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const sid = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+
+    if (!canUserVote(myRole as any) && actor.role !== 'dm') {
+      return error('تماشاچیان یا کاربران بدون عضویت مجاز به رأی‌دهی در نظرسنجی نیستند.', 403);
+    }
+
+    const poll = await env.DB.prepare('SELECT * FROM session_polls WHERE session_id = ?').bind(sid).first();
+    if (!poll) return error('نظرسنجی تاریخی برای این جلسه وجود ندارد.', 404);
+    if (poll.status !== 'open') return error('این نظرسنجی بسته شده است.', 400);
+
+    const body = await request.json() as any;
+    const optionId = String(body.optionId || '');
+    const choice = body.choice as SessionRsvpChoice;
+    if (!['yes', 'maybe', 'no'].includes(choice)) {
+      return error('گزینه رأی نامعتبر است.', 400);
+    }
+
+    const options = parseBlob(poll.options, []);
+    if (!options.some((o: any) => o.id === optionId)) {
+      return error('گزینه مورد نظر در نظرسنجی یافت نشد.', 400);
+    }
+
+    await env.DB.prepare(
+      `INSERT INTO session_poll_votes (poll_id, option_id, user_id, choice)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(poll_id, option_id, user_id) DO UPDATE SET
+         choice = excluded.choice`
+    ).bind(poll.id, optionId, actor.id, choice).run();
+
+    await audit('session-poll-vote', poll.id, { optionId, choice });
+    const full = await loadFullSession(campId, sid, myRole);
+    return json(full?.poll || { success: true });
+  }
+
+  // POST /api/c/:id/sessions/:sid/poll/confirm — DM confirms a poll option, setting scheduled_at
+  if (path.match(/^\/c\/[^/]+\/sessions\/[^/]+\/poll\/confirm$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const sid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('فقط دانجن مستر مجاز به نهایی‌سازی تاریخ جلسه است.', 403);
+
+    const poll = await env.DB.prepare('SELECT * FROM session_polls WHERE session_id = ?').bind(sid).first();
+    if (!poll) return error('نظرسنجی یافت نشد.', 404);
+
+    const body = await request.json() as any;
+    const optionId = String(body.optionId || '');
+    const options = parseBlob(poll.options, []);
+    const chosen = options.find((o: any) => o.id === optionId);
+    if (!chosen) return error('گزینه تاریخ انتخاب‌شده یافت نشد.', 404);
+
+    await env.DB.prepare(
+      `UPDATE sessions SET
+        scheduled_at = ?,
+        status = 'confirmed',
+        updated_at = ?
+       WHERE id = ? AND campaign_id = ?`
+    ).bind(chosen.startsAt, now, sid, campId).run();
+
+    await env.DB.prepare("UPDATE session_polls SET status = 'closed' WHERE id = ?").bind(poll.id).run();
+
+    await audit('session-poll-confirm', sid, { optionId, startsAt: chosen.startsAt });
+    const updated = await loadFullSession(campId, sid, 'owner');
+    return json(updated);
+  }
+
+  // POST /api/c/:id/sessions/:sid/attendance — DM records session attendance, increments sessions_attended, writes history event
+  if (path.match(/^\/c\/[^/]+\/sessions\/[^/]+\/attendance$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const sid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('فقط دانجن مستر مجاز به ثبت حضور و غیاب است.', 403);
+
+    const s = await env.DB.prepare('SELECT * FROM sessions WHERE id = ? AND campaign_id = ?').bind(sid, campId).first();
+    if (!s) return error('جلسه یافت نشد.', 404);
+
+    const body = await request.json() as any;
+    const attendanceList = (body.attendance || []) as Array<{ participationId: string; attended: boolean }>;
+
+    // 1. Mark session as done
+    await env.DB.prepare("UPDATE sessions SET status = 'done', updated_at = ? WHERE id = ? AND campaign_id = ?")
+      .bind(now, sid, campId).run();
+
+    // 2. Process attendance records
+    for (const item of attendanceList) {
+      if (!item.participationId) continue;
+      const attendedInt = item.attended ? 1 : 0;
+
+      await env.DB.prepare(
+        `INSERT INTO session_attendance (session_id, participation_id, attended)
+         VALUES (?, ?, ?)
+         ON CONFLICT(session_id, participation_id) DO UPDATE SET
+           attended = excluded.attended`
+      ).bind(sid, item.participationId, attendedInt).run();
+
+      if (item.attended) {
+        // Increment sessions_attended
+        await env.DB.prepare(
+          'UPDATE character_participations SET sessions_attended = COALESCE(sessions_attended, 0) + 1 WHERE id = ?'
+        ).bind(item.participationId).run();
+
+        // Write character history event: "حضور در جلسه N"
+        const part = await env.DB.prepare('SELECT character_id FROM character_participations WHERE id = ?')
+          .bind(item.participationId).first();
+
+        if (part?.character_id) {
+          const hist = buildAttendanceHistoryEvent(Number(s.number), s.title, sid, campId);
+          await env.DB.prepare(
+            `INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp)
+             VALUES (?, ?, ?, ?, ?, ?)`
+          ).bind(
+            hist.id,
+            part.character_id,
+            campId,
+            hist.eventType,
+            JSON.stringify(hist.payload),
+            now
+          ).run();
+        }
+      }
+    }
+
+    await audit('session-attendance', sid, { campaignId: campId, count: attendanceList.length });
+    const updated = await loadFullSession(campId, sid, 'owner');
+    return json({ success: true, session: updated });
+  }
+
+  // -------------------------------------------------------------
+  // Step 4.2: Session Recaps & Highlights
+  // -------------------------------------------------------------
+  const mapRecapRow = (r: any): SessionRecap => ({
+    id: r.id,
+    sessionId: r.session_id,
+    campaignId: r.campaign_id,
+    authorId: r.author_id,
+    authorName: r.author_name || 'کاربر',
+    sessionNumber: r.session_number !== null ? Number(r.session_number) : undefined,
+    sessionTitle: r.session_title || undefined,
+    title: r.title,
+    body: r.body,
+    visibility: r.visibility,
+    status: r.status,
+    linkedNpcIds: parseBlob(r.linked_npcs, []),
+    linkedLocationIds: parseBlob(r.linked_locations, []),
+    linkedQuestIds: parseBlob(r.linked_quests, []),
+    createdAt: Number(r.created_at),
+    updatedAt: Number(r.updated_at)
+  });
+
+  // GET /api/c/:id/recaps — list recaps for campaign
+  if (path.match(/^\/c\/[^/]+\/recaps$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    const urlObj = new URL(request.url);
+    const sessionIdParam = urlObj.searchParams.get('sessionId');
+    const searchParam = urlObj.searchParams.get('search');
+
+    let query = `
+      SELECT r.*, u.display_name AS author_name, s.number AS session_number, s.title AS session_title
+      FROM session_recaps r
+      LEFT JOIN users u ON r.author_id = u.id
+      LEFT JOIN sessions s ON r.session_id = s.id
+      WHERE r.campaign_id = ?
+    `;
+    const params: any[] = [campId];
+
+    if (!isDm) {
+      query += ` AND ( (r.status = 'published' AND r.visibility = 'party') OR r.author_id = ? )`;
+      params.push(actor.id);
+    }
+    if (sessionIdParam) {
+      query += ` AND r.session_id = ?`;
+      params.push(sessionIdParam);
+    }
+    if (searchParam && searchParam.trim()) {
+      query += ` AND (r.title LIKE ? OR r.body LIKE ?)`;
+      params.push(`%${searchParam.trim()}%`, `%${searchParam.trim()}%`);
+    }
+
+    query += ` ORDER BY r.created_at DESC`;
+    const res = await env.DB.prepare(query).bind(...params).all();
+    const list = (res.results || []).map(mapRecapRow);
+    return json(list);
+  }
+
+  // GET /api/c/:id/recaps/latest — latest published party recap
+  if (path.match(/^\/c\/[^/]+\/recaps\/latest$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    let query = `
+      SELECT r.*, u.display_name AS author_name, s.number AS session_number, s.title AS session_title
+      FROM session_recaps r
+      LEFT JOIN users u ON r.author_id = u.id
+      LEFT JOIN sessions s ON r.session_id = s.id
+      WHERE r.campaign_id = ?
+    `;
+    const params: any[] = [campId];
+    if (!isDm) {
+      query += ` AND r.status = 'published' AND r.visibility = 'party'`;
+    }
+    query += ` ORDER BY r.created_at DESC LIMIT 1`;
+
+    const row = await env.DB.prepare(query).bind(...params).first();
+    return json(row ? mapRecapRow(row) : null);
+  }
+
+  // POST /api/c/:id/recaps — create recap
+  if (path.match(/^\/c\/[^/]+\/recaps$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+
+    const campRow = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ?').bind(campId).first();
+    const campSettings = parseBlob(campRow?.settings, {});
+    const isDmGlobal = actor.role === 'dm';
+    const effectiveRole = isDmGlobal ? 'owner' : (myRole || 'player');
+
+    if (!canUserCreateRecap(effectiveRole as any, campSettings.allowPlayerRecaps)) {
+      return error('شما دسترسی لازم برای نگارش خلاصه جلسه را ندارید.', 403);
+    }
+
+    const body = await request.json() as any;
+    const val = validateRecapPayload({ title: body.title, body: body.body });
+    if (!val.valid) return error(val.error || 'اطلاعات نامعتبر است.', 400);
+
+    const recapId = `recap-${Date.now()}-${generateRandomToken(4)}`;
+    const sessionId = body.sessionId ? String(body.sessionId) : '';
+    const title = String(body.title).trim();
+    const recapBody = String(body.body).trim();
+    const visibility = body.visibility === 'dm_only' ? 'dm_only' : 'party';
+    const status = body.status === 'draft' ? 'draft' : 'published';
+    const linkedNpcs = JSON.stringify(body.linkedNpcIds || []);
+    const linkedLocs = JSON.stringify(body.linkedLocationIds || []);
+    const linkedQuests = JSON.stringify(body.linkedQuestIds || []);
+
+    await env.DB.prepare(
+      `INSERT INTO session_recaps (
+        id, session_id, campaign_id, author_id, title, body, visibility,
+        status, linked_npcs, linked_locations, linked_quests, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      recapId, sessionId, campId, actor.id, title, recapBody, visibility,
+      status, linkedNpcs, linkedLocs, linkedQuests, now, now
+    ).run();
+
+    await audit('recap-create', recapId, { campaignId: campId, sessionId, title });
+    const row = await env.DB.prepare(`
+      SELECT r.*, u.display_name AS author_name, s.number AS session_number, s.title AS session_title
+      FROM session_recaps r
+      LEFT JOIN users u ON r.author_id = u.id
+      LEFT JOIN sessions s ON r.session_id = s.id
+      WHERE r.id = ?
+    `).bind(recapId).first();
+    return json(mapRecapRow(row), 201);
+  }
+
+  // PATCH /api/c/:id/recaps/:recapId — edit recap
+  if (path.match(/^\/c\/[^/]+\/recaps\/[^/]+$/) && method === 'PATCH') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const recapId = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+
+    const existing = await env.DB.prepare('SELECT * FROM session_recaps WHERE id = ? AND campaign_id = ?').bind(recapId, campId).first();
+    if (!existing) return error('خلاصه جلسه یافت نشد.', 404);
+
+    const isDmGlobal = actor.role === 'dm';
+    const effectiveRole = isDmGlobal ? 'owner' : (myRole || 'player');
+    if (!canUserEditRecap({ authorId: existing.author_id } as any, effectiveRole as any, actor.id)) {
+      return error('شما دسترسی لازم برای ویرایش این خلاصه را ندارید.', 403);
+    }
+
+    const body = await request.json() as any;
+    const title = body.title !== undefined ? String(body.title).trim() : existing.title;
+    const recapBody = body.body !== undefined ? String(body.body).trim() : existing.body;
+    const visibility = body.visibility !== undefined && ['party', 'dm_only'].includes(body.visibility) ? body.visibility : existing.visibility;
+    const status = body.status !== undefined && ['draft', 'published'].includes(body.status) ? body.status : existing.status;
+    const linkedNpcs = body.linkedNpcIds !== undefined ? JSON.stringify(body.linkedNpcIds) : existing.linked_npcs;
+    const linkedLocs = body.linkedLocationIds !== undefined ? JSON.stringify(body.linkedLocationIds) : existing.linked_locations;
+    const linkedQuests = body.linkedQuestIds !== undefined ? JSON.stringify(body.linkedQuestIds) : existing.linked_quests;
+
+    await env.DB.prepare(
+      `UPDATE session_recaps SET
+        title = ?, body = ?, visibility = ?, status = ?,
+        linked_npcs = ?, linked_locations = ?, linked_quests = ?, updated_at = ?
+       WHERE id = ? AND campaign_id = ?`
+    ).bind(
+      title, recapBody, visibility, status,
+      linkedNpcs, linkedLocs, linkedQuests, now,
+      recapId, campId
+    ).run();
+
+    await audit('recap-update', recapId, { campaignId: campId });
+    const row = await env.DB.prepare(`
+      SELECT r.*, u.display_name AS author_name, s.number AS session_number, s.title AS session_title
+      FROM session_recaps r
+      LEFT JOIN users u ON r.author_id = u.id
+      LEFT JOIN sessions s ON r.session_id = s.id
+      WHERE r.id = ?
+    `).bind(recapId).first();
+    return json(mapRecapRow(row));
+  }
+
+  // DELETE /api/c/:id/recaps/:recapId — delete recap
+  if (path.match(/^\/c\/[^/]+\/recaps\/[^/]+$/) && method === 'DELETE') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const recapId = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+
+    const existing = await env.DB.prepare('SELECT author_id FROM session_recaps WHERE id = ? AND campaign_id = ?').bind(recapId, campId).first();
+    if (!existing) return error('خلاصه جلسه یافت نشد.', 404);
+
+    const isDmGlobal = actor.role === 'dm';
+    const effectiveRole = isDmGlobal ? 'owner' : (myRole || 'player');
+    if (!canUserEditRecap({ authorId: existing.author_id } as any, effectiveRole as any, actor.id)) {
+      return error('شما دسترسی لازم برای حذف این خلاصه را ندارید.', 403);
+    }
+
+    await env.DB.prepare('DELETE FROM session_recaps WHERE id = ? AND campaign_id = ?').bind(recapId, campId).run();
+    await audit('recap-delete', recapId, { campaignId: campId });
+    return json({ success: true });
+  }
+
+  // GET /api/c/:id/highlights — list session highlights
+  if (path.match(/^\/c\/[^/]+\/highlights$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    const urlObj = new URL(request.url);
+    const sessionIdParam = urlObj.searchParams.get('sessionId');
+
+    let query = `
+      SELECT h.*, cp.character_name, u.display_name AS player_name
+      FROM session_highlights h
+      LEFT JOIN character_participations cp ON h.participation_id = cp.id
+      LEFT JOIN characters c ON cp.character_id = c.id
+      LEFT JOIN users u ON c.owner_id = u.id
+      WHERE h.campaign_id = ?
+    `;
+    const params: any[] = [campId];
+
+    if (!isDm) {
+      query += ` AND h.visible_to_player = 1`;
+    }
+    if (sessionIdParam) {
+      query += ` AND h.session_id = ?`;
+      params.push(sessionIdParam);
+    }
+    query += ` ORDER BY h.created_at ASC`;
+
+    const res = await env.DB.prepare(query).bind(...params).all();
+    const list = (res.results || []).map((r: any): SessionHighlight => ({
+      id: r.id,
+      sessionId: r.session_id,
+      campaignId: r.campaign_id,
+      participationId: r.participation_id,
+      characterId: r.character_id,
+      characterName: r.character_name,
+      playerName: r.player_name,
+      text: r.text,
+      visibleToPlayer: Boolean(r.visible_to_player),
+      createdAt: Number(r.created_at)
+    }));
+    return json(list);
+  }
+
+  // POST /api/c/:id/highlights — create a highlight (DM only)
+  if (path.match(/^\/c\/[^/]+\/highlights$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    if (!(await requireCampaignDm(campId))) return error('فقط دانجن مستر مجاز به ثبت رویداد برجسته است.', 403);
+
+    const body = await request.json() as any;
+    const text = String(body.text || '').trim();
+    if (!text) return error('متن رویداد برجسته نمی‌تواند خالی باشد.', 400);
+
+    const hlId = `hl-${Date.now()}-${generateRandomToken(4)}`;
+    const sessionId = body.sessionId ? String(body.sessionId) : '';
+    const participationId = body.participationId ? String(body.participationId) : null;
+    const characterId = body.characterId ? String(body.characterId) : null;
+    const visibleToPlayer = body.visibleToPlayer === false || body.visibleToPlayer === 0 ? 0 : 1;
+
+    await env.DB.prepare(
+      `INSERT INTO session_highlights (
+        id, session_id, campaign_id, participation_id, character_id, text, visible_to_player, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(hlId, sessionId, campId, participationId, characterId, text, visibleToPlayer, now).run();
+
+    // Create milestone history event for character
+    if (characterId) {
+      const sess = await env.DB.prepare('SELECT number FROM sessions WHERE id = ?').bind(sessionId).first();
+      const hist = buildHighlightHistoryEvent({
+        id: hlId,
+        sessionId,
+        campaignId: campId,
+        characterId,
+        text,
+        visibleToPlayer,
+        createdAt: now
+      }, sess?.number ? Number(sess.number) : undefined);
+
+      await env.DB.prepare(
+        `INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp)
+         VALUES (?, ?, ?, ?, ?, ?)`
+      ).bind(
+        `hist-hl-${Date.now()}-${generateRandomToken(3)}`,
+        characterId,
+        campId,
+        hist.eventType,
+        JSON.stringify(hist.payload),
+        now
+      ).run();
+    }
+
+    await audit('highlight-create', hlId, { campaignId: campId, sessionId, text });
+    return json({
+      id: hlId,
+      sessionId,
+      campaignId: campId,
+      participationId,
+      characterId,
+      text,
+      visibleToPlayer: Boolean(visibleToPlayer),
+      createdAt: now
+    }, 201);
+  }
+
+  // DELETE /api/c/:id/highlights/:highlightId
+  if (path.match(/^\/c\/[^/]+\/highlights\/[^/]+$/) && method === 'DELETE') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const highlightId = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    await env.DB.prepare('DELETE FROM session_highlights WHERE id = ? AND campaign_id = ?').bind(highlightId, campId).run();
+    await audit('highlight-delete', highlightId, { campaignId: campId });
+    return json({ success: true });
+  }
+
+  // POST /api/c/:id/sessions/:sid/close — closing sheet bundled action
+  if (path.match(/^\/c\/[^/]+\/sessions\/[^/]+\/close$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const sid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const s = await env.DB.prepare('SELECT * FROM sessions WHERE id = ? AND campaign_id = ?').bind(sid, campId).first();
+    if (!s) return error('جلسه یافت نشد.', 404);
+
+    const body = await request.json() as any;
+
+    // 1. Mark session done
+    await env.DB.prepare("UPDATE sessions SET status = 'done', updated_at = ? WHERE id = ? AND campaign_id = ?")
+      .bind(now, sid, campId).run();
+
+    // 2. Insert recap if provided
+    let createdRecap: any = null;
+    if (body.recap && body.recap.title && body.recap.body) {
+      const recapId = `recap-${Date.now()}-${generateRandomToken(4)}`;
+      const title = String(body.recap.title).trim();
+      const rBody = String(body.recap.body).trim();
+      const visibility = body.recap.visibility === 'dm_only' ? 'dm_only' : 'party';
+      const status = body.recap.status === 'draft' ? 'draft' : 'published';
+      const linkedNpcs = JSON.stringify(body.recap.linkedNpcIds || []);
+      const linkedLocs = JSON.stringify(body.recap.linkedLocationIds || []);
+      const linkedQuests = JSON.stringify(body.recap.linkedQuestIds || []);
+
+      await env.DB.prepare(
+        `INSERT INTO session_recaps (
+          id, session_id, campaign_id, author_id, title, body, visibility,
+          status, linked_npcs, linked_locations, linked_quests, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(recapId, sid, campId, actor.id, title, rBody, visibility, status, linkedNpcs, linkedLocs, linkedQuests, now, now).run();
+
+      const rRow = await env.DB.prepare(`
+        SELECT r.*, u.display_name AS author_name, s.number AS session_number, s.title AS session_title
+        FROM session_recaps r
+        LEFT JOIN users u ON r.author_id = u.id
+        LEFT JOIN sessions s ON r.session_id = s.id
+        WHERE r.id = ?
+      `).bind(recapId).first();
+      createdRecap = mapRecapRow(rRow);
+    }
+
+    // 3. Award XP if provided
+    if (body.xpAward && body.xpAward.amount > 0) {
+      const amount = Number(body.xpAward.amount);
+      if (body.xpAward.isPartyWide || !body.xpAward.participationId) {
+        await env.DB.prepare(
+          "UPDATE character_participations SET xp = COALESCE(xp, 0) + ?, updated_at = ? WHERE campaign_id = ? AND status = 'active'"
+        ).bind(amount, now, campId).run();
+      } else {
+        await env.DB.prepare(
+          'UPDATE character_participations SET xp = COALESCE(xp, 0) + ?, updated_at = ? WHERE id = ? AND campaign_id = ?'
+        ).bind(amount, now, body.xpAward.participationId, campId).run();
+      }
+    }
+
+    // 4. Milestone level-ups if provided
+    if (body.milestoneLevelUps && Array.isArray(body.milestoneLevelUps) && body.milestoneLevelUps.length > 0) {
+      for (const pId of body.milestoneLevelUps) {
+        await env.DB.prepare(
+          'UPDATE character_participations SET level_up_available = 1, updated_at = ? WHERE id = ? AND campaign_id = ?'
+        ).bind(now, pId, campId).run();
+      }
+    }
+
+    // 5. Highlights if provided
+    const createdHighlights: any[] = [];
+    if (body.highlights && Array.isArray(body.highlights) && body.highlights.length > 0) {
+      for (const hl of body.highlights) {
+        if (!hl.text || !hl.text.trim()) continue;
+        const hlId = `hl-${Date.now()}-${generateRandomToken(4)}`;
+        const pId = hl.participationId ? String(hl.participationId) : null;
+        const cId = hl.characterId ? String(hl.characterId) : null;
+        const vis = hl.visibleToPlayer === false ? 0 : 1;
+
+        await env.DB.prepare(
+          `INSERT INTO session_highlights (
+            id, session_id, campaign_id, participation_id, character_id, text, visible_to_player, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(hlId, sid, campId, pId, cId, hl.text.trim(), vis, now).run();
+
+        if (cId) {
+          const hist = buildHighlightHistoryEvent({
+            id: hlId,
+            sessionId: sid,
+            campaignId: campId,
+            characterId: cId,
+            text: hl.text.trim(),
+            visibleToPlayer: vis,
+            createdAt: now
+          }, s.number ? Number(s.number) : undefined);
+
+          await env.DB.prepare(
+            `INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp)
+             VALUES (?, ?, ?, ?, ?, ?)`
+          ).bind(
+            `hist-hl-${Date.now()}-${generateRandomToken(3)}`,
+            cId,
+            campId,
+            hist.eventType,
+            JSON.stringify(hist.payload),
+            now
+          ).run();
+        }
+
+        createdHighlights.push({
+          id: hlId,
+          sessionId: sid,
+          campaignId: campId,
+          participationId: pId,
+          characterId: cId,
+          text: hl.text.trim(),
+          visibleToPlayer: Boolean(vis),
+          createdAt: now
+        });
+      }
+    }
+
+    await audit('session-close', sid, { campaignId: campId });
+    const updatedSession = await loadFullSession(campId, sid, 'owner');
+    return json({
+      session: updatedSession,
+      recap: createdRecap,
+      highlights: createdHighlights
+    });
   }
 
   // 404 Fallback

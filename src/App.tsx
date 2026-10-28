@@ -9,10 +9,12 @@ import {
   RewardPackage, CampaignNote, Encounter, WeaponTemplate, ClassTemplate, DiceRollResult,
   LocationEntry, PlayerEncounterView, Campaign, MasterCharacter, CampaignInvite, 
   CampaignMember, CharacterHistoryEvent, CharacterParticipation, CampaignRole, CampaignSettings,
-  LineageTemplate, BackgroundTemplate
+  LineageTemplate, BackgroundTemplate, Session, SessionStatus, SessionRsvpChoice,
+  SessionRecap, SessionHighlight
 } from './types';
 import { api, HttpApi } from './services/api';
 import { pageTitle } from './config/app';
+import { partitionSessions } from '../shared/rules/sessionEngine';
 import { Header } from './components/Header';
 import { BottomNav } from './components/mobile/BottomNav';
 import { StickyHeader } from './components/common/StickyHeader';
@@ -53,6 +55,16 @@ const CampaignApprovalsModal = React.lazy(() => import('./components/campaign/Ca
 const CharacterCreationWizardModal = React.lazy(() => import('./components/character-wizard/CharacterCreationWizardModal').then(m => ({ default: m.CharacterCreationWizardModal })));
 const LevelUpModal = React.lazy(() => import('./components/character/LevelUpModal').then(m => ({ default: m.LevelUpModal })));
 const SheetChangeRequestModal = React.lazy(() => import('./components/character/SheetChangeRequestModal').then(m => ({ default: m.SheetChangeRequestModal })));
+
+// Step 4.1: Sessions & Scheduling Sheets
+const SessionListSheet = React.lazy(() => import('./components/session/SessionListSheet').then(m => ({ default: m.SessionListSheet })));
+const SessionEditorSheet = React.lazy(() => import('./components/session/SessionEditorSheet').then(m => ({ default: m.SessionEditorSheet })));
+const SessionAttendanceModal = React.lazy(() => import('./components/session/SessionAttendanceModal').then(m => ({ default: m.SessionAttendanceModal })));
+
+// Step 4.2: Session Recaps & Rewards Sheets
+const SessionClosingSheet = React.lazy(() => import('./components/session/SessionClosingSheet').then(m => ({ default: m.SessionClosingSheet })));
+const RecapArchiveSheet = React.lazy(() => import('./components/session/RecapArchiveSheet').then(m => ({ default: m.RecapArchiveSheet })));
+const RecapEditorSheet = React.lazy(() => import('./components/session/RecapEditorSheet').then(m => ({ default: m.RecapEditorSheet })));
 
 // Loading skeleton fallback for tabs
 const TabSkeleton = () => (
@@ -162,6 +174,38 @@ export default function App() {
   const [campaignParticipations, setCampaignParticipations] = useState<CharacterParticipation[]>([]);
   const [levelUpModalOpen, setLevelUpModalOpen] = useState(false);
   const [sheetChangeRequestOpen, setSheetChangeRequestOpen] = useState(false);
+
+  // Step 4.1: Sessions & Scheduling State
+  const [campaignSessions, setCampaignSessions] = useState<Session[]>([]);
+  const [sessionListOpen, setSessionListOpen] = useState(false);
+  const [sessionEditorModal, setSessionEditorModal] = useState<{
+    isOpen: boolean;
+    session?: Session | null;
+  }>({
+    isOpen: false,
+    session: null
+  });
+  const [attendanceModal, setAttendanceModal] = useState<{
+    isOpen: boolean;
+    session: Session | null;
+  }>({
+    isOpen: false,
+    session: null
+  });
+
+  // Step 4.2: Session Recaps & Rewards State
+  const [latestRecap, setLatestRecap] = useState<SessionRecap | null>(null);
+  const [campaignRecaps, setCampaignRecaps] = useState<SessionRecap[]>([]);
+  const [recapArchiveOpen, setRecapArchiveOpen] = useState(false);
+  const [closingSheetSession, setClosingSheetSession] = useState<Session | null>(null);
+  const [recapEditorState, setRecapEditorState] = useState<{
+    isOpen: boolean;
+    recap?: SessionRecap | null;
+    sessionId?: string;
+  }>({
+    isOpen: false,
+    recap: null
+  });
 
   // Dice & Rest Modals
   const [diceModalOpen, setDiceModalOpen] = useState(false);
@@ -384,6 +428,16 @@ export default function App() {
 
       const activeEnc = await api.getActiveEncounter().catch(() => null);
       setActiveLiveEncounter(activeEnc);
+
+      const sessList = await api.listSessions(campaignId).catch(() => []);
+      setCampaignSessions(sessList);
+
+      const [latestR, recapsList] = await Promise.all([
+        api.getLatestRecap(campaignId).catch(() => null),
+        api.listRecaps(campaignId).catch(() => [])
+      ]);
+      setLatestRecap(latestR);
+      setCampaignRecaps(recapsList);
 
       const campSettings = await api.getCampaignSettings().catch(() => ({
         allowPlayerCreateCharacter: camp.settings?.allowPlayerCreateCharacter ?? true
@@ -672,6 +726,158 @@ export default function App() {
       window.location.hash = `#c/${res.campaignId}/overview`;
     } catch (err: any) {
       showToast(err.message || 'کد دعوت نامعتبر یا منقضی شده است.');
+    }
+  };
+
+  // Step 4.1 Session Handlers
+  const handleRsvpSession = async (sessionId: string, status: SessionRsvpChoice, note?: string) => {
+    if (!activeCampaignId) return;
+    try {
+      await api.rsvpSession(activeCampaignId, sessionId, status, note);
+      const updatedList = await api.listSessions(activeCampaignId).catch(() => []);
+      setCampaignSessions(updatedList);
+      showToast('پاسخ حضور در جلسه ثبت شد.');
+    } catch (e: any) {
+      showToast(e.message || 'خطا در ثبت پاسخ حضور.');
+    }
+  };
+
+  const handleVoteSessionPoll = async (sessionId: string, optionId: string, choice: SessionRsvpChoice) => {
+    if (!activeCampaignId) return;
+    try {
+      await api.voteSessionPoll(activeCampaignId, sessionId, optionId, choice);
+      const updatedList = await api.listSessions(activeCampaignId).catch(() => []);
+      setCampaignSessions(updatedList);
+      showToast('رأی شما در نظرسنجی تاریخ جلسه ثبت شد.');
+    } catch (e: any) {
+      showToast(e.message || 'خطا در ثبت رأی.');
+    }
+  };
+
+  const handleConfirmPollOption = async (sessionId: string, optionId: string) => {
+    if (!activeCampaignId) return;
+    try {
+      await api.confirmSessionPoll(activeCampaignId, sessionId, optionId);
+      const updatedList = await api.listSessions(activeCampaignId).catch(() => []);
+      setCampaignSessions(updatedList);
+      showToast('تاریخ جلسه نهایی و تثبیت شد.');
+    } catch (e: any) {
+      showToast(e.message || 'خطا در نهایی‌سازی تاریخ جلسه.');
+    }
+  };
+
+  const handleSaveSession = async (data: {
+    sessionId?: string;
+    title: string;
+    number?: number;
+    scheduledAt?: string | null;
+    durationMinutes?: number;
+    placeText?: string;
+    onlineUrl?: string;
+    status?: SessionStatus;
+    inWorldDate?: string | null;
+    dmNotes?: string;
+    pollOptions?: Array<{ startsAt: string }>;
+  }) => {
+    if (!activeCampaignId) return;
+    try {
+      if (data.sessionId) {
+        await api.updateSession(activeCampaignId, data.sessionId, data);
+        showToast('جلسه با موفقیت به‌روزرسانی شد.');
+      } else {
+        await api.createSession(activeCampaignId, data);
+        showToast('جلسه جدید با موفقیت برنامه‌ریزی شد.');
+      }
+      const updatedList = await api.listSessions(activeCampaignId).catch(() => []);
+      setCampaignSessions(updatedList);
+      setSessionEditorModal({ isOpen: false, session: null });
+    } catch (e: any) {
+      showToast(e.message || 'خطا در ذخیره جلسه.');
+    }
+  };
+
+  const handleDeleteSession = async (sessionId: string) => {
+    if (!activeCampaignId) return;
+    try {
+      await api.deleteSession(activeCampaignId, sessionId);
+      setCampaignSessions(prev => prev.filter(s => s.id !== sessionId));
+      showToast('جلسه حذف گردید.');
+      setSessionEditorModal({ isOpen: false, session: null });
+    } catch (e: any) {
+      showToast(e.message || 'خطا در حذف جلسه.');
+    }
+  };
+
+  const handleSubmitAttendance = async (
+    sessionId: string,
+    attendance: Array<{ participationId: string; attended: boolean }>
+  ) => {
+    if (!activeCampaignId) return;
+    try {
+      await api.recordSessionAttendance(activeCampaignId, sessionId, attendance);
+      showToast('حضور و غیاب ثبت و جلسه پایان یافت.');
+      setAttendanceModal({ isOpen: false, session: null });
+      await loadCampaignWorkspace(activeCampaignId);
+    } catch (e: any) {
+      showToast(e.message || 'خطا در ثبت حضور و غیاب.');
+    }
+  };
+
+  // Step 4.2: Session Recaps & Rewards Handlers
+  const handleSaveRecap = async (recapData: any) => {
+    if (!activeCampaignId) return;
+    try {
+      if (recapData.id) {
+        const updated = await api.updateRecap(activeCampaignId, recapData.id, recapData);
+        setCampaignRecaps(prev => prev.map(r => r.id === updated.id ? updated : r));
+        if (latestRecap?.id === updated.id) setLatestRecap(updated);
+        showToast('خلاصه جلسه به‌روزرسانی شد.');
+      } else {
+        const created = await api.createRecap(activeCampaignId, recapData);
+        setCampaignRecaps(prev => [created, ...prev]);
+        if (created.status === 'published') {
+          setLatestRecap(created);
+        }
+        showToast('خلاصه جدید با موفقیت ثبت شد.');
+      }
+      setRecapEditorState({ isOpen: false, recap: null });
+      const latest = await api.getLatestRecap(activeCampaignId).catch(() => null);
+      setLatestRecap(latest);
+    } catch (err: any) {
+      showToast(err.message || 'خطا در ذخیره خلاصه.');
+      throw err;
+    }
+  };
+
+  const handleDeleteRecap = async (recapId: string) => {
+    if (!activeCampaignId) return;
+    try {
+      await api.deleteRecap(activeCampaignId, recapId);
+      setCampaignRecaps(prev => prev.filter(r => r.id !== recapId));
+      if (latestRecap?.id === recapId) {
+        const latest = await api.getLatestRecap(activeCampaignId).catch(() => null);
+        setLatestRecap(latest);
+      }
+      showToast('خلاصه جلسه حذف شد.');
+    } catch (err: any) {
+      showToast(err.message || 'خطا در حذف خلاصه.');
+    }
+  };
+
+  const handleCloseSessionSubmit = async (data: {
+    recap?: any;
+    rewards?: any;
+    highlights?: Array<{ participationId?: string; text: string; visibleToPlayer: boolean }>;
+  }) => {
+    if (!activeCampaignId || !closingSheetSession) return;
+    try {
+      await api.closeSession(activeCampaignId, closingSheetSession.id, data);
+      showToast(`جلسه «${closingSheetSession.title}» پایان یافت و پاداش‌ها و خلاصه ثبت شد.`);
+      setClosingSheetSession(null);
+      await loadCampaignWorkspace(activeCampaignId);
+    } catch (err: any) {
+      showToast(err.message || 'خطا در بستن جلسه و ثبت پاداش‌ها.');
+      throw err;
     }
   };
 
@@ -986,6 +1192,19 @@ export default function App() {
                     showToast('تغییرات مستقیم دانجن مستر اعمال و در لاگ ثبت شد.');
                     await loadCampaignWorkspace(activeCampaignId);
                   }}
+                  sessions={campaignSessions}
+                  onRsvpSession={handleRsvpSession}
+                  onVoteSessionPoll={handleVoteSessionPoll}
+                  onConfirmPollOption={handleConfirmPollOption}
+                  onOpenSessionList={() => setSessionListOpen(true)}
+                  onOpenCreateSession={() => setSessionEditorModal({ isOpen: true, session: null })}
+                  onOpenAttendance={(s) => setAttendanceModal({ isOpen: true, session: s })}
+                  onEditSession={(s) => setSessionEditorModal({ isOpen: true, session: s })}
+                  onOpenClosingSheet={(s) => setClosingSheetSession(s)}
+                  latestRecap={latestRecap}
+                  onOpenRecapArchive={() => setRecapArchiveOpen(true)}
+                  onOpenCreateRecap={() => setRecapEditorState({ isOpen: true, recap: null, sessionId: partitionSessions(campaignSessions).nextSession?.id })}
+                  onEditRecap={(r) => setRecapEditorState({ isOpen: true, recap: r, sessionId: r.sessionId })}
                 />
               ) : activeCharacter ? (
                 /* Player Character Sheet */
@@ -1003,6 +1222,24 @@ export default function App() {
                       xp={activeParticipation?.xp}
                       onOpenLevelUp={() => setLevelUpModalOpen(true)}
                       onOpenSheetChangeRequest={() => setSheetChangeRequestOpen(true)}
+                      nextSession={partitionSessions(campaignSessions).nextSession}
+                      campaign={activeCampaign}
+                      currentUser={currentUser}
+                      userRole={activeCampaign?.myRole || (currentUser?.role === 'dm' ? 'owner' : 'player')}
+                      onRsvpSession={handleRsvpSession}
+                      onVoteSessionPoll={handleVoteSessionPoll}
+                      onConfirmPollOption={handleConfirmPollOption}
+                      onOpenSessionList={() => setSessionListOpen(true)}
+                      onOpenCreateSession={() => setSessionEditorModal({ isOpen: true, session: null })}
+                      onOpenAttendance={(s) => setAttendanceModal({ isOpen: true, session: s })}
+                      onEditSession={(s) => setSessionEditorModal({ isOpen: true, session: s })}
+                      latestRecap={latestRecap}
+                      npcs={npcs}
+                      locations={locations}
+                      campaignNotes={campaignNotes}
+                      onOpenRecapArchive={() => setRecapArchiveOpen(true)}
+                      onOpenCreateRecap={() => setRecapEditorState({ isOpen: true, recap: null, sessionId: partitionSessions(campaignSessions).nextSession?.id })}
+                      onEditRecap={(r) => setRecapEditorState({ isOpen: true, recap: r, sessionId: r.sessionId })}
                     />
                   )}
 
@@ -1397,6 +1634,135 @@ export default function App() {
               showToast('درخواست تغییر برگه برای دانجن مستر ارسال گردید.');
               await loadCampaignWorkspace(activeCampaign.id);
             }}
+          />
+        )}
+
+        {/* Session List Bottom Sheet (Step 4.1) */}
+        {sessionListOpen && activeCampaign && (
+          <SessionListSheet
+            isOpen={sessionListOpen}
+            onClose={() => setSessionListOpen(false)}
+            sessions={campaignSessions}
+            campaign={activeCampaign}
+            currentUser={currentUser}
+            userRole={activeCampaign.myRole || (currentUser?.role === 'dm' ? 'owner' : 'player')}
+            onOpenCreateSession={() => {
+              setSessionListOpen(false);
+              setSessionEditorModal({ isOpen: true, session: null });
+            }}
+            onEditSession={(s) => {
+              setSessionListOpen(false);
+              setSessionEditorModal({ isOpen: true, session: s });
+            }}
+            onDeleteSession={async (sid) => {
+              await handleDeleteSession(sid);
+            }}
+            onOpenAttendance={(s) => {
+              setSessionListOpen(false);
+              setAttendanceModal({ isOpen: true, session: s });
+            }}
+            onOpenClosingSheet={(s) => {
+              setSessionListOpen(false);
+              setClosingSheetSession(s);
+            }}
+            onOpenRecapArchive={() => {
+              setSessionListOpen(false);
+              setRecapArchiveOpen(true);
+            }}
+          />
+        )}
+
+        {/* Session Editor / Create Sheet (Step 4.1) */}
+        {sessionEditorModal.isOpen && activeCampaign && (
+          <SessionEditorSheet
+            isOpen={sessionEditorModal.isOpen}
+            onClose={() => setSessionEditorModal({ isOpen: false, session: null })}
+            sessionToEdit={sessionEditorModal.session}
+            campaignId={activeCampaign.id}
+            onSave={handleSaveSession}
+          />
+        )}
+
+        {/* Session Attendance Checklist Modal (Step 4.1) */}
+        {attendanceModal.isOpen && attendanceModal.session && activeCampaign && (
+          <SessionAttendanceModal
+            isOpen={attendanceModal.isOpen}
+            onClose={() => setAttendanceModal({ isOpen: false, session: null })}
+            session={attendanceModal.session}
+            campaignId={activeCampaign.id}
+            characters={characters}
+            participations={campaignParticipations}
+            onSubmitAttendance={handleSubmitAttendance}
+            onProceedToClosingSheet={(s) => {
+              setClosingSheetSession(s);
+            }}
+          />
+        )}
+
+        {/* Session Closing Sheet (Step 4.2 - Recap, XP/Milestones, Highlights, Links) */}
+        {closingSheetSession && activeCampaign && (
+          <SessionClosingSheet
+            isOpen={Boolean(closingSheetSession)}
+            onClose={() => setClosingSheetSession(null)}
+            session={closingSheetSession}
+            campaign={activeCampaign}
+            participations={campaignParticipations}
+            characters={characters}
+            npcs={npcs}
+            locations={locations}
+            campaignNotes={campaignNotes}
+            currentUser={currentUser}
+            userRole={activeCampaign.myRole || (currentUser?.role === 'dm' ? 'owner' : 'player')}
+            onCloseSession={handleCloseSessionSubmit}
+          />
+        )}
+
+        {/* Recap Archive Sheet (Step 4.2) */}
+        {recapArchiveOpen && activeCampaign && (
+          <RecapArchiveSheet
+            isOpen={recapArchiveOpen}
+            onClose={() => setRecapArchiveOpen(false)}
+            recaps={campaignRecaps}
+            sessions={campaignSessions}
+            campaign={activeCampaign}
+            currentUser={currentUser}
+            userRole={activeCampaign.myRole || (currentUser?.role === 'dm' ? 'owner' : 'player')}
+            npcs={npcs}
+            locations={locations}
+            campaignNotes={campaignNotes}
+            onOpenCreateRecap={() => {
+              setRecapEditorState({
+                isOpen: true,
+                recap: null,
+                sessionId: partitionSessions(campaignSessions).nextSession?.id
+              });
+            }}
+            onEditRecap={(r) => {
+              setRecapEditorState({
+                isOpen: true,
+                recap: r,
+                sessionId: r.sessionId
+              });
+            }}
+            onDeleteRecap={handleDeleteRecap}
+          />
+        )}
+
+        {/* Recap Editor Sheet (Step 4.2) */}
+        {recapEditorState.isOpen && activeCampaign && (
+          <RecapEditorSheet
+            isOpen={recapEditorState.isOpen}
+            onClose={() => setRecapEditorState({ isOpen: false, recap: null })}
+            recapToEdit={recapEditorState.recap}
+            sessions={campaignSessions}
+            defaultSessionId={recapEditorState.sessionId}
+            campaignId={activeCampaign.id}
+            currentUser={currentUser}
+            userRole={activeCampaign.myRole || (currentUser?.role === 'dm' ? 'owner' : 'player')}
+            npcs={npcs}
+            locations={locations}
+            campaignNotes={campaignNotes}
+            onSave={handleSaveRecap}
           />
         )}
 
