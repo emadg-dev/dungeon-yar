@@ -74,7 +74,11 @@ import {
   SessionPoll,
   SessionPollOption,
   SessionPollVote,
-  SessionAttendance
+  SessionAttendance,
+  SessionRecap,
+  SessionRecapVisibility,
+  SessionRecapStatus,
+  SessionHighlight
 } from '../types';
 import { rollAbilityScores } from '../../shared/rules/engine';
 import { computeAuthoritativeParticipation, createSnapshot, pruneSnapshots } from '../../shared/rules/wizardEngine';
@@ -89,6 +93,16 @@ import {
   calculatePollTally,
   buildAttendanceHistoryEvent
 } from '../../shared/rules/sessionEngine';
+import {
+  filterRecapForViewer,
+  filterRecapsForViewer,
+  filterHighlightForViewer,
+  canUserCreateRecap,
+  canUserEditRecap,
+  validateRecapPayload,
+  searchRecaps,
+  buildHighlightHistoryEvent
+} from '../../shared/rules/recapEngine';
 import { APP_NAME_FA } from '../config/app';
 import {
   SEED_USERS,
@@ -115,7 +129,9 @@ import {
   SEED_FACTIONS,
   SEED_CAMPAIGN_DOCS,
   SEED_GENERIC_CALENDAR,
-  SEED_SESSIONS
+  SEED_SESSIONS,
+  SEED_RECAPS,
+  SEED_HIGHLIGHTS
 } from '../data/seed';
 import {
   CloneRequest,
@@ -636,6 +652,40 @@ export interface ApiClient {
   voteSessionPoll(campaignId: string, sessionId: string, optionId: string, choice: SessionRsvpChoice): Promise<SessionPoll>;
   confirmSessionPoll(campaignId: string, sessionId: string, optionId: string): Promise<Session>;
   recordSessionAttendance(campaignId: string, sessionId: string, attendance: Array<{ participationId: string; attended: boolean }>): Promise<{ success: boolean; session?: Session }>;
+
+  // Step 4.2: Session Recaps & Highlights
+  listRecaps(campaignId: string, options?: { sessionId?: string; search?: string }): Promise<SessionRecap[]>;
+  getLatestRecap(campaignId: string): Promise<SessionRecap | null>;
+  createRecap(campaignId: string, data: Partial<SessionRecap>): Promise<SessionRecap>;
+  updateRecap(campaignId: string, recapId: string, data: Partial<SessionRecap>): Promise<SessionRecap>;
+  deleteRecap(campaignId: string, recapId: string): Promise<void>;
+  listHighlights(campaignId: string, sessionId?: string): Promise<SessionHighlight[]>;
+  createHighlight(campaignId: string, data: Partial<SessionHighlight>): Promise<SessionHighlight>;
+  deleteHighlight(campaignId: string, highlightId: string): Promise<void>;
+  closeSession(campaignId: string, sessionId: string, data: {
+    recap?: {
+      title: string;
+      body: string;
+      visibility?: SessionRecapVisibility;
+      status?: SessionRecapStatus;
+      linkedNpcIds?: string[];
+      linkedLocationIds?: string[];
+      linkedQuestIds?: string[];
+    };
+    xpAward?: {
+      amount: number;
+      reason?: string;
+      isPartyWide?: boolean;
+      participationId?: string;
+    };
+    milestoneLevelUps?: string[];
+    highlights?: Array<{
+      participationId?: string;
+      characterId?: string;
+      text: string;
+      visibleToPlayer?: boolean;
+    }>;
+  }): Promise<{ session: Session; recap?: SessionRecap; highlights?: SessionHighlight[] }>;
 }
 
 // ----------------------------------------------------------------------
@@ -5421,6 +5471,250 @@ export class LocalApi implements ApiClient {
 
     return { success: true, session: s };
   }
+
+  // Step 4.2: Session Recaps & Highlights (LocalApi)
+  async listRecaps(campaignId: string, options?: { sessionId?: string; search?: string }): Promise<SessionRecap[]> {
+    const all = this.getItem<SessionRecap[]>('session_recaps', SEED_RECAPS);
+    let list = all.filter(r => r.campaignId === campaignId);
+
+    if (options?.sessionId) {
+      list = list.filter(r => r.sessionId === options.sessionId);
+    }
+    if (options?.search) {
+      list = searchRecaps(list, options.search);
+    }
+
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const isDm = this.currentUser?.role === 'dm' || myMember?.role === 'owner' || myMember?.role === 'co_dm';
+
+    const filtered = filterRecapsForViewer(list, isDm, this.currentUser?.id);
+    return filtered.sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  async getLatestRecap(campaignId: string): Promise<SessionRecap | null> {
+    const list = await this.listRecaps(campaignId);
+    return list[0] || null;
+  }
+
+  async createRecap(campaignId: string, data: Partial<SessionRecap>): Promise<SessionRecap> {
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const campaigns = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = campaigns.find(c => c.id === campaignId);
+    const userRole = myMember?.role || (this.currentUser?.role === 'dm' ? 'owner' : 'player');
+
+    if (!canUserCreateRecap(userRole as any, camp?.settings?.allowPlayerRecaps)) {
+      throw new Error('شما دسترسی لازم برای نگارش خلاصه جلسه را ندارید.');
+    }
+
+    const val = validateRecapPayload({ title: data.title, body: data.body });
+    if (!val.valid) throw new Error(val.error || 'اطلاعات خلاصه نامعتبر است.');
+
+    const sessions = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+    const s = sessions.find(sess => sess.id === data.sessionId);
+
+    const newRecap: SessionRecap = {
+      id: `recap-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      sessionId: data.sessionId || '',
+      campaignId,
+      authorId: this.currentUser?.id || 'user-dm',
+      authorName: this.currentUser?.displayName || this.currentUser?.name || 'دانجن مستر',
+      sessionNumber: s?.number || data.sessionNumber,
+      sessionTitle: s?.title || data.sessionTitle,
+      title: data.title!.trim(),
+      body: data.body!.trim(),
+      visibility: data.visibility || 'party',
+      status: data.status || 'published',
+      linkedNpcIds: data.linkedNpcIds || [],
+      linkedLocationIds: data.linkedLocationIds || [],
+      linkedQuestIds: data.linkedQuestIds || [],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+
+    const all = this.getItem<SessionRecap[]>('session_recaps', SEED_RECAPS);
+    all.unshift(newRecap);
+    this.setItem('session_recaps', all);
+    return newRecap;
+  }
+
+  async updateRecap(campaignId: string, recapId: string, data: Partial<SessionRecap>): Promise<SessionRecap> {
+    const all = this.getItem<SessionRecap[]>('session_recaps', SEED_RECAPS);
+    const idx = all.findIndex(r => r.id === recapId && r.campaignId === campaignId);
+    if (idx === -1) throw new Error('خلاصه جلسه یافت نشد.');
+
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const userRole = myMember?.role || (this.currentUser?.role === 'dm' ? 'owner' : 'player');
+
+    if (!canUserEditRecap(all[idx], userRole as any, this.currentUser?.id)) {
+      throw new Error('شما مجاز به ویرایش این خلاصه نیستید.');
+    }
+
+    const updated: SessionRecap = {
+      ...all[idx],
+      ...data,
+      updatedAt: Date.now()
+    };
+    all[idx] = updated;
+    this.setItem('session_recaps', all);
+    return updated;
+  }
+
+  async deleteRecap(campaignId: string, recapId: string): Promise<void> {
+    const all = this.getItem<SessionRecap[]>('session_recaps', SEED_RECAPS);
+    const target = all.find(r => r.id === recapId && r.campaignId === campaignId);
+    if (!target) return;
+
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const userRole = myMember?.role || (this.currentUser?.role === 'dm' ? 'owner' : 'player');
+
+    if (!canUserEditRecap(target, userRole as any, this.currentUser?.id)) {
+      throw new Error('شما مجاز به حذف این خلاصه نیستید.');
+    }
+
+    const filtered = all.filter(r => r.id !== recapId);
+    this.setItem('session_recaps', filtered);
+  }
+
+  async listHighlights(campaignId: string, sessionId?: string): Promise<SessionHighlight[]> {
+    const all = this.getItem<SessionHighlight[]>('session_highlights', SEED_HIGHLIGHTS);
+    let list = all.filter(h => h.campaignId === campaignId);
+    if (sessionId) {
+      list = list.filter(h => h.sessionId === sessionId);
+    }
+
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const isDm = this.currentUser?.role === 'dm' || myMember?.role === 'owner' || myMember?.role === 'co_dm';
+
+    return list
+      .map(h => filterHighlightForViewer(h, isDm))
+      .filter((h): h is SessionHighlight => h !== null);
+  }
+
+  async createHighlight(campaignId: string, data: Partial<SessionHighlight>): Promise<SessionHighlight> {
+    if (!data.text || !data.text.trim()) throw new Error('متن رویداد برجسته نمی‌تواند خالی باشد.');
+
+    const participations = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = data.participationId ? participations.find(p => p.id === data.participationId) : null;
+
+    const newHl: SessionHighlight = {
+      id: `hl-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      sessionId: data.sessionId || '',
+      campaignId,
+      participationId: data.participationId || null,
+      characterId: data.characterId || part?.characterId || null,
+      characterName: data.characterName || part?.characterName,
+      text: data.text.trim(),
+      visibleToPlayer: data.visibleToPlayer ?? true,
+      createdAt: Date.now()
+    };
+
+    const all = this.getItem<SessionHighlight[]>('session_highlights', SEED_HIGHLIGHTS);
+    all.push(newHl);
+    this.setItem('session_highlights', all);
+
+    // If linked to character, create a milestone history event
+    if (newHl.characterId) {
+      const sessions = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+      const s = sessions.find(sess => sess.id === newHl.sessionId);
+      const historyEvents = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+      const hist = buildHighlightHistoryEvent(newHl, s?.number);
+      historyEvents.push({
+        id: `hist-hl-${Date.now()}`,
+        characterId: newHl.characterId,
+        campaignId,
+        eventType: hist.eventType,
+        payload: {
+          title: hist.title,
+          description: hist.description
+        },
+        timestamp: hist.timestamp
+      });
+      this.setItem('character_history_events', historyEvents);
+    }
+
+    return newHl;
+  }
+
+  async deleteHighlight(campaignId: string, highlightId: string): Promise<void> {
+    const all = this.getItem<SessionHighlight[]>('session_highlights', SEED_HIGHLIGHTS);
+    this.setItem('session_highlights', all.filter(h => h.id !== highlightId));
+  }
+
+  async closeSession(campaignId: string, sessionId: string, data: {
+    recap?: {
+      title: string;
+      body: string;
+      visibility?: SessionRecapVisibility;
+      status?: SessionRecapStatus;
+      linkedNpcIds?: string[];
+      linkedLocationIds?: string[];
+      linkedQuestIds?: string[];
+    };
+    xpAward?: {
+      amount: number;
+      reason?: string;
+      isPartyWide?: boolean;
+      participationId?: string;
+    };
+    milestoneLevelUps?: string[];
+    highlights?: Array<{
+      participationId?: string;
+      characterId?: string;
+      text: string;
+      visibleToPlayer?: boolean;
+    }>;
+  }): Promise<{ session: Session; recap?: SessionRecap; highlights?: SessionHighlight[] }> {
+    const allSessions = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+    const s = allSessions.find(sess => sess.id === sessionId && sess.campaignId === campaignId);
+    if (!s) throw new Error('جلسه یافت نشد.');
+
+    s.status = 'done';
+    s.updatedAt = Date.now();
+    this.setItem('sessions', allSessions);
+
+    let createdRecap: SessionRecap | undefined = undefined;
+    if (data.recap && data.recap.title && data.recap.body) {
+      createdRecap = await this.createRecap(campaignId, {
+        ...data.recap,
+        sessionId,
+        sessionNumber: s.number,
+        sessionTitle: s.title
+      });
+    }
+
+    if (data.xpAward && data.xpAward.amount > 0) {
+      await this.awardXp(campaignId, data.xpAward);
+    }
+
+    if (data.milestoneLevelUps && data.milestoneLevelUps.length > 0) {
+      for (const pId of data.milestoneLevelUps) {
+        await this.setMilestoneLevelUp(campaignId, pId, true);
+      }
+    }
+
+    const createdHighlights: SessionHighlight[] = [];
+    if (data.highlights && data.highlights.length > 0) {
+      for (const hl of data.highlights) {
+        if (hl.text && hl.text.trim()) {
+          const res = await this.createHighlight(campaignId, {
+            sessionId,
+            participationId: hl.participationId,
+            characterId: hl.characterId,
+            text: hl.text,
+            visibleToPlayer: hl.visibleToPlayer ?? true
+          });
+          createdHighlights.push(res);
+        }
+      }
+    }
+
+    return { session: s, recap: createdRecap, highlights: createdHighlights };
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -6898,6 +7192,64 @@ export class HttpApi implements ApiClient {
     return this.fetchJson<{ success: boolean; session?: Session }>(`/c/${campaignId}/sessions/${sessionId}/attendance`, {
       method: 'POST',
       body: JSON.stringify({ attendance })
+    });
+  }
+
+  // Step 4.2: Session Recaps & Highlights
+  async listRecaps(campaignId: string, options?: { sessionId?: string; search?: string }): Promise<SessionRecap[]> {
+    const params = new URLSearchParams();
+    if (options?.sessionId) params.append('sessionId', options.sessionId);
+    if (options?.search) params.append('search', options.search);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return this.fetchJson<SessionRecap[]>(`/c/${campaignId}/recaps${qs}`);
+  }
+
+  async getLatestRecap(campaignId: string): Promise<SessionRecap | null> {
+    return this.fetchJson<SessionRecap | null>(`/c/${campaignId}/recaps/latest`);
+  }
+
+  async createRecap(campaignId: string, data: Partial<SessionRecap>): Promise<SessionRecap> {
+    return this.fetchJson<SessionRecap>(`/c/${campaignId}/recaps`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateRecap(campaignId: string, recapId: string, data: Partial<SessionRecap>): Promise<SessionRecap> {
+    return this.fetchJson<SessionRecap>(`/c/${campaignId}/recaps/${recapId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteRecap(campaignId: string, recapId: string): Promise<void> {
+    await this.fetchJson(`/c/${campaignId}/recaps/${recapId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async listHighlights(campaignId: string, sessionId?: string): Promise<SessionHighlight[]> {
+    const qs = sessionId ? `?sessionId=${sessionId}` : '';
+    return this.fetchJson<SessionHighlight[]>(`/c/${campaignId}/highlights${qs}`);
+  }
+
+  async createHighlight(campaignId: string, data: Partial<SessionHighlight>): Promise<SessionHighlight> {
+    return this.fetchJson<SessionHighlight>(`/c/${campaignId}/highlights`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteHighlight(campaignId: string, highlightId: string): Promise<void> {
+    await this.fetchJson(`/c/${campaignId}/highlights/${highlightId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async closeSession(campaignId: string, sessionId: string, data: any): Promise<{ session: Session; recap?: SessionRecap; highlights?: SessionHighlight[] }> {
+    return this.fetchJson<{ session: Session; recap?: SessionRecap; highlights?: SessionHighlight[] }>(`/c/${campaignId}/sessions/${sessionId}/close`, {
+      method: 'POST',
+      body: JSON.stringify(data)
     });
   }
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate, LocationEntry, Campaign, CharacterParticipation, Session, SessionRsvpChoice } from '../../types';
+import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate, LocationEntry, Campaign, CharacterParticipation, Session, SessionRsvpChoice, SessionRecap } from '../../types';
 import { DmDashboard } from './DmDashboard';
 import { DmEncounterRunner } from './DmEncounterRunner';
 import { DmLibrary } from './DmLibrary';
@@ -74,6 +74,11 @@ interface DmToolsProps {
   onOpenCreateSession?: () => void;
   onOpenAttendance?: (session: Session) => void;
   onEditSession?: (session: Session) => void;
+  onOpenClosingSheet?: (session: Session) => void;
+  latestRecap?: SessionRecap | null;
+  onOpenRecapArchive?: () => void;
+  onOpenCreateRecap?: () => void;
+  onEditRecap?: (recap: SessionRecap) => void;
 }
 
 export const DmTools: React.FC<DmToolsProps> = ({
@@ -132,7 +137,12 @@ export const DmTools: React.FC<DmToolsProps> = ({
   onOpenSessionList,
   onOpenCreateSession,
   onOpenAttendance,
-  onEditSession
+  onEditSession,
+  onOpenClosingSheet,
+  latestRecap,
+  onOpenRecapArchive,
+  onOpenCreateRecap,
+  onEditRecap
 }) => {
   const [internalDmTab, setInternalDmTab] = useState<'dashboard' | 'encounters' | 'library' | 'narrative' | 'more'>('dashboard');
   const [librarySubTab, setLibrarySubTab] = useState<'library_hub' | 'npcs' | 'items' | 'locations'>('library_hub');
@@ -218,6 +228,14 @@ export const DmTools: React.FC<DmToolsProps> = ({
           onOpenCreateSession={onOpenCreateSession}
           onOpenAttendance={onOpenAttendance}
           onEditSession={onEditSession}
+          onOpenClosingSheet={onOpenClosingSheet}
+          latestRecap={latestRecap}
+          onOpenRecapArchive={onOpenRecapArchive}
+          onOpenCreateRecap={onOpenCreateRecap}
+          onEditRecap={onEditRecap}
+          npcs={npcs}
+          locations={locations}
+          campaignNotes={campaignNotes}
         />
       )}
 

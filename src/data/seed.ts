@@ -25,7 +25,9 @@ import {
   GenericCalendarData,
   LineageTemplate,
   BackgroundTemplate,
-  Session
+  Session,
+  SessionRecap,
+  SessionHighlight
 } from '../types';
 
 export const DEFAULT_5E_SKILLS: SkillDefinition[] = [
@@ -3746,6 +3748,43 @@ export const SEED_SESSIONS: Session[] = [
     }
   }
 ];
+
+export const SEED_RECAPS: SessionRecap[] = [
+  {
+    id: 'recap-zorvania-1',
+    sessionId: 'ses-zorvania-1',
+    campaignId: 'zorvania-c1',
+    authorId: 'user-dm',
+    authorName: 'دانجن مستر زروانیا',
+    sessionNumber: 1,
+    sessionTitle: 'آغاز بیداری و نبرد شن‌های لرزان',
+    title: 'بیداری در دشت ساعت‌ها و شکست عقرب‌های زمان',
+    body: 'ماجراجویان در مجاورت دروازه کهن شنی چشم گشودند؛ جایی که عقربه‌های عظیم ساعت‌های باستانی زیر خروارها شن مدفون شده بودند. با هجوم غافلگیرکننده عقرب‌های گسسته‌زمان، اعضای گروه نخستین پیوند رزمی خود را آزمودند. سامان با حمله‌ای سنگین راهزن سایه‌ها را به عقب راند و پردیس توانست با استفاده از طلسم محافظت، از انهدام هسته بلورین زمان جلوگیری کند. در اعماق دخمه، دست‌نوشته‌ای درباره فرقه خاکستری کشف شد که نشان از خطری بزرگتر در دروازه ساعت‌ساز دارد...',
+    visibility: 'party',
+    status: 'published',
+    linkedNpcIds: [],
+    linkedLocationIds: [],
+    linkedQuestIds: [],
+    createdAt: Date.now() - 5 * 86400000,
+    updatedAt: Date.now() - 5 * 86400000
+  }
+];
+
+export const SEED_HIGHLIGHTS: SessionHighlight[] = [
+  {
+    id: 'hl-zorvania-1',
+    sessionId: 'ses-zorvania-1',
+    campaignId: 'zorvania-c1',
+    participationId: 'part-saman-c1',
+    characterId: 'char-saman',
+    characterName: 'سامان (دیوانزاد)',
+    playerName: 'سامان',
+    text: 'سامان با ضربه منجنیقی شمشیر خود، مانع از هجوم عقرب ساعت‌ساز به پردیس شد.',
+    visibleToPlayer: 1,
+    createdAt: Date.now() - 5 * 86400000
+  }
+];
+
 
 
 

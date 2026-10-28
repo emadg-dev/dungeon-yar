@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import { Campaign, Character, CharacterNote, CharacterParticipation, Session, SessionRsvpChoice, User } from '../../types';
+import { 
+  Campaign, Character, CharacterNote, CharacterParticipation, 
+  Session, SessionRsvpChoice, User, SessionRecap, NPC, LocationEntry, CampaignNote 
+} from '../../types';
 import { 
   Users, Heart, Shield, Zap, Sparkles, Moon, Sun, 
   Calendar, Award, Plus, Eye, Dices, ChevronRight, CheckCircle2,
-  ArrowUpCircle, RotateCcw, Edit3, Lock, Unlock, Clock
+  ArrowUpCircle, RotateCcw, Edit3, Lock, Unlock, Clock, BookOpen
 } from 'lucide-react';
 import { HPBar } from '../common/HPBar';
 import { XpAwardModal } from './XpAwardModal';
 import { SnapshotRestoreModal } from './SnapshotRestoreModal';
 import { DmOverrideModal } from './DmOverrideModal';
 import { NextSessionCard } from '../session/NextSessionCard';
+import { PreviouslyOnCard } from '../session/PreviouslyOnCard';
 import { partitionSessions } from '../../../shared/rules/sessionEngine';
 
 interface DmDashboardProps {
@@ -46,6 +50,14 @@ interface DmDashboardProps {
   onOpenCreateSession?: () => void;
   onOpenAttendance?: (session: Session) => void;
   onEditSession?: (session: Session) => void;
+  onOpenClosingSheet?: (session: Session) => void;
+  latestRecap?: SessionRecap | null;
+  onOpenRecapArchive?: () => void;
+  onOpenCreateRecap?: () => void;
+  onEditRecap?: (recap: SessionRecap) => void;
+  npcs?: NPC[];
+  locations?: LocationEntry[];
+  campaignNotes?: CampaignNote[];
 }
 
 export const DmDashboard: React.FC<DmDashboardProps> = ({
@@ -74,7 +86,15 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
   onOpenSessionList,
   onOpenCreateSession,
   onOpenAttendance,
-  onEditSession
+  onEditSession,
+  onOpenClosingSheet,
+  latestRecap,
+  onOpenRecapArchive,
+  onOpenCreateRecap,
+  onEditRecap,
+  npcs = [],
+  locations = [],
+  campaignNotes = []
 }) => {
   const [worldDay, setWorldDay] = useState(14);
   const [worldMonth, setWorldMonth] = useState('آبان');
@@ -165,6 +185,23 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           onOpenCreateSession={onOpenCreateSession}
           onOpenAttendance={onOpenAttendance}
           onEditSession={onEditSession}
+          onOpenClosingSheet={onOpenClosingSheet}
+        />
+      )}
+
+      {/* Step 4.2: Previously on... / Latest Recap Card for DM */}
+      {onOpenRecapArchive && (
+        <PreviouslyOnCard
+          recap={latestRecap || null}
+          campaign={activeCampaign || null}
+          currentUser={currentUser || null}
+          userRole="owner"
+          npcs={npcs}
+          locations={locations}
+          campaignNotes={campaignNotes}
+          onOpenArchive={onOpenRecapArchive}
+          onOpenCreateRecap={onOpenCreateRecap}
+          onEditRecap={onEditRecap}
         />
       )}
 

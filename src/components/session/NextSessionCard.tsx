@@ -11,7 +11,7 @@ import {
 import { 
   Calendar as CalendarIcon, Clock, MapPin, Video, CheckCircle2, 
   HelpCircle, XCircle, ChevronLeft, Plus, Edit3, UserCheck, 
-  Sparkles, Hourglass, MessageSquare, Check, X, ShieldAlert
+  Sparkles, Hourglass, MessageSquare, Check, X, ShieldAlert, BookOpen
 } from 'lucide-react';
 
 interface NextSessionCardProps {
@@ -27,6 +27,7 @@ interface NextSessionCardProps {
   onOpenCreateSession?: () => void;
   onOpenAttendance?: (session: Session) => void;
   onEditSession?: (session: Session) => void;
+  onOpenClosingSheet?: (session: Session) => void;
 }
 
 export const NextSessionCard: React.FC<NextSessionCardProps> = ({
@@ -41,7 +42,8 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
   onOpenSessionList,
   onOpenCreateSession,
   onOpenAttendance,
-  onEditSession
+  onEditSession,
+  onOpenClosingSheet
 }) => {
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteText, setNoteText] = useState('');
@@ -518,16 +520,30 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
       {/* DM Footer Actions */}
       {isDm && (
         <div className="mt-4 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
-          {session.status !== 'done' && onOpenAttendance && (
-            <button
-              type="button"
-              onClick={() => onOpenAttendance(session)}
-              className="px-3.5 py-2 rounded-xl bg-[#6F9E78]/20 hover:bg-[#6F9E78] text-[#6F9E78] hover:text-[#0E0D0C] border border-[#6F9E78]/40 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm min-h-[40px]"
-            >
-              <UserCheck className="w-4 h-4" />
-              <span>پایان جلسه و ثبت حضور و غیاب</span>
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {session.status !== 'done' && onOpenAttendance && (
+              <button
+                type="button"
+                onClick={() => onOpenAttendance(session)}
+                className="px-3.5 py-2 rounded-xl bg-[#6F9E78]/20 hover:bg-[#6F9E78] text-[#6F9E78] hover:text-[#0E0D0C] border border-[#6F9E78]/40 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm min-h-[40px]"
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>پایان جلسه و حضور و غیاب</span>
+              </button>
+            )}
+
+            {onOpenClosingSheet && (
+              <button
+                type="button"
+                onClick={() => onOpenClosingSheet(session)}
+                className="px-3.5 py-2 rounded-xl bg-[#E0A030]/20 hover:bg-[#E0A030] text-[#F2C265] hover:text-[#0E0D0C] border border-[#E0A030]/40 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm min-h-[40px]"
+                title="ثبت خلاصه، پاداش‌های XP/Milestone و نکات برجسته"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>خلاصه و پاداش‌ها</span>
+              </button>
+            )}
+          </div>
 
           <div className="flex items-center gap-2 mr-auto">
             {onOpenCreateSession && (

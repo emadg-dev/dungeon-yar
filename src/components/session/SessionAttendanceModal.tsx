@@ -14,6 +14,7 @@ interface SessionAttendanceModalProps {
     sessionId: string,
     attendance: Array<{ participationId: string; attended: boolean }>
   ) => Promise<void>;
+  onProceedToClosingSheet?: (session: Session) => void;
 }
 
 export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
@@ -23,7 +24,8 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
   campaignId,
   participations,
   characters,
-  onSubmitAttendance
+  onSubmitAttendance,
+  onProceedToClosingSheet
 }) => {
   const [attendedMap, setAttendedMap] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,6 +83,9 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
 
       await onSubmitAttendance(session.id, list);
       onClose();
+      if (onProceedToClosingSheet) {
+        onProceedToClosingSheet(session);
+      }
     } catch (err: any) {
       setErrorMsg(err?.message || 'خطا در ثبت حضور و غیاب.');
     } finally {

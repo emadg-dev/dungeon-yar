@@ -10,7 +10,7 @@ import {
 import { 
   Calendar as CalendarIcon, Clock, MapPin, Video, CheckCircle2, 
   HelpCircle, XCircle, Plus, Edit3, Trash2, UserCheck, 
-  Hourglass, AlertCircle, Sparkles 
+  Hourglass, AlertCircle, Sparkles, BookOpen
 } from 'lucide-react';
 
 interface SessionListSheetProps {
@@ -25,6 +25,8 @@ interface SessionListSheetProps {
   onEditSession?: (session: Session) => void;
   onDeleteSession?: (sessionId: string) => Promise<void>;
   onOpenAttendance?: (session: Session) => void;
+  onOpenClosingSheet?: (session: Session) => void;
+  onOpenRecapArchive?: () => void;
 }
 
 export const SessionListSheet: React.FC<SessionListSheetProps> = ({
@@ -38,7 +40,9 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
   onOpenCreateSession,
   onEditSession,
   onDeleteSession,
-  onOpenAttendance
+  onOpenAttendance,
+  onOpenClosingSheet,
+  onOpenRecapArchive
 }) => {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -110,19 +114,36 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
             </button>
           </div>
 
-          {isDm && onOpenCreateSession && (
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                onOpenCreateSession();
-              }}
-              className="px-3.5 py-2 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md min-h-[40px]"
-            >
-              <Plus className="w-4 h-4" />
-              <span>جلسه جدید</span>
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {onOpenRecapArchive && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenRecapArchive();
+                }}
+                className="px-3 py-2 rounded-xl bg-[#2A241C] hover:bg-[#3A3227] text-[#EDE6D8] text-xs font-semibold transition-colors flex items-center gap-1.5 min-h-[40px]"
+                title="آرشیو خلاصه جلسات"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-[#E0A030]" />
+                <span className="hidden sm:inline">آرشیو خلاصه‌ها</span>
+              </button>
+            )}
+
+            {isDm && onOpenCreateSession && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenCreateSession();
+                }}
+                className="px-3.5 py-2 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md min-h-[40px]"
+              >
+                <Plus className="w-4 h-4" />
+                <span>جلسه جدید</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Sessions List */}
@@ -273,20 +294,38 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                       </div>
                     )}
 
-                    {/* Attendance button for DM on past/open session */}
-                    {isDm && s.status !== 'done' && onOpenAttendance && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onClose();
-                          onOpenAttendance(s);
-                        }}
-                        className="px-2.5 py-1 rounded-lg bg-[#6F9E78]/20 hover:bg-[#6F9E78] text-[#6F9E78] hover:text-[#0E0D0C] text-xs font-bold transition-colors flex items-center gap-1"
-                      >
-                        <UserCheck className="w-3.5 h-3.5" />
-                        <span>ثبت حضور و غیاب</span>
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      {/* Attendance button for DM on past/open session */}
+                      {isDm && s.status !== 'done' && onOpenAttendance && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onClose();
+                            onOpenAttendance(s);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-[#6F9E78]/20 hover:bg-[#6F9E78] text-[#6F9E78] hover:text-[#0E0D0C] text-xs font-bold transition-colors flex items-center gap-1"
+                        >
+                          <UserCheck className="w-3.5 h-3.5" />
+                          <span>ثبت حضور</span>
+                        </button>
+                      )}
+
+                      {/* Closing sheet / Recap & Rewards button for DM */}
+                      {isDm && onOpenClosingSheet && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onClose();
+                            onOpenClosingSheet(s);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-[#E0A030]/20 hover:bg-[#E0A030] text-[#F2C265] hover:text-[#0E0D0C] text-xs font-bold transition-colors flex items-center gap-1"
+                          title="خلاصه جلسه، پاداش‌ها و رویدادهای کاراکترها"
+                        >
+                          <BookOpen className="w-3.5 h-3.5" />
+                          <span>خلاصه و پاداش‌ها</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
