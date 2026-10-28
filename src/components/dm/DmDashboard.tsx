@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Campaign, Character, CharacterNote, CharacterParticipation } from '../../types';
+import { Campaign, Character, CharacterNote, CharacterParticipation, Session, SessionRsvpChoice, User } from '../../types';
 import { 
   Users, Heart, Shield, Zap, Sparkles, Moon, Sun, 
   Calendar, Award, Plus, Eye, Dices, ChevronRight, CheckCircle2,
@@ -9,6 +9,8 @@ import { HPBar } from '../common/HPBar';
 import { XpAwardModal } from './XpAwardModal';
 import { SnapshotRestoreModal } from './SnapshotRestoreModal';
 import { DmOverrideModal } from './DmOverrideModal';
+import { NextSessionCard } from '../session/NextSessionCard';
+import { partitionSessions } from '../../../shared/rules/sessionEngine';
 
 interface DmDashboardProps {
   characters: Character[];
@@ -34,6 +36,16 @@ interface DmDashboardProps {
   onToggleRespecWindow?: (participationId: string, open: boolean) => Promise<void>;
   onDmOverride?: (participationId: string, updates: any, reason: string) => Promise<void>;
   onRefreshCampaign?: () => void;
+  // Step 4.1: Sessions & Scheduling
+  sessions?: Session[];
+  currentUser?: User | null;
+  onRsvpSession?: (sessionId: string, status: SessionRsvpChoice, note?: string) => Promise<void>;
+  onVoteSessionPoll?: (sessionId: string, optionId: string, choice: SessionRsvpChoice) => Promise<void>;
+  onConfirmPollOption?: (sessionId: string, optionId: string) => Promise<void>;
+  onOpenSessionList?: () => void;
+  onOpenCreateSession?: () => void;
+  onOpenAttendance?: (session: Session) => void;
+  onEditSession?: (session: Session) => void;
 }
 
 export const DmDashboard: React.FC<DmDashboardProps> = ({

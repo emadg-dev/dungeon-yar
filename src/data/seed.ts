@@ -24,7 +24,8 @@ import {
   CampaignDoc,
   GenericCalendarData,
   LineageTemplate,
-  BackgroundTemplate
+  BackgroundTemplate,
+  Session
 } from '../types';
 
 export const DEFAULT_5E_SKILLS: SkillDefinition[] = [
@@ -3669,5 +3670,82 @@ export const SEED_CAMPAIGN_DICE_ROLLS: CampaignDiceRoll[] = [
     createdAt: Date.now() - 600000
   }
 ];
+
+export const SEED_SESSIONS: Session[] = [
+  {
+    id: 'ses-zorvania-1',
+    campaignId: 'zorvania-c1',
+    number: 1,
+    title: 'آغاز در مه سربی',
+    scheduledAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+    durationMinutes: 240,
+    placeText: 'خانه پریان ورنا',
+    status: 'done',
+    inWorldDate: '۵ سایه‌باد ۱۱۷۸',
+    dmNotes: 'نبرد نخست و کشف بقایای ساعت شنی باستانی دیوان.',
+    createdBy: 'user-dm',
+    createdAt: Date.now() - 14 * 86400000,
+    updatedAt: Date.now() - 7 * 86400000,
+    rsvps: [
+      { sessionId: 'ses-zorvania-1', userId: 'user-saman', status: 'yes', note: 'آماده با تمام قوا', updatedAt: Date.now() - 10 * 86400000, userName: 'سامان' },
+      { sessionId: 'ses-zorvania-1', userId: 'user-pardis', status: 'yes', updatedAt: Date.now() - 10 * 86400000, userName: 'پردیس' }
+    ],
+    attendance: [
+      { sessionId: 'ses-zorvania-1', participationId: 'part-c1-saman', attended: true },
+      { sessionId: 'ses-zorvania-1', participationId: 'part-c1-pardis', attended: true }
+    ]
+  },
+  {
+    id: 'ses-zorvania-2',
+    campaignId: 'zorvania-c1',
+    number: 2,
+    title: 'گذر از دروازه ساعت‌ساز',
+    scheduledAt: new Date(Date.now() + 3 * 86400000 + 4 * 3600000).toISOString(),
+    durationMinutes: 240,
+    placeText: 'کافه ماجراجویان / اتاق صدا',
+    onlineUrl: 'https://meet.google.com/dnd-party-zorvania',
+    status: 'confirmed',
+    inWorldDate: '۱۲ سایه‌باد ۱۱۷۸',
+    dmNotes: 'بررسی تله‌های زمان‌شکن در دهلیز شرقی؛ مراقب آسیب شعاعی باشید.',
+    createdBy: 'user-dm',
+    createdAt: Date.now() - 2 * 86400000,
+    updatedAt: Date.now() - 1 * 86400000,
+    rsvps: [
+      { sessionId: 'ses-zorvania-2', userId: 'user-saman', status: 'yes', note: 'حاضر خواهم بود', updatedAt: Date.now() - 3600000, userName: 'سامان' },
+      { sessionId: 'ses-zorvania-2', userId: 'user-pardis', status: 'maybe', note: 'شاید نیم ساعت دیرتر برسم', updatedAt: Date.now() - 2000000, userName: 'پردیس' }
+    ]
+  },
+  {
+    id: 'ses-zorvania-3',
+    campaignId: 'zorvania-c1',
+    number: 3,
+    title: 'کاوش در دخمه خاموش',
+    scheduledAt: null,
+    durationMinutes: 210,
+    placeText: 'اتاق آنلاین دیسکورد',
+    status: 'planned',
+    inWorldDate: '۲۰ سایه‌باد ۱۱۷۸',
+    dmNotes: 'بررسی رأی‌گیری تاریخ برای نبرد پایانی این فصل.',
+    createdBy: 'user-dm',
+    createdAt: Date.now() - 86400000,
+    updatedAt: Date.now() - 86400000,
+    poll: {
+      id: 'poll-ses-3',
+      sessionId: 'ses-zorvania-3',
+      options: [
+        { id: 'opt-1', startsAt: new Date(Date.now() + 7 * 86400000 + 5 * 3600000).toISOString() },
+        { id: 'opt-2', startsAt: new Date(Date.now() + 8 * 86400000 + 5 * 3600000).toISOString() },
+        { id: 'opt-3', startsAt: new Date(Date.now() + 10 * 86400000 + 5 * 3600000).toISOString() }
+      ],
+      status: 'open',
+      votes: [
+        { pollId: 'poll-ses-3', optionId: 'opt-1', userId: 'user-saman', choice: 'yes' },
+        { pollId: 'poll-ses-3', optionId: 'opt-2', userId: 'user-saman', choice: 'maybe' },
+        { pollId: 'poll-ses-3', optionId: 'opt-1', userId: 'user-pardis', choice: 'yes' }
+      ]
+    }
+  }
+];
+
 
 

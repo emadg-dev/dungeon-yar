@@ -32,9 +32,9 @@ export interface PollOptionTally {
  */
 export function filterSessionForViewer<T extends { dmNotes?: string | null }>(
   session: T,
-  role?: CampaignRole | null
+  role?: CampaignRole | 'dm' | null
 ): T {
-  const isDm = role === 'owner' || role === 'co_dm';
+  const isDm = role === 'owner' || role === 'co_dm' || role === 'dm';
   if (isDm) return session;
 
   const clone = { ...session };
@@ -46,23 +46,23 @@ export function filterSessionForViewer<T extends { dmNotes?: string | null }>(
  * Only campaign members with owner, co_dm, or player role can RSVP.
  * Spectators and non-members are explicitly forbidden.
  */
-export function canUserRsvp(role?: CampaignRole | null): boolean {
-  return role === 'owner' || role === 'co_dm' || role === 'player';
+export function canUserRsvp(role?: CampaignRole | 'dm' | null): boolean {
+  return role === 'owner' || role === 'co_dm' || role === 'player' || role === 'dm';
 }
 
 /**
  * Only campaign members with owner, co_dm, or player role can vote on session polls.
  * Spectators and non-members are forbidden.
  */
-export function canUserVote(role?: CampaignRole | null): boolean {
-  return role === 'owner' || role === 'co_dm' || role === 'player';
+export function canUserVote(role?: CampaignRole | 'dm' | null): boolean {
+  return role === 'owner' || role === 'co_dm' || role === 'player' || role === 'dm';
 }
 
 /**
  * Only campaign owner or co_dm can create, edit, cancel, propose dates, confirm, or mark sessions done.
  */
-export function canManageSessions(role?: CampaignRole | null): boolean {
-  return role === 'owner' || role === 'co_dm';
+export function canManageSessions(role?: CampaignRole | 'dm' | null): boolean {
+  return role === 'owner' || role === 'co_dm' || role === 'dm';
 }
 
 /**

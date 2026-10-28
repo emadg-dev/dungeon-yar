@@ -32,6 +32,7 @@ export interface CampaignSettings {
   conAdjustFixedTable?: boolean;
   allowCustomLineage?: boolean;
   sheetLock?: 'locked_core' | 'free';
+  timezone?: string;
   approval: {
     onCreate: boolean;
     onLevelUp: boolean;
@@ -345,6 +346,7 @@ export interface CharacterParticipation {
   dmNotes?: string;
   build?: CharacterBuild | null;
   sheetLocked?: boolean;
+  sessionsAttended?: number;
   levelUpAvailable?: boolean;
   joinedAt: number;
   updatedAt: number;
@@ -1738,4 +1740,81 @@ export interface LinkedEntityDiff {
   hasUpdates: boolean;
   diffs: FieldDiff[];
 }
+
+// ==========================================
+// Step 4.1: Sessions & Scheduling
+// ==========================================
+export type SessionStatus = 'planned' | 'confirmed' | 'done' | 'cancelled';
+export type SessionRsvpChoice = 'yes' | 'maybe' | 'no';
+export type SessionPollStatus = 'open' | 'closed';
+
+export interface SessionRsvp {
+  sessionId: string;
+  userId: string;
+  userName?: string;
+  userDisplayName?: string;
+  userAvatarUrl?: string;
+  status: SessionRsvpChoice;
+  note?: string | null;
+  updatedAt: number;
+}
+
+export interface SessionPollOption {
+  id: string;
+  startsAt: string; // ISO string in UTC
+}
+
+export interface SessionPollVote {
+  pollId: string;
+  optionId: string;
+  userId: string;
+  userName?: string;
+  choice: SessionRsvpChoice;
+  updatedAt?: number;
+}
+
+export interface SessionPoll {
+  id: string;
+  sessionId: string;
+  options: SessionPollOption[];
+  status: SessionPollStatus;
+  createdAt?: number;
+  votes?: SessionPollVote[];
+  myVotes?: Record<string, SessionRsvpChoice>;
+  userVotes?: Record<string, SessionRsvpChoice>;
+  totalVotes?: number;
+}
+
+export interface SessionAttendance {
+  sessionId: string;
+  participationId: string;
+  characterName?: string;
+  playerName?: string;
+  attended: boolean;
+}
+
+export interface Session {
+  id: string;
+  campaignId: string;
+  number: number;
+  title: string;
+  scheduledAt?: string | null; // ISO string in UTC
+  durationMinutes: number;
+  placeText?: string | null;
+  onlineUrl?: string | null;
+  status: SessionStatus;
+  inWorldDate?: string | null;
+  dmNotes?: string | null;
+  createdBy: string;
+  createdAt: number;
+  updatedAt: number;
+
+  // Joined / populated for UI
+  rsvps?: SessionRsvp[];
+  poll?: SessionPoll | null;
+  attendance?: SessionAttendance[];
+  myRsvp?: SessionRsvpChoice | SessionRsvp | null;
+}
+
+
 

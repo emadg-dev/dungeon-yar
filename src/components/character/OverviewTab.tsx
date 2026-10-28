@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Character, ClassTemplate } from '../../types';
+import { Character, ClassTemplate, Session, SessionRsvpChoice, Campaign, User, CampaignRole } from '../../types';
 import { APP_NAME_LATIN } from '../../config/app';
 import { deriveSheet } from '../../../shared/rules/engine';
 import { 
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { PipTracker } from '../common/PipTracker';
 import { StatCard } from '../common/StatCard';
+import { NextSessionCard } from '../session/NextSessionCard';
 
 interface OverviewTabProps {
   character: Character;
@@ -22,6 +23,18 @@ interface OverviewTabProps {
   xp?: number;
   onOpenLevelUp?: () => void;
   onOpenSheetChangeRequest?: () => void;
+  // Step 4.1: Sessions & Scheduling
+  nextSession?: Session | null;
+  campaign?: Campaign | null;
+  currentUser?: User | null;
+  userRole?: CampaignRole | 'dm' | null;
+  onRsvpSession?: (sessionId: string, status: SessionRsvpChoice, note?: string) => Promise<void>;
+  onVoteSessionPoll?: (sessionId: string, optionId: string, choice: SessionRsvpChoice) => Promise<void>;
+  onConfirmPollOption?: (sessionId: string, optionId: string) => Promise<void>;
+  onOpenSessionList?: () => void;
+  onOpenCreateSession?: () => void;
+  onOpenAttendance?: (session: Session) => void;
+  onEditSession?: (session: Session) => void;
 }
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({
@@ -35,7 +48,18 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   pendingChange,
   xp,
   onOpenLevelUp,
-  onOpenSheetChangeRequest
+  onOpenSheetChangeRequest,
+  nextSession,
+  campaign,
+  currentUser,
+  userRole,
+  onRsvpSession,
+  onVoteSessionPoll,
+  onConfirmPollOption,
+  onOpenSessionList,
+  onOpenCreateSession,
+  onOpenAttendance,
+  onEditSession
 }) => {
   const [isEditingBasics, setIsEditingBasics] = useState(false);
 
@@ -165,6 +189,23 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             در صف بررسی
           </span>
         </div>
+      )}
+
+      {/* Step 4.1: Next Session / Scheduling Card */}
+      {onRsvpSession && onVoteSessionPoll && onOpenSessionList && (
+        <NextSessionCard
+          session={nextSession || null}
+          campaign={campaign || null}
+          currentUser={currentUser || null}
+          userRole={userRole}
+          onRsvp={onRsvpSession}
+          onVotePoll={onVoteSessionPoll}
+          onConfirmPollOption={onConfirmPollOption}
+          onOpenSessionList={onOpenSessionList}
+          onOpenCreateSession={onOpenCreateSession}
+          onOpenAttendance={onOpenAttendance}
+          onEditSession={onEditSession}
+        />
       )}
 
       {/* Identity Card */}
