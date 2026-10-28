@@ -26,6 +26,8 @@ export interface CampaignSettings {
   startingLevel: number;
   maxEntryLevel: number;
   abilityScoreMethods: ('standard_array' | 'point_buy' | 'roll' | 'class_base' | 'manual')[];
+  levelingMode?: 'milestone' | 'xp';
+  xpThresholds?: Record<number, number>;
   hpMode?: 'fixed' | 'roll' | 'manual';
   conAdjustFixedTable?: boolean;
   allowCustomLineage?: boolean;
@@ -309,6 +311,7 @@ export interface CharacterParticipation {
   dmNotes?: string;
   build?: CharacterBuild | null;
   sheetLocked?: boolean;
+  levelUpAvailable?: boolean;
   joinedAt: number;
   updatedAt: number;
   pendingLevelUp?: {
@@ -316,11 +319,81 @@ export interface CharacterParticipation {
     diff: any;
     requestedAt: number;
   } | null;
+  pendingChange?: {
+    type?: 'level_up' | 'sheet_change';
+    fromLevel?: number;
+    toLevel?: number;
+    diff?: any;
+    payload?: any;
+    requestedAt?: number;
+    field?: string;
+    proposedValue?: any;
+    reason?: string;
+  } | null;
   characterName?: string;
   characterRace?: string;
   characterPortraitUrl?: string;
   characterAppearance?: string;
   characterBackstory?: MasterBackstory;
+}
+
+export interface XpAward {
+  id: string;
+  campaignId: string;
+  participationId?: string | null;
+  amount: number;
+  reason?: string;
+  createdBy: string;
+  createdAt: number;
+}
+
+export interface SheetChangeRequest {
+  id: string;
+  campaignId: string;
+  participationId: string;
+  userId: string;
+  requestedChanges: string;
+  reason?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  reviewComment?: string;
+  createdAt: number;
+  updatedAt: number;
+  characterName?: string;
+  playerName?: string;
+}
+
+export interface LevelUpPayload {
+  hpMode: 'fixed' | 'roll' | 'manual';
+  hpRoll?: number;
+  asiMode?: 'plus2' | 'plus1plus1' | 'feat';
+  asiChoices?: {
+    stat1?: AbilityName;
+    stat2?: AbilityName;
+    featName?: string;
+  };
+  chosenSubclass?: string;
+  subclassName?: string;
+  newSpells?: {
+    cantrips?: string[];
+    spells?: string[];
+  };
+  newCompanionName?: string;
+}
+
+export interface LevelUpDiff {
+  fromLevel: number;
+  toLevel: number;
+  hpGain: number;
+  newMaxHp: number;
+  oldMaxHp: number;
+  hpBreakdown: string; // e.g. "تاس (۶) + بنیه (+۲) = +۸"
+  abilityChanges?: Partial<Record<AbilityName, { before: number; after: number }>>;
+  newFeatures: Array<{ name: string; description: string }>;
+  unlockedSubclass?: string;
+  newSpells?: { cantrips: string[]; spells: string[] };
+  newCompanion?: { name: string; type?: string };
+  newProfBonus: number;
+  oldProfBonus: number;
 }
 
 export interface CharacterHistoryEvent {

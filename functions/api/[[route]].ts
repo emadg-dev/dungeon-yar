@@ -6,7 +6,8 @@
 
 import { computeAuthoritativeParticipation, createSnapshot, pruneSnapshots } from '../../shared/rules/wizardEngine';
 import { rollAbilityScores } from '../../shared/rules/engine';
-import type { CharacterParticipation } from '../../src/types';
+import { computeLevelUpDiff, isLevelUpReady, isFieldLockedForPlayer, XP_THRESHOLDS } from '../../shared/rules/levelUpEngine';
+import type { CharacterParticipation, LevelUpPayload, XpAward, SheetChangeRequest } from '../../src/types';
 
 interface Env {
   DB: any; // Cloudflare D1Database binding
@@ -880,21 +881,25 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         revokedAt: i.revoked_at
       }));
 
-    // 4) Pending character approvals (creation / level-up) for DM campaigns
+    // 4) Pending character approvals (creation / level-up / sheet change) for DM campaigns
     const apprRes = await env.DB.prepare(
-      `SELECT p.id, p.character_id, p.campaign_id, p.status, p.level, p.class_name, p.pending_level_up, p.joined_at, p.updated_at,
+      `SELECT p.id, p.character_id, p.campaign_id, p.status, p.level, p.class_name, p.pending_level_up, p.pending_change, p.joined_at, p.updated_at,
               ch.name AS char_name, ch.data AS char_data, u.display_name AS player_name, c.name AS campaign_name
          FROM character_participations p
          JOIN characters ch ON ch.id = p.character_id
          LEFT JOIN users u ON u.id = ch.owner_id
          JOIN campaigns c ON c.id = p.campaign_id
-        WHERE p.status = 'pending_approval' OR (p.pending_level_up IS NOT NULL AND p.pending_level_up != '')`
+        WHERE p.status = 'pending_approval' 
+           OR (p.pending_level_up IS NOT NULL AND p.pending_level_up != '')
+           OR (p.pending_change IS NOT NULL AND p.pending_change != '')`
     ).all();
     const pendingApprovals: any[] = [];
     for (const p of apprRes.results || []) {
       if (!isGlobalDm && !myDmIds.has(p.campaign_id)) continue;
       const charBlob = parseBlob(p.char_data, null);
       const levelUp = parseBlob(p.pending_level_up, null);
+      const pendingChange = parseBlob(p.pending_change, null);
+
       if (p.status === 'pending_approval') {
         pendingApprovals.push({
           campaignId: p.campaign_id,
@@ -907,6 +912,32 @@ export const onRequest: PagesFunction<Env> = async (context) => {
           level: p.level,
           requestedAt: p.joined_at,
           details: { className: p.class_name, race: charBlob?.race }
+        });
+      } else if (pendingChange && pendingChange.type === 'level_up') {
+        pendingApprovals.push({
+          campaignId: p.campaign_id,
+          campaignName: p.campaign_name,
+          type: 'level_up',
+          participationId: p.id,
+          characterId: p.character_id,
+          characterName: p.char_name || charBlob?.name || 'شخصیت',
+          playerName: p.player_name || 'کاربر',
+          level: pendingChange.diff?.toLevel || (p.level + 1),
+          requestedAt: pendingChange.requestedAt || p.updated_at,
+          details: { diff: pendingChange.diff, payload: pendingChange.payload }
+        });
+      } else if (pendingChange && pendingChange.type === 'sheet_change') {
+        pendingApprovals.push({
+          campaignId: p.campaign_id,
+          campaignName: p.campaign_name,
+          type: 'sheet_change',
+          participationId: p.id,
+          characterId: p.character_id,
+          characterName: p.char_name || charBlob?.name || 'شخصیت',
+          playerName: p.player_name || 'کاربر',
+          level: p.level,
+          requestedAt: pendingChange.requestedAt || p.updated_at,
+          details: pendingChange
         });
       } else if (levelUp) {
         pendingApprovals.push({
@@ -1704,7 +1735,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       dmNotes: r.dm_notes || '',
       build: parseBlob(r.build, null),
       sheetLocked: r.sheet_locked === 1,
+      levelUpAvailable: r.level_up_available === 1,
       pendingLevelUp: parseBlob(r.pending_level_up, null),
+      pendingChange: parseBlob(r.pending_change, null),
       joinedAt: r.joined_at,
       updatedAt: r.updated_at,
       characterName: charBlob?.name,
@@ -1809,11 +1842,20 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     if (!part) return error('مشارکت شخصیت یافت نشد.', 404);
     const myRole = await getMembershipRole(campId, actor.id);
     const charRow = await env.DB.prepare('SELECT owner_id FROM characters WHERE id = ?').bind(part.character_id).first();
-    const isCharOwner = charRow?.owner_id === actor.id;
-    if (actor.role !== 'dm' && myRole !== 'owner' && myRole !== 'co_dm' && !isCharOwner) {
+    const isDmActor = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+    if (!isDmActor && !isCharOwner) {
       return error('دسترسی مجاز نیست.', 403);
     }
     const body = await request.json() as any;
+
+    // Enforce sheet lock: player cannot edit core stats when sheet is locked
+    if (!isDmActor && part.sheet_locked === 1) {
+      for (const k of Object.keys(body)) {
+        if (isFieldLockedForPlayer(k)) {
+          return error('برگه شخصیت قفل است. مشخصات پایه فقط توسط دانجن مستر یا از طریق ارتقای سطح رسمی قابل تغییر است. برای تغییر این موارد از گزینه «درخواست تغییر به DM» استفاده کنید.', 403);
+        }
+      }
+    }
     const colMap: Record<string, string> = {
       status: 'status', level: 'level', xp: 'xp', className: 'class_name', subclassName: 'subclass_name',
       classId: 'class_id', currentHp: 'current_hp', maxHp: 'max_hp', tempHp: 'temp_hp',
@@ -1892,32 +1934,555 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return json(mapParticipation(updated));
   }
 
-  // POST /api/c/:id/participations/:pid/level-up-request
-  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+\/level-up-request$/) && method === 'POST') {
+  // ---------------------------------------------------------
+  // Step 3.4: Level-Up, XP Awards, Approvals, Sheet Lock Endpoints
+  // ---------------------------------------------------------
+
+  // POST /api/c/:id/xp-awards (DM awards XP)
+  if (path.match(/^\/c\/[^/]+\/xp-awards$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست. فقط دانجن مستر مجاز به اعطای تجربه است.', 403);
+    const body = await request.json() as any;
+    const amount = Number(body.amount || 0);
+    if (amount <= 0) return error('میزان تجربه باید عددی مثبت باشد.');
+    const reason = String(body.reason || 'پاداش تجربه دانجن مستر').trim();
+    const targetPartId = body.participationId || null;
+
+    const awardId = `xp-${Date.now()}-${generateRandomToken(3)}`;
+    await env.DB.prepare(
+      `INSERT INTO xp_awards (id, campaign_id, participation_id, amount, reason, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    ).bind(awardId, campId, targetPartId, amount, reason, actor.id, now).run();
+
+    const campRow = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ?').bind(campId).first();
+    const campSettings = parseBlob(campRow?.settings, {});
+    const isXpMode = campSettings.levelingMode === 'xp';
+
+    if (targetPartId) {
+      const partRow = await env.DB.prepare('SELECT id, level, xp FROM character_participations WHERE id = ? AND campaign_id = ?').bind(targetPartId, campId).first();
+      if (partRow) {
+        const newXp = (partRow.xp || 0) + amount;
+        let ready = 0;
+        if (isXpMode && partRow.level < 20) {
+          const nextThresh = XP_THRESHOLDS[partRow.level + 1];
+          if (typeof nextThresh === 'number' && newXp >= nextThresh) ready = 1;
+        }
+        await env.DB.prepare(
+          'UPDATE character_participations SET xp = ?, level_up_available = CASE WHEN ? = 1 THEN 1 ELSE level_up_available END, updated_at = ? WHERE id = ?'
+        ).bind(newXp, ready, now, targetPartId).run();
+      }
+    } else {
+      // Party-wide XP award
+      const allParts = await env.DB.prepare('SELECT id, level, xp FROM character_participations WHERE campaign_id = ? AND status = "active"').bind(campId).all();
+      for (const p of allParts.results || []) {
+        const newXp = (p.xp || 0) + amount;
+        let ready = 0;
+        if (isXpMode && p.level < 20) {
+          const nextThresh = XP_THRESHOLDS[p.level + 1];
+          if (typeof nextThresh === 'number' && newXp >= nextThresh) ready = 1;
+        }
+        await env.DB.prepare(
+          'UPDATE character_participations SET xp = ?, level_up_available = CASE WHEN ? = 1 THEN 1 ELSE level_up_available END, updated_at = ? WHERE id = ?'
+        ).bind(newXp, ready, now, p.id).run();
+      }
+    }
+
+    await audit('award-xp', campId, { amount, reason, targetPartId });
+    return json({ id: awardId, campaignId: campId, participationId: targetPartId, amount, reason, createdBy: actor.id, createdAt: now }, 201);
+  }
+
+  // GET /api/c/:id/xp-awards
+  if (path.match(/^\/c\/[^/]+\/xp-awards$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 403);
+    const rows = await env.DB.prepare('SELECT * FROM xp_awards WHERE campaign_id = ? ORDER BY created_at DESC LIMIT 50').bind(campId).all();
+    const list = (rows.results || []).map((r: any) => ({
+      id: r.id,
+      campaignId: r.campaign_id,
+      participationId: r.participation_id,
+      amount: r.amount,
+      reason: r.reason,
+      createdBy: r.created_by,
+      createdAt: r.created_at
+    }));
+    return json(list);
+  }
+
+  // POST /api/c/:id/milestone-level-up (DM milestone toggle)
+  if (path.match(/^\/c\/[^/]+\/milestone-level-up$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+    const body = await request.json() as any;
+    const targetPartId = body.participationId || 'all';
+    const ready = body.ready !== false ? 1 : 0;
+
+    let updatedCount = 0;
+    if (targetPartId === 'all') {
+      const res = await env.DB.prepare(
+        'UPDATE character_participations SET level_up_available = ?, updated_at = ? WHERE campaign_id = ? AND status = "active"'
+      ).bind(ready, now, campId).run();
+      updatedCount = res.meta?.changes || 0;
+    } else {
+      const res = await env.DB.prepare(
+        'UPDATE character_participations SET level_up_available = ?, updated_at = ? WHERE id = ? AND campaign_id = ?'
+      ).bind(ready, now, targetPartId, campId).run();
+      updatedCount = res.meta?.changes || 0;
+    }
+
+    await audit('milestone-level-up', campId, { targetPartId, ready });
+    return json({ success: true, updatedCount });
+  }
+
+  // POST /api/c/:id/participations/:pid/level-up (Player or DM executes level-up wizard)
+  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+\/level-up$/) && method === 'POST') {
     const parts = path.split('/');
     const campId = parts[2];
     const partId = parts[4];
-    const part = await env.DB.prepare('SELECT * FROM character_participations WHERE id = ? AND campaign_id = ?').bind(partId, campId).first();
-    if (!part) return error('مشارکت شخصیت یافت نشد.', 404);
+    const rawPart = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ? AND p.campaign_id = ?`).bind(partId, campId).first();
+    if (!rawPart) return error('مشارکت کاراکتر یافت نشد.', 404);
+
+    const myRole = await getMembershipRole(campId, actor.id);
+    const charRow = await env.DB.prepare('SELECT owner_id FROM characters WHERE id = ?').bind(rawPart.character_id).first();
+    const isCharOwner = charRow?.owner_id === actor.id;
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+    if (!isDm && !isCharOwner) return error('دسترسی مجاز نیست.', 403);
+
+    const campRow = await env.DB.prepare('SELECT name, settings FROM campaigns WHERE id = ?').bind(campId).first();
+    const campSettings = parseBlob(campRow?.settings, {});
+
+    // Fetch class template
+    let classTemplate: any = null;
+    const ctRow = await env.DB.prepare(
+      'SELECT * FROM class_templates WHERE (id = ? OR name = ?) AND ((scope_type = "campaign" AND scope_id = ?) OR scope_type = "pack")'
+    ).bind(rawPart.class_id || rawPart.class_name, rawPart.class_name, campId).first();
+    if (ctRow) {
+      classTemplate = { ...parseBlob(ctRow.data, {}), ...ctRow };
+    }
+
+    const payload = await request.json() as LevelUpPayload;
+    const mappedPart: CharacterParticipation = mapParticipation(rawPart) as any;
+
+    const { validation, diff, nextParticipation } = computeLevelUpDiff({
+      participation: mappedPart,
+      classTemplate,
+      payload
+    });
+
+    if (!validation.valid) {
+      return error(`خطا در اعتبارسنجی ارتقای سطح: ${validation.errors.join(' | ')}`, 400);
+    }
+
+    const requiresApproval = Boolean(campSettings.approval?.onLevelUp) && !isDm;
+
+    if (requiresApproval) {
+      const pendingObj = {
+        fromLevel: diff.fromLevel,
+        toLevel: diff.toLevel,
+        diff,
+        payload,
+        requestedAt: now
+      };
+      await env.DB.prepare(
+        'UPDATE character_participations SET pending_change = ?, updated_at = ? WHERE id = ?'
+      ).bind(JSON.stringify(pendingObj), now, partId).run();
+
+      await audit('level-up-request', partId, { campaignId: campId, targetLevel: diff.toLevel });
+      const updated = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+      return json(mapParticipation(updated));
+    } else {
+      // Direct Apply (or DM approved)
+      // Snapshot before
+      const snapBefore = createSnapshot(mappedPart, `قبل از ارتقا به سطح ${diff.toLevel}`, actor.id);
+      await env.DB.prepare(
+        `INSERT INTO participation_snapshots (id, participation_id, label, state, build, level, created_by, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(snapBefore.id, partId, snapBefore.label, JSON.stringify(snapBefore.state), JSON.stringify(snapBefore.build), snapBefore.level, actor.id, now).run();
+
+      // Apply changes to database
+      await env.DB.prepare(
+        `UPDATE character_participations SET
+           level = ?, max_hp = ?, current_hp = ?, ability_scores = ?, subclass_name = ?,
+           hit_dice = ?, features = ?, spell_slots = ?, spells_known_prepared = ?,
+           level_up_available = 0, pending_change = NULL, updated_at = ?
+         WHERE id = ?`
+      ).bind(
+        nextParticipation.level,
+        nextParticipation.maxHp,
+        nextParticipation.currentHp,
+        JSON.stringify(nextParticipation.abilityScores),
+        nextParticipation.subclassName || null,
+        JSON.stringify(nextParticipation.hitDice),
+        JSON.stringify(nextParticipation.features),
+        nextParticipation.spellSlots ? JSON.stringify(nextParticipation.spellSlots) : null,
+        nextParticipation.spellsKnownPrepared ? JSON.stringify(nextParticipation.spellsKnownPrepared) : null,
+        now,
+        partId
+      ).run();
+
+      // Snapshot after
+      const snapAfter = createSnapshot(nextParticipation, `ارتقا به سطح ${diff.toLevel}`, actor.id);
+      await env.DB.prepare(
+        `INSERT INTO participation_snapshots (id, participation_id, label, state, build, level, created_by, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(snapAfter.id, partId, snapAfter.label, JSON.stringify(snapAfter.state), JSON.stringify(snapAfter.build), snapAfter.level, actor.id, now + 1).run();
+
+      // Prune snapshots
+      const allSnapsRes = await env.DB.prepare(
+        'SELECT id FROM participation_snapshots WHERE participation_id = ? ORDER BY created_at DESC'
+      ).bind(partId).all();
+      const sList = allSnapsRes.results || [];
+      if (sList.length > 10) {
+        for (const dId of sList.slice(10).map((s: any) => s.id)) {
+          await env.DB.prepare('DELETE FROM participation_snapshots WHERE id = ?').bind(dId).run();
+        }
+      }
+
+      // History event
+      await env.DB.prepare(
+        'INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp) VALUES (?, ?, ?, ?, ?, ?)'
+      ).bind(
+        `hist-lvl-${Date.now()}-${generateRandomToken(3)}`,
+        rawPart.character_id,
+        campId,
+        'level_up',
+        JSON.stringify({
+          title: `ارتقای سطح به ${diff.toLevel}`,
+          description: diff.hpBreakdown,
+          oldLevel: diff.fromLevel,
+          newLevel: diff.toLevel,
+          level: diff.toLevel,
+          campaignName: campRow?.name
+        }),
+        now
+      ).run();
+
+      await audit('level-up-complete', partId, { campaignId: campId, newLevel: diff.toLevel });
+      const finalPart = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+      return json(mapParticipation(finalPart));
+    }
+  }
+
+  // POST /api/c/:id/participations/:pid/approve-level-up (DM approves pending level-up)
+  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+\/approve-level-up$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const partId = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const rawPart = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ? AND p.campaign_id = ?`).bind(partId, campId).first();
+    if (!rawPart) return error('مشارکت کاراکتر یافت نشد.', 404);
+
+    const pendingChange = parseBlob(rawPart.pending_change, null);
+    if (!pendingChange) return error('هیچ درخواست ارتقای سطحی در انتظار تأیید نیست.', 400);
+
+    const body = await request.json().catch(() => ({})) as any;
+    const comment = body?.comment || '';
+
+    // Fetch class template
+    let classTemplate: any = null;
+    const ctRow = await env.DB.prepare(
+      'SELECT * FROM class_templates WHERE (id = ? OR name = ?) AND ((scope_type = "campaign" AND scope_id = ?) OR scope_type = "pack")'
+    ).bind(rawPart.class_id || rawPart.class_name, rawPart.class_name, campId).first();
+    if (ctRow) {
+      classTemplate = { ...parseBlob(ctRow.data, {}), ...ctRow };
+    }
+
+    const mappedPart: CharacterParticipation = mapParticipation(rawPart) as any;
+    const { diff, nextParticipation } = computeLevelUpDiff({
+      participation: mappedPart,
+      classTemplate,
+      payload: pendingChange.payload || { hpMode: 'fixed' }
+    });
+
+    // Snapshots before & after
+    const snapBefore = createSnapshot(mappedPart, `قبل از ارتقا به سطح ${diff.toLevel}`, actor.id);
+    await env.DB.prepare(
+      `INSERT INTO participation_snapshots (id, participation_id, label, state, build, level, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(snapBefore.id, partId, snapBefore.label, JSON.stringify(snapBefore.state), JSON.stringify(snapBefore.build), snapBefore.level, actor.id, now).run();
+
+    await env.DB.prepare(
+      `UPDATE character_participations SET
+         level = ?, max_hp = ?, current_hp = ?, ability_scores = ?, subclass_name = ?,
+         hit_dice = ?, features = ?, spell_slots = ?, spells_known_prepared = ?,
+         level_up_available = 0, pending_change = NULL, updated_at = ?
+       WHERE id = ?`
+    ).bind(
+      nextParticipation.level,
+      nextParticipation.maxHp,
+      nextParticipation.currentHp,
+      JSON.stringify(nextParticipation.abilityScores),
+      nextParticipation.subclassName || null,
+      JSON.stringify(nextParticipation.hitDice),
+      JSON.stringify(nextParticipation.features),
+      nextParticipation.spellSlots ? JSON.stringify(nextParticipation.spellSlots) : null,
+      nextParticipation.spellsKnownPrepared ? JSON.stringify(nextParticipation.spellsKnownPrepared) : null,
+      now,
+      partId
+    ).run();
+
+    const snapAfter = createSnapshot(nextParticipation, `تأیید ارتقا به سطح ${diff.toLevel}`, actor.id);
+    await env.DB.prepare(
+      `INSERT INTO participation_snapshots (id, participation_id, label, state, build, level, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(snapAfter.id, partId, snapAfter.label, JSON.stringify(snapAfter.state), JSON.stringify(snapAfter.build), snapAfter.level, actor.id, now + 1).run();
+
+    const campRow = await env.DB.prepare('SELECT name FROM campaigns WHERE id = ?').bind(campId).first();
+    await env.DB.prepare(
+      'INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(
+      `hist-lvl-${Date.now()}-${generateRandomToken(3)}`,
+      rawPart.character_id,
+      campId,
+      'level_up',
+      JSON.stringify({
+        title: `تأیید ارتقای سطح به ${diff.toLevel} توسط دانجن مستر`,
+        description: comment || diff.hpBreakdown,
+        oldLevel: diff.fromLevel,
+        newLevel: diff.toLevel,
+        level: diff.toLevel,
+        campaignName: campRow?.name
+      }),
+      now
+    ).run();
+
+    await audit('approve-level-up', partId, { campaignId: campId, targetLevel: diff.toLevel });
+    const finalPart = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    return json(mapParticipation(finalPart));
+  }
+
+  // POST /api/c/:id/participations/:pid/reject-level-up (DM rejects pending level-up)
+  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+\/reject-level-up$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const partId = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+    const body = await request.json().catch(() => ({})) as any;
+    await env.DB.prepare('UPDATE character_participations SET pending_change = NULL, updated_at = ? WHERE id = ?').bind(now, partId).run();
+    await audit('reject-level-up', partId, { campaignId: campId, comment: body?.comment });
+    const finalPart = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    return json(mapParticipation(finalPart));
+  }
+
+  // POST /api/c/:id/participations/:pid/undo-level-up (DM rolls back level-up)
+  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+\/undo-level-up$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const partId = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const rawPart = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ? AND p.campaign_id = ?`).bind(partId, campId).first();
+    if (!rawPart) return error('مشارکت کاراکتر یافت نشد.', 404);
+    if (rawPart.level <= 1) return error('سطح کاراکتر ۱ است و امکان لغو ارتقا وجود ندارد.', 400);
+
+    const targetLevel = rawPart.level - 1;
+    // Look for snapshot matching targetLevel
+    const snap = await env.DB.prepare(
+      'SELECT * FROM participation_snapshots WHERE participation_id = ? AND level = ? ORDER BY created_at DESC LIMIT 1'
+    ).bind(partId, targetLevel).first();
+
+    if (snap) {
+      const state = parseBlob(snap.state, {});
+      await env.DB.prepare(
+        `UPDATE character_participations SET
+           level = ?, max_hp = ?, current_hp = ?, ability_scores = ?,
+           hit_dice = ?, features = ?, updated_at = ?
+         WHERE id = ?`
+      ).bind(
+        targetLevel,
+        state.maxHp || Math.max(1, rawPart.max_hp - 6),
+        Math.min(state.maxHp || rawPart.max_hp - 6, rawPart.current_hp),
+        state.abilityScores ? JSON.stringify(state.abilityScores) : rawPart.ability_scores,
+        state.hitDice ? JSON.stringify(state.hitDice) : rawPart.hit_dice,
+        state.features ? JSON.stringify(state.features) : rawPart.features,
+        now,
+        partId
+      ).run();
+    } else {
+      await env.DB.prepare(
+        `UPDATE character_participations SET
+           level = ?, max_hp = MAX(1, max_hp - 6), current_hp = MIN(current_hp, MAX(1, max_hp - 6)),
+           hit_dice = json_set(hit_dice, '$.max', ?, '$.current', MIN(?, json_extract(hit_dice, '$.current'))),
+           updated_at = ?
+         WHERE id = ?`
+      ).bind(targetLevel, targetLevel, targetLevel, now, partId).run();
+    }
+
+    await env.DB.prepare(
+      'INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(
+      `hist-undo-${Date.now()}-${generateRandomToken(3)}`,
+      rawPart.character_id,
+      campId,
+      'custom',
+      JSON.stringify({
+        title: 'لغو ارتقای سطح اخیر',
+        description: `بازگشت به سطح ${targetLevel} توسط دانجن مستر`,
+        level: targetLevel
+      }),
+      now
+    ).run();
+
+    await audit('undo-level-up', partId, { campaignId: campId, targetLevel });
+    const finalPart = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    return json(mapParticipation(finalPart));
+  }
+
+  // POST /api/c/:id/participations/:pid/dm-override (DM override mode)
+  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+\/dm-override$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const partId = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const rawPart = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ? AND p.campaign_id = ?`).bind(partId, campId).first();
+    if (!rawPart) return error('مشارکت کاراکتر یافت نشد.', 404);
+
+    const body = await request.json() as any;
+    const overrideData = body.data || {};
+    const reason = String(body.reason || 'ویرایش مستقیم توسط دانجن مستر').trim();
+
+    const colMap: Record<string, string> = {
+      level: 'level', xp: 'xp', className: 'class_name', subclassName: 'subclass_name',
+      classId: 'class_id', currentHp: 'current_hp', maxHp: 'max_hp', tempHp: 'temp_hp',
+      abilityScores: 'ability_scores', hitDice: 'hit_dice', sheetLocked: 'sheet_locked',
+      speedOverride: 'speed_override', acOverride: 'ac_override', notes: 'notes', dmNotes: 'dm_notes'
+    };
+    const sets: string[] = [];
+    const binds: any[] = [];
+    for (const [key, col] of Object.entries(colMap)) {
+      if (overrideData[key] === undefined) continue;
+      const val = key === 'sheetLocked' ? (overrideData[key] ? 1 : 0) : overrideData[key];
+      sets.push(`${col} = ?`);
+      binds.push(val !== null && typeof val === 'object' ? JSON.stringify(val) : val);
+    }
+
+    if (sets.length > 0) {
+      sets.push('updated_at = ?');
+      binds.push(now, partId);
+      await env.DB.prepare(`UPDATE character_participations SET ${sets.join(', ')} WHERE id = ?`).bind(...binds).run();
+    }
+
+    // Record "ویرایش DM" in history
+    await env.DB.prepare(
+      'INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(
+      `hist-dmedit-${Date.now()}-${generateRandomToken(3)}`,
+      rawPart.character_id,
+      campId,
+      'custom',
+      JSON.stringify({
+        title: 'ویرایش DM',
+        description: reason,
+        modifiedFields: Object.keys(overrideData)
+      }),
+      now
+    ).run();
+
+    await audit('dm-override', partId, { campaignId: campId, reason, fields: Object.keys(overrideData) });
+    const finalPart = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    return json(mapParticipation(finalPart));
+  }
+
+  // POST /api/c/:id/participations/:pid/respec-window (DM respec toggle)
+  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+\/respec-window$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const partId = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+    const body = await request.json() as any;
+    const open = Boolean(body.open);
+
+    await env.DB.prepare('UPDATE character_participations SET sheet_locked = ?, updated_at = ? WHERE id = ?')
+      .bind(open ? 0 : 1, now, partId).run();
+
+    await audit('respec-window', partId, { campaignId: campId, open });
+    const finalPart = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    return json(mapParticipation(finalPart));
+  }
+
+  // POST /api/c/:id/participations/:pid/sheet-change-request (Player requests change)
+  if (path.match(/^\/c\/[^/]+\/participations\/[^/]+\/sheet-change-request$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const partId = parts[4];
+    const rawPart = await env.DB.prepare('SELECT id, character_id FROM character_participations WHERE id = ? AND campaign_id = ?').bind(partId, campId).first();
+    if (!rawPart) return error('مشارکت کاراکتر یافت نشد.', 404);
+
+    const body = await request.json() as any;
+    const requestedChanges = String(body.requestedChanges || '').trim();
+    if (!requestedChanges) return error('شرح تغییرات درخواستی الزامی است.');
+    const reason = String(body.reason || '').trim();
+
+    const reqId = `scr-${Date.now()}-${generateRandomToken(3)}`;
+    await env.DB.prepare(
+      `INSERT INTO sheet_change_requests (id, campaign_id, participation_id, user_id, requested_changes, reason, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?)`
+    ).bind(reqId, campId, partId, actor.id, requestedChanges, reason, now, now).run();
+
+    await audit('sheet-change-request', partId, { campaignId: campId, reqId });
+    return json({ id: reqId, campaignId: campId, participationId: partId, userId: actor.id, requestedChanges, reason, status: 'pending', createdAt: now, updatedAt: now }, 201);
+  }
+
+  // GET /api/c/:id/sheet-change-requests (DM lists sheet change requests)
+  if (path.match(/^\/c\/[^/]+\/sheet-change-requests$/) && method === 'GET') {
+    const campId = path.split('/')[2];
     const myRole = await getMembershipRole(campId, actor.id);
     if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 403);
-    const camp = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ?').bind(campId).first();
-    const settings = parseBlob(camp?.settings, {});
+    const rows = await env.DB.prepare(
+      `SELECT scr.*, u.display_name AS player_name, ch.name AS character_name
+         FROM sheet_change_requests scr
+         JOIN users u ON u.id = scr.user_id
+         JOIN character_participations p ON p.id = scr.participation_id
+         LEFT JOIN characters ch ON ch.id = p.character_id
+        WHERE scr.campaign_id = ?
+        ORDER BY scr.created_at DESC`
+    ).bind(campId).all();
+
+    const list = (rows.results || []).map((r: any) => ({
+      id: r.id,
+      campaignId: r.campaign_id,
+      participationId: r.participation_id,
+      userId: r.user_id,
+      requestedChanges: r.requested_changes,
+      reason: r.reason,
+      status: r.status,
+      reviewComment: r.review_comment,
+      characterName: r.character_name,
+      playerName: r.player_name,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at
+    }));
+    return json(list);
+  }
+
+  // POST /api/c/:id/sheet-change-requests/:rid/review (DM review sheet change)
+  if (path.match(/^\/c\/[^/]+\/sheet-change-requests\/[^/]+\/review$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const reqId = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const reqRow = await env.DB.prepare('SELECT * FROM sheet_change_requests WHERE id = ? AND campaign_id = ?').bind(reqId, campId).first();
+    if (!reqRow) return error('درخواست یافت نشد.', 404);
+
     const body = await request.json() as any;
-    const targetLevel = Number(body.targetLevel || part.level + 1);
-    if (targetLevel < 1 || targetLevel > Number(settings.maxEntryLevel || 20)) {
-      return error('سطح هدف خارج از محدوده مجاز کمپین است.');
+    const action = body.action === 'approve' ? 'approved' : 'rejected';
+    const comment = String(body.comment || '').trim();
+
+    await env.DB.prepare('UPDATE sheet_change_requests SET status = ?, review_comment = ?, updated_at = ? WHERE id = ?')
+      .bind(action, comment, now, reqId).run();
+
+    if (action === 'approved') {
+      // Temporarily unlock sheet so user can apply the agreed changes
+      await env.DB.prepare('UPDATE character_participations SET sheet_locked = 0, updated_at = ? WHERE id = ?')
+        .bind(now, reqRow.participation_id).run();
     }
-    if (settings.approval?.onLevelUp) {
-      const pending = { targetLevel, diff: body.diff || {}, requestedAt: now };
-      await env.DB.prepare('UPDATE character_participations SET pending_level_up = ?, updated_at = ? WHERE id = ? AND campaign_id = ?')
-        .bind(JSON.stringify(pending), now, partId, campId).run();
-    } else {
-      await env.DB.prepare('UPDATE character_participations SET level = ?, updated_at = ? WHERE id = ? AND campaign_id = ?')
-        .bind(targetLevel, now, partId, campId).run();
-    }
-    const updated = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
-    return json(mapParticipation(updated));
+
+    await audit('sheet-change-review', reqId, { action, comment });
+    const updated = await env.DB.prepare('SELECT * FROM sheet_change_requests WHERE id = ?').bind(reqId).first();
+    return json(updated);
   }
 
   // POST /api/c/:id/participations/:pid/status — set participation status

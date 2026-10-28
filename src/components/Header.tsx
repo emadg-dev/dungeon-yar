@@ -38,6 +38,8 @@ export interface HeaderProps {
   onOpenCampaignInvites?: () => void;
   onOpenCampaignApprovals?: () => void;
   pendingApprovalsCount?: number;
+  levelUpAvailable?: boolean;
+  onOpenLevelUp?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -69,7 +71,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCampaignMembers,
   onOpenCampaignInvites,
   onOpenCampaignApprovals,
-  pendingApprovalsCount = 0
+  pendingApprovalsCount = 0,
+  levelUpAvailable = false,
+  onOpenLevelUp
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isDm = activeCampaignRole === 'owner' || activeCampaignRole === 'co_dm' || currentUser?.role === 'dm';
@@ -121,6 +125,19 @@ export const Header: React.FC<HeaderProps> = ({
                   </select>
                   <ChevronDown className="w-3 h-3 text-[#A39A89] absolute start-auto end-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
+              )}
+
+              {/* Level-Up Ready Indicator Button */}
+              {levelUpAvailable && onOpenLevelUp && !isDmView && (
+                <button
+                  type="button"
+                  onClick={onOpenLevelUp}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-gradient-to-r from-[#C97B4A] to-[#E0A030] text-[#0E0D0C] text-[11px] font-black animate-pulse shadow-md shadow-[#E0A030]/20 touch-target shrink-0"
+                  title="ارتقای سطح آماده است!"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">ارتقای سطح!</span>
+                </button>
               )}
             </div>
           ) : viewMode === 'character_master' ? (

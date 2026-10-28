@@ -4,7 +4,8 @@ import { APP_NAME_LATIN } from '../../config/app';
 import { deriveSheet } from '../../../shared/rules/engine';
 import { 
   Shield, Footprints, Zap, Dices, Moon, Sun, Sparkles, 
-  Download, Upload, Flame, AlertTriangle, Edit3, Check, Heart
+  Download, Upload, Flame, AlertTriangle, Edit3, Check, Heart,
+  Lock, ArrowUpCircle
 } from 'lucide-react';
 import { PipTracker } from '../common/PipTracker';
 import { StatCard } from '../common/StatCard';
@@ -15,6 +16,12 @@ interface OverviewTabProps {
   onUpdate: (updated: Character) => void;
   onOpenRestModal: (type: 'short' | 'long' | 'special') => void;
   onRollCheck: (sides: number, count: number, modifier: number, label: string) => void;
+  levelUpAvailable?: boolean;
+  sheetLocked?: boolean | number;
+  pendingChange?: any;
+  xp?: number;
+  onOpenLevelUp?: () => void;
+  onOpenSheetChangeRequest?: () => void;
 }
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({
@@ -22,7 +29,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   classTemplates,
   onUpdate,
   onOpenRestModal,
-  onRollCheck
+  onRollCheck,
+  levelUpAvailable = false,
+  sheetLocked = true,
+  pendingChange,
+  xp,
+  onOpenLevelUp,
+  onOpenSheetChangeRequest
 }) => {
   const [isEditingBasics, setIsEditingBasics] = useState(false);
 
@@ -112,6 +125,48 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   return (
     <div className="space-y-4" dir="rtl">
+      {/* Level-Up Ready Banner */}
+      {levelUpAvailable && (
+        <div className="surface-card rounded-[14px] p-3.5 bg-gradient-to-r from-[#E0A030]/20 via-[#181c26] to-[#6F9E78]/20 border-2 border-[#E0A030] shadow-lg shadow-[#E0A030]/15 flex flex-col sm:flex-row items-center justify-between gap-3 animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#E0A030] text-[#0E0D0C] flex items-center justify-center shrink-0 shadow-md">
+              <ArrowUpCircle className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-xs font-black text-[#F2C265]">ارتقای سطح آماده است!</h3>
+              <p className="text-[11px] text-[#EDE6D8]/90">
+                شما به شرایط لازم برای صعود به سطح {character.level + 1} دست یافته‌اید.
+              </p>
+            </div>
+          </div>
+          {onOpenLevelUp && (
+            <button
+              type="button"
+              onClick={onOpenLevelUp}
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] font-black text-xs transition flex items-center justify-center gap-1.5 touch-target min-h-[40px] shadow-md shadow-[#E0A030]/20"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>صعود به سطح {character.level + 1}</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Pending Change Warning */}
+      {pendingChange && (
+        <div className="surface-card rounded-[14px] p-3 bg-[#7FB4D6]/10 border border-[#7FB4D6]/40 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-[#7FB4D6] shrink-0" />
+            <span className="text-xs text-[#7FB4D6] font-bold">
+              یک درخواست {pendingChange.type === 'level_up' ? 'ارتقای سطح' : 'تغییر برگه'} در انتظار بررسی دانجن مستر است.
+            </span>
+          </div>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#7FB4D6]/20 text-[#7FB4D6] font-bold">
+            در صف بررسی
+          </span>
+        </div>
+      )}
+
       {/* Identity Card */}
       <div className="surface-card rounded-[14px] p-4 card-gold-top relative overflow-hidden">
         <div className="flex flex-col sm:flex-row gap-4 items-center sm:items-start relative z-10">
@@ -245,6 +300,47 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Sheet Lock & Integrity Indicator */}
+      <div className="surface-card rounded-[14px] p-3 border border-[#2F2A23] flex flex-col sm:flex-row items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5 text-right w-full sm:w-auto">
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+            Boolean(sheetLocked)
+              ? 'bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30'
+              : 'bg-[#6F9E78]/15 text-[#6F9E78] border border-[#6F9E78]/30'
+          }`}>
+            <Lock className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold text-[#EDE6D8]">
+                {Boolean(sheetLocked) ? 'برگه کاراکتر قفل است' : 'ویرایش آزاد فعال است'}
+              </span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
+                Boolean(sheetLocked) ? 'bg-[#E0A030]/15 text-[#E0A030]' : 'bg-[#6F9E78]/15 text-[#6F9E78]'
+              }`}>
+                {Boolean(sheetLocked) ? 'Locked Core' : 'Respec Window'}
+              </span>
+            </div>
+            <p className="text-[11px] text-[#A39A89]">
+              {Boolean(sheetLocked)
+                ? 'مشخصات بنیادین جهت یکپارچگی قوانین قفل هستند؛ تغییرات اساسی نیازمند تأیید راوی است.'
+                : 'پنجره ویرایش آزاد فعال است؛ می‌توانید مشخصات بنیادین را تغییر دهید.'}
+            </p>
+          </div>
+        </div>
+
+        {Boolean(sheetLocked) && onOpenSheetChangeRequest && (
+          <button
+            type="button"
+            onClick={onOpenSheetChangeRequest}
+            className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] transition flex items-center justify-center gap-1.5 touch-target min-h-[36px] shrink-0"
+          >
+            <Shield className="w-3.5 h-3.5" />
+            <span>درخواست تغییر به DM</span>
+          </button>
+        )}
       </div>
 
       {/* 2×2 Stat Grid on Mobile (AC, Speed, Initiative, Hit Dice) + Skill Points */}
