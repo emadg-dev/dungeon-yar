@@ -295,6 +295,21 @@ export default function App() {
         setCharHistoryEvents(history);
         const parts = await api.listParticipations(charId).catch(() => []);
         setCharParticipations(parts);
+
+        // Load templates and NPCs for BackstoryEditor if not already cached
+        if (availableBackgrounds.length === 0 || availableLineages.length === 0) {
+          const [bgs, lins] = await Promise.all([
+            api.listBackgroundTemplates().catch(() => []),
+            api.listLineageTemplates().catch(() => [])
+          ]);
+          if (bgs.length > 0) setAvailableBackgrounds(bgs);
+          if (lins.length > 0) setAvailableLineages(lins);
+        }
+        if (npcs.length === 0) {
+          const npcList = await api.listNpcs().catch(() => []);
+          if (npcList.length > 0) setNpcs(npcList);
+        }
+
         setViewMode('character_master');
       }
     } catch (err) {
@@ -766,6 +781,12 @@ export default function App() {
               character={selectedMasterChar}
               history={charHistoryEvents}
               participations={charParticipations}
+              campaign={activeCampaign || myCampaigns[0] || null}
+              lineageTemplate={availableLineages.find(l => l.name === selectedMasterChar.race) || null}
+              backgroundTemplate={availableBackgrounds.find(b => b.name === selectedMasterChar.backstory?.origin) || null}
+              allBackgroundTemplates={availableBackgrounds}
+              availableNpcs={npcs}
+              isDm={isDmView || currentUser?.role === 'dm'}
               onBack={() => {
                 setViewMode('home');
                 window.location.hash = '#/';
@@ -781,6 +802,30 @@ export default function App() {
               }}
               onSelectCampaignParticipation={(campaignId) => {
                 handleSelectCampaign(campaignId);
+              }}
+              onLoadRevisions={() => api.listCharacterRevisions(selectedMasterChar.id)}
+              onRestoreRevision={async (revId) => {
+                const restored = await api.restoreCharacterRevision(selectedMasterChar.id, revId);
+                setSelectedMasterChar(restored);
+                showToast('نسخه قدیمی پیشینه بازگردانی شد.');
+                return restored;
+              }}
+              onToggleReadyForReview={async (ready) => {
+                const updated = await api.toggleCharacterReadyForReview(selectedMasterChar.id, ready);
+                const merged = { ...selectedMasterChar, readyForReview: updated.readyForReview };
+                setSelectedMasterChar(merged);
+                showToast(ready ? 'پیشینه جهت بازبینی به صف دانجن‌مستر ارسال شد.' : 'علامت بازبینی برداشته شد.');
+                return merged;
+              }}
+              onLoadComments={() => api.listBackstoryComments(selectedMasterChar.id)}
+              onCreateComment={(sectionId, body) => api.createBackstoryComment(selectedMasterChar.id, sectionId, body)}
+              onResolveComment={(commentId, resolved) => api.resolveBackstoryComment(selectedMasterChar.id, commentId, resolved)}
+              onReviewBackstory={async (decision, comment) => {
+                const res = await api.reviewCharacterBackstory(selectedMasterChar.id, decision, comment);
+                const merged = { ...selectedMasterChar, reviewStatus: res.reviewStatus, reviewComment: res.reviewComment };
+                setSelectedMasterChar(merged);
+                showToast(decision === 'approved' ? 'پیشینه با موفقیت تأیید گردید.' : 'درخواست بازنگری برای بازیکن ارسال شد.');
+                return merged;
               }}
             />
           )}

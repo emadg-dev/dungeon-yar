@@ -5,7 +5,7 @@ import { Check, X, MessageSquare, AlertCircle, Sparkles, User, ArrowUp, Shield, 
 export interface ApprovalItem {
   campaignId: string;
   campaignName: string;
-  type: 'create' | 'level_up' | 'sheet_change';
+  type: 'create' | 'level_up' | 'sheet_change' | 'backstory_review';
   participationId: string;
   characterId: string;
   characterName: string;
@@ -90,13 +90,17 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
                             ? 'bg-[#7FB4D6]/20 text-[#7FB4D6] border border-[#7FB4D6]/30'
                             : item.type === 'level_up'
                             ? 'bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30'
-                            : 'bg-[#C97B4A]/20 text-[#F2C265] border border-[#C97B4A]/30'
+                            : item.type === 'sheet_change'
+                            ? 'bg-[#C97B4A]/20 text-[#F2C265] border border-[#C97B4A]/30'
+                            : 'bg-[#9B72CF]/20 text-[#CBD5E1] border border-[#9B72CF]/30'
                         }`}>
                           {item.type === 'create' 
                             ? 'ورود شخصیت جدید' 
                             : item.type === 'level_up' 
                             ? 'ارتقای سطح (Level Up)' 
-                            : 'درخواست تغییر برگه'}
+                            : item.type === 'sheet_change'
+                            ? 'درخواست تغییر برگه'
+                            : 'بازبینی پیشینه داستانی'}
                         </span>
                         <h4 className="text-sm font-bold text-[#EDE6D8]">{item.characterName}</h4>
                       </div>
@@ -106,6 +110,16 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
                     </div>
                     <span className="text-[10px] text-[#8A8374]">{dateStr}</span>
                   </div>
+
+                  {/* Backstory Review Details */}
+                  {item.type === 'backstory_review' && item.details?.backstory && (
+                    <div className="p-3 rounded-xl bg-[#0E0D0C]/80 border border-[#2F2A23] space-y-1.5 text-xs">
+                      <div className="text-[#F2C265] font-bold">خلاصه پیشینه ارسالی:</div>
+                      <p className="text-[#C9C0AE] leading-relaxed line-clamp-3">
+                        {item.details.backstory.summary || item.details.backstory.origin || 'پیشینه تدوین شده و آماده بازبینی است.'}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Level-Up Detailed Diff */}
                   {item.type === 'level_up' && (

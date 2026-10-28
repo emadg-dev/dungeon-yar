@@ -955,6 +955,34 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       }
     }
 
+    // Backstory reviews ready in DM campaigns
+    const backstoryReviewRes = await env.DB.prepare(
+      `SELECT ch.id as char_id, ch.name as char_name, ch.data as char_data, ch.updated_at,
+              u.display_name as player_name, cp.campaign_id, c.name as campaign_name, cp.id as part_id, cp.level
+         FROM characters ch
+         JOIN character_participations cp ON cp.character_id = ch.id
+         JOIN campaigns c ON c.id = cp.campaign_id
+         LEFT JOIN users u ON u.id = ch.owner_id
+        WHERE ch.ready_for_review = 1`
+    ).all();
+    for (const br of (backstoryReviewRes.results || [])) {
+      if (!isGlobalDm && !myDmIds.has((br as any).campaign_id)) continue;
+      const charBlob = parseBlob((br as any).char_data, null);
+      if (charBlob?.reviewStatus === 'approved') continue;
+      pendingApprovals.push({
+        campaignId: (br as any).campaign_id,
+        campaignName: (br as any).campaign_name,
+        type: 'backstory_review',
+        participationId: (br as any).part_id,
+        characterId: (br as any).char_id,
+        characterName: (br as any).char_name || charBlob?.name || 'شخصیت',
+        playerName: (br as any).player_name || 'کاربر',
+        level: (br as any).level || 1,
+        requestedAt: (br as any).updated_at,
+        details: { backstory: charBlob?.backstory }
+      });
+    }
+
     return json({
       user: {
         id: actor.id,
@@ -1553,32 +1581,284 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return json({ success: true });
   }
 
-  // ---------------------------------------------------------
-  // Master character subroutes (PATCH / status / history / give-item)
-  // ---------------------------------------------------------
+  // Helper to verify author or campaign DM of a character
+  const checkCharAuthorOrCampaignDm = async (charId: string) => {
+    if (actor.role === 'dm') return true;
+    const char = (await env.DB.prepare('SELECT owner_id FROM characters WHERE id = ?').bind(charId).first()) as { owner_id: string } | null;
+    if (!char) return false;
+    if (char.owner_id === actor.id) return true;
+    const dmPart = await env.DB.prepare(
+      `SELECT cm.role FROM character_participations cp
+         JOIN campaign_members cm ON cm.campaign_id = cp.campaign_id
+        WHERE cp.character_id = ? AND cm.user_id = ? AND cm.role IN ('owner', 'co_dm')`
+    ).bind(charId, actor.id).first();
+    return Boolean(dmPart);
+  };
+
+  // Helper to verify campaign DM of a character
+  const checkCampaignDmForChar = async (charId: string) => {
+    if (actor.role === 'dm') return true;
+    const dmPart = await env.DB.prepare(
+      `SELECT cm.role FROM character_participations cp
+         JOIN campaign_members cm ON cm.campaign_id = cp.campaign_id
+        WHERE cp.character_id = ? AND cm.user_id = ? AND cm.role IN ('owner', 'co_dm')`
+    ).bind(charId, actor.id).first();
+    return Boolean(dmPart);
+  };
+
+  // PATCH /api/characters/:id — update master character
   if (path.match(/^\/characters\/[^/]+$/) && method === 'PATCH') {
     const charId = path.split('/')[2];
     const charData = await request.json() as any;
-    const row = await env.DB.prepare('SELECT owner_id, revision FROM characters WHERE id = ?').bind(charId).first();
+    const row = (await env.DB.prepare('SELECT owner_id, revision, data FROM characters WHERE id = ?').bind(charId).first()) as { owner_id: string; revision: number; data: string } | null;
     if (!row || (actor.role !== 'dm' && row.owner_id !== actor.id)) return error('شخصیت مورد نظر یافت نشد.', 404);
     // Optimistic concurrency only when the client actually carries a revision
     if (charData.revision != null && row.revision !== charData.revision) {
       return error('شخصیت توسط شخص دیگری ویرایش شده است؛ لطفاً دوباره بارگذاری کنید.', 409);
     }
     const nextRevision = row.revision + 1;
+    const oldChar = parseBlob(row.data, {});
     const updatedChar = { ...charData, revision: nextRevision, updatedAt: new Date().toISOString() };
+    const readyForReview = updatedChar.readyForReview ? 1 : 0;
+
     await env.DB.prepare(
-      'UPDATE characters SET name = ?, class_name = ?, level = ?, data = ?, revision = ?, updated_at = ? WHERE id = ?'
+      'UPDATE characters SET name = ?, class_name = ?, level = ?, data = ?, revision = ?, ready_for_review = ?, updated_at = ? WHERE id = ?'
     ).bind(
       updatedChar.name || 'شخصیت بی‌نام',
       updatedChar.className || '',
       updatedChar.level || 1,
       JSON.stringify(updatedChar),
       nextRevision,
+      readyForReview,
       now,
       charId
     ).run();
+
+    // Auto-save revision if backstory was updated
+    if (updatedChar.backstory && JSON.stringify(oldChar?.backstory) !== JSON.stringify(updatedChar.backstory)) {
+      const revId = `rev-${Date.now()}-${generateRandomToken(3)}`;
+      await env.DB.prepare(
+        'INSERT INTO character_revisions (id, character_id, backstory, changed_by, created_at) VALUES (?, ?, ?, ?, ?)'
+      ).bind(revId, charId, JSON.stringify(updatedChar.backstory), actor.id, now).run();
+
+      // Prune: keep last 10
+      const revs = await env.DB.prepare(
+        'SELECT id FROM character_revisions WHERE character_id = ? ORDER BY created_at DESC'
+      ).bind(charId).all();
+      if (revs.results && revs.results.length > 10) {
+        const toDelete = revs.results.slice(10).map((r: any) => r.id);
+        for (const delId of toDelete) {
+          await env.DB.prepare('DELETE FROM character_revisions WHERE id = ?').bind(delId).run();
+        }
+      }
+    }
+
     return json(updatedChar);
+  }
+
+  // GET /api/characters/:id/revisions — list backstory revisions (last 10)
+  if (path.match(/^\/characters\/[^/]+\/revisions$/) && method === 'GET') {
+    const charId = path.split('/')[2];
+    if (!(await checkCharAuthorOrCampaignDm(charId))) return error('دسترسی مجاز نیست.', 403);
+    const rows = await env.DB.prepare(
+      'SELECT * FROM character_revisions WHERE character_id = ? ORDER BY created_at DESC LIMIT 10'
+    ).bind(charId).all();
+    const list = (rows.results || []).map((r: any) => ({
+      id: r.id,
+      characterId: r.character_id,
+      backstory: parseBlob(r.backstory, {}),
+      changedBy: r.changed_by,
+      createdAt: r.created_at
+    }));
+    return json(list);
+  }
+
+  // POST /api/characters/:id/revisions — create a manual backstory revision
+  if (path.match(/^\/characters\/[^/]+\/revisions$/) && method === 'POST') {
+    const charId = path.split('/')[2];
+    if (!(await checkCharAuthorOrCampaignDm(charId))) return error('دسترسی مجاز نیست.', 403);
+    const body = await request.json() as any;
+    const backstory = body.backstory || {};
+    const revId = `rev-${Date.now()}-${generateRandomToken(3)}`;
+    await env.DB.prepare(
+      'INSERT INTO character_revisions (id, character_id, backstory, changed_by, created_at) VALUES (?, ?, ?, ?, ?)'
+    ).bind(revId, charId, JSON.stringify(backstory), actor.id, now).run();
+    return json({ id: revId, characterId: charId, backstory, changedBy: actor.id, createdAt: now }, 201);
+  }
+
+  // POST /api/characters/:id/revisions/:revId/restore — restore revision
+  if (path.match(/^\/characters\/[^/]+\/revisions\/[^/]+\/restore$/) && method === 'POST') {
+    const parts = path.split('/');
+    const charId = parts[2];
+    const revId = parts[4];
+    if (!(await checkCharAuthorOrCampaignDm(charId))) return error('دسترسی مجاز نیست.', 403);
+
+    const revRow = (await env.DB.prepare('SELECT backstory FROM character_revisions WHERE id = ? AND character_id = ?').bind(revId, charId).first()) as { backstory: string } | null;
+    if (!revRow) return error('ویرایش مورد نظر یافت نشد.', 404);
+
+    const charRow = (await env.DB.prepare('SELECT data, revision FROM characters WHERE id = ?').bind(charId).first()) as { data: string; revision: number } | null;
+    if (!charRow) return error('شخصیت یافت نشد.', 404);
+
+    const char = parseBlob(charRow.data, {});
+    char.backstory = parseBlob(revRow.backstory, {});
+    const nextRevision = (charRow.revision || 0) + 1;
+    char.revision = nextRevision;
+    char.updatedAt = new Date().toISOString();
+
+    await env.DB.prepare('UPDATE characters SET data = ?, revision = ?, updated_at = ? WHERE id = ?')
+      .bind(JSON.stringify(char), nextRevision, now, charId).run();
+
+    return json(char);
+  }
+
+  // POST /api/characters/:id/ready-for-review — toggle ready for review
+  if (path.match(/^\/characters\/[^/]+\/ready-for-review$/) && method === 'POST') {
+    const charId = path.split('/')[2];
+    if (!(await checkCharAuthorOrCampaignDm(charId))) return error('دسترسی مجاز نیست.', 403);
+    const body = await request.json() as any;
+    const ready = body.ready !== false;
+
+    const charRow = (await env.DB.prepare('SELECT data, revision FROM characters WHERE id = ?').bind(charId).first()) as { data: string; revision: number } | null;
+    if (!charRow) return error('شخصیت یافت نشد.', 404);
+
+    const char = parseBlob(charRow.data, {});
+    char.readyForReview = ready;
+    char.reviewStatus = ready ? 'pending' : 'none';
+    const nextRevision = (charRow.revision || 0) + 1;
+    char.revision = nextRevision;
+    char.updatedAt = new Date().toISOString();
+
+    await env.DB.prepare('UPDATE characters SET data = ?, ready_for_review = ?, revision = ?, updated_at = ? WHERE id = ?')
+      .bind(JSON.stringify(char), ready ? 1 : 0, nextRevision, now, charId).run();
+
+    return json(char);
+  }
+
+  // GET /api/characters/:id/backstory-comments — list section comments
+  if (path.match(/^\/characters\/[^/]+\/backstory-comments$/) && method === 'GET') {
+    const charId = path.split('/')[2];
+    if (!(await checkCharAuthorOrCampaignDm(charId))) return error('دسترسی مجاز نیست.', 403);
+
+    const rows = await env.DB.prepare(
+      `SELECT c.*, u.display_name, u.role as user_role
+         FROM backstory_comments c
+         LEFT JOIN users u ON u.id = c.author_id
+        WHERE c.character_id = ?
+        ORDER BY c.created_at ASC`
+    ).bind(charId).all();
+
+    const comments = (rows.results || []).map((r: any) => ({
+      id: r.id,
+      characterId: r.character_id,
+      sectionId: r.section_id,
+      authorId: r.author_id,
+      authorName: r.display_name || 'کاربر',
+      authorRole: r.user_role === 'dm' ? 'دانجن مستر' : 'بازیکن',
+      body: r.body,
+      resolved: r.resolved === 1,
+      createdAt: r.created_at
+    }));
+    return json(comments);
+  }
+
+  // POST /api/characters/:id/backstory-comments — add section comment
+  if (path.match(/^\/characters\/[^/]+\/backstory-comments$/) && method === 'POST') {
+    const charId = path.split('/')[2];
+    if (!(await checkCharAuthorOrCampaignDm(charId))) return error('دسترسی مجاز نیست.', 403);
+    const body = await request.json() as any;
+    const sectionId = String(body.sectionId || 'general');
+    const commentBody = String(body.body || '').trim();
+    if (!commentBody) return error('متن دیدگاه نمی‌تواند خالی باشد.');
+
+    const commentId = `comm-${Date.now()}-${generateRandomToken(4)}`;
+    await env.DB.prepare(
+      'INSERT INTO backstory_comments (id, character_id, section_id, author_id, body, resolved, created_at) VALUES (?, ?, ?, ?, ?, 0, ?)'
+    ).bind(commentId, charId, sectionId, actor.id, commentBody, now).run();
+
+    return json({
+      id: commentId,
+      characterId: charId,
+      sectionId,
+      authorId: actor.id,
+      authorName: actor.display_name,
+      authorRole: actor.role === 'dm' ? 'دانجن مستر' : 'بازیکن',
+      body: commentBody,
+      resolved: false,
+      createdAt: now
+    }, 201);
+  }
+
+  // PATCH /api/characters/:id/backstory-comments/:commentId — toggle resolved
+  if (path.match(/^\/characters\/[^/]+\/backstory-comments\/[^/]+$/) && method === 'PATCH') {
+    const parts = path.split('/');
+    const charId = parts[2];
+    const commentId = parts[4];
+    if (!(await checkCharAuthorOrCampaignDm(charId))) return error('دسترسی مجاز نیست.', 403);
+
+    const body = await request.json() as any;
+    const resolved = body.resolved ? 1 : 0;
+    await env.DB.prepare('UPDATE backstory_comments SET resolved = ? WHERE id = ? AND character_id = ?')
+      .bind(resolved, commentId, charId).run();
+
+    const row = await env.DB.prepare(
+      `SELECT c.*, u.display_name, u.role as user_role
+         FROM backstory_comments c
+         LEFT JOIN users u ON u.id = c.author_id
+        WHERE c.id = ?`
+    ).bind(commentId).first();
+
+    return json({
+      id: (row as any).id,
+      characterId: (row as any).character_id,
+      sectionId: (row as any).section_id,
+      authorId: (row as any).author_id,
+      authorName: (row as any).display_name || 'کاربر',
+      authorRole: (row as any).user_role === 'dm' ? 'دانجن مستر' : 'بازیکن',
+      body: (row as any).body,
+      resolved: (row as any).resolved === 1,
+      createdAt: (row as any).created_at
+    });
+  }
+
+  // POST /api/characters/:id/backstory-review — DM approve or request changes
+  if (path.match(/^\/characters\/[^/]+\/backstory-review$/) && method === 'POST') {
+    const charId = path.split('/')[2];
+    if (!(await checkCampaignDmForChar(charId))) return error('فقط دانجن مستر مجاز به تأیید یا درخواست اصلاح پیشینه است.', 403);
+    const body = await request.json() as any;
+    const status = body.status === 'approved' ? 'approved' : 'changes_requested';
+    const comment = String(body.comment || '').trim();
+
+    const charRow = (await env.DB.prepare('SELECT data, revision FROM characters WHERE id = ?').bind(charId).first()) as { data: string; revision: number } | null;
+    if (!charRow) return error('شخصیت یافت نشد.', 404);
+
+    const char = parseBlob(charRow.data, {});
+    char.reviewStatus = status;
+    char.reviewComment = comment;
+    if (status === 'approved') {
+      char.readyForReview = false;
+    }
+    const nextRevision = (charRow.revision || 0) + 1;
+    char.revision = nextRevision;
+    char.updatedAt = new Date().toISOString();
+
+    await env.DB.prepare('UPDATE characters SET data = ?, ready_for_review = ?, revision = ?, updated_at = ? WHERE id = ?')
+      .bind(JSON.stringify(char), status === 'approved' ? 0 : 1, nextRevision, now, charId).run();
+
+    // History event
+    await env.DB.prepare(
+      'INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp) VALUES (?, ?, NULL, ?, ?, ?)'
+    ).bind(
+      `hist-rev-${Date.now()}-${generateRandomToken(3)}`,
+      charId,
+      'major_deed',
+      JSON.stringify({
+        title: status === 'approved' ? 'تأیید رسمی پیشینه داستانی' : 'درخواست اصلاح پیشینه',
+        description: comment || (status === 'approved' ? 'پیشینه و خاستگاه شخصیت توسط دانجن مستر تأیید شد.' : 'دانجن مستر یادداشت‌هایی برای بهبود پیشینه درج کرد.')
+      }),
+      now
+    ).run();
+
+    return json(char);
   }
 
   if (path.match(/^\/characters\/[^/]+\/status$/) && method === 'POST') {
