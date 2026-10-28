@@ -51,6 +51,8 @@ const CampaignMembersModal = React.lazy(() => import('./components/campaign/Camp
 const CampaignInvitesModal = React.lazy(() => import('./components/campaign/CampaignInvitesModal').then(m => ({ default: m.CampaignInvitesModal })));
 const CampaignApprovalsModal = React.lazy(() => import('./components/campaign/CampaignApprovalsModal').then(m => ({ default: m.CampaignApprovalsModal })));
 const CharacterCreationWizardModal = React.lazy(() => import('./components/character-wizard/CharacterCreationWizardModal').then(m => ({ default: m.CharacterCreationWizardModal })));
+const LevelUpModal = React.lazy(() => import('./components/character/LevelUpModal').then(m => ({ default: m.LevelUpModal })));
+const SheetChangeRequestModal = React.lazy(() => import('./components/character/SheetChangeRequestModal').then(m => ({ default: m.SheetChangeRequestModal })));
 
 // Loading skeleton fallback for tabs
 const TabSkeleton = () => (
@@ -155,6 +157,11 @@ export default function App() {
   const [draftParticipations, setDraftParticipations] = useState<CharacterParticipation[]>([]);
   const [availableLineages, setAvailableLineages] = useState<LineageTemplate[]>([]);
   const [availableBackgrounds, setAvailableBackgrounds] = useState<BackgroundTemplate[]>([]);
+
+  // Step 3.4 Level-Up, Approvals & Sheet Lock State
+  const [campaignParticipations, setCampaignParticipations] = useState<CharacterParticipation[]>([]);
+  const [levelUpModalOpen, setLevelUpModalOpen] = useState(false);
+  const [sheetChangeRequestOpen, setSheetChangeRequestOpen] = useState(false);
 
   // Dice & Rest Modals
   const [diceModalOpen, setDiceModalOpen] = useState(false);
@@ -327,9 +334,11 @@ export default function App() {
         setEncounters(encList);
       }
 
-      // Characters in campaign
+      // Characters & Participations in campaign
       const charsList = await api.listCharacters().catch(() => []);
       setCharacters(charsList);
+      const partsList = await api.listParticipations(campaignId).catch(() => []);
+      setCampaignParticipations(partsList);
       if (charsList.length > 0) {
         setActiveCharId(charsList[0].id);
       } else {
@@ -651,8 +660,9 @@ export default function App() {
     }
   };
 
-  // Active Character in Campaign
+  // Active Character & Participation in Campaign
   const activeCharacter = characters.find(c => c.id === activeCharId) || characters[0] || null;
+  const activeParticipation = activeCharacter ? (campaignParticipations.find(p => p.characterId === activeCharacter.id) || null) : null;
 
   return (
     <div className="min-h-screen text-[#EDE6D8] flex flex-col font-sans selection:bg-[#E0A030]/25 selection:text-[#E0A030]" dir="rtl">
@@ -694,6 +704,8 @@ export default function App() {
         onOpenCampaignInvites={() => setCampaignInvitesOpen(true)}
         onOpenCampaignApprovals={() => setCampaignApprovalsOpen(true)}
         pendingApprovalsCount={pendingApprovals.length}
+        levelUpAvailable={Boolean(activeParticipation?.levelUpAvailable)}
+        onOpenLevelUp={() => setLevelUpModalOpen(true)}
       />
 
       {/* Sticky Character Header & Sub-Tabs (In Campaign Space, Player View) */}
@@ -889,9 +901,46 @@ export default function App() {
                   onRollDice={handleRollCheck}
                   isHttpMode={import.meta.env.VITE_API_MODE === 'http'}
                   activeDmTab={activeDmTab}
-                  onSelectDmTab={handleSelectDmTab}
                   onRefreshCharacters={() => activeCampaignId && loadCampaignWorkspace(activeCampaignId)}
                   onCreateCharacterForPlayer={() => handleOpenCharacterWizard(activeCampaign?.id)}
+                  participations={campaignParticipations}
+                  onAwardXp={async (data) => {
+                    if (!activeCampaignId) return;
+                    if (data.isPartyWide) {
+                      await api.awardXp(activeCampaignId, { amount: data.amount, reason: data.reason });
+                    } else {
+                      const part = campaignParticipations.find(p => p.characterId === data.characterId);
+                      if (part) {
+                        await api.awardXp(activeCampaignId, { amount: data.amount, reason: data.reason, participationId: part.id });
+                      }
+                    }
+                    showToast(`امتیاز تجربه (${data.amount} XP) با موفقیت ثبت شد.`);
+                    await loadCampaignWorkspace(activeCampaignId);
+                  }}
+                  onToggleMilestoneLevelUp={async (participationId, available) => {
+                    if (!activeCampaignId) return;
+                    await api.setMilestoneLevelUp(activeCampaignId, participationId, available);
+                    showToast(available ? 'مجوز ارتقای مایلیستون صادر گردید.' : 'مجوز ارتقا لغو شد.');
+                    await loadCampaignWorkspace(activeCampaignId);
+                  }}
+                  onUndoLevelUp={async (participationId) => {
+                    if (!activeCampaignId) return;
+                    await api.undoLevelUp(activeCampaignId, participationId);
+                    showToast('آخرین ارتقای سطح واگرد (Undo) گردید.');
+                    await loadCampaignWorkspace(activeCampaignId);
+                  }}
+                  onToggleRespecWindow={async (participationId, open) => {
+                    if (!activeCampaignId) return;
+                    await api.toggleRespecWindow(activeCampaignId, participationId, open);
+                    showToast(open ? 'پنجره ویرایش موقت (Respec Window) باز شد.' : 'برگه کاراکتر مجدداً قفل شد.');
+                    await loadCampaignWorkspace(activeCampaignId);
+                  }}
+                  onDmOverride={async (participationId, updates, reason) => {
+                    if (!activeCampaignId) return;
+                    await api.dmOverrideParticipation(activeCampaignId, participationId, updates, reason);
+                    showToast('تغییرات مستقیم دانجن مستر اعمال و در لاگ ثبت شد.');
+                    await loadCampaignWorkspace(activeCampaignId);
+                  }}
                 />
               ) : activeCharacter ? (
                 /* Player Character Sheet */
@@ -903,6 +952,12 @@ export default function App() {
                       onUpdate={handleUpdateCharacter}
                       onOpenRestModal={(type) => setRestModal({ isOpen: true, type })}
                       onRollCheck={handleRollCheck}
+                      levelUpAvailable={Boolean(activeParticipation?.levelUpAvailable)}
+                      sheetLocked={activeParticipation?.sheetLocked !== false}
+                      pendingChange={activeParticipation?.pendingChange}
+                      xp={activeParticipation?.xp}
+                      onOpenLevelUp={() => setLevelUpModalOpen(true)}
+                      onOpenSheetChangeRequest={() => setSheetChangeRequestOpen(true)}
                     />
                   )}
 
@@ -1234,18 +1289,68 @@ export default function App() {
             onClose={() => setCampaignApprovalsOpen(false)}
             approvals={pendingApprovals}
             onReview={async (campId, partId, action, reviewNotes) => {
-              await api.reviewParticipation(campId, partId, action, reviewNotes);
+              const item = pendingApprovals.find(a => a.campaignId === campId && a.participationId === partId);
+              if (item?.type === 'level_up') {
+                if (action === 'approve') {
+                  await api.approveLevelUp(campId, partId, reviewNotes);
+                } else {
+                  await api.rejectLevelUp(campId, partId, reviewNotes);
+                }
+              } else if (item?.type === 'sheet_change') {
+                await api.reviewSheetChangeRequest(campId, partId, action === 'approve' ? 'approve' : 'reject', reviewNotes);
+              } else {
+                await api.reviewParticipation(campId, partId, action, reviewNotes);
+              }
+
               showToast(
                 action === 'approve'
-                  ? 'شخصیت تأیید شد و وارد کمپین گردید.'
+                  ? 'درخواست با موفقیت تأیید گردید.'
                   : action === 'reject'
                   ? 'درخواست رد شد.'
-                  : 'تغییرات به بازیکن ارجاع داده شد.'
+                  : 'درخواست اصلاح به بازیکن ارسال شد.'
               );
               await loadHomeData();
               if (activeCampaignId) {
                 await loadCampaignWorkspace(activeCampaignId);
               }
+            }}
+          />
+        )}
+
+        {/* Level-Up Modal (Step 3.4) */}
+        {levelUpModalOpen && activeCharacter && (
+          <LevelUpModal
+            isOpen={levelUpModalOpen}
+            onClose={() => setLevelUpModalOpen(false)}
+            character={activeCharacter}
+            participation={activeParticipation}
+            campaign={activeCampaign}
+            classTemplate={classTemplates.find(t => t.id === activeCharacter.classTemplateId || t.name === activeCharacter.className)}
+            onConfirmLevelUp={async (payload) => {
+              if (!activeCampaign || !activeParticipation) return;
+              await api.submitLevelUp(activeCampaign.id, activeParticipation.id, payload);
+              showToast(
+                activeCampaign.settings?.approval?.onLevelUp
+                  ? 'درخواست ارتقای سطح برای تأیید دانجن مستر ارسال شد.'
+                  : 'صعود به سطح جدید با موفقیت اعمال گردید!'
+              );
+              await loadCampaignWorkspace(activeCampaign.id);
+            }}
+          />
+        )}
+
+        {/* Sheet Change Request Modal (Step 3.4) */}
+        {sheetChangeRequestOpen && activeCharacter && activeCampaign && activeParticipation && (
+          <SheetChangeRequestModal
+            isOpen={sheetChangeRequestOpen}
+            onClose={() => setSheetChangeRequestOpen(false)}
+            characterName={activeCharacter.name}
+            campaignId={activeCampaign.id}
+            participationId={activeParticipation.id}
+            onSubmitRequest={async (req) => {
+              await api.createSheetChangeRequest(activeCampaign.id, activeParticipation.id, JSON.stringify(req), req.reason);
+              showToast('درخواست تغییر برگه برای دانجن مستر ارسال گردید.');
+              await loadCampaignWorkspace(activeCampaign.id);
             }}
           />
         )}

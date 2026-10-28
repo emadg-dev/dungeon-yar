@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate, LocationEntry, Campaign } from '../../types';
+import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate, LocationEntry, Campaign, CharacterParticipation } from '../../types';
 import { DmDashboard } from './DmDashboard';
 import { DmEncounterRunner } from './DmEncounterRunner';
 import { DmLibrary } from './DmLibrary';
@@ -19,6 +19,7 @@ import {
 
 interface DmToolsProps {
   characters: Character[];
+  participations?: CharacterParticipation[];
   sharedNotes: CharacterNote[];
   npcs: NPC[];
   items: ItemLibraryEntry[];
@@ -60,6 +61,11 @@ interface DmToolsProps {
   onSelectDmTab?: (tab: any) => void;
   onRefreshCharacters?: () => void;
   onCreateCharacterForPlayer?: () => void;
+  onAwardXp?: (data: any) => Promise<void>;
+  onToggleMilestoneLevelUp?: (participationId: string, available: boolean) => Promise<void>;
+  onUndoLevelUp?: (participationId: string) => Promise<void>;
+  onToggleRespecWindow?: (participationId: string, open: boolean) => Promise<void>;
+  onDmOverride?: (participationId: string, updates: any, reason: string) => Promise<void>;
 }
 
 export const DmTools: React.FC<DmToolsProps> = ({
@@ -104,7 +110,13 @@ export const DmTools: React.FC<DmToolsProps> = ({
   activeDmTab: controlledDmTab,
   onSelectDmTab,
   onRefreshCharacters,
-  onCreateCharacterForPlayer
+  onCreateCharacterForPlayer,
+  participations = [],
+  onAwardXp,
+  onToggleMilestoneLevelUp,
+  onUndoLevelUp,
+  onToggleRespecWindow,
+  onDmOverride
 }) => {
   const [internalDmTab, setInternalDmTab] = useState<'dashboard' | 'encounters' | 'library' | 'narrative' | 'more'>('dashboard');
   const [librarySubTab, setLibrarySubTab] = useState<'library_hub' | 'npcs' | 'items' | 'locations'>('library_hub');
@@ -166,6 +178,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
       {activeTab === 'dashboard' && (
         <DmDashboard
           characters={characters}
+          participations={participations}
           activeCampaign={activeCampaign}
           onOpenSetupChecklist={onOpenSetupChecklist}
           onUpdateCharacter={onUpdateCharacter}
@@ -174,6 +187,12 @@ export const DmTools: React.FC<DmToolsProps> = ({
           onInspectCharacter={onInspectCharacter}
           onRollDice={onRollDice}
           onCreateForPlayer={onCreateCharacterForPlayer}
+          onAwardXp={onAwardXp}
+          onToggleMilestoneLevelUp={onToggleMilestoneLevelUp}
+          onUndoLevelUp={onUndoLevelUp}
+          onToggleRespecWindow={onToggleRespecWindow}
+          onDmOverride={onDmOverride}
+          onRefreshCampaign={onRefreshCharacters}
         />
       )}
 

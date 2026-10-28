@@ -59,10 +59,15 @@ import {
   WizardState,
   LinkedEntityDiff,
   CharacterBuild,
-  ParticipationSnapshot
+  ParticipationSnapshot,
+  XpAward,
+  SheetChangeRequest,
+  LevelUpPayload,
+  LevelUpDiff
 } from '../types';
 import { rollAbilityScores } from '../../shared/rules/engine';
 import { computeAuthoritativeParticipation, createSnapshot, pruneSnapshots } from '../../shared/rules/wizardEngine';
+import { computeLevelUpDiff, isLevelUpReady, isFieldLockedForPlayer, XP_THRESHOLDS } from '../../shared/rules/levelUpEngine';
 import { APP_NAME_FA } from '../config/app';
 import {
   SEED_USERS,
@@ -493,6 +498,20 @@ export interface ApiClient {
   listParticipationSnapshots(campaignId: string, participationId: string): Promise<ParticipationSnapshot[]>;
   createParticipationSnapshot(campaignId: string, participationId: string, label: string): Promise<ParticipationSnapshot>;
   restoreParticipationSnapshot(campaignId: string, participationId: string, snapshotId: string): Promise<CharacterParticipation>;
+
+  // Step 3.4: Level-Up, XP, Approvals, Sheet Lock
+  awardXp(campaignId: string, data: { amount: number; reason?: string; participationId?: string }): Promise<XpAward>;
+  listXpAwards(campaignId: string): Promise<XpAward[]>;
+  setMilestoneLevelUp(campaignId: string, participationId: string | 'all', ready: boolean): Promise<{ success: boolean; updatedCount: number }>;
+  submitLevelUp(campaignId: string, participationId: string, payload: LevelUpPayload): Promise<CharacterParticipation>;
+  approveLevelUp(campaignId: string, participationId: string, comment?: string): Promise<CharacterParticipation>;
+  rejectLevelUp(campaignId: string, participationId: string, comment?: string): Promise<CharacterParticipation>;
+  undoLevelUp(campaignId: string, participationId: string): Promise<CharacterParticipation>;
+  createSheetChangeRequest(campaignId: string, participationId: string, requestedChanges: string, reason?: string): Promise<SheetChangeRequest>;
+  listSheetChangeRequests(campaignId: string): Promise<SheetChangeRequest[]>;
+  reviewSheetChangeRequest(campaignId: string, requestId: string, action: 'approve' | 'reject', comment?: string): Promise<SheetChangeRequest>;
+  dmOverrideParticipation(campaignId: string, participationId: string, data: Partial<CharacterParticipation>, reason?: string): Promise<CharacterParticipation>;
+  toggleRespecWindow(campaignId: string, participationId: string, open: boolean): Promise<CharacterParticipation>;
 
   // Media
   uploadMedia(file: { name?: string; mimeType: string; sizeBytes: number; dataBase64: string; width?: number; height?: number; campaignId?: string }): Promise<{ id: string; url: string; sizeBytes: number }>;
@@ -2664,7 +2683,8 @@ export class LocalApi implements ApiClient {
             requestedAt: p.joinedAt,
             details: { className: p.className, race: char?.race }
           });
-        } else if (p.pendingLevelUp) {
+        } else if (p.pendingChange?.type === 'level_up' || p.pendingLevelUp) {
+          const lvl = p.pendingChange?.diff?.toLevel || p.pendingLevelUp?.targetLevel || (p.level + 1);
           pendingApprovals.push({
             campaignId: p.campaignId,
             campaignName: camp?.name || 'کمپین',
@@ -2673,9 +2693,22 @@ export class LocalApi implements ApiClient {
             characterId: p.characterId,
             characterName: char?.name || p.className || 'شخصیت',
             playerName,
-            level: p.pendingLevelUp.targetLevel,
-            requestedAt: p.pendingLevelUp.requestedAt || Date.now(),
-            details: p.pendingLevelUp.diff
+            level: lvl,
+            requestedAt: p.pendingChange?.requestedAt || p.pendingLevelUp?.requestedAt || Date.now(),
+            details: p.pendingChange ? { diff: p.pendingChange.diff, payload: p.pendingChange.payload } : p.pendingLevelUp?.diff
+          });
+        } else if (p.pendingChange?.type === 'sheet_change') {
+          pendingApprovals.push({
+            campaignId: p.campaignId,
+            campaignName: camp?.name || 'کمپین',
+            type: 'sheet_change',
+            participationId: p.id,
+            characterId: p.characterId,
+            characterName: char?.name || p.className || 'شخصیت',
+            playerName,
+            level: p.level,
+            requestedAt: p.pendingChange.requestedAt || Date.now(),
+            details: p.pendingChange
           });
         }
       });
@@ -3617,6 +3650,322 @@ export class LocalApi implements ApiClient {
     return part;
   }
 
+  // -------------------------------------------------------------
+  // Step 3.4: Level-Up, XP, Approvals, Sheet Lock (LocalApi)
+  // -------------------------------------------------------------
+  async awardXp(campaignId: string, data: { amount: number; reason?: string; participationId?: string }): Promise<XpAward> {
+    const user = this.currentUser || SEED_USERS[0];
+    const award: XpAward = {
+      id: `xp-${Date.now()}-${generateId('x')}`,
+      campaignId,
+      participationId: data.participationId || null,
+      amount: data.amount,
+      reason: data.reason || 'پاداش تجربه دانجن مستر',
+      createdBy: user.id,
+      createdAt: Date.now()
+    };
+
+    const allAwards = this.getItem<XpAward[]>('xp_awards', []);
+    allAwards.unshift(award);
+    this.setItem('xp_awards', allAwards);
+
+    const allCamps = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCamps.find(c => c.id === campaignId);
+    const levelingMode = camp?.settings?.levelingMode || 'milestone';
+
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    for (const part of allParts) {
+      if (part.campaignId !== campaignId) continue;
+      if (data.participationId && part.id !== data.participationId) continue;
+
+      part.xp = (part.xp || 0) + data.amount;
+      if (levelingMode === 'xp') {
+        const nextThreshold = XP_THRESHOLDS[part.level + 1];
+        if (typeof nextThreshold === 'number' && part.xp >= nextThreshold) {
+          part.levelUpAvailable = true;
+        }
+      }
+      part.updatedAt = Date.now();
+    }
+    this.setItem('character_participations', allParts);
+    return award;
+  }
+
+  async listXpAwards(campaignId: string): Promise<XpAward[]> {
+    const allAwards = this.getItem<XpAward[]>('xp_awards', []);
+    return allAwards.filter(a => a.campaignId === campaignId);
+  }
+
+  async setMilestoneLevelUp(campaignId: string, participationId: string | 'all', ready: boolean): Promise<{ success: boolean; updatedCount: number }> {
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    let updatedCount = 0;
+    for (const part of allParts) {
+      if (part.campaignId !== campaignId) continue;
+      if (participationId === 'all' || part.id === participationId) {
+        part.levelUpAvailable = ready;
+        part.updatedAt = Date.now();
+        updatedCount++;
+      }
+    }
+    this.setItem('character_participations', allParts);
+    return { success: true, updatedCount };
+  }
+
+  async submitLevelUp(campaignId: string, participationId: string, payload: LevelUpPayload): Promise<CharacterParticipation> {
+    const user = this.currentUser || SEED_USERS[0];
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = allParts.find(p => p.id === participationId && p.campaignId === campaignId);
+    if (!part) throw { status: 404, message: 'مشارکت کاراکتر یافت نشد.' };
+
+    const allCamps = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCamps.find(c => c.id === campaignId);
+    const classes = this.getItem<ClassTemplate[]>('class_templates', SEED_CLASS_TEMPLATES);
+    const classTemplate = classes.find(c => c.name === part.className || c.id === part.classId) || classes[0];
+
+    const { validation, diff, nextParticipation } = computeLevelUpDiff({
+      participation: part,
+      classTemplate,
+      payload
+    });
+
+    if (!validation.valid) {
+      throw { status: 400, message: validation.errors.join(' | ') };
+    }
+
+    const requiresApproval = camp?.settings?.approval?.onLevelUp ?? false;
+
+    if (requiresApproval) {
+      // Store pending change and keep current level
+      part.pendingChange = {
+        fromLevel: diff.fromLevel,
+        toLevel: diff.toLevel,
+        diff,
+        payload,
+        requestedAt: Date.now()
+      };
+      part.updatedAt = Date.now();
+      this.setItem('character_participations', allParts);
+      return part;
+    } else {
+      // Take snapshots before and after
+      await this.createParticipationSnapshot(campaignId, participationId, `قبل از ارتقا به سطح ${diff.toLevel}`);
+      Object.assign(part, nextParticipation);
+      part.pendingChange = null;
+      part.levelUpAvailable = false;
+      this.setItem('character_participations', allParts);
+
+      await this.createParticipationSnapshot(campaignId, participationId, `ارتقا به سطح ${diff.toLevel}`);
+
+      // Character history event
+      const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+      allHist.push({
+        id: `hist-lvl-${Date.now()}`,
+        characterId: part.characterId,
+        campaignId,
+        campaignName: camp?.name,
+        eventType: 'level_up',
+        payload: {
+          title: `ارتقای سطح به ${diff.toLevel}`,
+          description: diff.hpBreakdown,
+          oldLevel: diff.fromLevel,
+          newLevel: diff.toLevel,
+          level: diff.toLevel
+        },
+        timestamp: Date.now()
+      });
+      this.setItem('character_history_events', allHist);
+      return part;
+    }
+  }
+
+  async approveLevelUp(campaignId: string, participationId: string, comment?: string): Promise<CharacterParticipation> {
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = allParts.find(p => p.id === participationId && p.campaignId === campaignId);
+    if (!part) throw { status: 404, message: 'مشارکت کاراکتر یافت نشد.' };
+    if (!part.pendingChange) throw { status: 400, message: 'هیچ درخواست ارتقای سطحی در انتظار بررسی نیست.' };
+
+    const classes = this.getItem<ClassTemplate[]>('class_templates', SEED_CLASS_TEMPLATES);
+    const classTemplate = classes.find(c => c.name === part.className || c.id === part.classId) || classes[0];
+
+    const { nextParticipation, diff } = computeLevelUpDiff({
+      participation: part,
+      classTemplate,
+      payload: part.pendingChange.payload || { hpMode: 'fixed' }
+    });
+
+    await this.createParticipationSnapshot(campaignId, participationId, `قبل از ارتقا به سطح ${diff.toLevel}`);
+    Object.assign(part, nextParticipation);
+    part.pendingChange = null;
+    part.levelUpAvailable = false;
+    this.setItem('character_participations', allParts);
+
+    await this.createParticipationSnapshot(campaignId, participationId, `تأیید ارتقا به سطح ${diff.toLevel}`);
+
+    const allCamps = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCamps.find(c => c.id === campaignId);
+    const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+    allHist.push({
+      id: `hist-lvl-${Date.now()}`,
+      characterId: part.characterId,
+      campaignId,
+      campaignName: camp?.name,
+      eventType: 'level_up',
+      payload: {
+        title: `تأیید ارتقای سطح به ${diff.toLevel} توسط دانجن مستر`,
+        description: comment || diff.hpBreakdown,
+        oldLevel: diff.fromLevel,
+        newLevel: diff.toLevel,
+        level: diff.toLevel
+      },
+      timestamp: Date.now()
+    });
+    this.setItem('character_history_events', allHist);
+    return part;
+  }
+
+  async rejectLevelUp(campaignId: string, participationId: string, comment?: string): Promise<CharacterParticipation> {
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = allParts.find(p => p.id === participationId && p.campaignId === campaignId);
+    if (!part) throw { status: 404, message: 'مشارکت کاراکتر یافت نشد.' };
+
+    part.pendingChange = null;
+    part.updatedAt = Date.now();
+    this.setItem('character_participations', allParts);
+    return part;
+  }
+
+  async undoLevelUp(campaignId: string, participationId: string): Promise<CharacterParticipation> {
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = allParts.find(p => p.id === participationId && p.campaignId === campaignId);
+    if (!part) throw { status: 404, message: 'مشارکت کاراکتر یافت نشد.' };
+    if (part.level <= 1) throw { status: 400, message: 'سطح کاراکتر ۱ است و امکان لغو وجود ندارد.' };
+
+    const targetLevel = part.level - 1;
+    const allSnaps = this.getItem<ParticipationSnapshot[]>('participation_snapshots', []);
+    const prevSnap = allSnaps
+      .filter(s => s.participationId === participationId && s.level === targetLevel)
+      .sort((a, b) => b.createdAt - a.createdAt)[0];
+
+    if (prevSnap) {
+      await this.restoreParticipationSnapshot(campaignId, participationId, prevSnap.id);
+    } else {
+      part.level = targetLevel;
+      part.maxHp = Math.max(1, part.maxHp - 6);
+      part.currentHp = Math.min(part.maxHp, part.currentHp);
+      part.hitDice = { ...part.hitDice, max: targetLevel, current: Math.min(targetLevel, part.hitDice.current) };
+      part.updatedAt = Date.now();
+      this.setItem('character_participations', allParts);
+    }
+
+    const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+    allHist.push({
+      id: `hist-undo-${Date.now()}`,
+      characterId: part.characterId,
+      campaignId,
+      eventType: 'custom',
+      payload: {
+        title: 'لغو ارتقای سطح اخیر',
+        description: `بازگشت به سطح ${targetLevel} توسط دانجن مستر`,
+        level: targetLevel
+      },
+      timestamp: Date.now()
+    });
+    this.setItem('character_history_events', allHist);
+    return part;
+  }
+
+  async createSheetChangeRequest(campaignId: string, participationId: string, requestedChanges: string, reason?: string): Promise<SheetChangeRequest> {
+    const user = this.currentUser || SEED_USERS[0];
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = allParts.find(p => p.id === participationId);
+
+    const req: SheetChangeRequest = {
+      id: `scr-${Date.now()}-${generateId('s')}`,
+      campaignId,
+      participationId,
+      userId: user.id,
+      requestedChanges,
+      reason,
+      status: 'pending',
+      characterName: part?.characterName || part?.className || 'کاراکتر',
+      playerName: user.displayName || user.name,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+
+    const allReqs = this.getItem<SheetChangeRequest[]>('sheet_change_requests', []);
+    allReqs.unshift(req);
+    this.setItem('sheet_change_requests', allReqs);
+    return req;
+  }
+
+  async listSheetChangeRequests(campaignId: string): Promise<SheetChangeRequest[]> {
+    const allReqs = this.getItem<SheetChangeRequest[]>('sheet_change_requests', []);
+    return allReqs.filter(r => r.campaignId === campaignId);
+  }
+
+  async reviewSheetChangeRequest(campaignId: string, requestId: string, action: 'approve' | 'reject', comment?: string): Promise<SheetChangeRequest> {
+    const allReqs = this.getItem<SheetChangeRequest[]>('sheet_change_requests', []);
+    const req = allReqs.find(r => r.id === requestId);
+    if (!req) throw { status: 404, message: 'درخواست تغییر یافت نشد.' };
+
+    req.status = action === 'approve' ? 'approved' : 'rejected';
+    req.reviewComment = comment;
+    req.updatedAt = Date.now();
+    this.setItem('sheet_change_requests', allReqs);
+
+    if (action === 'approve') {
+      // Temporarily unlock sheet so user can apply agreed changes
+      const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+      const part = allParts.find(p => p.id === req.participationId);
+      if (part) {
+        part.sheetLocked = false;
+        part.updatedAt = Date.now();
+        this.setItem('character_participations', allParts);
+      }
+    }
+
+    return req;
+  }
+
+  async dmOverrideParticipation(campaignId: string, participationId: string, data: Partial<CharacterParticipation>, reason?: string): Promise<CharacterParticipation> {
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = allParts.find(p => p.id === participationId && p.campaignId === campaignId);
+    if (!part) throw { status: 404, message: 'مشارکت کاراکتر یافت نشد.' };
+
+    Object.assign(part, data);
+    part.updatedAt = Date.now();
+    this.setItem('character_participations', allParts);
+
+    // Audit in history
+    const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+    allHist.push({
+      id: `hist-dmedit-${Date.now()}`,
+      characterId: part.characterId,
+      campaignId,
+      eventType: 'custom',
+      payload: {
+        title: 'ویرایش DM',
+        description: reason || 'ویرایش مستقیم مشخصات توسط دانجن مستر',
+        modifiedFields: Object.keys(data)
+      },
+      timestamp: Date.now()
+    });
+    this.setItem('character_history_events', allHist);
+    return part;
+  }
+
+  async toggleRespecWindow(campaignId: string, participationId: string, open: boolean): Promise<CharacterParticipation> {
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = allParts.find(p => p.id === participationId && p.campaignId === campaignId);
+    if (!part) throw { status: 404, message: 'مشارکت کاراکتر یافت نشد.' };
+
+    part.sheetLocked = !open;
+    part.updatedAt = Date.now();
+    this.setItem('character_participations', allParts);
+    return part;
+  }
+
   // Media
   async uploadMedia(file: { name?: string; mimeType: string; sizeBytes: number; dataBase64: string; width?: number; height?: number; campaignId?: string }): Promise<{ id: string; url: string; sizeBytes: number }> {
     const user = this.currentUser || SEED_USERS[0];
@@ -4030,9 +4379,7 @@ export class LocalApi implements ApiClient {
       factions: entities.factions || [],
       campaignDocs: entities.campaignDocs || [],
       calendars: entities.calendars || [],
-      ruleSets: entities.ruleSets || [],
-      lineageTemplates: entities.lineageTemplates || [],
-      backgroundTemplates: entities.backgroundTemplates || []
+      ruleSets: entities.ruleSets || []
     };
 
     const targetBundle = this.getScopeBundle('campaign', this.getActiveCampaignId() || 'zorvania-c1');
@@ -4064,9 +4411,7 @@ export class LocalApi implements ApiClient {
       factions: entities.factions || [],
       campaignDocs: entities.campaignDocs || [],
       calendars: entities.calendars || [],
-      ruleSets: entities.ruleSets || [],
-      lineageTemplates: entities.lineageTemplates || [],
-      backgroundTemplates: entities.backgroundTemplates || []
+      ruleSets: entities.ruleSets || []
     };
 
     const targetBundle = this.getScopeBundle(target.scopeType, target.scopeId);
@@ -5630,6 +5975,84 @@ export class HttpApi implements ApiClient {
   async restoreParticipationSnapshot(campaignId: string, participationId: string, snapshotId: string): Promise<CharacterParticipation> {
     return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/${participationId}/snapshots/${snapshotId}/restore`, {
       method: 'POST'
+    });
+  }
+
+  // Step 3.4: Level-Up, XP, Approvals, Sheet Lock (HttpApi)
+  async awardXp(campaignId: string, data: { amount: number; reason?: string; participationId?: string }): Promise<XpAward> {
+    return this.fetchJson<XpAward>(`/c/${campaignId}/xp-awards`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async listXpAwards(campaignId: string): Promise<XpAward[]> {
+    return this.fetchJson<XpAward[]>(`/c/${campaignId}/xp-awards`);
+  }
+
+  async setMilestoneLevelUp(campaignId: string, participationId: string | 'all', ready: boolean): Promise<{ success: boolean; updatedCount: number }> {
+    return this.fetchJson<{ success: boolean; updatedCount: number }>(`/c/${campaignId}/milestone-level-up`, {
+      method: 'POST',
+      body: JSON.stringify({ participationId, ready })
+    });
+  }
+
+  async submitLevelUp(campaignId: string, participationId: string, payload: LevelUpPayload): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/${participationId}/level-up`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  }
+
+  async approveLevelUp(campaignId: string, participationId: string, comment?: string): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/${participationId}/approve-level-up`, {
+      method: 'POST',
+      body: JSON.stringify({ comment })
+    });
+  }
+
+  async rejectLevelUp(campaignId: string, participationId: string, comment?: string): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/${participationId}/reject-level-up`, {
+      method: 'POST',
+      body: JSON.stringify({ comment })
+    });
+  }
+
+  async undoLevelUp(campaignId: string, participationId: string): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/${participationId}/undo-level-up`, {
+      method: 'POST'
+    });
+  }
+
+  async createSheetChangeRequest(campaignId: string, participationId: string, requestedChanges: string, reason?: string): Promise<SheetChangeRequest> {
+    return this.fetchJson<SheetChangeRequest>(`/c/${campaignId}/participations/${participationId}/sheet-change-request`, {
+      method: 'POST',
+      body: JSON.stringify({ requestedChanges, reason })
+    });
+  }
+
+  async listSheetChangeRequests(campaignId: string): Promise<SheetChangeRequest[]> {
+    return this.fetchJson<SheetChangeRequest[]>(`/c/${campaignId}/sheet-change-requests`);
+  }
+
+  async reviewSheetChangeRequest(campaignId: string, requestId: string, action: 'approve' | 'reject', comment?: string): Promise<SheetChangeRequest> {
+    return this.fetchJson<SheetChangeRequest>(`/c/${campaignId}/sheet-change-requests/${requestId}/review`, {
+      method: 'POST',
+      body: JSON.stringify({ action, comment })
+    });
+  }
+
+  async dmOverrideParticipation(campaignId: string, participationId: string, data: Partial<CharacterParticipation>, reason?: string): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/${participationId}/dm-override`, {
+      method: 'POST',
+      body: JSON.stringify({ data, reason })
+    });
+  }
+
+  async toggleRespecWindow(campaignId: string, participationId: string, open: boolean): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/c/${campaignId}/participations/${participationId}/respec-window`, {
+      method: 'POST',
+      body: JSON.stringify({ open })
     });
   }
 

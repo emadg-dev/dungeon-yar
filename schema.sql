@@ -203,7 +203,9 @@ CREATE TABLE IF NOT EXISTS character_participations (
   dm_notes TEXT,
   build TEXT DEFAULT '{}',
   sheet_locked INTEGER DEFAULT 1,
+  level_up_available INTEGER DEFAULT 0,
   pending_level_up TEXT,
+  pending_change TEXT,
   joined_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   UNIQUE(character_id, campaign_id),
@@ -229,6 +231,42 @@ CREATE TABLE IF NOT EXISTS participation_snapshots (
 );
 
 CREATE INDEX IF NOT EXISTS idx_snapshots_participation ON participation_snapshots(participation_id, created_at DESC);
+
+-- 10c. XP Awards table (Step 3.4)
+CREATE TABLE IF NOT EXISTS xp_awards (
+  id TEXT PRIMARY KEY,
+  campaign_id TEXT NOT NULL,
+  participation_id TEXT,
+  amount INTEGER NOT NULL,
+  reason TEXT,
+  created_by TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_xp_awards_campaign ON xp_awards(campaign_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_xp_awards_participation ON xp_awards(participation_id);
+
+-- 10d. Sheet Change Requests table (Step 3.4)
+CREATE TABLE IF NOT EXISTS sheet_change_requests (
+  id TEXT PRIMARY KEY,
+  campaign_id TEXT NOT NULL,
+  participation_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  requested_changes TEXT NOT NULL,
+  reason TEXT,
+  status TEXT CHECK (status IN ('pending', 'approved', 'rejected')) DEFAULT 'pending',
+  review_comment TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+  FOREIGN KEY (participation_id) REFERENCES character_participations(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_sheet_changes_campaign ON sheet_change_requests(campaign_id, status);
+CREATE INDEX IF NOT EXISTS idx_sheet_changes_participation ON sheet_change_requests(participation_id);
 
 -- 11. Character History Events table (Cross-campaign deeds and progression)
 CREATE TABLE IF NOT EXISTS character_history_events (
