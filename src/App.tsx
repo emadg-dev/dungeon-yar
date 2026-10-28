@@ -953,7 +953,7 @@ export default function App() {
                       onOpenRestModal={(type) => setRestModal({ isOpen: true, type })}
                       onRollCheck={handleRollCheck}
                       levelUpAvailable={Boolean(activeParticipation?.levelUpAvailable)}
-                      sheetLocked={activeParticipation?.sheetLocked !== 0}
+                      sheetLocked={activeParticipation?.sheetLocked !== false}
                       pendingChange={activeParticipation?.pendingChange}
                       xp={activeParticipation?.xp}
                       onOpenLevelUp={() => setLevelUpModalOpen(true)}

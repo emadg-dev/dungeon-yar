@@ -291,7 +291,7 @@ export function computeLevelUpDiff(params: {
       name: f.name,
       description: f.description,
       source: `کلاس سطح ${toLevel}`,
-      usageType: 'passive' as const,
+      usageType: 'none' as const,
       usedCount: 0
     }))
   ];

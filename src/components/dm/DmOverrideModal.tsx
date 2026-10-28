@@ -29,7 +29,7 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
     wis: participation?.abilityScores?.wis ?? character.abilities?.wis ?? 10,
     cha: participation?.abilityScores?.cha ?? character.abilities?.cha ?? 10
   });
-  const [sheetLocked, setSheetLocked] = useState<number>(participation?.sheetLocked ?? 1);
+  const [sheetLocked, setSheetLocked] = useState<boolean>(participation?.sheetLocked !== false);
   const [reason, setReason] = useState<string>('تنظیم دستی راوی برای داستان یا رفع باگ');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -143,9 +143,9 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => setSheetLocked(1)}
+                onClick={() => setSheetLocked(true)}
                 className={`flex-1 py-2 rounded-xl border text-xs font-bold transition ${
-                  sheetLocked === 1
+                  sheetLocked
                     ? 'bg-[#E0A030] text-[#0E0D0C] border-[#F2C265]'
                     : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23]'
                 }`}
@@ -154,9 +154,9 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => setSheetLocked(0)}
+                onClick={() => setSheetLocked(false)}
                 className={`flex-1 py-2 rounded-xl border text-xs font-bold transition ${
-                  sheetLocked === 0
+                  !sheetLocked
                     ? 'bg-[#6F9E78] text-[#0E0D0C] border-[#6F9E78]'
                     : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23]'
                 }`}

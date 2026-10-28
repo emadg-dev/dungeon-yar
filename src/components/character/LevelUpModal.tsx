@@ -56,10 +56,11 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
   // Stepper state
   const asiLevels = classTemplate?.asiLevels || DEFAULT_ASI_LEVELS;
   const isAsiLevel = asiLevels.includes(nextLevel);
-  const isSubclassLevel = (nextLevel === 3 || nextLevel === (classTemplate?.subclassLevel || 3)) && 
+  const firstSubclassUnlock = classTemplate?.subclasses?.[0]?.unlockLevel || 3;
+  const isSubclassLevel = (nextLevel === firstSubclassUnlock) && 
     !(participation?.subclassName || character.subclassName) && 
     (classTemplate?.subclasses?.length || 0) > 0;
-  const isCaster = Boolean(classTemplate?.spellcasting || classTemplate?.spellSlots);
+  const isCaster = Boolean(classTemplate?.spellcasting);
 
   // Active step navigation:
   // 0: Features
@@ -127,7 +128,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
   const newFeatures = useMemo(() => {
     const list: string[] = [];
     if (classTemplate?.featuresByLevel?.[nextLevel]) {
-      list.push(...classTemplate.featuresByLevel[nextLevel]);
+      list.push(...classTemplate.featuresByLevel[nextLevel].map(f => typeof f === 'string' ? f : f.name));
     } else if (classTemplate?.features?.[nextLevel]) {
       list.push(classTemplate.features[nextLevel]);
     }
@@ -148,8 +149,9 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
           ? { stat1: asiStat1 }
           : { stat1: asiStat1, stat2: asiStat2 }
         : undefined,
+      chosenSubclass: isSubclassLevel ? chosenSubclass : undefined,
       subclassName: isSubclassLevel ? chosenSubclass : undefined,
-      newSpells: learnedSpells.length > 0 ? learnedSpells : undefined
+      newSpells: learnedSpells.length > 0 ? { spells: learnedSpells } : undefined
     };
   }, [hpMode, rolledHpValue, isAsiLevel, asiMode, asiStat1, asiStat2, isSubclassLevel, chosenSubclass, learnedSpells]);
 
@@ -160,8 +162,8 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
       id: `part-${character.id}`,
       campaignId: campaign?.id || 'camp-default',
       characterId: character.id,
-      userId: character.ownerId || 'u-player',
-      entryMode: 'campaign_start',
+      className: character.className,
+      subclassName: character.subclassName,
       status: 'active',
       level: character.level || 1,
       xp: 0,
@@ -169,7 +171,6 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
       currentHp: character.hp.current,
       maxHp: character.hp.max,
       tempHp: character.hp.temp || 0,
-      armorClass: character.ac || 10,
       abilityScores: {
         str: character.abilities?.str || 10,
         dex: character.abilities?.dex || 10,
@@ -178,15 +179,24 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         wis: character.abilities?.wis || 10,
         cha: character.abilities?.cha || 10
       },
-      skills: character.skills || [],
+      hitDice: {
+        current: character.hitDice?.current ?? (character.level || 1),
+        max: character.hitDice?.max ?? (character.level || 1),
+        die: character.hitDice?.die ?? (typeof classTemplate?.hitDie === 'string' ? classTemplate.hitDie : `d${classTemplate?.hitDie || 8}`)
+      },
+      deathSaves: { successes: 0, failures: 0 },
+      conditions: [],
+      inventory: character.inventory || [],
+      weapons: character.weapons || [],
+      currency: character.currencies || { gold: 0, silver: 0, copper: 0 },
       customResources: character.customResources || [],
-      conditions: character.conditions || [],
-      companions: character.companions || [],
-      sheetLocked: 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      features: character.features || [],
+      notes: '',
+      sheetLocked: true,
+      joinedAt: Date.now(),
+      updatedAt: Date.now()
     };
-  }, [participation, character, campaign]);
+  }, [participation, character, campaign, classTemplate]);
 
   // Authoritative Diff computation using shared engine
   const diffResult = useMemo(() => {
@@ -615,10 +625,10 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   </span>
                 </div>
 
-                {activeParticipation.companions && activeParticipation.companions.length > 0 && (
+                {character.companions && character.companions.length > 0 && (
                   <div className="p-2.5 rounded-lg bg-[#141822] border border-[#2F2A23] space-y-1.5">
                     <span className="text-xs font-bold text-[#F2C265] block">همراهان ارتقایافته:</span>
-                    {activeParticipation.companions.map((comp, idx) => (
+                    {character.companions.map((comp, idx) => (
                       <div key={idx} className="flex items-center justify-between text-[11px] text-[#C9C0AE]">
                         <span>{comp.name} ({comp.type})</span>
                         <span className="text-[#6F9E78] font-bold">همگام با سطح کاراکتر</span>
@@ -649,33 +659,33 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                     </div>
                     <div>
                       <span className="text-[10px] text-[#A39A89] block">بونوس مهارت:</span>
-                      <span className="font-mono font-bold text-[#EDE6D8]">+{diffResult.diff.proficiencyBonus.before} → <strong className="text-[#6F9E78]">+{diffResult.diff.proficiencyBonus.after}</strong></span>
+                      <span className="font-mono font-bold text-[#EDE6D8]">+{diffResult.diff.oldProfBonus} → <strong className="text-[#6F9E78]">+{diffResult.diff.newProfBonus}</strong></span>
                     </div>
                     <div>
                       <span className="text-[10px] text-[#A39A89] block">حداکثر جان (HP):</span>
-                      <span className="font-mono font-bold text-[#EDE6D8]">{diffResult.diff.hp.before} → <strong className="text-[#6F9E78]">+{diffResult.diff.hp.gain} ({diffResult.diff.hp.after})</strong></span>
+                      <span className="font-mono font-bold text-[#EDE6D8]">{diffResult.diff.oldMaxHp} → <strong className="text-[#6F9E78]">+{diffResult.diff.hpGain} ({diffResult.diff.newMaxHp})</strong></span>
                     </div>
                     <div>
                       <span className="text-[10px] text-[#A39A89] block">تاس جان:</span>
-                      <span className="font-mono font-bold text-[#EDE6D8]">{diffResult.diff.hitDice.before} → <strong className="text-[#F2C265]">{diffResult.diff.hitDice.after}</strong></span>
+                      <span className="font-mono font-bold text-[#EDE6D8]">{diffResult.diff.fromLevel}d{hitDie} → <strong className="text-[#F2C265]">{diffResult.diff.toLevel}d{hitDie}</strong></span>
                     </div>
                   </div>
 
-                  {Object.keys(diffResult.diff.abilityScores || {}).length > 0 && (
+                  {diffResult.diff.abilityChanges && Object.keys(diffResult.diff.abilityChanges).length > 0 && (
                     <div className="p-2.5 rounded-lg bg-[#141822] border border-[#2F2A23] space-y-1">
                       <span className="text-[10px] text-[#A39A89] block font-bold">تغییرات ویژگی‌های بنیادین (ASI):</span>
-                      {Object.entries(diffResult.diff.abilityScores).map(([stat, val]: any) => (
+                      {Object.entries(diffResult.diff.abilityChanges).map(([stat, val]) => (
                         <div key={stat} className="flex items-center justify-between text-xs">
                           <span className="text-[#EDE6D8]">{abilityFa[stat as AbilityName]}:</span>
-                          <span className="font-mono text-[#F2C265] font-bold">{val.before} → {val.after}</span>
+                          <span className="font-mono text-[#F2C265] font-bold">{val?.before} → {val?.after}</span>
                         </div>
                       ))}
                     </div>
                   )}
 
-                  {diffResult.diff.subclass && (
+                  {diffResult.diff.unlockedSubclass && (
                     <div className="p-2 rounded-lg bg-[#E0A030]/10 border border-[#E0A030]/30 text-xs text-[#F2C265]">
-                      زیرکلاس جدید: <strong>{diffResult.diff.subclass.after}</strong>
+                      زیرکلاس جدید: <strong>{diffResult.diff.unlockedSubclass}</strong>
                     </div>
                   )}
 

@@ -458,7 +458,7 @@ export interface HomeSummaryResponse {
   pendingApprovals: {
     campaignId: string;
     campaignName: string;
-    type: 'create' | 'level_up';
+    type: 'create' | 'level_up' | 'sheet_change';
     participationId: string;
     characterId: string;
     characterName: string;

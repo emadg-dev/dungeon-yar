@@ -237,7 +237,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
             const hasSharedNotes = sharedNotes.some(n => n.characterId === char.id);
             const part = getParticipationForChar(char.id);
             const isLevelUpAvailable = Boolean(part?.levelUpAvailable);
-            const isSheetLocked = part?.sheetLocked !== 0;
+            const isSheetLocked = part?.sheetLocked !== false;
 
             return (
               <div

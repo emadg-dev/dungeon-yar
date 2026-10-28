@@ -1841,7 +1841,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const part = await env.DB.prepare('SELECT * FROM character_participations WHERE id = ? AND campaign_id = ?').bind(partId, campId).first();
     if (!part) return error('مشارکت شخصیت یافت نشد.', 404);
     const myRole = await getMembershipRole(campId, actor.id);
-    const charRow = await env.DB.prepare('SELECT owner_id FROM characters WHERE id = ?').bind(part.character_id).first();
+    const charRow = (await env.DB.prepare('SELECT owner_id FROM characters WHERE id = ?').bind(part.character_id).first()) as { owner_id: string } | null;
+    const isCharOwner = charRow?.owner_id === actor.id;
     const isDmActor = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
     if (!isDmActor && !isCharOwner) {
       return error('دسترسی مجاز نیست.', 403);

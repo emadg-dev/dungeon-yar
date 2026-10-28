@@ -26,6 +26,7 @@ describe('Level-Up & Progression Engine (Step 3.4)', () => {
     maxHp: 12,
     tempHp: 0,
     hitDice: { current: 1, max: 1, die: 'd10' },
+    deathSaves: { successes: 0, failures: 0 },
     conditions: [],
     inventory: [],
     weapons: [],

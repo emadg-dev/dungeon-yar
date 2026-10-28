@@ -4379,9 +4379,7 @@ export class LocalApi implements ApiClient {
       factions: entities.factions || [],
       campaignDocs: entities.campaignDocs || [],
       calendars: entities.calendars || [],
-      ruleSets: entities.ruleSets || [],
-      lineageTemplates: entities.lineageTemplates || [],
-      backgroundTemplates: entities.backgroundTemplates || []
+      ruleSets: entities.ruleSets || []
     };
 
     const targetBundle = this.getScopeBundle('campaign', this.getActiveCampaignId() || 'zorvania-c1');
@@ -4413,9 +4411,7 @@ export class LocalApi implements ApiClient {
       factions: entities.factions || [],
       campaignDocs: entities.campaignDocs || [],
       calendars: entities.calendars || [],
-      ruleSets: entities.ruleSets || [],
-      lineageTemplates: entities.lineageTemplates || [],
-      backgroundTemplates: entities.backgroundTemplates || []
+      ruleSets: entities.ruleSets || []
     };
 
     const targetBundle = this.getScopeBundle(target.scopeType, target.scopeId);
