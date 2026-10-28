@@ -127,7 +127,10 @@ export function buildHighlightHistoryEvent(
     eventType: 'milestone',
     timestamp: highlight.createdAt || Date.now(),
     sessionNumber: sessionNumber,
-    metadata: {
+    payload: {
+      title: `رویداد برجسته${sessionPart}`,
+      description: highlight.text,
+      sessionNumber: sessionNumber,
       sessionId: highlight.sessionId,
       highlightId: highlight.id
     }

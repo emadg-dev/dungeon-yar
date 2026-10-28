@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { SessionRecap, Campaign, User, CampaignRole, NPC, LocationEntry, CampaignNote } from '../../types';
+import { SessionRecap, Session, Campaign, User, CampaignRole, NPC, LocationEntry, CampaignNote } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { formatSessionDateTime } from '../../../shared/rules/sessionEngine';
 import { searchRecaps, canUserCreateRecap, canUserEditRecap } from '../../../shared/rules/recapEngine';
@@ -12,6 +12,7 @@ interface RecapArchiveSheetProps {
   isOpen: boolean;
   onClose: () => void;
   recaps: SessionRecap[];
+  sessions?: Session[];
   campaign: Campaign | null;
   currentUser: User | null;
   userRole?: CampaignRole | 'dm' | null;

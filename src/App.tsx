@@ -814,10 +814,15 @@ export default function App() {
   ) => {
     if (!activeCampaignId) return;
     try {
-      await api.recordSessionAttendance(activeCampaignId, sessionId, attendance);
+      const res = await api.recordSessionAttendance(activeCampaignId, sessionId, attendance);
       showToast('حضور و غیاب ثبت و جلسه پایان یافت.');
+      const doneSession = res?.session || campaignSessions.find(s => s.id === sessionId) || attendanceModal.session;
       setAttendanceModal({ isOpen: false, session: null });
       await loadCampaignWorkspace(activeCampaignId);
+      // Automatically show closing sheet for the completed session
+      if (doneSession) {
+        setClosingSheetSession(doneSession);
+      }
     } catch (e: any) {
       showToast(e.message || 'خطا در ثبت حضور و غیاب.');
     }
@@ -1232,6 +1237,7 @@ export default function App() {
                       onOpenSessionList={() => setSessionListOpen(true)}
                       onOpenCreateSession={() => setSessionEditorModal({ isOpen: true, session: null })}
                       onOpenAttendance={(s) => setAttendanceModal({ isOpen: true, session: s })}
+                      onOpenClosingSheet={(s) => setClosingSheetSession(s)}
                       onEditSession={(s) => setSessionEditorModal({ isOpen: true, session: s })}
                       latestRecap={latestRecap}
                       npcs={npcs}

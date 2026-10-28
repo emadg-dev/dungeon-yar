@@ -8,7 +8,11 @@ interface RecapEditorSheetProps {
   onClose: () => void;
   recapToEdit?: SessionRecap | null;
   sessions: Session[];
-  campaign: Campaign | null;
+  defaultSessionId?: string;
+  campaign?: Campaign | null;
+  campaignId?: string;
+  currentUser?: any;
+  userRole?: any;
   npcs?: NPC[];
   locations?: LocationEntry[];
   campaignNotes?: CampaignNote[];
@@ -20,13 +24,17 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
   onClose,
   recapToEdit,
   sessions,
+  defaultSessionId,
   campaign,
+  campaignId,
+  currentUser,
+  userRole,
   npcs = [],
   locations = [],
   campaignNotes = [],
   onSave
 }) => {
-  const [sessionId, setSessionId] = useState(recapToEdit?.sessionId || (sessions[0]?.id || ''));
+  const [sessionId, setSessionId] = useState(recapToEdit?.sessionId || defaultSessionId || (sessions[0]?.id || ''));
   const [title, setTitle] = useState(recapToEdit?.title || '');
   const [body, setBody] = useState(recapToEdit?.body || '');
   const [visibility, setVisibility] = useState<SessionRecapVisibility>(recapToEdit?.visibility || 'party');

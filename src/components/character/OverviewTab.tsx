@@ -38,6 +38,7 @@ interface OverviewTabProps {
   onOpenSessionList?: () => void;
   onOpenCreateSession?: () => void;
   onOpenAttendance?: (session: Session) => void;
+  onOpenClosingSheet?: (session: Session) => void;
   onEditSession?: (session: Session) => void;
   // Step 4.2: Recaps & Highlights
   latestRecap?: SessionRecap | null;
@@ -71,6 +72,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   onOpenSessionList,
   onOpenCreateSession,
   onOpenAttendance,
+  onOpenClosingSheet,
   onEditSession,
   latestRecap,
   npcs,
@@ -223,6 +225,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           onOpenSessionList={onOpenSessionList}
           onOpenCreateSession={onOpenCreateSession}
           onOpenAttendance={onOpenAttendance}
+          onOpenClosingSheet={onOpenClosingSheet}
           onEditSession={onEditSession}
         />
       )}
