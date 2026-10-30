@@ -13,8 +13,11 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator && import.meta
   }).catch(() => {});
 }
 
+import { PWARefreshPrompt } from './components/mobile/PWARefreshPrompt';
+
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
     <App />
+    <PWARefreshPrompt />
   </ErrorBoundary>
 );
