@@ -12,9 +12,10 @@ import { DmSettings } from './DmSettings';
 import { DmUsers } from './DmUsers';
 import { DmInvites } from './DmInvites';
 import { DmAuditLog } from './DmAuditLog';
+import { DmHandoutManager } from './DmHandoutManager';
 import { 
   LayoutDashboard, Swords, Library, Scroll, MoreHorizontal, 
-  Users, KeyRound, ShieldAlert, Sparkles, BookOpen, Compass, Award, Database, MapPin 
+  Users, KeyRound, ShieldAlert, Sparkles, BookOpen, Compass, Award, Database, MapPin, Map as MapIcon 
 } from 'lucide-react';
 
 interface DmToolsProps {
@@ -145,7 +146,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
   onEditRecap
 }) => {
   const [internalDmTab, setInternalDmTab] = useState<'dashboard' | 'encounters' | 'library' | 'narrative' | 'more'>('dashboard');
-  const [librarySubTab, setLibrarySubTab] = useState<'library_hub' | 'npcs' | 'items' | 'locations'>('library_hub');
+  const [librarySubTab, setLibrarySubTab] = useState<'library_hub' | 'npcs' | 'items' | 'locations' | 'handouts'>('library_hub');
   const [narrativeSubTab, setNarrativeSubTab] = useState<'notes' | 'endings'>('notes');
   const [moreSubTab, setMoreSubTab] = useState<'users' | 'invites' | 'audit' | 'settings'>('users');
 
@@ -304,6 +305,18 @@ export const DmTools: React.FC<DmToolsProps> = ({
               <MapPin className="w-3.5 h-3.5" />
               <span>مکان‌ها ({locations.length})</span>
             </button>
+            <button
+              type="button"
+              onClick={() => setLibrarySubTab('handouts')}
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
+                librarySubTab === 'handouts'
+                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              }`}
+            >
+              <MapIcon className="w-3.5 h-3.5" />
+              <span>اسناد و نقشه‌ها</span>
+            </button>
           </div>
 
           {librarySubTab === 'library_hub' && (
@@ -344,6 +357,13 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onCreateLocation={async (loc) => { if (onCreateLocation) await onCreateLocation(loc); }}
               onUpdateLocation={async (loc) => { if (onUpdateLocation) await onUpdateLocation(loc); }}
               onDeleteLocation={async (id) => { if (onDeleteLocation) await onDeleteLocation(id); }}
+            />
+          )}
+
+          {librarySubTab === 'handouts' && (
+            <DmHandoutManager
+              campaignId={activeCampaign?.id || 'zorvania-c1'}
+              campaignCharacters={characters.map(c => ({ id: c.id, name: c.name }))}
             />
           )}
         </div>

@@ -1306,6 +1306,8 @@ export default function App() {
                       revealedNpcs={npcs}
                       revealedItems={items}
                       revealedLocations={locations.filter(l => Boolean(l.revealed))}
+                      campaignId={activeCampaignId || 'zorvania-c1'}
+                      character={activeCharacter}
                     />
                   )}
                 </div>

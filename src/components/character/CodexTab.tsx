@@ -1,21 +1,26 @@
 import React, { useState } from 'react';
-import { NPC, ItemLibraryEntry, LocationEntry } from '../../types';
+import { NPC, ItemLibraryEntry, LocationEntry, Character } from '../../types';
 import { SEED_RULES } from '../../data/seed';
-import { BookOpen, Users, Sparkles, Compass, Calendar, Search, MapPin } from 'lucide-react';
+import { BookOpen, Users, Sparkles, Compass, Calendar, Search, MapPin, Map as MapIcon } from 'lucide-react';
 import { Chip } from '../common/Chip';
+import { HandoutsTab } from './HandoutsTab';
 
 interface CodexTabProps {
   revealedNpcs: NPC[];
   revealedItems: ItemLibraryEntry[];
   revealedLocations?: LocationEntry[];
+  campaignId?: string;
+  character?: Character | null;
 }
 
 export const CodexTab: React.FC<CodexTabProps> = ({ 
   revealedNpcs, 
   revealedItems, 
-  revealedLocations = [] 
+  revealedLocations = [],
+  campaignId,
+  character,
 }) => {
-  const [subTab, setSubTab] = useState<'locations' | 'items' | 'creatures' | 'rules' | 'calendar' | 'factions'>('locations');
+  const [subTab, setSubTab] = useState<'locations' | 'handouts' | 'items' | 'creatures' | 'rules' | 'calendar' | 'factions'>('locations');
   const [searchQuery, setSearchQuery] = useState('');
 
   const factions = [
@@ -88,6 +93,19 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         >
           <MapPin className="w-3.5 h-3.5" />
           <span>مکان‌ها ({revealedLocations.length})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setSubTab('handouts')}
+          className={`flex-1 min-w-[105px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+            subTab === 'handouts'
+              ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+              : 'text-[#A39A89] hover:text-[#EDE6D8]'
+          }`}
+        >
+          <MapIcon className="w-3.5 h-3.5" />
+          <span>اسناد و نقشه‌ها</span>
         </button>
 
         <button
@@ -196,6 +214,11 @@ export const CodexTab: React.FC<CodexTabProps> = ({
             ))
           )}
         </div>
+      )}
+
+      {/* Handouts & Maps Inner Tab */}
+      {subTab === 'handouts' && (
+        <HandoutsTab campaignId={campaignId || 'zorvania-c1'} character={character} />
       )}
 
       {/* Items Inner Tab */}

@@ -27,7 +27,8 @@ import {
   BackgroundTemplate,
   Session,
   SessionRecap,
-  SessionHighlight
+  SessionHighlight,
+  Handout
 } from '../types';
 
 export const DEFAULT_5E_SKILLS: SkillDefinition[] = [
@@ -3782,6 +3783,60 @@ export const SEED_HIGHLIGHTS: SessionHighlight[] = [
     text: 'سامان با ضربه منجنیقی شمشیر خود، مانع از هجوم عقرب ساعت‌ساز به پردیس شد.',
     visibleToPlayer: 1,
     createdAt: Date.now() - 5 * 86400000
+  }
+];
+
+export const SEED_HANDOUTS: Handout[] = [
+  {
+    id: 'handout-map-zorvania',
+    campaignId: 'zorvania-c1',
+    title: 'نقشه عمومی سرزمین‌های زروانیا',
+    kind: 'map',
+    body: 'نقشه کهن ترسیم‌شده توسط کاروان‌سالاران که مسیر دشت ساعت‌ها، واحه زمان و خرابه‌های شان‌شین را نمایان می‌سازد.',
+    mediaId: null,
+    mediaUrl: 'https://images.unsplash.com/photo-1524654458049-e36be0721fa2?auto=format&fit=crop&w=1200&q=80',
+    visibility: 'revealed',
+    revealedAt: Date.now() - 3 * 86400000,
+    tags: ['نقشه', 'جغرافیا', 'ورنا'],
+    sortIndex: 0,
+    createdBy: 'user-dm',
+    createdByName: 'دانجن مستر',
+    createdAt: Date.now() - 4 * 86400000,
+    updatedAt: Date.now() - 3 * 86400000,
+    pins: [
+      { id: 'pin-1', handoutId: 'handout-map-zorvania', x: 28.5, y: 35.2, label: 'دشت ساعت‌ها', note: 'محل برخورد عقربه‌های زمان و شن‌های روان', revealed: 1 },
+      { id: 'pin-2', handoutId: 'handout-map-zorvania', x: 62.0, y: 48.0, label: 'واحه سکوت', note: 'تنها چشمه آب زنده میان کویر خاموش', revealed: 1 },
+      { id: 'pin-3', handoutId: 'handout-map-zorvania', x: 80.4, y: 72.1, label: 'دخمه پنهان فرقه خاکستری', note: 'تله زمانی و مهر دوم آریامن (یادداشت مستر)', revealed: 0 }
+    ]
+  },
+  {
+    id: 'handout-letter-clockmaker',
+    campaignId: 'zorvania-c1',
+    title: 'دست‌نوشته فرسوده ساعت‌ساز بزرگ',
+    kind: 'text',
+    body: '«ای جویندگان، هنگامی که خورشید ورنا در پشت تپه‌های شنی خاموش شود، سه زنگ بر گنبد برنزی فرود خواهد آمد. کلید در دست کسی است که سایه‌ها را بدون هراس از گذر زمان بشمارد...»\n\nامضا: استاد ارجمند سازوکار زمان',
+    visibility: 'revealed',
+    revealedAt: Date.now() - 2 * 86400000,
+    tags: ['طومار', 'معما', 'فرقه خاکستری'],
+    sortIndex: 1,
+    createdBy: 'user-dm',
+    createdByName: 'دانجن مستر',
+    createdAt: Date.now() - 2 * 86400000,
+    updatedAt: Date.now() - 2 * 86400000
+  },
+  {
+    id: 'handout-secret-orders',
+    campaignId: 'zorvania-c1',
+    title: 'فرمان سرّی نگهبانان شان‌شین',
+    kind: 'text',
+    body: 'فرمان فوری برای دستگیری هر بیگانه‌ای که حامل تکه‌های اخگر تپنده باشد.',
+    visibility: 'hidden',
+    tags: ['محرمانه', 'شان‌شین'],
+    sortIndex: 2,
+    createdBy: 'user-dm',
+    createdByName: 'دانجن مستر',
+    createdAt: Date.now() - 86400000,
+    updatedAt: Date.now() - 86400000
   }
 ];
 
