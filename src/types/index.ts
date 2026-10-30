@@ -1858,3 +1858,37 @@ export interface SessionHighlight {
   visibleToPlayer: boolean | number;
   createdAt: number;
 }
+
+// Step 4.3: Handouts & Maps
+export type HandoutKind = 'text' | 'image' | 'map';
+export type HandoutVisibility = 'hidden' | 'revealed' | 'selected';
+
+export interface MapPin {
+  id: string;
+  handoutId: string;
+  x: number; // percentage 0..100
+  y: number; // percentage 0..100
+  label: string;
+  note?: string | null;
+  revealed?: boolean | number;
+}
+
+export interface Handout {
+  id: string;
+  campaignId: string;
+  title: string;
+  kind: HandoutKind;
+  body?: string;
+  mediaId?: string | null;
+  mediaUrl?: string; // Resolved URL (e.g. /api/media/:id)
+  visibility: HandoutVisibility;
+  revealedAt?: number | null;
+  tags: string[];
+  sortIndex: number;
+  createdBy: string;
+  createdByName?: string;
+  createdAt: number;
+  updatedAt: number;
+  recipients?: string[]; // array of participationId strings
+  pins?: MapPin[];
+}

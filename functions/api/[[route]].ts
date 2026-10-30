@@ -22,7 +22,15 @@ import {
   validateRecapPayload,
   buildHighlightHistoryEvent
 } from '../../shared/rules/recapEngine';
-import type { CharacterParticipation, LevelUpPayload, XpAward, SheetChangeRequest, Session, SessionStatus, SessionRsvpChoice, SessionRecap, SessionHighlight } from '../../src/types';
+import {
+  validateHandoutPayload,
+  checkMediaSize,
+  checkCampaignQuota,
+  filterHandoutsForPlayer,
+  filterPinsForPlayer,
+  clampCoordinates
+} from '../../shared/rules/handoutEngine';
+import type { CharacterParticipation, LevelUpPayload, XpAward, SheetChangeRequest, Session, SessionStatus, SessionRsvpChoice, SessionRecap, SessionHighlight, Handout, MapPin } from '../../src/types';
 
 interface Env {
   DB: any; // Cloudflare D1Database binding
@@ -1548,19 +1556,49 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const body = await request.json() as any;
     const sizeBytes = Number(body.sizeBytes || 0);
     if (!body.mimeType || !body.dataBase64) return error('فایل نامعتبر است.');
-    if (sizeBytes > 150 * 1024) {
-      return error('حجم تصویر نباید بیش از ۱۵۰ کیلوبایت باشد. لطفاً قبل از ارسال تصویر را فشرده کنید.', 413);
+    const campaignId = body.campaignId ? String(body.campaignId) : null;
+
+    if (campaignId) {
+      const myRole = await getMembershipRole(campaignId, actor.id);
+      if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 403);
+
+      // Handouts and Maps cap: 400 KB each
+      if (sizeBytes > 400 * 1024) {
+        return error('حجم تصویر نباید بیش از ۴۰۰ کیلوبایت باشد. لطفاً قبل از ارسال تصویر را فشرده کنید.', 413);
+      }
+
+      // Per-campaign quota: 20 MB (setting)
+      let currentTotal = 0;
+      try {
+        const qRow = await env.DB.prepare('SELECT COALESCE(SUM(size_bytes), 0) AS total FROM media WHERE campaign_id = ?').bind(campaignId).first();
+        currentTotal = Number(qRow?.total || 0);
+      } catch {}
+      if (currentTotal + sizeBytes > 20 * 1024 * 1024) {
+        return error('سهمیه ذخیره‌سازی رسانه‌های این کمپین (۲۰ مگابایت) پر است.', 400);
+      }
+    } else {
+      // Non-campaign media (e.g. user portrait): 150 KB cap + 5 MB user quota
+      if (sizeBytes > 150 * 1024) {
+        return error('حجم تصویر نباید بیش از ۱۵۰ کیلوبایت باشد. لطفاً قبل از ارسال تصویر را فشرده کنید.', 413);
+      }
+      const quota = await env.DB.prepare('SELECT COALESCE(SUM(size_bytes), 0) AS total FROM media WHERE owner_id = ? AND (campaign_id IS NULL OR campaign_id = "")').bind(actor.id).first();
+      if (Number(quota?.total || 0) + sizeBytes > 5 * 1024 * 1024) {
+        return error('سهمیه ذخیره‌سازی شما (۵ مگابایت) پر است.', 400);
+      }
     }
-    const quota = await env.DB.prepare('SELECT COALESCE(SUM(size_bytes), 0) AS total FROM media WHERE owner_id = ?').bind(actor.id).first();
-    if (Number(quota?.total || 0) + sizeBytes > 5 * 1024 * 1024) {
-      return error('سهمیه ذخیره‌سازی شما (۵ مگابایت) پر است.', 400);
-    }
+
     const bytes = decodeBase64(String(body.dataBase64));
     const mediaId = `media-${Date.now()}-${generateRandomToken(3)}`;
-    await env.DB.prepare(
-      'INSERT INTO media (id, owner_id, mime_type, size_bytes, data, width, height, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-    ).bind(mediaId, actor.id, String(body.mimeType), sizeBytes, bytes, body.width ?? null, body.height ?? null, now).run();
-    const urlOut = String(body.dataBase64).startsWith('data:') ? String(body.dataBase64) : `data:${body.mimeType};base64,${body.dataBase64}`;
+    try {
+      await env.DB.prepare(
+        'INSERT INTO media (id, owner_id, campaign_id, mime_type, size_bytes, data, width, height, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      ).bind(mediaId, actor.id, campaignId, String(body.mimeType), sizeBytes, bytes, body.width ?? null, body.height ?? null, now).run();
+    } catch {
+      await env.DB.prepare(
+        'INSERT INTO media (id, owner_id, mime_type, size_bytes, data, width, height, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      ).bind(mediaId, actor.id, String(body.mimeType), sizeBytes, bytes, body.width ?? null, body.height ?? null, now).run();
+    }
+    const urlOut = `/api/media/${mediaId}`;
     return json({ id: mediaId, url: urlOut, sizeBytes }, 201);
   }
 
@@ -1568,6 +1606,35 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const mediaId = path.split('/')[2];
     const row = await env.DB.prepare('SELECT * FROM media WHERE id = ?').bind(mediaId).first();
     if (!row) return error('رسانه یافت نشد.', 404);
+
+    // Authorization check: If media belongs to a campaign handout, ensure user has rights to view
+    try {
+      const handout = await env.DB.prepare('SELECT id, campaign_id, visibility FROM handouts WHERE media_id = ?').bind(mediaId).first();
+      if (handout) {
+        const myRole = await getMembershipRole(handout.campaign_id, actor.id);
+        const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+        if (!isDm) {
+          if (handout.visibility === 'hidden') {
+            return error('رسانه یافت نشد.', 404);
+          }
+          if (handout.visibility === 'selected') {
+            const hasRecip = await env.DB.prepare(`
+              SELECT 1 FROM handout_recipients hr
+              JOIN character_participations cp ON hr.participation_id = cp.id
+              JOIN characters c ON cp.character_id = c.id
+              WHERE hr.handout_id = ? AND c.owner_id = ?
+            `).bind(handout.id, actor.id).first();
+            if (!hasRecip) {
+              return error('دسترسی مجاز نیست.', 403);
+            }
+          }
+          if (!myRole) {
+            return error('دسترسی مجاز نیست.', 403);
+          }
+        }
+      }
+    } catch {}
+
     let bytes: Uint8Array;
     const d: any = row.data;
     if (d instanceof Uint8Array) bytes = d;
@@ -1575,15 +1642,29 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     else if (Array.isArray(d)) bytes = Uint8Array.from(d);
     else if (typeof d === 'string') bytes = new TextEncoder().encode(d);
     else bytes = new Uint8Array(0);
-    return json({
-      id: row.id,
-      ownerId: row.owner_id,
-      mimeType: row.mime_type,
-      sizeBytes: row.size_bytes,
-      dataBase64: encodeBase64(bytes),
-      width: row.width,
-      height: row.height,
-      createdAt: row.created_at
+
+    const accept = request.headers.get('accept') || '';
+    const urlObj = new URL(request.url);
+    if (urlObj.searchParams.get('format') === 'json' || (accept.includes('application/json') && !accept.includes('image/'))) {
+      return json({
+        id: row.id,
+        ownerId: row.owner_id,
+        mimeType: row.mime_type,
+        sizeBytes: row.size_bytes,
+        dataBase64: encodeBase64(bytes),
+        width: row.width,
+        height: row.height,
+        createdAt: row.created_at
+      });
+    }
+
+    return new Response(bytes.buffer as ArrayBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': row.mime_type || 'image/webp',
+        'Content-Length': String(row.size_bytes),
+        'Cache-Control': 'private, max-age=86400'
+      }
     });
   }
 
@@ -6446,6 +6527,405 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       recap: createdRecap,
       highlights: createdHighlights
     });
+  }
+
+  // ---------------------------------------------------------
+  // Step 4.3: Handouts and Maps (Migration 006)
+  // ---------------------------------------------------------
+
+  // Helper to load pins and recipients for a handout list
+  const populateHandoutExtras = async (handoutRows: any[], isDm: boolean, actorPartId?: string | null): Promise<Handout[]> => {
+    if (!handoutRows || handoutRows.length === 0) return [];
+    const handoutIds = handoutRows.map(h => h.id);
+
+    // Load recipients
+    const recipientsMap: Record<string, string[]> = {};
+    for (const hId of handoutIds) {
+      recipientsMap[hId] = [];
+    }
+    try {
+      const qPlaceholders = handoutIds.map(() => '?').join(',');
+      const recips = await env.DB.prepare(
+        `SELECT handout_id, participation_id FROM handout_recipients WHERE handout_id IN (${qPlaceholders})`
+      ).bind(...handoutIds).all();
+      for (const r of (recips.results || [])) {
+        if (!recipientsMap[r.handout_id]) recipientsMap[r.handout_id] = [];
+        recipientsMap[r.handout_id].push(r.participation_id);
+      }
+    } catch {}
+
+    // Load map pins
+    const pinsMap: Record<string, MapPin[]> = {};
+    for (const hId of handoutIds) {
+      pinsMap[hId] = [];
+    }
+    try {
+      const qPlaceholders = handoutIds.map(() => '?').join(',');
+      const pinRows = await env.DB.prepare(
+        `SELECT * FROM map_pins WHERE handout_id IN (${qPlaceholders})`
+      ).bind(...handoutIds).all();
+      for (const p of (pinRows.results || [])) {
+        if (!pinsMap[p.handout_id]) pinsMap[p.handout_id] = [];
+        pinsMap[p.handout_id].push({
+          id: p.id,
+          handoutId: p.handout_id,
+          x: Number(p.x),
+          y: Number(p.y),
+          label: p.label,
+          note: p.note,
+          revealed: Number(p.revealed)
+        });
+      }
+    } catch {}
+
+    // Map rows to typed Handout objects (no base64 in list responses!)
+    const items: Handout[] = handoutRows.map(h => ({
+      id: h.id,
+      campaignId: h.campaign_id,
+      title: h.title,
+      kind: h.kind,
+      body: h.body || '',
+      mediaId: h.media_id || null,
+      mediaUrl: h.media_id ? `/api/media/${h.media_id}` : (h.media_url || null),
+      visibility: h.visibility || 'hidden',
+      revealedAt: h.revealed_at ? Number(h.revealed_at) : null,
+      tags: parseBlob(h.tags, []),
+      sortIndex: Number(h.sort_index || 0),
+      createdBy: h.created_by,
+      createdByName: h.created_by_name || 'دانجن مستر',
+      createdAt: Number(h.created_at),
+      updatedAt: Number(h.updated_at),
+      recipients: recipientsMap[h.id] || [],
+      pins: pinsMap[h.id] || []
+    }));
+
+    return filterHandoutsForPlayer(items, actorPartId, isDm);
+  };
+
+  // GET /api/c/:id/handouts — List revealed handouts for players or all for DM
+  if (path.match(/^\/c\/[^/]+\/handouts$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    let actorPartId: string | null = null;
+    if (!isDm) {
+      const partRow = await env.DB.prepare(`
+        SELECT cp.id FROM character_participations cp
+        JOIN characters c ON cp.character_id = c.id
+        WHERE cp.campaign_id = ? AND c.owner_id = ? AND cp.status = 'active'
+        LIMIT 1
+      `).bind(campId, actor.id).first();
+      actorPartId = partRow?.id || null;
+    }
+
+    const rows = await env.DB.prepare(`
+      SELECT h.*, u.display_name AS created_by_name
+      FROM handouts h
+      LEFT JOIN users u ON h.created_by = u.id
+      WHERE h.campaign_id = ?
+      ORDER BY h.sort_index ASC, h.created_at DESC
+    `).bind(campId).all();
+
+    const handouts = await populateHandoutExtras(rows.results || [], isDm, actorPartId);
+    return json(handouts);
+  }
+
+  // GET /api/c/:id/handouts/:hid — Get single handout
+  if (path.match(/^\/c\/[^/]+\/handouts\/[^/]+$/) && method === 'GET') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const hid = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    let actorPartId: string | null = null;
+    if (!isDm) {
+      const partRow = await env.DB.prepare(`
+        SELECT cp.id FROM character_participations cp
+        JOIN characters c ON cp.character_id = c.id
+        WHERE cp.campaign_id = ? AND c.owner_id = ? AND cp.status = 'active'
+        LIMIT 1
+      `).bind(campId, actor.id).first();
+      actorPartId = partRow?.id || null;
+    }
+
+    const row = await env.DB.prepare(`
+      SELECT h.*, u.display_name AS created_by_name
+      FROM handouts h
+      LEFT JOIN users u ON h.created_by = u.id
+      WHERE h.id = ? AND h.campaign_id = ?
+    `).bind(hid, campId).first();
+    if (!row) return error('سند یافت نشد.', 404);
+
+    const list = await populateHandoutExtras([row], isDm, actorPartId);
+    if (list.length === 0) return error('سند یافت نشد یا دسترسی مجاز نیست.', 404);
+    return json(list[0]);
+  }
+
+  // POST /api/c/:id/handouts — Create handout (DM only)
+  if (path.match(/^\/c\/[^/]+\/handouts$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    if (!(await requireCampaignDm(campId))) return error('فقط دانجن مستر مجاز به ایجاد اسناد است.', 403);
+
+    const body = await request.json() as any;
+    const val = validateHandoutPayload(body);
+    if (!val.valid) return error(val.error || 'اطلاعات نامعتبر است.', 400);
+
+    const hId = `handout-${Date.now()}-${generateRandomToken(4)}`;
+    const title = String(body.title).trim();
+    const kind = body.kind || 'text';
+    const hBody = body.body ? String(body.body).trim() : null;
+    const mediaId = body.mediaId ? String(body.mediaId) : null;
+    const visibility = body.visibility || 'hidden';
+    const revealedAt = (visibility === 'revealed' || visibility === 'selected') ? now : null;
+    const tags = JSON.stringify(Array.isArray(body.tags) ? body.tags : []);
+    const sortIndex = Number(body.sortIndex || 0);
+
+    await env.DB.prepare(
+      `INSERT INTO handouts (
+        id, campaign_id, title, kind, body, media_id, visibility,
+        revealed_at, tags, sort_index, created_by, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      hId, campId, title, kind, hBody, mediaId, visibility,
+      revealedAt, tags, sortIndex, actor.id, now, now
+    ).run();
+
+    // Insert recipients if selected
+    if (visibility === 'selected' && Array.isArray(body.recipients)) {
+      for (const pId of body.recipients) {
+        await env.DB.prepare(
+          'INSERT OR IGNORE INTO handout_recipients (handout_id, participation_id) VALUES (?, ?)'
+        ).bind(hId, pId).run();
+      }
+    }
+
+    // Insert pins if map
+    if (kind === 'map' && Array.isArray(body.pins)) {
+      for (const p of body.pins) {
+        const pinId = `pin-${Date.now()}-${generateRandomToken(3)}`;
+        const coords = clampCoordinates(Number(p.x || 0), Number(p.y || 0));
+        await env.DB.prepare(
+          'INSERT INTO map_pins (id, handout_id, x, y, label, note, revealed) VALUES (?, ?, ?, ?, ?, ?, ?)'
+        ).bind(pinId, hId, coords.x, coords.y, String(p.label || 'نشانگر'), p.note ? String(p.note) : null, p.revealed === false ? 0 : 1).run();
+      }
+    }
+
+    if (visibility !== 'hidden') {
+      await audit('handout-reveal', hId, { campaignId: campId, title, visibility });
+    } else {
+      await audit('handout-create', hId, { campaignId: campId, title, kind });
+    }
+
+    const createdRow = await env.DB.prepare(`
+      SELECT h.*, u.display_name AS created_by_name
+      FROM handouts h
+      LEFT JOIN users u ON h.created_by = u.id
+      WHERE h.id = ?
+    `).bind(hId).first();
+
+    const list = await populateHandoutExtras([createdRow], true);
+    return json(list[0], 201);
+  }
+
+  // PATCH /api/c/:id/handouts/:hid — Update handout (DM only)
+  if (path.match(/^\/c\/[^/]+\/handouts\/[^/]+$/) && method === 'PATCH') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const hid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const existing = await env.DB.prepare('SELECT * FROM handouts WHERE id = ? AND campaign_id = ?').bind(hid, campId).first();
+    if (!existing) return error('سند یافت نشد.', 404);
+
+    const body = await request.json() as any;
+    const title = body.title !== undefined ? String(body.title).trim() : existing.title;
+    const hBody = body.body !== undefined ? String(body.body).trim() : existing.body;
+    const mediaId = body.mediaId !== undefined ? (body.mediaId ? String(body.mediaId) : null) : existing.media_id;
+    const visibility = body.visibility !== undefined ? body.visibility : existing.visibility;
+    const sortIndex = body.sortIndex !== undefined ? Number(body.sortIndex) : existing.sort_index;
+    const tags = body.tags !== undefined ? JSON.stringify(body.tags) : existing.tags;
+
+    let revealedAt = existing.revealed_at;
+    if (visibility !== existing.visibility && (visibility === 'revealed' || visibility === 'selected')) {
+      revealedAt = now;
+      await audit('handout-reveal', hid, { campaignId: campId, title, visibility });
+    }
+
+    await env.DB.prepare(`
+      UPDATE handouts SET
+        title = ?, body = ?, media_id = ?, visibility = ?,
+        revealed_at = ?, tags = ?, sort_index = ?, updated_at = ?
+      WHERE id = ? AND campaign_id = ?
+    `).bind(
+      title, hBody, mediaId, visibility,
+      revealedAt, tags, sortIndex, now,
+      hid, campId
+    ).run();
+
+    // Replace recipients if provided
+    if (body.recipients !== undefined && Array.isArray(body.recipients)) {
+      await env.DB.prepare('DELETE FROM handout_recipients WHERE handout_id = ?').bind(hid).run();
+      for (const pId of body.recipients) {
+        await env.DB.prepare(
+          'INSERT OR IGNORE INTO handout_recipients (handout_id, participation_id) VALUES (?, ?)'
+        ).bind(hid, pId).run();
+      }
+    }
+
+    // Replace pins if provided
+    if (body.pins !== undefined && Array.isArray(body.pins)) {
+      await env.DB.prepare('DELETE FROM map_pins WHERE handout_id = ?').bind(hid).run();
+      for (const p of body.pins) {
+        const pinId = p.id || `pin-${Date.now()}-${generateRandomToken(3)}`;
+        const coords = clampCoordinates(Number(p.x || 0), Number(p.y || 0));
+        await env.DB.prepare(
+          'INSERT INTO map_pins (id, handout_id, x, y, label, note, revealed) VALUES (?, ?, ?, ?, ?, ?, ?)'
+        ).bind(pinId, hid, coords.x, coords.y, String(p.label || 'نشانگر'), p.note ? String(p.note) : null, p.revealed === false ? 0 : 1).run();
+      }
+    }
+
+    await audit('handout-update', hid, { campaignId: campId, title });
+    const updatedRow = await env.DB.prepare(`
+      SELECT h.*, u.display_name AS created_by_name
+      FROM handouts h
+      LEFT JOIN users u ON h.created_by = u.id
+      WHERE h.id = ?
+    `).bind(hid).first();
+
+    const list = await populateHandoutExtras([updatedRow], true);
+    return json(list[0]);
+  }
+
+  // DELETE /api/c/:id/handouts/:hid — Delete handout (DM only)
+  if (path.match(/^\/c\/[^/]+\/handouts\/[^/]+$/) && method === 'DELETE') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const hid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    await env.DB.prepare('DELETE FROM handouts WHERE id = ? AND campaign_id = ?').bind(hid, campId).run();
+    await audit('handout-delete', hid, { campaignId: campId });
+    return json({ success: true });
+  }
+
+  // POST /api/c/:id/handouts/:hid/reveal — 1-Tap Reveal / Hide (DM only, usable during live encounter)
+  if (path.match(/^\/c\/[^/]+\/handouts\/[^/]+\/reveal$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const hid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const existing = await env.DB.prepare('SELECT * FROM handouts WHERE id = ? AND campaign_id = ?').bind(hid, campId).first();
+    if (!existing) return error('سند یافت نشد.', 404);
+
+    const body = await request.json() as any;
+    const mode = body.visibility as 'revealed' | 'hidden' | 'selected';
+    if (!['revealed', 'hidden', 'selected'].includes(mode)) {
+      return error('وضعیت نامعتبر است.', 400);
+    }
+
+    const revealedAt = mode !== 'hidden' ? now : existing.revealed_at;
+    await env.DB.prepare(
+      'UPDATE handouts SET visibility = ?, revealed_at = ?, updated_at = ? WHERE id = ? AND campaign_id = ?'
+    ).bind(mode, revealedAt, now, hid, campId).run();
+
+    if (mode === 'selected' && Array.isArray(body.recipients)) {
+      await env.DB.prepare('DELETE FROM handout_recipients WHERE handout_id = ?').bind(hid).run();
+      for (const pId of body.recipients) {
+        await env.DB.prepare(
+          'INSERT OR IGNORE INTO handout_recipients (handout_id, participation_id) VALUES (?, ?)'
+        ).bind(hid, pId).run();
+      }
+    }
+
+    await audit('handout-reveal', hid, { campaignId: campId, title: existing.title, visibility: mode });
+    const updatedRow = await env.DB.prepare(`
+      SELECT h.*, u.display_name AS created_by_name
+      FROM handouts h
+      LEFT JOIN users u ON h.created_by = u.id
+      WHERE h.id = ?
+    `).bind(hid).first();
+
+    const list = await populateHandoutExtras([updatedRow], true);
+    return json(list[0]);
+  }
+
+  // POST /api/c/:id/handouts/:hid/pins — Add map pin (DM only)
+  if (path.match(/^\/c\/[^/]+\/handouts\/[^/]+\/pins$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const hid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const body = await request.json() as any;
+    const pinId = `pin-${Date.now()}-${generateRandomToken(3)}`;
+    const coords = clampCoordinates(Number(body.x || 0), Number(body.y || 0));
+    const label = String(body.label || 'نشانگر جدید').trim();
+    const note = body.note ? String(body.note).trim() : null;
+    const revealed = body.revealed === false || body.revealed === 0 ? 0 : 1;
+
+    await env.DB.prepare(
+      'INSERT INTO map_pins (id, handout_id, x, y, label, note, revealed) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).bind(pinId, hid, coords.x, coords.y, label, note, revealed).run();
+
+    return json({
+      id: pinId,
+      handoutId: hid,
+      x: coords.x,
+      y: coords.y,
+      label,
+      note,
+      revealed
+    }, 201);
+  }
+
+  // PATCH /api/c/:id/handouts/:hid/pins/:pid — Update map pin (DM only)
+  if (path.match(/^\/c\/[^/]+\/handouts\/[^/]+\/pins\/[^/]+$/) && method === 'PATCH') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const hid = parts[4];
+    const pid = parts[6];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const existing = await env.DB.prepare('SELECT * FROM map_pins WHERE id = ? AND handout_id = ?').bind(pid, hid).first();
+    if (!existing) return error('نشانگر یافت نشد.', 404);
+
+    const body = await request.json() as any;
+    const x = body.x !== undefined ? clampCoordinates(Number(body.x), Number(existing.y)).x : existing.x;
+    const y = body.y !== undefined ? clampCoordinates(Number(existing.x), Number(body.y)).y : existing.y;
+    const label = body.label !== undefined ? String(body.label).trim() : existing.label;
+    const note = body.note !== undefined ? String(body.note).trim() : existing.note;
+    const revealed = body.revealed !== undefined ? (body.revealed === false || body.revealed === 0 ? 0 : 1) : existing.revealed;
+
+    await env.DB.prepare(
+      'UPDATE map_pins SET x = ?, y = ?, label = ?, note = ?, revealed = ? WHERE id = ? AND handout_id = ?'
+    ).bind(x, y, label, note, revealed, pid, hid).run();
+
+    return json({
+      id: pid,
+      handoutId: hid,
+      x,
+      y,
+      label,
+      note,
+      revealed
+    });
+  }
+
+  // DELETE /api/c/:id/handouts/:hid/pins/:pid — Delete map pin (DM only)
+  if (path.match(/^\/c\/[^/]+\/handouts\/[^/]+\/pins\/[^/]+$/) && method === 'DELETE') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const hid = parts[4];
+    const pid = parts[6];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    await env.DB.prepare('DELETE FROM map_pins WHERE id = ? AND handout_id = ?').bind(pid, hid).run();
+    return json({ success: true });
   }
 
   // 404 Fallback

@@ -78,7 +78,11 @@ import {
   SessionRecap,
   SessionRecapVisibility,
   SessionRecapStatus,
-  SessionHighlight
+  SessionHighlight,
+  Handout,
+  HandoutKind,
+  HandoutVisibility,
+  MapPin
 } from '../types';
 import { rollAbilityScores } from '../../shared/rules/engine';
 import { computeAuthoritativeParticipation, createSnapshot, pruneSnapshots } from '../../shared/rules/wizardEngine';
@@ -103,6 +107,15 @@ import {
   searchRecaps,
   buildHighlightHistoryEvent
 } from '../../shared/rules/recapEngine';
+import {
+  filterHandoutsForPlayer,
+  filterPinsForPlayer,
+  validateHandoutPayload,
+  checkMediaSize,
+  checkCampaignQuota,
+  clampCoordinates,
+  sortHandouts
+} from '../../shared/rules/handoutEngine';
 import { APP_NAME_FA } from '../config/app';
 import {
   SEED_USERS,
@@ -131,7 +144,8 @@ import {
   SEED_GENERIC_CALENDAR,
   SEED_SESSIONS,
   SEED_RECAPS,
-  SEED_HIGHLIGHTS
+  SEED_HIGHLIGHTS,
+  SEED_HANDOUTS
 } from '../data/seed';
 import {
   CloneRequest,
@@ -564,7 +578,10 @@ export interface ApiClient {
   reviewCharacterBackstory(characterId: string, status: 'approved' | 'changes_requested', comment?: string): Promise<MasterCharacter>;
 
   // Media
-  uploadMedia(file: { name?: string; mimeType: string; sizeBytes: number; dataBase64: string; width?: number; height?: number; campaignId?: string }): Promise<{ id: string; url: string; sizeBytes: number }>;
+  uploadMedia(
+    file: File | { name?: string; mimeType: string; sizeBytes: number; dataBase64?: string; width?: number; height?: number; campaignId?: string },
+    campaignId?: string
+  ): Promise<{ id: string; url: string; sizeBytes: number; mediaId: string; mediaUrl: string }>;
   getMedia(id: string): Promise<any>;
   deleteMedia(id: string): Promise<void>;
 
@@ -686,6 +703,18 @@ export interface ApiClient {
       visibleToPlayer?: boolean;
     }>;
   }): Promise<{ session: Session; recap?: SessionRecap; highlights?: SessionHighlight[] }>;
+
+  // Step 4.3: Handouts & Maps
+  listHandouts(campaignId: string, options?: { tag?: string; search?: string; participationId?: string; includeHidden?: boolean }): Promise<Handout[]>;
+  getHandout(campaignId: string, handoutId: string): Promise<Handout | null>;
+  createHandout(campaignId: string, data: Partial<Handout> & { recipients?: string[]; pins?: Partial<MapPin>[] }): Promise<Handout>;
+  updateHandout(campaignId: string, handoutId: string, data: Partial<Handout> & { recipients?: string[]; pins?: Partial<MapPin>[] }): Promise<Handout>;
+  deleteHandout(campaignId: string, handoutId: string): Promise<void>;
+  revealHandout(campaignId: string, handoutId: string, mode: HandoutVisibility, recipients?: string[]): Promise<Handout>;
+  addMapPin(campaignId: string, handoutId: string, pin: Omit<MapPin, 'id' | 'handoutId'>): Promise<MapPin>;
+  createMapPin(campaignId: string, handoutId: string, pin: Omit<MapPin, 'id' | 'handoutId'>): Promise<MapPin>;
+  updateMapPin(campaignId: string, handoutId: string, pinId: string, pin: Partial<MapPin>): Promise<MapPin>;
+  deleteMapPin(campaignId: string, handoutId: string, pinId: string): Promise<void>;
 }
 
 // ----------------------------------------------------------------------
@@ -4212,39 +4241,71 @@ export class LocalApi implements ApiClient {
   }
 
   // Media
-  async uploadMedia(file: { name?: string; mimeType: string; sizeBytes: number; dataBase64: string; width?: number; height?: number; campaignId?: string }): Promise<{ id: string; url: string; sizeBytes: number }> {
+  async uploadMedia(
+    file: File | { name?: string; mimeType: string; sizeBytes: number; dataBase64?: string; width?: number; height?: number; campaignId?: string },
+    campaignId?: string
+  ): Promise<{ id: string; url: string; sizeBytes: number; mediaId: string; mediaUrl: string }> {
     const user = this.currentUser || SEED_USERS[0];
-    const maxSizeBytes = 150 * 1024; // 150 KB hard cap
-    if (file.sizeBytes > maxSizeBytes) {
-      throw { status: 413, message: 'حجم تصویر نباید بیش از ۱۵۰ کیلوبایت باشد. لطفاً قبل از ارسال تصویر را فشرده کنید.' };
+    const resolvedCampaignId = (file as any).campaignId || campaignId;
+    const isCampaignMedia = Boolean(resolvedCampaignId);
+    const maxSizeBytes = isCampaignMedia ? 400 * 1024 : 150 * 1024;
+
+    let mimeType = (file as any).mimeType || (file instanceof File ? file.type : 'image/webp');
+    let sizeBytes = (file as any).sizeBytes || (file instanceof File ? file.size : 0);
+    let dataBase64 = (file as any).dataBase64;
+
+    if (!dataBase64 && typeof window !== 'undefined' && file instanceof File) {
+      dataBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const res = reader.result as string;
+          resolve(res.includes(',') ? res.split(',')[1] : res);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (sizeBytes > maxSizeBytes) {
+      throw { status: 413, message: `حجم تصویر نباید بیش از ${isCampaignMedia ? '۴۰۰' : '۱۵۰'} کیلوبایت باشد.` };
     }
 
     const allMedia = this.getItem<MediaItem[]>('media', []);
-    const userTotalBytes = allMedia.filter(m => m.ownerId === user.id).reduce((sum, m) => sum + m.sizeBytes, 0);
-    if (userTotalBytes + file.sizeBytes > 5 * 1024 * 1024) { // 5 MB per-user quota
-      throw { status: 400, message: 'سهمیه ذخیره‌سازی شما (۵ مگابایت) پر شده است.' };
+    if (isCampaignMedia) {
+      const campTotalBytes = allMedia.filter(m => m.campaignId === resolvedCampaignId).reduce((sum, m) => sum + m.sizeBytes, 0);
+      if (campTotalBytes + sizeBytes > 20 * 1024 * 1024) {
+        throw { status: 400, message: 'سهمیه ذخیره‌سازی رسانه‌های این کمپین (۲۰ مگابایت) پر شده است.' };
+      }
+    } else {
+      const userTotalBytes = allMedia.filter(m => m.ownerId === user.id).reduce((sum, m) => sum + m.sizeBytes, 0);
+      if (userTotalBytes + sizeBytes > 5 * 1024 * 1024) {
+        throw { status: 400, message: 'سهمیه ذخیره‌سازی شما (۵ مگابایت) پر شده است.' };
+      }
     }
 
     const mediaId = `media-${Date.now()}`;
     const newMedia: MediaItem = {
       id: mediaId,
       ownerId: user.id,
-      campaignId: file.campaignId,
-      mimeType: file.mimeType,
-      sizeBytes: file.sizeBytes,
-      dataBase64: file.dataBase64,
-      width: file.width,
-      height: file.height,
+      campaignId: resolvedCampaignId,
+      mimeType,
+      sizeBytes,
+      dataBase64: dataBase64 || '',
+      width: (file as any).width,
+      height: (file as any).height,
       createdAt: Date.now()
     };
 
     allMedia.push(newMedia);
     this.setItem('media', allMedia);
 
+    const url = `/api/media/${mediaId}`;
     return {
       id: mediaId,
-      url: file.dataBase64.startsWith('data:') ? file.dataBase64 : `data:${file.mimeType};base64,${file.dataBase64}`,
-      sizeBytes: file.sizeBytes
+      mediaId,
+      url,
+      mediaUrl: url,
+      sizeBytes
     };
   }
 
@@ -5715,6 +5776,182 @@ export class LocalApi implements ApiClient {
 
     return { session: s, recap: createdRecap, highlights: createdHighlights };
   }
+
+  // Step 4.3: Handouts & Maps (LocalApi)
+  async listHandouts(campaignId: string, options?: { tag?: string; search?: string }): Promise<Handout[]> {
+    const all = this.getItem<Handout[]>('handouts', SEED_HANDOUTS);
+    const inCamp = all.filter(h => h.campaignId === campaignId);
+
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const isDm = this.currentUser?.role === 'dm' || myMember?.role === 'owner' || myMember?.role === 'co_dm';
+
+    const participations = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const myPart = participations.find(p => p.campaignId === campaignId && p.characterId === this.currentUser?.activeCharacterId);
+
+    let filtered = filterHandoutsForPlayer(inCamp, myPart?.id, isDm);
+
+    if (options?.tag) {
+      filtered = filtered.filter(h => h.tags?.includes(options.tag!));
+    }
+    if (options?.search && options.search.trim()) {
+      const q = options.search.trim().toLowerCase();
+      filtered = filtered.filter(h =>
+        h.title.toLowerCase().includes(q) ||
+        (h.body && h.body.toLowerCase().includes(q)) ||
+        (h.tags && h.tags.some(t => t.toLowerCase().includes(q)))
+      );
+    }
+
+    return sortHandouts(filtered);
+  }
+
+  async getHandout(campaignId: string, handoutId: string): Promise<Handout | null> {
+    const list = await this.listHandouts(campaignId);
+    return list.find(h => h.id === handoutId) || null;
+  }
+
+  async createHandout(campaignId: string, data: Partial<Handout> & { recipients?: string[]; pins?: Partial<MapPin>[] }): Promise<Handout> {
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const isDm = this.currentUser?.role === 'dm' || myMember?.role === 'owner' || myMember?.role === 'co_dm';
+    if (!isDm) throw new Error('فقط دانجن مستر مجاز به ایجاد اسناد است.');
+
+    const val = validateHandoutPayload(data);
+    if (!val.valid) throw new Error(val.error);
+
+    const hId = `handout-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const vis = data.visibility || 'hidden';
+    const newHandout: Handout = {
+      id: hId,
+      campaignId,
+      title: data.title!.trim(),
+      kind: data.kind || 'text',
+      body: data.body ? data.body.trim() : '',
+      mediaId: data.mediaId || null,
+      mediaUrl: data.mediaUrl || (data.mediaId ? `/api/media/${data.mediaId}` : undefined),
+      visibility: vis,
+      revealedAt: (vis === 'revealed' || vis === 'selected') ? Date.now() : null,
+      tags: data.tags || [],
+      sortIndex: data.sortIndex ?? 0,
+      createdBy: this.currentUser?.id || 'user-dm',
+      createdByName: this.currentUser?.displayName || 'دانجن مستر',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      recipients: data.recipients || [],
+      pins: (data.pins || []).map((p, idx) => ({
+        id: p.id || `pin-${Date.now()}-${idx}`,
+        handoutId: hId,
+        x: clampCoordinates(Number(p.x || 0), Number(p.y || 0)).x,
+        y: clampCoordinates(Number(p.x || 0), Number(p.y || 0)).y,
+        label: p.label || 'نشانگر',
+        note: p.note || '',
+        revealed: p.revealed === false ? 0 : 1
+      }))
+    };
+
+    const all = this.getItem<Handout[]>('handouts', SEED_HANDOUTS);
+    all.unshift(newHandout);
+    this.setItem('handouts', all);
+    return newHandout;
+  }
+
+  async updateHandout(campaignId: string, handoutId: string, data: Partial<Handout> & { recipients?: string[]; pins?: Partial<MapPin>[] }): Promise<Handout> {
+    const all = this.getItem<Handout[]>('handouts', SEED_HANDOUTS);
+    const idx = all.findIndex(h => h.id === handoutId && h.campaignId === campaignId);
+    if (idx === -1) throw new Error('سند یافت نشد.');
+
+    const existing = all[idx];
+    const newVis = data.visibility !== undefined ? data.visibility : existing.visibility;
+    let revealedAt = existing.revealedAt;
+    if (newVis !== existing.visibility && (newVis === 'revealed' || newVis === 'selected')) {
+      revealedAt = Date.now();
+    }
+
+    const updated: Handout = {
+      ...existing,
+      ...data,
+      visibility: newVis,
+      revealedAt,
+      recipients: data.recipients !== undefined ? data.recipients : existing.recipients,
+      pins: data.pins !== undefined ? (data.pins as MapPin[]) : existing.pins,
+      updatedAt: Date.now()
+    };
+    all[idx] = updated;
+    this.setItem('handouts', all);
+    return updated;
+  }
+
+  async deleteHandout(campaignId: string, handoutId: string): Promise<void> {
+    const all = this.getItem<Handout[]>('handouts', SEED_HANDOUTS);
+    const filtered = all.filter(h => h.id !== handoutId || h.campaignId !== campaignId);
+    this.setItem('handouts', filtered);
+  }
+
+  async revealHandout(campaignId: string, handoutId: string, mode: HandoutVisibility, recipients?: string[]): Promise<Handout> {
+    return this.updateHandout(campaignId, handoutId, {
+      visibility: mode,
+      recipients: recipients || []
+    });
+  }
+
+  async addMapPin(campaignId: string, handoutId: string, pin: Omit<MapPin, 'id' | 'handoutId'>): Promise<MapPin> {
+    const all = this.getItem<Handout[]>('handouts', SEED_HANDOUTS);
+    const h = all.find(x => x.id === handoutId && x.campaignId === campaignId);
+    if (!h) throw new Error('نقشه یافت نشد.');
+
+    const coords = clampCoordinates(pin.x, pin.y);
+    const newPin: MapPin = {
+      id: `pin-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      handoutId,
+      x: coords.x,
+      y: coords.y,
+      label: pin.label,
+      note: pin.note || '',
+      revealed: pin.revealed === false ? 0 : 1
+    };
+
+    h.pins = [...(h.pins || []), newPin];
+    h.updatedAt = Date.now();
+    this.setItem('handouts', all);
+    return newPin;
+  }
+
+  async createMapPin(campaignId: string, handoutId: string, pin: Omit<MapPin, 'id' | 'handoutId'>): Promise<MapPin> {
+    return this.addMapPin(campaignId, handoutId, pin);
+  }
+
+  async updateMapPin(campaignId: string, handoutId: string, pinId: string, pin: Partial<MapPin>): Promise<MapPin> {
+    const all = this.getItem<Handout[]>('handouts', SEED_HANDOUTS);
+    const h = all.find(x => x.id === handoutId && x.campaignId === campaignId);
+    if (!h) throw new Error('نقشه یافت نشد.');
+
+    const pIdx = (h.pins || []).findIndex(p => p.id === pinId);
+    if (pIdx === -1) throw new Error('نشانگر یافت نشد.');
+
+    const existing = h.pins![pIdx];
+    const coords = clampCoordinates(pin.x ?? existing.x, pin.y ?? existing.y);
+    const updated: MapPin = {
+      ...existing,
+      ...pin,
+      x: coords.x,
+      y: coords.y
+    };
+    h.pins![pIdx] = updated;
+    h.updatedAt = Date.now();
+    this.setItem('handouts', all);
+    return updated;
+  }
+
+  async deleteMapPin(campaignId: string, handoutId: string, pinId: string): Promise<void> {
+    const all = this.getItem<Handout[]>('handouts', SEED_HANDOUTS);
+    const h = all.find(x => x.id === handoutId && x.campaignId === campaignId);
+    if (!h) return;
+
+    h.pins = (h.pins || []).filter(p => p.id !== pinId);
+    h.updatedAt = Date.now();
+    this.setItem('handouts', all);
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -6793,11 +7030,42 @@ export class HttpApi implements ApiClient {
     });
   }
 
-  async uploadMedia(file: { name?: string; mimeType: string; sizeBytes: number; dataBase64: string; width?: number; height?: number; campaignId?: string }): Promise<{ id: string; url: string; sizeBytes: number }> {
-    return this.fetchJson<{ id: string; url: string; sizeBytes: number }>('/media', {
+  async uploadMedia(
+    file: File | { name?: string; mimeType: string; sizeBytes: number; dataBase64?: string; width?: number; height?: number; campaignId?: string },
+    campaignId?: string
+  ): Promise<{ id: string; url: string; sizeBytes: number; mediaId: string; mediaUrl: string }> {
+    let payload: any = file;
+    if (typeof window !== 'undefined' && file instanceof File) {
+      const dataBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const res = reader.result as string;
+          resolve(res.includes(',') ? res.split(',')[1] : res);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      payload = {
+        name: file.name,
+        mimeType: file.type || 'image/webp',
+        sizeBytes: file.size,
+        dataBase64,
+        campaignId
+      };
+    } else if (campaignId && payload && !payload.campaignId) {
+      payload.campaignId = campaignId;
+    }
+    const res = await this.fetchJson<{ id: string; url: string; sizeBytes: number }>('/media', {
       method: 'POST',
-      body: JSON.stringify(file)
+      body: JSON.stringify(payload)
     });
+    return {
+      id: res.id,
+      mediaId: res.id,
+      url: res.url,
+      mediaUrl: res.url,
+      sizeBytes: res.sizeBytes
+    };
   }
 
   async getMedia(id: string): Promise<any> {
@@ -7250,6 +7518,72 @@ export class HttpApi implements ApiClient {
     return this.fetchJson<{ session: Session; recap?: SessionRecap; highlights?: SessionHighlight[] }>(`/c/${campaignId}/sessions/${sessionId}/close`, {
       method: 'POST',
       body: JSON.stringify(data)
+    });
+  }
+
+  // Step 4.3: Handouts & Maps (HttpApi)
+  async listHandouts(campaignId: string, options?: { tag?: string; search?: string; participationId?: string; includeHidden?: boolean }): Promise<Handout[]> {
+    const q = new URLSearchParams();
+    if (options?.tag) q.set('tag', options.tag);
+    if (options?.search) q.set('search', options.search);
+    if (options?.participationId) q.set('participationId', options.participationId);
+    if (options?.includeHidden) q.set('includeHidden', 'true');
+    const qs = q.toString();
+    return this.fetchJson<Handout[]>(`/c/${campaignId}/handouts${qs ? `?${qs}` : ''}`);
+  }
+
+  async getHandout(campaignId: string, handoutId: string): Promise<Handout | null> {
+    return this.fetchJson<Handout>(`/c/${campaignId}/handouts/${handoutId}`);
+  }
+
+  async createHandout(campaignId: string, data: Partial<Handout> & { recipients?: string[]; pins?: Partial<MapPin>[] }): Promise<Handout> {
+    return this.fetchJson<Handout>(`/c/${campaignId}/handouts`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateHandout(campaignId: string, handoutId: string, data: Partial<Handout> & { recipients?: string[]; pins?: Partial<MapPin>[] }): Promise<Handout> {
+    return this.fetchJson<Handout>(`/c/${campaignId}/handouts/${handoutId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteHandout(campaignId: string, handoutId: string): Promise<void> {
+    await this.fetchJson(`/c/${campaignId}/handouts/${handoutId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async revealHandout(campaignId: string, handoutId: string, mode: HandoutVisibility, recipients?: string[]): Promise<Handout> {
+    return this.fetchJson<Handout>(`/c/${campaignId}/handouts/${handoutId}/reveal`, {
+      method: 'POST',
+      body: JSON.stringify({ visibility: mode, recipients })
+    });
+  }
+
+  async addMapPin(campaignId: string, handoutId: string, pin: Omit<MapPin, 'id' | 'handoutId'>): Promise<MapPin> {
+    return this.fetchJson<MapPin>(`/c/${campaignId}/handouts/${handoutId}/pins`, {
+      method: 'POST',
+      body: JSON.stringify(pin)
+    });
+  }
+
+  async createMapPin(campaignId: string, handoutId: string, pin: Omit<MapPin, 'id' | 'handoutId'>): Promise<MapPin> {
+    return this.addMapPin(campaignId, handoutId, pin);
+  }
+
+  async updateMapPin(campaignId: string, handoutId: string, pinId: string, pin: Partial<MapPin>): Promise<MapPin> {
+    return this.fetchJson<MapPin>(`/c/${campaignId}/handouts/${handoutId}/pins/${pinId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(pin)
+    });
+  }
+
+  async deleteMapPin(campaignId: string, handoutId: string, pinId: string): Promise<void> {
+    await this.fetchJson(`/c/${campaignId}/handouts/${handoutId}/pins/${pinId}`, {
+      method: 'DELETE'
     });
   }
 }

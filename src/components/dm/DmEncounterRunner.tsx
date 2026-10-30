@@ -10,8 +10,9 @@ import {
   Swords, Shield, Heart, Plus, Trash2, Play, Pause, 
   RotateCcw, Save, ArrowRight, ArrowLeft, Dices, ChevronRight, 
   CheckCircle2, Eye, EyeOff, AlertTriangle, Users, Copy, 
-  MoreVertical, Sparkles, Award, Lock, MapPin, X, MessageSquarePlus
+  MoreVertical, Sparkles, Award, Lock, MapPin, X, MessageSquarePlus, Map as MapIcon
 } from 'lucide-react';
+import { DmHandoutManager } from './DmHandoutManager';
 
 interface DmEncounterRunnerProps {
   characters: Character[];
@@ -45,6 +46,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
   const [customEventSheet, setCustomEventSheet] = useState(false);
   const [customEventText, setCustomEventText] = useState('');
   const [activeMenuParticipantId, setActiveMenuParticipantId] = useState<string | null>(null);
+  const [handoutsSheet, setHandoutsSheet] = useState(false);
 
   // New Encounter Form State
   const [newEncForm, setNewEncForm] = useState({
@@ -1292,6 +1294,15 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           >
             <MessageSquarePlus className="w-5 h-5" />
           </button>
+
+          <button
+            type="button"
+            onClick={() => setHandoutsSheet(true)}
+            className="p-2.5 rounded-[12px] bg-[#201D19] text-[#4ADE80] hover:text-white border border-[#2F2A23] hover:border-[#4ADE80]/50 transition touch-target shrink-0"
+            title="اسناد و نقشه‌ها (آشکارسازی سریع در حین نبرد)"
+          >
+            <MapIcon className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
@@ -1732,6 +1743,22 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           >
             ثبت در لاگ
           </button>
+        </div>
+      </BottomSheet>
+
+      {/* Sheet 6: Live Handouts & Maps Quick Reveal during combat */}
+      <BottomSheet
+        isOpen={handoutsSheet}
+        onClose={() => setHandoutsSheet(false)}
+        title="اسناد و نقشه‌های نبرد"
+      >
+        <div className="pb-4" dir="rtl">
+          <DmHandoutManager
+            campaignId="zorvania-c1"
+            isCompact={true}
+            campaignCharacters={characters.map(c => ({ id: c.id, name: c.name }))}
+            onCloseCompact={() => setHandoutsSheet(false)}
+          />
         </div>
       </BottomSheet>
     </div>
