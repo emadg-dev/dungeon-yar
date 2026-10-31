@@ -90,6 +90,34 @@ export interface Campaign {
   memberCount?: number;
   characterCount?: number;
   activeEncounter?: boolean;
+  membershipStatus?: 'invited' | 'active' | 'left' | 'removed';
+  nextSession?: {
+    id: string;
+    number: number;
+    title: string;
+    scheduledAt: string;
+    countdown?: {
+      text: string;
+      isImminent: boolean;
+      isPast: boolean;
+      totalMs?: number;
+      days?: number;
+      hours?: number;
+      minutes?: number;
+    };
+  } | null;
+  unreadCount?: number;
+  finalCharacterState?: {
+    participationId: string;
+    characterId: string;
+    characterName: string;
+    className: string;
+    subclassName?: string;
+    level: number;
+    status: string;
+    sessionsAttended: number;
+  } | null;
+  isReadOnly?: boolean;
 }
 
 export interface CampaignMember {
@@ -243,6 +271,9 @@ export interface MasterCharacter {
   deletedAt?: number | null;
   participations?: CharacterParticipation[];
   history?: CharacterHistoryEvent[];
+  campaignsCount?: number;
+  sessionsAttendedTotal?: number;
+  highestLevel?: number;
 }
 
 export type AbilityMethod = 'standard_array' | 'point_buy' | 'roll' | 'class_base' | 'manual';
@@ -441,7 +472,7 @@ export interface CharacterHistoryEvent {
   characterId: string;
   campaignId?: string | null;
   campaignName?: string;
-  eventType: 'joined' | 'level_up' | 'death' | 'major_deed' | 'retired' | 'custom' | 'milestone';
+  eventType: 'joined' | 'level_up' | 'death' | 'major_deed' | 'retired' | 'custom' | 'milestone' | 'status_change' | 'session_attendance';
   payload: {
     title?: string;
     description?: string;

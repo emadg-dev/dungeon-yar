@@ -1150,6 +1150,16 @@ export default function App() {
               history={charHistoryEvents}
               participations={charParticipations}
               campaign={activeCampaign || myCampaigns[0] || null}
+              availableCampaigns={myCampaigns}
+              onLegacyJoin={async (targetCampId, notes) => {
+                const newPart = await api.legacyJoinCampaign(selectedMasterChar.id, targetCampId, notes);
+                showToast('ورود میراثی به کمپین جدید با موفقیت ثبت شد!');
+                setCharParticipations(prev => [newPart, ...prev]);
+                const hist = await api.getMasterCharacterHistory(selectedMasterChar.id).catch(() => []);
+                setCharHistoryEvents(hist);
+                await loadHomeData();
+                return newPart;
+              }}
               lineageTemplate={availableLineages.find(l => l.name === selectedMasterChar.race) || null}
               backgroundTemplate={availableBackgrounds.find(b => b.name === selectedMasterChar.backstory?.origin) || null}
               allBackgroundTemplates={availableBackgrounds}

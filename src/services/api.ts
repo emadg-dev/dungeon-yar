@@ -162,6 +162,11 @@ import {
   validateCurrencyUpdate,
   executeItemTransfer
 } from '../../shared/rules/treasuryEngine';
+import {
+  filterHistoryForViewer,
+  validateLegacyJoin,
+  calculateCountdown
+} from '../../shared/rules/historyEngine';
 import { APP_NAME_FA, APP_NAME_LATIN } from '../config/app';
 import {
   SEED_USERS,
@@ -583,7 +588,8 @@ export interface ApiClient {
   createMasterCharacter(char: Partial<MasterCharacter>): Promise<MasterCharacter>;
   updateMasterCharacter(char: MasterCharacter): Promise<MasterCharacter>;
   updateMasterCharacterStatus(id: string, status: 'active' | 'retired' | 'dead' | 'archived', note?: string): Promise<MasterCharacter>;
-  getMasterCharacterHistory(characterId: string): Promise<CharacterHistoryEvent[]>;
+  getMasterCharacterHistory(characterId: string, campaignId?: string): Promise<CharacterHistoryEvent[]>;
+  legacyJoinCampaign(characterId: string, targetCampaignId: string, notes?: string): Promise<CharacterParticipation>;
   addCharacterHistoryEvent(event: Omit<CharacterHistoryEvent, 'id' | 'timestamp'>): Promise<CharacterHistoryEvent>;
   listParticipations(campaignId?: string): Promise<CharacterParticipation[]>;
   getParticipation(campaignId: string, participationId: string): Promise<CharacterParticipation | null>;
@@ -2831,8 +2837,11 @@ export class LocalApi implements ApiClient {
     const allParticipations = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
     const allInvites = this.getItem<CampaignInvite[]>('campaign_invites', []);
 
-    // Active memberships for this user
-    const myMemberships = allMembers.filter(m => m.userId === user.id && m.status === 'active');
+    // Memberships for this user (both active and past/left)
+    const myMemberships = allMembers.filter(m => m.userId === user.id);
+    const allSessions = this.getItem<Session[]>('sessions', []);
+    const allNotifs = this.getItem<NotificationItem[]>('notifications', []);
+
     const myCampaigns = myMemberships.map(m => {
       const camp = allCampaigns.find(c => c.id === m.campaignId) || {
         id: m.campaignId,
@@ -2857,21 +2866,68 @@ export class LocalApi implements ApiClient {
       };
       const campMembers = allMembers.filter(mem => mem.campaignId === camp.id && mem.status === 'active');
       const campParts = allParticipations.filter(p => p.campaignId === camp.id && p.status === 'active');
+
+      // Next session and countdown
+      const upcoming = allSessions
+        .filter(s => s.campaignId === camp.id && (s.status === 'planned' || s.status === 'confirmed') && s.scheduledAt)
+        .sort((a, b) => new Date(a.scheduledAt!).getTime() - new Date(b.scheduledAt!).getTime())[0];
+      const nextSession = upcoming && upcoming.scheduledAt ? {
+        id: upcoming.id,
+        number: upcoming.number,
+        title: upcoming.title,
+        scheduledAt: upcoming.scheduledAt,
+        countdown: calculateCountdown(upcoming.scheduledAt) || undefined
+      } : null;
+
+      // Unread notifications for this campaign
+      const unreadCount = allNotifs.filter(n => n.userId === user.id && n.campaignId === camp.id && !n.readAt).length;
+
+      // Final character state in this campaign
+      const userParts = allParticipations.filter(p => p.campaignId === camp.id && allMasterChars.some(mc => mc.id === p.characterId && mc.ownerId === user.id));
+      const finalPart = userParts.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))[0];
+      const charObj = finalPart ? allMasterChars.find(mc => mc.id === finalPart.characterId) : null;
+      const finalCharacterState = finalPart ? {
+        participationId: finalPart.id,
+        characterId: finalPart.characterId,
+        characterName: charObj?.name || finalPart.className,
+        className: finalPart.className,
+        subclassName: finalPart.subclassName,
+        level: finalPart.level,
+        status: finalPart.status,
+        sessionsAttended: finalPart.sessionsAttended || 0
+      } : null;
+
+      const isReadOnly = camp.status === 'archived' || m.status === 'left' || m.status === 'removed';
+
       return {
         ...camp,
         myRole: m.role,
+        membershipStatus: m.status,
+        isReadOnly,
         memberCount: campMembers.length,
-        characterCount: campParts.length
+        characterCount: campParts.length,
+        nextSession,
+        unreadCount,
+        finalCharacterState
       };
     });
 
-    // Master characters owned by user
+    // Master characters owned by user with aggregate stats
     const myCharacters = allMasterChars
       .filter(c => c.ownerId === user.id && c.status !== 'archived')
-      .map(mc => ({
-        ...mc,
-        participations: allParticipations.filter(p => p.characterId === mc.id)
-      }));
+      .map(mc => {
+        const parts = allParticipations.filter(p => p.characterId === mc.id);
+        const campIds = new Set(parts.map(p => p.campaignId).filter(Boolean));
+        const sessionsAttendedTotal = parts.reduce((acc, p) => acc + (p.sessionsAttended || 0), 0);
+        const highestLevel = parts.reduce((max, p) => Math.max(max, p.level || 1), 1);
+        return {
+          ...mc,
+          participations: parts,
+          campaignsCount: campIds.size,
+          sessionsAttendedTotal,
+          highestLevel
+        };
+      });
 
     // Pending invites if user is owner or co_dm
     const myDmCampaignIds = myMemberships
@@ -3527,9 +3583,129 @@ export class LocalApi implements ApiClient {
     return char;
   }
 
-  async getMasterCharacterHistory(characterId: string): Promise<CharacterHistoryEvent[]> {
+  async getMasterCharacterHistory(characterId: string, campaignId?: string): Promise<CharacterHistoryEvent[]> {
+    const user = this.currentUser || SEED_USERS[0];
     const all = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
-    return all.filter(h => h.characterId === characterId).sort((a, b) => b.timestamp - a.timestamp);
+    const allChars = this.getItem<MasterCharacter[]>('master_characters', SEED_MASTER_CHARACTERS);
+    const char = allChars.find(c => c.id === characterId);
+    if (!char) return [];
+
+    const isOwner = char.ownerId === user.id;
+    const isGlobalDm = user.platformRole === 'admin' || user.role === 'dm';
+    const allMembers = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+
+    // Campaigns where viewer is DM and this character participated
+    const myDmCampIds = allMembers
+      .filter(m => m.userId === user.id && (m.role === 'owner' || m.role === 'co_dm') && m.status === 'active')
+      .map(m => m.campaignId)
+      .filter(cid => allParts.some(p => p.characterId === characterId && p.campaignId === cid));
+
+    if (!isOwner && !isGlobalDm && myDmCampIds.length === 0) {
+      return [];
+    }
+
+    const events = all.filter(h => h.characterId === characterId);
+    return filterHistoryForViewer(events, user.id, char.ownerId, myDmCampIds, campaignId);
+  }
+
+  async legacyJoinCampaign(characterId: string, targetCampaignId: string, notes?: string): Promise<CharacterParticipation> {
+    const user = this.currentUser || SEED_USERS[0];
+    const allChars = this.getItem<MasterCharacter[]>('master_characters', SEED_MASTER_CHARACTERS);
+    const char = allChars.find(c => c.id === characterId);
+    if (!char) throw { status: 404, message: 'شخصیت یافت نشد.' };
+    if (char.ownerId !== user.id && user.role !== 'dm') throw { status: 403, message: 'شما مالک این شخصیت نیستید.' };
+    if (char.status === 'dead') throw { status: 400, message: 'شخصیت درگذشته نمی‌تواند در کمپین دیگری شرکت کند.' };
+
+    const allCamps = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const targetCamp = allCamps.find(c => c.id === targetCampaignId);
+    if (!targetCamp) throw { status: 404, message: 'کمپین مقصد یافت نشد.' };
+    if (targetCamp.status === 'archived') throw { status: 400, message: 'کمپین مقصد بایگانی شده است.' };
+
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const existingPart = allParts.find(p => p.characterId === characterId && p.campaignId === targetCampaignId);
+    if (existingPart && existingPart.status !== 'retired' && existingPart.status !== 'dead') {
+      throw { status: 400, message: 'این شخصیت هم‌اکنون در این کمپین حضور دارد.' };
+    }
+
+    const validation = validateLegacyJoin(char, targetCamp, allParts.filter(p => p.characterId === characterId));
+    if (!validation.valid) {
+      throw { status: 400, message: validation.error || 'ورود میراثی مجاز نیست.' };
+    }
+
+    const startingLevel = Number(targetCamp.settings?.startingLevel || 1);
+    const maxEntryLevel = Number(targetCamp.settings?.maxEntryLevel || 20);
+    const initialLevel = Math.max(1, Math.min(startingLevel, maxEntryLevel));
+    const requiresApproval = Boolean(targetCamp.settings?.approval?.onCreate);
+    const initialStatus = requiresApproval ? 'pending_approval' : 'active';
+    const hp = 10 + (initialLevel - 1) * 6;
+
+    const newPart: CharacterParticipation = {
+      id: `part-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      characterId,
+      campaignId: targetCampaignId,
+      campaignName: targetCamp.name,
+      status: initialStatus,
+      className: (char as any).className || 'ماجراجو',
+      level: initialLevel,
+      xp: 0,
+      abilityScores: (char as any).abilityScores || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      currentHp: hp,
+      maxHp: hp,
+      tempHp: 0,
+      hitDice: { current: initialLevel, max: initialLevel, die: 'd8' },
+      deathSaves: { successes: 0, failures: 0 },
+      conditions: [],
+      inventory: [],
+      weapons: [],
+      currency: { gold: 10, silver: 0, copper: 0 },
+      customResources: [],
+      features: [],
+      notes: notes || '',
+      joinedAt: Date.now(),
+      updatedAt: Date.now(),
+      characterName: char.name,
+      characterRace: char.race,
+      characterPortraitUrl: char.portraitUrl
+    };
+
+    allParts.push(newPart);
+    this.setItem('character_participations', allParts);
+
+    // Ensure membership
+    const allMembers = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const existingMem = allMembers.find(m => m.campaignId === targetCampaignId && m.userId === user.id);
+    if (!existingMem) {
+      allMembers.push({
+        campaignId: targetCampaignId,
+        userId: user.id,
+        role: 'player',
+        status: 'active',
+        joinedAt: Date.now(),
+        userName: user.displayName || user.name
+      });
+      this.setItem('campaign_members', allMembers);
+    }
+
+    // Add joined history event
+    const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+    allHist.push({
+      id: `hist-leg-${Date.now()}`,
+      characterId,
+      campaignId: targetCampaignId,
+      campaignName: targetCamp.name,
+      eventType: 'joined',
+      payload: {
+        title: `ورود میراثی به کمپین ${targetCamp.name}`,
+        description: `شروع مشارکت میراثی با سطح ${initialLevel}${notes ? ' • یادداشت: ' + notes : ''}`,
+        level: initialLevel,
+        isLegacyJoin: true
+      },
+      timestamp: Date.now()
+    });
+    this.setItem('character_history_events', allHist);
+
+    return newPart;
   }
 
   async addCharacterHistoryEvent(event: Omit<CharacterHistoryEvent, 'id' | 'timestamp'>): Promise<CharacterHistoryEvent> {
@@ -7925,8 +8101,16 @@ export class HttpApi implements ApiClient {
     });
   }
 
-  async getMasterCharacterHistory(characterId: string): Promise<CharacterHistoryEvent[]> {
-    return this.fetchJson<CharacterHistoryEvent[]>(`/characters/${characterId}/history`);
+  async getMasterCharacterHistory(characterId: string, campaignId?: string): Promise<CharacterHistoryEvent[]> {
+    const qs = campaignId ? `?campaignId=${encodeURIComponent(campaignId)}` : '';
+    return this.fetchJson<CharacterHistoryEvent[]>(`/characters/${characterId}/history${qs}`);
+  }
+
+  async legacyJoinCampaign(characterId: string, targetCampaignId: string, notes?: string): Promise<CharacterParticipation> {
+    return this.fetchJson<CharacterParticipation>(`/characters/${characterId}/legacy-join`, {
+      method: 'POST',
+      body: JSON.stringify({ targetCampaignId, notes })
+    });
   }
 
   async addCharacterHistoryEvent(event: Omit<CharacterHistoryEvent, 'id' | 'timestamp'>): Promise<CharacterHistoryEvent> {

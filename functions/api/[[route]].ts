@@ -926,7 +926,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     updatedAt: r.updated_at,
     myRole: r.my_role || undefined,
     memberCount: r.member_count != null ? Number(r.member_count) : undefined,
-    characterCount: r.character_count != null ? Number(r.character_count) : undefined
+    characterCount: r.character_count != null ? Number(r.character_count) : undefined,
+    membershipStatus: r.membership_status || 'active',
+    isReadOnly: r.status === 'archived' || r.membership_status === 'left' || r.membership_status === 'removed'
   });
 
   const getMembershipRole = async (campId: string, userId: string) => {
@@ -955,19 +957,77 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // Home Summary (GET /api/home) — data for the post-login home screen
   // ---------------------------------------------------------
   if (path === '/home' && method === 'GET') {
-    // 1) Campaigns where the user holds an active membership
+    // 1) Campaigns where the user holds membership (active or past/left)
     const memRes = await env.DB.prepare(
-      `SELECT c.*, m.role AS my_role,
+      `SELECT c.*, m.role AS my_role, m.status AS membership_status,
               (SELECT COUNT(*) FROM campaign_members cm WHERE cm.campaign_id = c.id AND cm.status = 'active') AS member_count,
               (SELECT COUNT(*) FROM character_participations cp WHERE cp.campaign_id = c.id AND cp.status = 'active') AS character_count
          FROM campaign_members m
          JOIN campaigns c ON c.id = m.campaign_id
-        WHERE m.user_id = ? AND m.status = 'active' AND c.deleted_at IS NULL
+        WHERE m.user_id = ? AND c.deleted_at IS NULL
         ORDER BY c.updated_at DESC`
     ).bind(actor.id).all();
-    const myCampaigns = (memRes.results || []).map(mapCampaignRow);
+    const myCampaigns: any[] = (memRes.results || []).map(mapCampaignRow);
 
-    // 2) Master characters (legacy JSON-blob rows) + participation summary
+    // Enrich each campaign with next session, unread notifications count, and character state
+    for (const c of myCampaigns) {
+      try {
+        const nextSessRow = await env.DB.prepare(
+          `SELECT id, number, title, scheduled_at FROM sessions
+            WHERE campaign_id = ? AND status IN ('planned', 'confirmed') AND scheduled_at IS NOT NULL
+            ORDER BY scheduled_at ASC LIMIT 1`
+        ).bind(c.id).first();
+        if (nextSessRow && nextSessRow.scheduled_at) {
+          c.nextSession = {
+            id: nextSessRow.id,
+            number: nextSessRow.number,
+            title: nextSessRow.title,
+            scheduledAt: nextSessRow.scheduled_at
+          };
+        } else {
+          c.nextSession = null;
+        }
+      } catch {
+        c.nextSession = null;
+      }
+
+      try {
+        const unreadRow = await env.DB.prepare(
+          `SELECT COUNT(*) as cnt FROM notifications WHERE user_id = ? AND campaign_id = ? AND read_at IS NULL`
+        ).bind(actor.id, c.id).first();
+        c.unreadCount = Number(unreadRow?.cnt || 0);
+      } catch {
+        c.unreadCount = 0;
+      }
+
+      try {
+        const finalPartRow = await env.DB.prepare(
+          `SELECT cp.id, cp.character_id, cp.level, cp.class_name, cp.subclass_name, cp.status, cp.sessions_attended, ch.name as char_name
+             FROM character_participations cp
+             JOIN characters ch ON ch.id = cp.character_id
+            WHERE cp.campaign_id = ? AND ch.owner_id = ?
+            ORDER BY cp.updated_at DESC LIMIT 1`
+        ).bind(c.id, actor.id).first();
+        if (finalPartRow) {
+          c.finalCharacterState = {
+            participationId: finalPartRow.id,
+            characterId: finalPartRow.character_id,
+            characterName: finalPartRow.char_name,
+            className: finalPartRow.class_name,
+            subclassName: finalPartRow.subclass_name || undefined,
+            level: finalPartRow.level,
+            status: finalPartRow.status,
+            sessionsAttended: finalPartRow.sessions_attended || 0
+          };
+        } else {
+          c.finalCharacterState = null;
+        }
+      } catch {
+        c.finalCharacterState = null;
+      }
+    }
+
+    // 2) Master characters (legacy JSON-blob rows) + participation summary & stats
     const charRes = await env.DB.prepare('SELECT id, data FROM characters WHERE owner_id = ?').bind(actor.id).all();
     const myCharacters: any[] = [];
     const charIds: string[] = [];
@@ -981,7 +1041,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     if (charIds.length > 0) {
       const placeholders = charIds.map(() => '?').join(',');
       const partRes = await env.DB.prepare(
-        `SELECT id, character_id, campaign_id, status, level FROM character_participations WHERE character_id IN (${placeholders})`
+        `SELECT id, character_id, campaign_id, status, level, sessions_attended, class_name FROM character_participations WHERE character_id IN (${placeholders})`
       ).bind(...charIds).all();
       const byChar: Record<string, any[]> = {};
       for (const p of partRes.results || []) {
@@ -990,11 +1050,18 @@ export const onRequest: PagesFunction<Env> = async (context) => {
           characterId: p.character_id,
           campaignId: p.campaign_id,
           status: p.status,
-          level: p.level
+          level: p.level,
+          sessionsAttended: p.sessions_attended || 0,
+          className: p.class_name
         });
       }
       for (const c of myCharacters) {
         c.participations = byChar[c.id] || [];
+        const parts = c.participations;
+        const campIds = new Set(parts.map((p: any) => p.campaignId).filter(Boolean));
+        c.campaignsCount = campIds.size;
+        c.sessionsAttendedTotal = parts.reduce((acc: number, p: any) => acc + (p.sessionsAttended || 0), 0);
+        c.highestLevel = parts.reduce((max: number, p: any) => Math.max(max, p.level || 1), 1);
       }
     }
 
@@ -2150,7 +2217,27 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (path.match(/^\/characters\/[^/]+\/history$/) && method === 'GET') {
     const charId = path.split('/')[2];
     const row = await env.DB.prepare('SELECT owner_id FROM characters WHERE id = ?').bind(charId).first();
-    if (!row || (actor.role !== 'dm' && row.owner_id !== actor.id)) return error('شخصیت مورد نظر یافت نشد.', 404);
+    if (!row) return error('شخصیت مورد نظر یافت نشد.', 404);
+
+    const isOwner = row.owner_id === actor.id;
+    const isGlobalDm = actor.role === 'dm';
+    const filterCampId = url.searchParams.get('campaignId') || undefined;
+
+    // Check if non-owner is a DM of any campaign this character participates in
+    let dmCampaignIds: string[] = [];
+    if (!isOwner && !isGlobalDm) {
+      const dmMemberships = await env.DB.prepare(
+        `SELECT cm.campaign_id FROM campaign_members cm
+           JOIN character_participations cp ON cp.campaign_id = cm.campaign_id
+          WHERE cm.user_id = ? AND cm.role IN ('owner', 'co_dm') AND cm.status = 'active'
+            AND cp.character_id = ?`
+      ).bind(actor.id, charId).all();
+      dmCampaignIds = (dmMemberships.results || []).map((m: any) => m.campaign_id);
+      if (dmCampaignIds.length === 0) {
+        return error('دسترسی به تاریخچه این شخصیت مجاز نیست.', 404);
+      }
+    }
+
     const res = await env.DB.prepare(
       `SELECT h.*, c.name AS campaign_name
          FROM character_history_events h
@@ -2158,7 +2245,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         WHERE h.character_id = ?
         ORDER BY h.timestamp DESC`
     ).bind(charId).all();
-    return json((res.results || []).map((r: any) => ({
+
+    const allEvents = (res.results || []).map((r: any) => ({
       id: r.id,
       characterId: r.character_id,
       campaignId: r.campaign_id,
@@ -2166,7 +2254,21 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       eventType: r.event_type,
       payload: parseBlob(r.payload, {}),
       timestamp: r.timestamp
-    })));
+    }));
+
+    // Server-enforced privacy:
+    // Character owner & global DM see full history.
+    // Campaign DM sees ONLY events of their own campaign(s).
+    let filteredEvents = allEvents;
+    if (!isOwner && !isGlobalDm) {
+      const allowedSet = new Set(dmCampaignIds);
+      filteredEvents = allEvents.filter((e: any) => e.campaignId && allowedSet.has(e.campaignId));
+    }
+    if (filterCampId) {
+      filteredEvents = filteredEvents.filter((e: any) => e.campaignId === filterCampId);
+    }
+
+    return json(filteredEvents);
   }
 
   if (path.match(/^\/characters\/[^/]+\/history$/) && method === 'POST') {
@@ -2174,7 +2276,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const row = await env.DB.prepare('SELECT owner_id FROM characters WHERE id = ?').bind(charId).first();
     if (!row || (actor.role !== 'dm' && row.owner_id !== actor.id)) return error('شخصیت مورد نظر یافت نشد.', 404);
     const body = await request.json() as any;
-    const eventTypes = ['joined', 'level_up', 'death', 'major_deed', 'retired', 'custom'];
+    const eventTypes = ['joined', 'level_up', 'death', 'major_deed', 'retired', 'custom', 'milestone', 'status_change', 'session_attendance'];
     const eventType = eventTypes.includes(body.eventType) ? body.eventType : 'custom';
     let campaignId: string | null = null;
     if (body.campaignId) {
@@ -2193,6 +2295,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     }
     return json({ id: eventId, characterId: charId, campaignId, campaignName, eventType, payload, timestamp: now }, 201);
   }
+
 
   if (path.match(/^\/characters\/[^/]+\/give-item$/) && method === 'POST') {
     if (actor.role !== 'dm') return error('فقط دانجن مستر می‌تواند شیء اهدا کند.', 403);
@@ -2381,6 +2484,93 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       now
     ).run();
     await audit('participation-create', partId, { campaignId: campId, characterId: body.characterId, status: initialStatus });
+    const created = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
+    return json(mapParticipation(created), 201);
+  }
+
+  // POST /api/characters/:id/legacy-join — start a new participation from an existing/retired character in another campaign
+  if (path.match(/^\/characters\/[^/]+\/legacy-join$/) && method === 'POST') {
+    const charId = path.split('/')[2];
+    const body = await request.json() as any;
+    const targetCampaignId = body.targetCampaignId;
+    const notes = String(body.notes || '').trim();
+
+    if (!targetCampaignId) return error('شناسه کمپین مقصد الزامی است.', 400);
+
+    const charRow = await env.DB.prepare('SELECT owner_id, data FROM characters WHERE id = ?').bind(charId).first();
+    if (!charRow || (actor.role !== 'dm' && charRow.owner_id !== actor.id)) {
+      return error('شخصیت مورد نظر یافت نشد.', 404);
+    }
+    const charBlob = parseBlob(charRow.data, null);
+    if (!charBlob) return error('اطلاعات شخصیت نامعتبر است.', 400);
+
+    if (charBlob.status === 'dead') {
+      return error('شخصیت درگذشته نمی‌تواند در کمپین دیگری شرکت کند.', 400);
+    }
+
+    const campRow = await env.DB.prepare('SELECT * FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(targetCampaignId).first();
+    if (!campRow) return error('کمپین مقصد یافت نشد.', 404);
+    if (campRow.status === 'archived') {
+      return error('کمپین مقصد بایگانی شده است.', 400);
+    }
+
+    // Check existing participations
+    const existingPart = await env.DB.prepare(
+      `SELECT id, status FROM character_participations WHERE character_id = ? AND campaign_id = ?`
+    ).bind(charId, targetCampaignId).first();
+    if (existingPart && existingPart.status !== 'retired' && existingPart.status !== 'dead') {
+      return error('این شخصیت هم‌اکنون در این کمپین حضور دارد.', 400);
+    }
+
+    const campSettings = parseBlob(campRow.settings, {});
+    const startingLevel = Number(campSettings.startingLevel || 1);
+    const maxEntryLevel = Number(campSettings.maxEntryLevel || 20);
+    const requiresApproval = Boolean(campSettings.approval?.onCreate);
+
+    const initialLevel = Math.max(1, Math.min(startingLevel, maxEntryLevel));
+    const initialStatus = requiresApproval ? 'pending_approval' : 'active';
+    const hp = 10 + (initialLevel - 1) * 6;
+
+    const partId = `part-${Date.now()}-${generateRandomToken(3)}`;
+    const abilityScores = JSON.stringify(charBlob.abilityScores || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 });
+    const hitDice = JSON.stringify({ current: initialLevel, max: initialLevel, die: 'd8' });
+    const deathSaves = JSON.stringify({ successes: 0, failures: 0 });
+    const currency = JSON.stringify(charBlob.currency || { gold: 10, silver: 0, copper: 0 });
+    const className = charBlob.className || 'ماجراجو';
+
+    await env.DB.prepare(
+      `INSERT INTO character_participations
+         (id, character_id, campaign_id, status, class_id, class_name, subclass_name, level, xp, ability_scores,
+          current_hp, max_hp, temp_hp, hit_dice, ac_override, speed_override, death_saves, conditions, inventory,
+          weapons, currency, custom_resources, spells_known_prepared, spell_slots, features, notes, dm_notes,
+          pending_level_up, joined_at, updated_at)
+       VALUES (?, ?, ?, ?, NULL, ?, NULL, ?, 0, ?, ?, ?, 0, ?, NULL, NULL, ?, '[]', '[]', '[]', ?, '[]', NULL, NULL, '[]', ?, '', NULL, ?, ?)`
+    ).bind(
+      partId, charId, targetCampaignId, initialStatus, className, initialLevel, abilityScores,
+      hp, hp, hitDice, deathSaves, currency, notes, now, now
+    ).run();
+
+    // Ensure user is marked as member in campaign_members
+    await env.DB.prepare(
+      `INSERT INTO campaign_members (campaign_id, user_id, role, status, joined_at)
+       VALUES (?, ?, 'player', 'active', ?)
+       ON CONFLICT(campaign_id, user_id) DO UPDATE SET status = 'active'`
+    ).bind(targetCampaignId, actor.id, now).run();
+
+    const campName = campRow.name;
+    await env.DB.prepare(
+      'INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(
+      `hist-${Date.now()}-${generateRandomToken(3)}`, charId, targetCampaignId, 'joined',
+      JSON.stringify({
+        title: `ورود میراثی به کمپین ${campName}`,
+        description: `شروع مشارکت میراثی با سطح ${initialLevel}${notes ? ' • یادداشت: ' + notes : ''}`,
+        level: initialLevel,
+        isLegacyJoin: true
+      }),
+      now
+    ).run();
+
     const created = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
     return json(mapParticipation(created), 201);
   }

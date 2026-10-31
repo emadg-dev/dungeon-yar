@@ -1154,3 +1154,9 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_push_subs_user ON push_subscriptions(user_id);
+
+-- Step 5.1: Player Home and History Polish indexes
+CREATE INDEX IF NOT EXISTS idx_char_history_campaign_time ON character_history_events(campaign_id, timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_participations_char_status ON character_participations(character_id, status);
+CREATE INDEX IF NOT EXISTS idx_sessions_campaign_scheduled ON sessions(campaign_id, scheduled_at ASC);
+CREATE INDEX IF NOT EXISTS idx_members_user_status ON campaign_members(user_id, status);
