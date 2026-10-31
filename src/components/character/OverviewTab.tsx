@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Character, ClassTemplate, Session, SessionRsvpChoice, Campaign, 
-  User, CampaignRole, SessionRecap, NPC, LocationEntry, CampaignNote 
+  User, CampaignRole, SessionRecap, NPC, LocationEntry, CampaignNote, Quest 
 } from '../../types';
 import { APP_NAME_LATIN } from '../../config/app';
 import { deriveSheet } from '../../../shared/rules/engine';
@@ -14,6 +14,7 @@ import { PipTracker } from '../common/PipTracker';
 import { StatCard } from '../common/StatCard';
 import { NextSessionCard } from '../session/NextSessionCard';
 import { PreviouslyOnCard } from '../session/PreviouslyOnCard';
+import { ActiveQuestsCard } from '../quest/ActiveQuestsCard';
 
 interface OverviewTabProps {
   character: Character;
@@ -48,6 +49,11 @@ interface OverviewTabProps {
   onOpenRecapArchive?: () => void;
   onOpenCreateRecap?: () => void;
   onEditRecap?: (recap: SessionRecap) => void;
+  // Step 4.4: Quests
+  quests?: Quest[];
+  onOpenQuests?: () => void;
+  onToggleQuestObjective?: (questId: string, objectiveId: string, done: boolean) => void;
+  canToggleQuestObjective?: boolean;
 }
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({
@@ -80,7 +86,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   campaignNotes,
   onOpenRecapArchive,
   onOpenCreateRecap,
-  onEditRecap
+  onEditRecap,
+  quests = [],
+  onOpenQuests,
+  onToggleQuestObjective,
+  canToggleQuestObjective = false,
 }) => {
   const [isEditingBasics, setIsEditingBasics] = useState(false);
 
@@ -243,6 +253,16 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           onOpenArchive={onOpenRecapArchive}
           onOpenCreateRecap={onOpenCreateRecap}
           onEditRecap={onEditRecap}
+        />
+      )}
+
+      {/* Step 4.4: Active Quests Preview Card */}
+      {quests && quests.length > 0 && onOpenQuests && (
+        <ActiveQuestsCard
+          quests={quests}
+          onOpenQuests={onOpenQuests}
+          onToggleObjective={onToggleQuestObjective}
+          canToggleObjective={canToggleQuestObjective}
         />
       )}
 

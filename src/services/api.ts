@@ -82,7 +82,11 @@ import {
   Handout,
   HandoutKind,
   HandoutVisibility,
-  MapPin
+  MapPin,
+  Quest,
+  QuestStatus,
+  QuestObjective,
+  QuestRewardRef
 } from '../types';
 import { rollAbilityScores } from '../../shared/rules/engine';
 import { computeAuthoritativeParticipation, createSnapshot, pruneSnapshots } from '../../shared/rules/wizardEngine';
@@ -116,6 +120,16 @@ import {
   clampCoordinates,
   sortHandouts
 } from '../../shared/rules/handoutEngine';
+import {
+  canUserManageQuests,
+  canUserToggleObjective,
+  filterQuestForViewer,
+  filterQuestsForViewer,
+  calculateQuestProgress,
+  partitionQuestsByStatus,
+  validateQuestPayload,
+  searchQuests
+} from '../../shared/rules/questEngine';
 import { APP_NAME_FA } from '../config/app';
 import {
   SEED_USERS,
@@ -145,7 +159,8 @@ import {
   SEED_SESSIONS,
   SEED_RECAPS,
   SEED_HIGHLIGHTS,
-  SEED_HANDOUTS
+  SEED_HANDOUTS,
+  SEED_QUESTS
 } from '../data/seed';
 import {
   CloneRequest,
@@ -715,6 +730,15 @@ export interface ApiClient {
   createMapPin(campaignId: string, handoutId: string, pin: Omit<MapPin, 'id' | 'handoutId'>): Promise<MapPin>;
   updateMapPin(campaignId: string, handoutId: string, pinId: string, pin: Partial<MapPin>): Promise<MapPin>;
   deleteMapPin(campaignId: string, handoutId: string, pinId: string): Promise<void>;
+
+  // Step 4.4: Quest Log & Narrative Objectives
+  listQuests(campaignId: string, options?: { status?: QuestStatus; participationId?: string; search?: string }): Promise<Quest[]>;
+  getQuest(campaignId: string, questId: string): Promise<Quest | null>;
+  createQuest(campaignId: string, data: Partial<Quest> & { participantIds?: string[] }): Promise<Quest>;
+  updateQuest(campaignId: string, questId: string, data: Partial<Quest> & { participantIds?: string[] }): Promise<Quest>;
+  deleteQuest(campaignId: string, questId: string): Promise<void>;
+  toggleQuestObjective(campaignId: string, questId: string, objectiveId: string, done: boolean): Promise<Quest>;
+  completeQuest(campaignId: string, questId: string, options?: { grantRewards?: boolean; characterIds?: string[]; completionNote?: string }): Promise<{ quest: Quest; rewardsGranted?: boolean }>;
 }
 
 // ----------------------------------------------------------------------
@@ -5952,6 +5976,253 @@ export class LocalApi implements ApiClient {
     h.updatedAt = Date.now();
     this.setItem('handouts', all);
   }
+
+  // Step 4.4: Quests (LocalApi)
+  async listQuests(campaignId: string, options?: { status?: QuestStatus; participationId?: string; search?: string }): Promise<Quest[]> {
+    const all = this.getItem<Quest[]>('quests', SEED_QUESTS);
+    const inCamp = all.filter(q => q.campaignId === campaignId);
+
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const userRole = myMember?.role || (this.currentUser?.role === 'dm' ? 'owner' : 'player');
+
+    const participations = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const myPart = participations.find(p => p.campaignId === campaignId && p.characterId === this.currentUser?.activeCharacterId);
+    const partId = options?.participationId || myPart?.id || null;
+
+    let filtered = filterQuestsForViewer(inCamp, userRole as any, partId);
+
+    if (options?.status) {
+      filtered = filtered.filter(q => q.status === options.status);
+    }
+    if (options?.search && options.search.trim()) {
+      filtered = searchQuests(filtered, options.search);
+    }
+
+    const npcs = this.getItem<NPC[]>('npcs', SEED_NPCS);
+    const locs = this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS);
+    return filtered.map(q => {
+      const giver = q.giverNpcId ? npcs.find(n => n.id === q.giverNpcId) : null;
+      const loc = q.locationId ? locs.find(l => l.id === q.locationId) : null;
+      return {
+        ...q,
+        giverNpcName: q.giverNpcName || giver?.name,
+        giverNpcAvatar: q.giverNpcAvatar || giver?.portraitUrl,
+        locationName: q.locationName || loc?.name,
+        locationRegion: q.locationRegion || loc?.region
+      };
+    });
+  }
+
+  async getQuest(campaignId: string, questId: string): Promise<Quest | null> {
+    const all = this.getItem<Quest[]>('quests', SEED_QUESTS);
+    const q = all.find(x => x.id === questId && x.campaignId === campaignId);
+    if (!q) return null;
+
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const userRole = myMember?.role || (this.currentUser?.role === 'dm' ? 'owner' : 'player');
+    const participations = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const myPart = participations.find(p => p.campaignId === campaignId && p.characterId === this.currentUser?.activeCharacterId);
+
+    const filtered = filterQuestForViewer(q, userRole as any, myPart?.id);
+    if (!filtered) return null;
+
+    const npcs = this.getItem<NPC[]>('npcs', SEED_NPCS);
+    const locs = this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS);
+    const giver = filtered.giverNpcId ? npcs.find(n => n.id === filtered.giverNpcId) : null;
+    const loc = filtered.locationId ? locs.find(l => l.id === filtered.locationId) : null;
+
+    return {
+      ...filtered,
+      giverNpcName: filtered.giverNpcName || giver?.name,
+      giverNpcAvatar: filtered.giverNpcAvatar || giver?.portraitUrl,
+      locationName: filtered.locationName || loc?.name,
+      locationRegion: filtered.locationRegion || loc?.region
+    };
+  }
+
+  async createQuest(campaignId: string, data: Partial<Quest> & { participantIds?: string[] }): Promise<Quest> {
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const userRole = myMember?.role || (this.currentUser?.role === 'dm' ? 'owner' : 'player');
+    if (!canUserManageQuests(userRole as any)) {
+      throw new Error('فقط دانجن مستر مجاز به ایجاد مأموریت است.');
+    }
+
+    const val = validateQuestPayload(data);
+    if (!val.valid) {
+      throw new Error(val.errors.join(' '));
+    }
+
+    const npcs = this.getItem<NPC[]>('npcs', SEED_NPCS);
+    const locs = this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS);
+    const giver = data.giverNpcId ? npcs.find(n => n.id === data.giverNpcId) : null;
+    const loc = data.locationId ? locs.find(l => l.id === data.locationId) : null;
+
+    const newQuest: Quest = {
+      id: `quest-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      campaignId,
+      title: data.title!.trim(),
+      description: data.description || '',
+      status: data.status || 'active',
+      giverNpcId: data.giverNpcId || null,
+      giverNpcName: giver?.name,
+      giverNpcAvatar: giver?.portraitUrl,
+      locationId: data.locationId || null,
+      locationName: loc?.name,
+      locationRegion: loc?.region,
+      objectives: (data.objectives || []).map((o, idx) => ({
+        id: o.id || `obj-${idx + 1}-${Date.now()}`,
+        text: o.text.trim(),
+        done: Boolean(o.done),
+        visible: o.visible !== false
+      })),
+      rewardRef: data.rewardRef || null,
+      sessionStartedId: data.sessionStartedId || null,
+      sessionEndedId: data.sessionEndedId || null,
+      dmNotes: data.dmNotes || '',
+      sortIndex: data.sortIndex || 0,
+      participantIds: data.participantIds || [],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+
+    const all = this.getItem<Quest[]>('quests', SEED_QUESTS);
+    all.push(newQuest);
+    this.setItem('quests', all);
+    return newQuest;
+  }
+
+  async updateQuest(campaignId: string, questId: string, data: Partial<Quest> & { participantIds?: string[] }): Promise<Quest> {
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const userRole = myMember?.role || (this.currentUser?.role === 'dm' ? 'owner' : 'player');
+    if (!canUserManageQuests(userRole as any)) {
+      throw new Error('فقط دانجن مستر مجاز به ویرایش مأموریت است.');
+    }
+
+    const all = this.getItem<Quest[]>('quests', SEED_QUESTS);
+    const idx = all.findIndex(q => q.id === questId && q.campaignId === campaignId);
+    if (idx === -1) throw new Error('مأموریت یافت نشد.');
+
+    const current = all[idx];
+    const npcs = this.getItem<NPC[]>('npcs', SEED_NPCS);
+    const locs = this.getItem<LocationEntry[]>('locations', SEED_LOCATIONS);
+    const giverId = data.giverNpcId !== undefined ? data.giverNpcId : current.giverNpcId;
+    const locId = data.locationId !== undefined ? data.locationId : current.locationId;
+    const giver = giverId ? npcs.find(n => n.id === giverId) : null;
+    const loc = locId ? locs.find(l => l.id === locId) : null;
+
+    const updated: Quest = {
+      ...current,
+      ...data,
+      id: current.id,
+      campaignId: current.campaignId,
+      giverNpcName: giver?.name || current.giverNpcName,
+      giverNpcAvatar: giver?.portraitUrl || current.giverNpcAvatar,
+      locationName: loc?.name || current.locationName,
+      locationRegion: loc?.region || current.locationRegion,
+      participantIds: data.participantIds !== undefined ? data.participantIds : current.participantIds,
+      updatedAt: Date.now()
+    };
+
+    all[idx] = updated;
+    this.setItem('quests', all);
+    return updated;
+  }
+
+  async deleteQuest(campaignId: string, questId: string): Promise<void> {
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const userRole = myMember?.role || (this.currentUser?.role === 'dm' ? 'owner' : 'player');
+    if (!canUserManageQuests(userRole as any)) {
+      throw new Error('فقط دانجن مستر مجاز به حذف مأموریت است.');
+    }
+
+    const all = this.getItem<Quest[]>('quests', SEED_QUESTS);
+    this.setItem('quests', all.filter(q => !(q.id === questId && q.campaignId === campaignId)));
+  }
+
+  async toggleQuestObjective(campaignId: string, questId: string, objectiveId: string, done: boolean): Promise<Quest> {
+    const campaigns = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = campaigns.find(c => c.id === campaignId);
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const userRole = myMember?.role || (this.currentUser?.role === 'dm' ? 'owner' : 'player');
+
+    if (!canUserToggleObjective(userRole as any, camp?.settings?.allowPlayerTickQuestObjectives)) {
+      throw new Error('شما دسترسی علامت‌زدن اهداف مأموریت را ندارید.');
+    }
+
+    const all = this.getItem<Quest[]>('quests', SEED_QUESTS);
+    const q = all.find(x => x.id === questId && x.campaignId === campaignId);
+    if (!q) throw new Error('مأموریت یافت نشد.');
+
+    const obj = (q.objectives || []).find(o => o.id === objectiveId);
+    if (!obj) throw new Error('هدف مأموریت یافت نشد.');
+
+    obj.done = done;
+    q.updatedAt = Date.now();
+    this.setItem('quests', all);
+    return q;
+  }
+
+  async completeQuest(campaignId: string, questId: string, options?: { grantRewards?: boolean; characterIds?: string[]; completionNote?: string }): Promise<{ quest: Quest; rewardsGranted?: boolean }> {
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const userRole = myMember?.role || (this.currentUser?.role === 'dm' ? 'owner' : 'player');
+    if (!canUserManageQuests(userRole as any)) {
+      throw new Error('فقط دانجن مستر مجاز به ثبت پایان مأموریت است.');
+    }
+
+    const all = this.getItem<Quest[]>('quests', SEED_QUESTS);
+    const q = all.find(x => x.id === questId && x.campaignId === campaignId);
+    if (!q) throw new Error('مأموریت یافت نشد.');
+
+    q.status = 'completed';
+    (q.objectives || []).forEach(o => { o.done = true; });
+    if (options?.completionNote) {
+      q.dmNotes = (q.dmNotes ? `${q.dmNotes}\n` : '') + `[یادداشت تکمیل]: ${options.completionNote}`;
+    }
+    q.updatedAt = Date.now();
+    this.setItem('quests', all);
+
+    let rewardsGranted = false;
+    if (options?.grantRewards && q.rewardRef) {
+      if (q.rewardRef.xp && q.rewardRef.xp > 0) {
+        await this.awardXp(campaignId, {
+          amount: q.rewardRef.xp,
+          reason: `پاداش تکمیل مأموریت «${q.title}»`
+        });
+        rewardsGranted = true;
+      }
+      if (q.rewardRef.rewardPackageIds && q.rewardRef.rewardPackageIds.length > 0) {
+        const characters = this.getItem<Character[]>('characters', SEED_CHARACTERS);
+        const targetCharIds = options.characterIds || characters.map(c => c.id);
+        for (const pkgId of q.rewardRef.rewardPackageIds) {
+          await this.distributeReward(pkgId, targetCharIds);
+        }
+        rewardsGranted = true;
+      }
+      if (q.rewardRef.itemIds && q.rewardRef.itemIds.length > 0) {
+        const items = this.getItem<ItemLibraryEntry[]>('items', SEED_ITEM_LIBRARY);
+        const characters = this.getItem<Character[]>('characters', SEED_CHARACTERS);
+        const targetCharId = options.characterIds?.[0] || characters[0]?.id;
+        if (targetCharId) {
+          for (const itId of q.rewardRef.itemIds) {
+            const it = items.find(i => i.id === itId);
+            if (it) {
+              await this.giveItemToPlayer(targetCharId, it);
+            }
+          }
+          rewardsGranted = true;
+        }
+      }
+    }
+
+    return { quest: q, rewardsGranted };
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -7584,6 +7855,54 @@ export class HttpApi implements ApiClient {
   async deleteMapPin(campaignId: string, handoutId: string, pinId: string): Promise<void> {
     await this.fetchJson(`/c/${campaignId}/handouts/${handoutId}/pins/${pinId}`, {
       method: 'DELETE'
+    });
+  }
+
+  // Step 4.4: Quest Log & Narrative Objectives (HttpApi)
+  async listQuests(campaignId: string, options?: { status?: QuestStatus; participationId?: string; search?: string }): Promise<Quest[]> {
+    const params = new URLSearchParams();
+    if (options?.status) params.set('status', options.status);
+    if (options?.participationId) params.set('participationId', options.participationId);
+    if (options?.search) params.set('search', options.search);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return this.fetchJson<Quest[]>(`/c/${campaignId}/quests${qs}`);
+  }
+
+  async getQuest(campaignId: string, questId: string): Promise<Quest | null> {
+    return this.fetchJson<Quest>(`/c/${campaignId}/quests/${questId}`);
+  }
+
+  async createQuest(campaignId: string, data: Partial<Quest> & { participantIds?: string[] }): Promise<Quest> {
+    return this.fetchJson<Quest>(`/c/${campaignId}/quests`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateQuest(campaignId: string, questId: string, data: Partial<Quest> & { participantIds?: string[] }): Promise<Quest> {
+    return this.fetchJson<Quest>(`/c/${campaignId}/quests/${questId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteQuest(campaignId: string, questId: string): Promise<void> {
+    await this.fetchJson<void>(`/c/${campaignId}/quests/${questId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async toggleQuestObjective(campaignId: string, questId: string, objectiveId: string, done: boolean): Promise<Quest> {
+    return this.fetchJson<Quest>(`/c/${campaignId}/quests/${questId}/objectives/${objectiveId}/toggle`, {
+      method: 'POST',
+      body: JSON.stringify({ done })
+    });
+  }
+
+  async completeQuest(campaignId: string, questId: string, options?: { grantRewards?: boolean; characterIds?: string[]; completionNote?: string }): Promise<{ quest: Quest; rewardsGranted?: boolean }> {
+    return this.fetchJson<{ quest: Quest; rewardsGranted?: boolean }>(`/c/${campaignId}/quests/${questId}/complete`, {
+      method: 'POST',
+      body: JSON.stringify(options || {})
     });
   }
 }

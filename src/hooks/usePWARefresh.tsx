@@ -42,7 +42,7 @@ export function usePWARefresh() {
       if (reg.waiting) {
         reg.waiting.postMessage({ type: 'SKIP_WAITING' });
       }
-      window.location.reload(true);
+      window.location.reload();
     });
     setPromptVisible(false);
   };

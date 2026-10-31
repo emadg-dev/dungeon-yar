@@ -125,6 +125,19 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
               className="w-5 h-5 accent-[#E0A030] rounded"
             />
           </div>
+
+          <div className="flex items-center justify-between p-2 rounded-xl bg-[#0E0D0C]/40">
+            <div>
+              <span className="text-xs font-semibold text-[#EDE6D8] block">علامت‌زدن اهداف مأموریت توسط بازیکن</span>
+              <span className="text-[10px] text-[#A39A89]">امکان تیک زدن اهداف مأموریت در طومار توسط خود بازیکنان</span>
+            </div>
+            <input
+              type="checkbox"
+              checked={Boolean(settings.allowPlayerTickQuestObjectives)}
+              onChange={e => setSettings({ ...settings, allowPlayerTickQuestObjectives: e.target.checked })}
+              className="w-5 h-5 accent-[#E0A030] rounded"
+            />
+          </div>
         </div>
 
         {/* Levels & Mechanics Group */}

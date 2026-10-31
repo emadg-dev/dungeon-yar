@@ -10,7 +10,7 @@ import {
   LocationEntry, PlayerEncounterView, Campaign, MasterCharacter, CampaignInvite, 
   CampaignMember, CharacterHistoryEvent, CharacterParticipation, CampaignRole, CampaignSettings,
   LineageTemplate, BackgroundTemplate, Session, SessionStatus, SessionRsvpChoice,
-  SessionRecap, SessionHighlight
+  SessionRecap, SessionHighlight, Quest
 } from './types';
 import { api, HttpApi } from './services/api';
 import { pageTitle } from './config/app';
@@ -206,6 +206,9 @@ export default function App() {
     isOpen: false,
     recap: null
   });
+
+  // Step 4.4: Quests State
+  const [campaignQuests, setCampaignQuests] = useState<Quest[]>([]);
 
   // Dice & Rest Modals
   const [diceModalOpen, setDiceModalOpen] = useState(false);
@@ -432,12 +435,14 @@ export default function App() {
       const sessList = await api.listSessions(campaignId).catch(() => []);
       setCampaignSessions(sessList);
 
-      const [latestR, recapsList] = await Promise.all([
+      const [latestR, recapsList, questsList] = await Promise.all([
         api.getLatestRecap(campaignId).catch(() => null),
-        api.listRecaps(campaignId).catch(() => [])
+        api.listRecaps(campaignId).catch(() => []),
+        api.listQuests(campaignId).catch(() => [])
       ]);
       setLatestRecap(latestR);
       setCampaignRecaps(recapsList);
+      setCampaignQuests(questsList);
 
       const campSettings = await api.getCampaignSettings().catch(() => ({
         allowPlayerCreateCharacter: camp.settings?.allowPlayerCreateCharacter ?? true
@@ -886,6 +891,72 @@ export default function App() {
     }
   };
 
+  // Step 4.4: Quest Log Handlers
+  const handleToggleQuestObjective = async (questId: string, objectiveId: string, done: boolean) => {
+    if (!activeCampaignId) return;
+    try {
+      await api.toggleQuestObjective(activeCampaignId, questId, objectiveId, done);
+      setCampaignQuests(prev => prev.map(q => {
+        if (q.id === questId) {
+          const updatedObjectives = q.objectives.map(o => o.id === objectiveId ? { ...o, done } : o);
+          return { ...q, objectives: updatedObjectives };
+        }
+        return q;
+      }));
+    } catch (err: any) {
+      showToast(err.message || 'خطا در تغییر وضعیت هدف مأموریت.');
+    }
+  };
+
+  const handleCreateQuest = async (questData: Partial<Quest> & { participantIds?: string[] }) => {
+    if (!activeCampaignId) return;
+    try {
+      const created = await api.createQuest(activeCampaignId, questData);
+      setCampaignQuests(prev => [...prev, created]);
+      showToast('مأموریت تازه با موفقیت ثبت شد.');
+    } catch (err: any) {
+      showToast(err.message || 'خطا در ثبت مأموریت.');
+    }
+  };
+
+  const handleUpdateQuest = async (questId: string, questData: Partial<Quest> & { participantIds?: string[] }) => {
+    if (!activeCampaignId) return;
+    try {
+      const updated = await api.updateQuest(activeCampaignId, questId, questData);
+      setCampaignQuests(prev => prev.map(q => q.id === questId ? updated : q));
+      showToast('مأموریت با موفقیت به‌روزرسانی شد.');
+    } catch (err: any) {
+      showToast(err.message || 'خطا در ذخیره تغییرات مأموریت.');
+    }
+  };
+
+  const handleDeleteQuest = async (questId: string) => {
+    if (!activeCampaignId) return;
+    try {
+      await api.deleteQuest(activeCampaignId, questId);
+      setCampaignQuests(prev => prev.filter(q => q.id !== questId));
+      showToast('مأموریت حذف شد.');
+    } catch (err: any) {
+      showToast(err.message || 'خطا در حذف مأموریت.');
+    }
+  };
+
+  const handleCompleteQuest = async (questId: string, options?: { grantRewards?: boolean }) => {
+    if (!activeCampaignId) return;
+    try {
+      const res = await api.completeQuest(activeCampaignId, questId, options);
+      if (res.quest) {
+        setCampaignQuests(prev => prev.map(q => q.id === questId ? res.quest : q));
+      }
+      showToast('مأموریت با موفقیت تکمیل شد!');
+      if (res.rewardsGranted) {
+        await loadCampaignWorkspace(activeCampaignId);
+      }
+    } catch (err: any) {
+      showToast(err.message || 'خطا در تکمیل مأموریت.');
+    }
+  };
+
   // Active Character & Participation in Campaign
   const activeCharacter = characters.find(c => c.id === activeCharId) || characters[0] || null;
   const activeParticipation = activeCharacter ? (campaignParticipations.find(p => p.characterId === activeCharacter.id) || null) : null;
@@ -1210,6 +1281,13 @@ export default function App() {
                   onOpenRecapArchive={() => setRecapArchiveOpen(true)}
                   onOpenCreateRecap={() => setRecapEditorState({ isOpen: true, recap: null, sessionId: partitionSessions(campaignSessions).nextSession?.id })}
                   onEditRecap={(r) => setRecapEditorState({ isOpen: true, recap: r, sessionId: r.sessionId })}
+                  // Step 4.4: Quests
+                  quests={campaignQuests}
+                  onToggleQuestObjective={handleToggleQuestObjective}
+                  onCreateQuest={handleCreateQuest}
+                  onUpdateQuest={handleUpdateQuest}
+                  onDeleteQuest={handleDeleteQuest}
+                  onCompleteQuest={handleCompleteQuest}
                 />
               ) : activeCharacter ? (
                 /* Player Character Sheet */
@@ -1246,6 +1324,11 @@ export default function App() {
                       onOpenRecapArchive={() => setRecapArchiveOpen(true)}
                       onOpenCreateRecap={() => setRecapEditorState({ isOpen: true, recap: null, sessionId: partitionSessions(campaignSessions).nextSession?.id })}
                       onEditRecap={(r) => setRecapEditorState({ isOpen: true, recap: r, sessionId: r.sessionId })}
+                      // Step 4.4: Quests
+                      quests={campaignQuests}
+                      onOpenQuests={() => setActivePlayerTab('codex')}
+                      onToggleQuestObjective={handleToggleQuestObjective}
+                      canToggleQuestObjective={Boolean(activeCampaign?.settings?.allowPlayerTickQuestObjectives) || isDmView}
                     />
                   )}
 
@@ -1308,6 +1391,14 @@ export default function App() {
                       revealedLocations={locations.filter(l => Boolean(l.revealed))}
                       campaignId={activeCampaignId || 'zorvania-c1'}
                       character={activeCharacter}
+                      quests={campaignQuests}
+                      allowPlayerTickObjectives={Boolean(activeCampaign?.settings?.allowPlayerTickQuestObjectives)}
+                      isDm={isDmView}
+                      onToggleQuestObjective={handleToggleQuestObjective}
+                      onCreateQuest={handleCreateQuest}
+                      onUpdateQuest={handleUpdateQuest}
+                      onDeleteQuest={handleDeleteQuest}
+                      onCompleteQuest={handleCompleteQuest}
                     />
                   )}
                 </div>

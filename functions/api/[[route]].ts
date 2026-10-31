@@ -30,7 +30,14 @@ import {
   filterPinsForPlayer,
   clampCoordinates
 } from '../../shared/rules/handoutEngine';
-import type { CharacterParticipation, LevelUpPayload, XpAward, SheetChangeRequest, Session, SessionStatus, SessionRsvpChoice, SessionRecap, SessionHighlight, Handout, MapPin } from '../../src/types';
+import {
+  canUserManageQuests,
+  canUserToggleObjective,
+  filterQuestForViewer,
+  filterQuestsForViewer,
+  validateQuestPayload
+} from '../../shared/rules/questEngine';
+import type { CharacterParticipation, LevelUpPayload, XpAward, SheetChangeRequest, Session, SessionStatus, SessionRsvpChoice, SessionRecap, SessionHighlight, Handout, MapPin, Quest, QuestObjective, QuestRewardRef, QuestStatus } from '../../src/types';
 
 interface Env {
   DB: any; // Cloudflare D1Database binding
@@ -6926,6 +6933,385 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
     await env.DB.prepare('DELETE FROM map_pins WHERE id = ? AND handout_id = ?').bind(pid, hid).run();
     return json({ success: true });
+  }
+
+  // ---------------------------------------------------------
+  // STEP 4.4: QUEST LOG SYSTEM
+  // ---------------------------------------------------------
+  const populateQuestExtras = async (questRows: any[], isDm: boolean, actorPartId: string | null): Promise<Quest[]> => {
+    if (!questRows || questRows.length === 0) return [];
+
+    const questIds = questRows.map(q => q.id);
+    const participantsMap: Record<string, string[]> = {};
+
+    try {
+      const qpRows = await env.DB.prepare(
+        `SELECT quest_id, participation_id FROM quest_participants WHERE quest_id IN (${questIds.map(() => '?').join(',')})`
+      ).bind(...questIds).all();
+
+      for (const row of (qpRows.results || [])) {
+        if (!participantsMap[row.quest_id]) {
+          participantsMap[row.quest_id] = [];
+        }
+        participantsMap[row.quest_id].push(row.participation_id);
+      }
+    } catch {}
+
+    const items: Quest[] = questRows.map(q => ({
+      id: q.id,
+      campaignId: q.campaign_id,
+      title: q.title,
+      description: q.description || '',
+      status: (q.status || 'active') as QuestStatus,
+      giverNpcId: q.giver_npc_id || null,
+      giverNpcName: q.giver_npc_name || null,
+      locationId: q.location_id || null,
+      locationName: q.location_name || null,
+      objectives: parseBlob(q.objectives, []),
+      rewardRef: q.reward_ref ? parseBlob(q.reward_ref, null) : null,
+      participantIds: participantsMap[q.id] || [],
+      sessionStartedId: q.session_started_id || null,
+      sessionEndedId: q.session_ended_id || null,
+      dmNotes: q.dm_notes || null,
+      sortIndex: Number(q.sort_index || 0),
+      createdAt: Number(q.created_at),
+      updatedAt: Number(q.updated_at)
+    }));
+
+    return filterQuestsForViewer(items, isDm, actorPartId);
+  };
+
+  // GET /api/c/:id/quests — List visible quests for player or all for DM
+  if (path.match(/^\/c\/[^/]+\/quests$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    let actorPartId: string | null = null;
+    if (!isDm) {
+      const partRow = await env.DB.prepare(`
+        SELECT cp.id FROM character_participations cp
+        JOIN characters c ON cp.character_id = c.id
+        WHERE cp.campaign_id = ? AND c.owner_id = ? AND cp.status = 'active'
+        LIMIT 1
+      `).bind(campId, actor.id).first();
+      actorPartId = partRow?.id || null;
+    }
+
+    const rows = await env.DB.prepare(`
+      SELECT q.*, l.name AS location_name, n.name AS giver_npc_name
+      FROM quests q
+      LEFT JOIN locations l ON q.location_id = l.id
+      LEFT JOIN npcs n ON q.giver_npc_id = n.id
+      WHERE q.campaign_id = ?
+      ORDER BY q.sort_index ASC, q.created_at ASC
+    `).bind(campId).all();
+
+    const quests = await populateQuestExtras(rows.results || [], isDm, actorPartId);
+    return json(quests);
+  }
+
+  // GET /api/c/:id/quests/:qid — Get single quest with role filtering
+  if (path.match(/^\/c\/[^/]+\/quests\/[^/]+$/) && method === 'GET') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const qid = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    let actorPartId: string | null = null;
+    if (!isDm) {
+      const partRow = await env.DB.prepare(`
+        SELECT cp.id FROM character_participations cp
+        JOIN characters c ON cp.character_id = c.id
+        WHERE cp.campaign_id = ? AND c.owner_id = ? AND cp.status = 'active'
+        LIMIT 1
+      `).bind(campId, actor.id).first();
+      actorPartId = partRow?.id || null;
+    }
+
+    const row = await env.DB.prepare(`
+      SELECT q.*, l.name AS location_name, n.name AS giver_npc_name
+      FROM quests q
+      LEFT JOIN locations l ON q.location_id = l.id
+      LEFT JOIN npcs n ON q.giver_npc_id = n.id
+      WHERE q.id = ? AND q.campaign_id = ?
+    `).bind(qid, campId).first();
+
+    if (!row) return error('مأموریت یافت نشد.', 404);
+
+    const list = await populateQuestExtras([row], isDm, actorPartId);
+    if (list.length === 0) return error('مأموریت یافت نشد یا دسترسی مجاز نیست.', 404);
+    return json(list[0]);
+  }
+
+  // POST /api/c/:id/quests — Create quest (DM only)
+  if (path.match(/^\/c\/[^/]+\/quests$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    if (!(await requireCampaignDm(campId))) return error('فقط دانجن مستر مجاز به ثبت مأموریت است.', 403);
+
+    const body = await request.json() as any;
+    const val = validateQuestPayload(body);
+    if (!val.valid) return error(val.error || 'اطلاعات مأموریت نامعتبر است.', 400);
+
+    const qId = `quest-${Date.now()}-${generateRandomToken(4)}`;
+    const title = String(body.title).trim();
+    const description = body.description ? String(body.description).trim() : '';
+    const status = (body.status || 'active') as QuestStatus;
+    const giverNpcId = body.giverNpcId ? String(body.giverNpcId) : null;
+    const locationId = body.locationId ? String(body.locationId) : null;
+    const objectives = JSON.stringify(Array.isArray(body.objectives) ? body.objectives : []);
+    const rewardRef = body.rewardRef ? JSON.stringify(body.rewardRef) : null;
+    const sessionStartedId = body.sessionStartedId ? String(body.sessionStartedId) : null;
+    const sessionEndedId = body.sessionEndedId ? String(body.sessionEndedId) : null;
+    const dmNotes = body.dmNotes ? String(body.dmNotes).trim() : null;
+    const sortIndex = Number(body.sortIndex || 0);
+
+    await env.DB.prepare(`
+      INSERT INTO quests (
+        id, campaign_id, title, description, status, giver_npc_id,
+        location_id, objectives, reward_ref, session_started_id,
+        session_ended_id, dm_notes, sort_index, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      qId, campId, title, description, status, giverNpcId,
+      locationId, objectives, rewardRef, sessionStartedId,
+      sessionEndedId, dmNotes, sortIndex, now, now
+    ).run();
+
+    if (Array.isArray(body.participantIds)) {
+      for (const pId of body.participantIds) {
+        if (pId) {
+          await env.DB.prepare(
+            'INSERT OR IGNORE INTO quest_participants (quest_id, participation_id) VALUES (?, ?)'
+          ).bind(qId, String(pId)).run();
+        }
+      }
+    }
+
+    await audit('quest-create', qId, { campaignId: campId, title });
+
+    const createdRow = await env.DB.prepare(`
+      SELECT q.*, l.name AS location_name, n.name AS giver_npc_name
+      FROM quests q
+      LEFT JOIN locations l ON q.location_id = l.id
+      LEFT JOIN npcs n ON q.giver_npc_id = n.id
+      WHERE q.id = ?
+    `).bind(qId).first();
+
+    const list = await populateQuestExtras([createdRow], true, null);
+    return json(list[0], 201);
+  }
+
+  // PATCH /api/c/:id/quests/:qid — Update quest (DM only)
+  if (path.match(/^\/c\/[^/]+\/quests\/[^/]+$/) && method === 'PATCH') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const qid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const existing = await env.DB.prepare('SELECT * FROM quests WHERE id = ? AND campaign_id = ?').bind(qid, campId).first();
+    if (!existing) return error('مأموریت یافت نشد.', 404);
+
+    const body = await request.json() as any;
+    const title = body.title !== undefined ? String(body.title).trim() : existing.title;
+    const description = body.description !== undefined ? String(body.description).trim() : existing.description;
+    const status = body.status !== undefined ? body.status : existing.status;
+    const giverNpcId = body.giverNpcId !== undefined ? (body.giverNpcId ? String(body.giverNpcId) : null) : existing.giver_npc_id;
+    const locationId = body.locationId !== undefined ? (body.locationId ? String(body.locationId) : null) : existing.location_id;
+    const objectives = body.objectives !== undefined ? JSON.stringify(body.objectives) : existing.objectives;
+    const rewardRef = body.rewardRef !== undefined ? (body.rewardRef ? JSON.stringify(body.rewardRef) : null) : existing.reward_ref;
+    const sessionStartedId = body.sessionStartedId !== undefined ? (body.sessionStartedId ? String(body.sessionStartedId) : null) : existing.session_started_id;
+    const sessionEndedId = body.sessionEndedId !== undefined ? (body.sessionEndedId ? String(body.sessionEndedId) : null) : existing.session_ended_id;
+    const dmNotes = body.dmNotes !== undefined ? (body.dmNotes ? String(body.dmNotes).trim() : null) : existing.dm_notes;
+    const sortIndex = body.sortIndex !== undefined ? Number(body.sortIndex) : existing.sort_index;
+
+    await env.DB.prepare(`
+      UPDATE quests SET
+        title = ?, description = ?, status = ?, giver_npc_id = ?,
+        location_id = ?, objectives = ?, reward_ref = ?, session_started_id = ?,
+        session_ended_id = ?, dm_notes = ?, sort_index = ?, updated_at = ?
+      WHERE id = ? AND campaign_id = ?
+    `).bind(
+      title, description, status, giverNpcId,
+      locationId, objectives, rewardRef, sessionStartedId,
+      sessionEndedId, dmNotes, sortIndex, now,
+      qid, campId
+    ).run();
+
+    if (body.participantIds !== undefined && Array.isArray(body.participantIds)) {
+      await env.DB.prepare('DELETE FROM quest_participants WHERE quest_id = ?').bind(qid).run();
+      for (const pId of body.participantIds) {
+        if (pId) {
+          await env.DB.prepare(
+            'INSERT OR IGNORE INTO quest_participants (quest_id, participation_id) VALUES (?, ?)'
+          ).bind(qid, String(pId)).run();
+        }
+      }
+    }
+
+    await audit('quest-update', qid, { campaignId: campId, title, status });
+
+    const updatedRow = await env.DB.prepare(`
+      SELECT q.*, l.name AS location_name, n.name AS giver_npc_name
+      FROM quests q
+      LEFT JOIN locations l ON q.location_id = l.id
+      LEFT JOIN npcs n ON q.giver_npc_id = n.id
+      WHERE q.id = ?
+    `).bind(qid).first();
+
+    const list = await populateQuestExtras([updatedRow], true, null);
+    return json(list[0]);
+  }
+
+  // DELETE /api/c/:id/quests/:qid — Delete quest (DM only)
+  if (path.match(/^\/c\/[^/]+\/quests\/[^/]+$/) && method === 'DELETE') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const qid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    await env.DB.prepare('DELETE FROM quest_participants WHERE quest_id = ?').bind(qid).run();
+    await env.DB.prepare('DELETE FROM quests WHERE id = ? AND campaign_id = ?').bind(qid, campId).run();
+    await audit('quest-delete', qid, { campaignId: campId });
+    return json({ success: true });
+  }
+
+  // POST /api/c/:id/quests/:qid/objectives/:oid/toggle — Toggle objective done state
+  if (path.match(/^\/c\/[^/]+\/quests\/[^/]+\/objectives\/[^/]+\/toggle$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const qid = parts[4];
+    const oid = parts[6];
+
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    const campRow = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ?').bind(campId).first();
+    const cSettings = campRow ? parseBlob(campRow.settings, {}) : {};
+    const allowPlayerTick = Boolean(cSettings.allowPlayerTickQuestObjectives);
+
+    if (!canUserToggleObjective(isDm, allowPlayerTick)) {
+      return error('شما دسترسی علامت‌زدن اهداف مأموریت را ندارید.', 403);
+    }
+
+    const questRow = await env.DB.prepare('SELECT * FROM quests WHERE id = ? AND campaign_id = ?').bind(qid, campId).first();
+    if (!questRow) return error('مأموریت یافت نشد.', 404);
+
+    if (!isDm && questRow.status === 'hidden') {
+      return error('مأموریت یافت نشد.', 404);
+    }
+
+    const objectives: QuestObjective[] = parseBlob(questRow.objectives, []);
+    const targetObj = objectives.find(o => o.id === oid);
+    if (!targetObj) return error('هدف مورد نظر در این مأموریت یافت نشد.', 404);
+
+    if (!isDm && !targetObj.visible) {
+      return error('هدف مورد نظر یافت نشد.', 404);
+    }
+
+    const body = await request.json().catch(() => ({})) as any;
+    targetObj.done = body.done !== undefined ? Boolean(body.done) : !targetObj.done;
+
+    await env.DB.prepare('UPDATE quests SET objectives = ?, updated_at = ? WHERE id = ? AND campaign_id = ?')
+      .bind(JSON.stringify(objectives), now, qid, campId).run();
+
+    await audit('quest-objective-toggle', qid, { objectiveId: oid, done: targetObj.done });
+    return json({ success: true, objective: targetObj, objectives });
+  }
+
+  // POST /api/c/:id/quests/:qid/complete — Complete quest and optionally grant rewards (DM only)
+  if (path.match(/^\/c\/[^/]+\/quests\/[^/]+\/complete$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const qid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const questRow = await env.DB.prepare('SELECT * FROM quests WHERE id = ? AND campaign_id = ?').bind(qid, campId).first();
+    if (!questRow) return error('مأموریت یافت نشد.', 404);
+
+    const body = await request.json().catch(() => ({})) as any;
+    const markDone = body.markObjectivesDone !== false;
+    const grantRewards = Boolean(body.grantRewards);
+    const sessionEndedId = body.sessionEndedId ? String(body.sessionEndedId) : questRow.session_ended_id;
+
+    let objectives: QuestObjective[] = parseBlob(questRow.objectives, []);
+    if (markDone) {
+      objectives = objectives.map(o => ({ ...o, done: true }));
+    }
+
+    await env.DB.prepare(`
+      UPDATE quests SET
+        status = 'completed', objectives = ?, session_ended_id = ?, updated_at = ?
+      WHERE id = ? AND campaign_id = ?
+    `).bind(JSON.stringify(objectives), sessionEndedId, now, qid, campId).run();
+
+    // Reward distribution if requested and configured
+    let rewardGranted = false;
+    const rewardRef: QuestRewardRef | null = questRow.reward_ref ? parseBlob(questRow.reward_ref, null) : null;
+
+    if (grantRewards && rewardRef && rewardRef.xp && rewardRef.xp > 0) {
+      try {
+        // Find recipient participation IDs
+        const partRows = await env.DB.prepare(
+          'SELECT participation_id FROM quest_participants WHERE quest_id = ?'
+        ).bind(qid).all();
+
+        let recipientPartIds: string[] = (partRows.results || []).map((r: any) => r.participation_id);
+        if (recipientPartIds.length === 0) {
+          // Party-wide quest: all active character participations in campaign
+          const allPartRows = await env.DB.prepare(
+            "SELECT id FROM character_participations WHERE campaign_id = ? AND status = 'active'"
+          ).bind(campId).all();
+          recipientPartIds = (allPartRows.results || []).map((r: any) => r.id);
+        }
+
+        const xpAmount = Number(rewardRef.xp);
+        for (const pId of recipientPartIds) {
+          const cp = await env.DB.prepare('SELECT play_state FROM character_participations WHERE id = ?').bind(pId).first();
+          if (cp && cp.play_state) {
+            const playState = parseBlob(cp.play_state, {});
+            const currentXp = Number(playState.xp || 0);
+            playState.xp = currentXp + xpAmount;
+            await env.DB.prepare('UPDATE character_participations SET play_state = ?, updated_at = ? WHERE id = ?')
+              .bind(JSON.stringify(playState), now, pId).run();
+
+            // Log milestone event in history
+            const histId = `hist-${Date.now()}-${generateRandomToken(4)}`;
+            await env.DB.prepare(`
+              INSERT INTO character_history_events (
+                id, participation_id, event_type, old_data, new_data,
+                actor_id, note, created_at
+              ) VALUES (?, ?, 'milestone', ?, ?, ?, ?, ?)
+            `).bind(
+              histId, pId,
+              JSON.stringify({ xp: currentXp }),
+              JSON.stringify({ xp: playState.xp, rewardQuestId: qid }),
+              actor.id,
+              `پاداش تکمیل مأموریت: ${questRow.title} (+${xpAmount} XP)`,
+              now
+            ).run();
+          }
+        }
+        rewardGranted = true;
+      } catch {}
+    }
+
+    await audit('quest-complete', qid, { campaignId: campId, title: questRow.title, rewardGranted });
+
+    const updatedRow = await env.DB.prepare(`
+      SELECT q.*, l.name AS location_name, n.name AS giver_npc_name
+      FROM quests q
+      LEFT JOIN locations l ON q.location_id = l.id
+      LEFT JOIN npcs n ON q.giver_npc_id = n.id
+      WHERE q.id = ?
+    `).bind(qid).first();
+
+    const list = await populateQuestExtras([updatedRow], true, null);
+    return json({ success: true, quest: list[0], rewardGranted });
   }
 
   // 404 Fallback

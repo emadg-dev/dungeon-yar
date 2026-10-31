@@ -58,6 +58,7 @@ export interface CampaignSettings {
   houseRules?: string;
   allowPlayerCreateCharacter: boolean;
   allowPlayerRecaps?: boolean;
+  allowPlayerTickQuestObjectives?: boolean;
   encounterDefaults: {
     showExactHp: boolean;
     showAc: boolean;
@@ -1891,4 +1892,49 @@ export interface Handout {
   updatedAt: number;
   recipients?: string[]; // array of participationId strings
   pins?: MapPin[];
+}
+
+// Step 4.4: Quest Log & Narrative Objectives
+export type QuestStatus = 'hidden' | 'active' | 'completed' | 'failed' | 'abandoned';
+
+export interface QuestObjective {
+  id: string;
+  text: string;
+  done: boolean;
+  visible: boolean;
+}
+
+export interface QuestRewardRef {
+  itemIds?: string[];
+  rewardPackageIds?: string[];
+  xp?: number;
+  text?: string;
+  [key: string]: any;
+}
+
+export interface Quest {
+  id: string;
+  campaignId: string;
+  title: string;
+  description: string;
+  status: QuestStatus;
+  giverNpcId?: string | null;
+  locationId?: string | null;
+  objectives: QuestObjective[];
+  rewardRef?: QuestRewardRef | null;
+  sessionStartedId?: string | null;
+  sessionEndedId?: string | null;
+  dmNotes?: string | null;
+  sortIndex: number;
+  participantIds?: string[];
+  createdAt: number;
+  updatedAt: number;
+
+  // Joined/decorated fields for convenient rendering in UI
+  giverNpcName?: string;
+  giverNpcAvatar?: string;
+  locationName?: string;
+  locationRegion?: string;
+  sessionStartedNumber?: number;
+  sessionEndedNumber?: number;
 }

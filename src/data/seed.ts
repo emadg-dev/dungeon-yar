@@ -28,7 +28,8 @@ import {
   Session,
   SessionRecap,
   SessionHighlight,
-  Handout
+  Handout,
+  Quest
 } from '../types';
 
 export const DEFAULT_5E_SKILLS: SkillDefinition[] = [
@@ -3840,6 +3841,78 @@ export const SEED_HANDOUTS: Handout[] = [
   }
 ];
 
-
-
-
+export const SEED_QUESTS: Quest[] = [
+  {
+    id: 'quest-zorvania-1',
+    campaignId: 'zorvania-c1',
+    title: 'کشف راز سنگ‌های سیاه سپیدارون',
+    description: 'دگرگونی‌های جادویی در نزدیکی سپیدارون رخ داده است. موبد آذر از ماجراجویان خواسته نشانه‌های زمانی باستانی را بررسی کنند.',
+    status: 'active',
+    giverNpcId: 'npc-mobed-azar',
+    giverNpcName: 'موبد آذر',
+    locationId: 'loc-sepidaroon',
+    locationName: 'سپیدارون',
+    locationRegion: 'سپیدارون',
+    objectives: [
+      { id: 'obj-1', text: 'گفتگو با نگهبان دروازه باختری', done: true, visible: true },
+      { id: 'obj-2', text: 'یافتن تکه سنگ نخستین در بیشه ارواح', done: false, visible: true },
+      { id: 'obj-3', text: 'کشف راز کتیبه زمان پنهان (راز پنهان)', done: false, visible: false },
+    ],
+    rewardRef: {
+      xp: 300,
+      text: '۳۰۰ امتیاز تجربه و انگشتر نقره‌ای زمان‌خوان'
+    },
+    sessionStartedId: 'ses-zorvania-1',
+    dmNotes: 'کتیبه زمان در صورت شکستن، توهمی از آینده شان‌شین به نمایش خواهد گذاشت.',
+    sortIndex: 0,
+    createdAt: Date.now() - 10 * 86400000,
+    updatedAt: Date.now() - 5 * 86400000
+  },
+  {
+    id: 'quest-zorvania-2',
+    campaignId: 'zorvania-c1',
+    title: 'دیدار با بازرگان پنهان در کویر خاموش',
+    description: 'کاروانی از بازرگانان عتیقه در واحه سکوت اردو زده‌اند که حامل قطعات سازوکار گسسته‌زمان هستند.',
+    status: 'active',
+    locationId: 'loc-kavir-khamoosh',
+    locationName: 'کویر خاموش',
+    locationRegion: 'کویر خاموش',
+    objectives: [
+      { id: 'obj-2-1', text: 'ردیابی مسیر کاروان از روی رد پای شترهای شن‌نورد', done: true, visible: true },
+      { id: 'obj-2-2', text: 'مذاکره یا خرید قطعه ساعت‌ساز کهن', done: false, visible: true },
+    ],
+    rewardRef: {
+      xp: 250,
+      text: '۲۵۰ امتیاز تجربه و قطعه ساعت‌ساز کهن'
+    },
+    sessionStartedId: 'ses-zorvania-2',
+    dmNotes: 'بازرگان پنهان در واقع جاسوس فرقه رهامان است.',
+    sortIndex: 1,
+    createdAt: Date.now() - 3 * 86400000,
+    updatedAt: Date.now() - 2 * 86400000
+  },
+  {
+    id: 'quest-zorvania-3',
+    campaignId: 'zorvania-c1',
+    title: 'دفاع از دروازه باختری ورنا',
+    description: 'شبیخون مهاجمان سایه‌باد به دروازه شهر ورنا دفع گردید و صلح موقت در منطقه برقرار شد.',
+    status: 'completed',
+    locationId: 'loc-verna',
+    locationName: 'ورنا',
+    locationRegion: 'ورنا',
+    objectives: [
+      { id: 'obj-3-1', text: 'کمک به سربازان گشت شبانه', done: true, visible: true },
+      { id: 'obj-3-2', text: 'بستن شکاف زمانی دیوارهای دفاعی', done: true, visible: true },
+    ],
+    rewardRef: {
+      xp: 400,
+      text: '۴۰۰ امتیاز تجربه و پاداش شجاعت ورنا'
+    },
+    sessionStartedId: 'ses-zorvania-1',
+    sessionEndedId: 'ses-zorvania-1',
+    dmNotes: 'پایان یافت در جلسه ۱، ماجراجویان مورد تقدیر قرار گرفتند.',
+    sortIndex: 2,
+    createdAt: Date.now() - 14 * 86400000,
+    updatedAt: Date.now() - 7 * 86400000
+  }
+];

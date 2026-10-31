@@ -1,6 +1,7 @@
 import React from 'react';
 import { usePWARefresh } from '../../hooks/usePWARefresh';
 import { RotateCw, X } from 'lucide-react';
+import { APP_NAME_FA } from '../../config/app';
 
 export const PWARefreshPrompt: React.FC = () => {
   const { promptVisible, doRefresh, dismiss } = usePWARefresh();
@@ -13,7 +14,7 @@ export const PWARefreshPrompt: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold text-[#F2C265]">به‌روزرسانی اپلیکیشن</h3>
           <button
-            onClick={() => refreshApp()}
+            onClick={() => dismiss()}
             className="p-2 text-[#A39A89] hover:text-[#EDE6D8] transition-colors"
             title="نادیده گرفتن"
           >
@@ -23,7 +24,7 @@ export const PWARefreshPrompt: React.FC = () => {
 
         <div className="space-y-3 mb-6">
           <p className="text-sm text-[#C9C0AE] leading-relaxed">
-            نسخه جدیدی از {process.env.VITE_APP_NAME || 'DungeonYar'} در دسترس است.
+            نسخه جدیدی از {APP_NAME_FA} در دسترس است.
           </p>
           <div className="flex items-center gap-2 text-sm text-[#F2C265]">
             <RotateCw className="w-4 h-4" />

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { NPC, ItemLibraryEntry, LocationEntry, Character } from '../../types';
+import { NPC, ItemLibraryEntry, LocationEntry, Character, Quest } from '../../types';
 import { SEED_RULES } from '../../data/seed';
-import { BookOpen, Users, Sparkles, Compass, Calendar, Search, MapPin, Map as MapIcon } from 'lucide-react';
+import { BookOpen, Users, Sparkles, Compass, Calendar, Search, MapPin, Map as MapIcon, Scroll } from 'lucide-react';
 import { Chip } from '../common/Chip';
 import { HandoutsTab } from './HandoutsTab';
+import { QuestsTab } from '../quest/QuestsTab';
 
 interface CodexTabProps {
   revealedNpcs: NPC[];
@@ -11,16 +12,32 @@ interface CodexTabProps {
   revealedLocations?: LocationEntry[];
   campaignId?: string;
   character?: Character | null;
+  quests?: Quest[];
+  allowPlayerTickObjectives?: boolean;
+  isDm?: boolean;
+  onToggleQuestObjective?: (questId: string, objectiveId: string, done: boolean) => Promise<void>;
+  onCreateQuest?: (questData: Partial<Quest> & { participantIds?: string[] }) => Promise<void>;
+  onUpdateQuest?: (questId: string, questData: Partial<Quest> & { participantIds?: string[] }) => Promise<void>;
+  onDeleteQuest?: (questId: string) => Promise<void>;
+  onCompleteQuest?: (questId: string, options?: { grantRewards?: boolean }) => Promise<void>;
 }
 
 export const CodexTab: React.FC<CodexTabProps> = ({ 
   revealedNpcs, 
   revealedItems, 
   revealedLocations = [],
-  campaignId,
+  campaignId = 'zorvania-c1',
   character,
+  quests = [],
+  allowPlayerTickObjectives = false,
+  isDm = false,
+  onToggleQuestObjective,
+  onCreateQuest,
+  onUpdateQuest,
+  onDeleteQuest,
+  onCompleteQuest,
 }) => {
-  const [subTab, setSubTab] = useState<'locations' | 'handouts' | 'items' | 'creatures' | 'rules' | 'calendar' | 'factions'>('locations');
+  const [subTab, setSubTab] = useState<'quests' | 'locations' | 'handouts' | 'items' | 'creatures' | 'rules' | 'calendar' | 'factions'>('quests');
   const [searchQuery, setSearchQuery] = useState('');
 
   const factions = [
@@ -80,8 +97,21 @@ export const CodexTab: React.FC<CodexTabProps> = ({
 
   return (
     <div className="space-y-4" dir="rtl">
-      {/* Inner Tabs Strip: Locations / Items / Creatures / Rules / Calendar / Factions */}
+      {/* Inner Tabs Strip: Quests / Locations / Handouts / Items / Creatures / Rules / Calendar / Factions */}
       <div className="surface-card rounded-[14px] p-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <button
+          type="button"
+          onClick={() => setSubTab('quests')}
+          className={`flex-1 min-w-[105px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+            subTab === 'quests'
+              ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+              : 'text-[#A39A89] hover:text-[#EDE6D8]'
+          }`}
+        >
+          <Scroll className="w-3.5 h-3.5" />
+          <span>مأموریت‌ها ({quests.length})</span>
+        </button>
+
         <button
           type="button"
           onClick={() => setSubTab('locations')}
@@ -174,17 +204,41 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         </button>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative">
-        <input
-          type="text"
-          placeholder="جستجو در دانشنامه زروانیا..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full py-2 pe-3 ps-8 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+      {/* Quests Inner Tab */}
+      {subTab === 'quests' && (
+        <QuestsTab
+          quests={quests}
+          campaignId={campaignId}
+          isDm={isDm}
+          allowPlayerTickObjectives={allowPlayerTickObjectives}
+          character={character}
+          npcs={revealedNpcs}
+          locations={revealedLocations}
+          onToggleObjective={async (qId, objId, done) => {
+            if (onToggleQuestObjective) {
+              await onToggleQuestObjective(qId, objId, done);
+            }
+          }}
+          onCreateQuest={onCreateQuest}
+          onUpdateQuest={onUpdateQuest}
+          onDeleteQuest={onDeleteQuest}
+          onCompleteQuest={onCompleteQuest}
         />
-        <Search className="w-3.5 h-3.5 text-[#A39A89] absolute start-2.5 top-1/2 -translate-y-1/2" />
-      </div>
+      )}
+
+      {/* Search Bar for Other Tabs */}
+      {subTab !== 'quests' && subTab !== 'handouts' && (
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="جستجو در دانشنامه زروانیا..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full py-2 pe-3 ps-8 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+          />
+          <Search className="w-3.5 h-3.5 text-[#A39A89] absolute start-2.5 top-1/2 -translate-y-1/2" />
+        </div>
+      )}
 
       {/* Locations Inner Tab */}
       {subTab === 'locations' && (
