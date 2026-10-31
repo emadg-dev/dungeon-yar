@@ -1362,6 +1362,9 @@ export default function App() {
                     <InventoryTab
                       character={activeCharacter}
                       onUpdate={handleUpdateCharacter}
+                      campaignId={activeCampaign?.id || activeCampaignId || 'zorvania-c1'}
+                      activeParticipationId={activeParticipation?.id}
+                      campaignSettings={activeCampaign?.settings}
                     />
                   )}
 

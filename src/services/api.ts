@@ -86,7 +86,15 @@ import {
   Quest,
   QuestStatus,
   QuestObjective,
-  QuestRewardRef
+  QuestRewardRef,
+  FactionReputation,
+  FactionReputationThreshold,
+  ReputationLog,
+  PartyItem,
+  PartyCurrency,
+  TreasuryLogType,
+  TreasuryLogEntry,
+  TreasuryTransferRequest
 } from '../types';
 import { rollAbilityScores } from '../../shared/rules/engine';
 import { computeAuthoritativeParticipation, createSnapshot, pruneSnapshots } from '../../shared/rules/wizardEngine';
@@ -130,6 +138,20 @@ import {
   validateQuestPayload,
   searchQuests
 } from '../../shared/rules/questEngine';
+import {
+  DEFAULT_REPUTATION_THRESHOLDS,
+  getReputationLabel,
+  applyReputationDelta,
+  filterReputationsForViewer,
+  filterReputationForViewer,
+  canUserManageReputation
+} from '../../shared/rules/reputationEngine';
+import {
+  canUserManageTreasury,
+  validateItemTransfer,
+  validateCurrencyUpdate,
+  executeItemTransfer
+} from '../../shared/rules/treasuryEngine';
 import { APP_NAME_FA } from '../config/app';
 import {
   SEED_USERS,
@@ -739,6 +761,23 @@ export interface ApiClient {
   deleteQuest(campaignId: string, questId: string): Promise<void>;
   toggleQuestObjective(campaignId: string, questId: string, objectiveId: string, done: boolean): Promise<Quest>;
   completeQuest(campaignId: string, questId: string, options?: { grantRewards?: boolean; characterIds?: string[]; completionNote?: string }): Promise<{ quest: Quest; rewardsGranted?: boolean }>;
+
+  // Step 4.5: Faction Reputation and Party Treasury
+  listFactionReputations(campaignId: string, participationId?: string): Promise<FactionReputation[]>;
+  getFactionReputation(campaignId: string, reputationId: string): Promise<FactionReputation | null>;
+  createFactionReputation(campaignId: string, data: Partial<FactionReputation>): Promise<FactionReputation>;
+  updateFactionReputation(campaignId: string, reputationId: string, data: Partial<FactionReputation>): Promise<FactionReputation>;
+  adjustFactionReputation(campaignId: string, reputationId: string, delta: number, reason: string, sessionId?: string): Promise<{ reputation: FactionReputation; log: ReputationLog }>;
+  deleteFactionReputation(campaignId: string, reputationId: string): Promise<void>;
+  listReputationLogs(campaignId: string, reputationId?: string): Promise<ReputationLog[]>;
+
+  getPartyTreasury(campaignId: string): Promise<{ items: PartyItem[]; currency: PartyCurrency; locked: boolean; requireApproval: boolean }>;
+  updatePartyCurrency(campaignId: string, balances: Record<string, number>, expectedRevision?: number, note?: string): Promise<PartyCurrency>;
+  addPartyItem(campaignId: string, item: Omit<PartyItem, 'id' | 'campaignId' | 'createdAt' | 'revision'>, note?: string): Promise<PartyItem>;
+  updatePartyItem(campaignId: string, itemId: string, updates: Partial<PartyItem>, expectedRevision?: number): Promise<PartyItem>;
+  removePartyItem(campaignId: string, itemId: string, expectedRevision?: number, note?: string): Promise<void>;
+  transferPartyItem(campaignId: string, transfer: TreasuryTransferRequest): Promise<{ partyItem?: PartyItem | null; characterInventory: InventoryItem[]; treasuryLog: TreasuryLogEntry }>;
+  listTreasuryLogs(campaignId: string, limit?: number): Promise<TreasuryLogEntry[]>;
 }
 
 // ----------------------------------------------------------------------
@@ -6223,6 +6262,519 @@ export class LocalApi implements ApiClient {
 
     return { quest: q, rewardsGranted };
   }
+
+  // --------------------------------------------------------------------
+  // Step 4.5: Faction Reputation (LocalApi)
+  // --------------------------------------------------------------------
+  private getSeedReputations(campaignId: string): FactionReputation[] {
+    const factions = this.getItem<Faction[]>('factions', SEED_FACTIONS);
+    const now = Date.now();
+    return [
+      {
+        id: `rep-${campaignId}-azarin`,
+        campaignId,
+        factionId: 'fac-azarin',
+        participationId: null,
+        value: 60,
+        min: -100,
+        max: 100,
+        labels: DEFAULT_REPUTATION_THRESHOLDS,
+        visible: true,
+        updatedAt: now,
+      },
+      {
+        id: `rep-${campaignId}-kandavaran`,
+        campaignId,
+        factionId: 'fac-kandavaran',
+        participationId: null,
+        value: 0,
+        min: -100,
+        max: 100,
+        labels: DEFAULT_REPUTATION_THRESHOLDS,
+        visible: true,
+        updatedAt: now,
+      },
+      {
+        id: `rep-${campaignId}-fairies`,
+        campaignId,
+        factionId: 'fac-fairies',
+        participationId: null,
+        value: -20,
+        min: -100,
+        max: 100,
+        labels: DEFAULT_REPUTATION_THRESHOLDS,
+        visible: false, // Hidden track
+        updatedAt: now,
+      },
+    ];
+  }
+
+  private decorateReputation(rep: FactionReputation): FactionReputation {
+    const factions = this.getItem<Faction[]>('factions', SEED_FACTIONS);
+    const fac = factions.find(f => f.id === rep.factionId);
+    let charName: string | undefined;
+    if (rep.participationId) {
+      const parts = this.getItem<CharacterParticipation[]>('character_participations', []);
+      const chars = this.getItem<Character[]>('characters', SEED_CHARACTERS);
+      const part = parts.find(p => p.id === rep.participationId);
+      if (part) {
+        const char = chars.find(c => c.id === part.characterId);
+        charName = char?.name || part.id;
+      }
+    }
+    return {
+      ...rep,
+      factionName: fac?.name || rep.factionId,
+      factionDescription: fac?.description,
+      factionRegion: fac?.region,
+      characterName: charName,
+      currentLabel: getReputationLabel(rep.value, rep.labels),
+    };
+  }
+
+  async listFactionReputations(campaignId: string, participationId?: string): Promise<FactionReputation[]> {
+    const all = this.getItem<FactionReputation[]>('faction_reputations', this.getSeedReputations(campaignId));
+    const campaignReps = all.filter(r => r.campaignId === campaignId);
+
+    const user = this.currentUser;
+    const role = await this.getCampaignRole(campaignId);
+
+    const visibleReps = filterReputationsForViewer(campaignReps, role, participationId);
+    return visibleReps.map(r => this.decorateReputation(r));
+  }
+
+  async getFactionReputation(campaignId: string, reputationId: string): Promise<FactionReputation | null> {
+    const all = this.getItem<FactionReputation[]>('faction_reputations', this.getSeedReputations(campaignId));
+    const rep = all.find(r => r.id === reputationId && r.campaignId === campaignId);
+    if (!rep) return null;
+
+    const user = this.currentUser;
+    const role = await this.getCampaignRole(campaignId);
+    const filtered = filterReputationForViewer(rep, role);
+    return filtered ? this.decorateReputation(filtered) : null;
+  }
+
+  async createFactionReputation(campaignId: string, data: Partial<FactionReputation>): Promise<FactionReputation> {
+    const user = this.currentUser;
+    const role = await this.getCampaignRole(campaignId);
+    if (!canUserManageReputation(role)) {
+      throw new Error('دسترسی مجاز نیست. فقط دانجن‌مستر امکان ایجاد شهرت جناح را دارد.');
+    }
+
+    const all = this.getItem<FactionReputation[]>('faction_reputations', this.getSeedReputations(campaignId));
+    const now = Date.now();
+    const newRep: FactionReputation = {
+      id: data.id || `rep-${campaignId}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      campaignId,
+      factionId: data.factionId || '',
+      participationId: data.participationId || null,
+      value: typeof data.value === 'number' ? data.value : 0,
+      min: typeof data.min === 'number' ? data.min : -100,
+      max: typeof data.max === 'number' ? data.max : 100,
+      labels: data.labels && data.labels.length > 0 ? data.labels : DEFAULT_REPUTATION_THRESHOLDS,
+      visible: data.visible !== false,
+      updatedAt: now,
+    };
+
+    all.push(newRep);
+    this.setItem('faction_reputations', all);
+    return this.decorateReputation(newRep);
+  }
+
+  async updateFactionReputation(campaignId: string, reputationId: string, data: Partial<FactionReputation>): Promise<FactionReputation> {
+    const user = this.currentUser;
+    const role = await this.getCampaignRole(campaignId);
+    if (!canUserManageReputation(role)) {
+      throw new Error('دسترسی مجاز نیست.');
+    }
+
+    const all = this.getItem<FactionReputation[]>('faction_reputations', this.getSeedReputations(campaignId));
+    const idx = all.findIndex(r => r.id === reputationId && r.campaignId === campaignId);
+    if (idx === -1) throw new Error('رکورد شهرت جناح یافت نشد.');
+
+    const updated: FactionReputation = {
+      ...all[idx],
+      ...data,
+      updatedAt: Date.now(),
+    };
+    all[idx] = updated;
+    this.setItem('faction_reputations', all);
+    return this.decorateReputation(updated);
+  }
+
+  async adjustFactionReputation(
+    campaignId: string,
+    reputationId: string,
+    delta: number,
+    reason: string,
+    sessionId?: string
+  ): Promise<{ reputation: FactionReputation; log: ReputationLog }> {
+    const user = this.currentUser;
+    const role = await this.getCampaignRole(campaignId);
+    if (!canUserManageReputation(role)) {
+      throw new Error('دسترسی مجاز نیست.');
+    }
+
+    const all = this.getItem<FactionReputation[]>('faction_reputations', this.getSeedReputations(campaignId));
+    const idx = all.findIndex(r => r.id === reputationId && r.campaignId === campaignId);
+    if (idx === -1) throw new Error('رکورد شهرت جناح یافت نشد.');
+
+    const res = applyReputationDelta(all[idx], delta, reason, user?.name || 'دانجن‌مستر', sessionId);
+    all[idx] = res.updated;
+    this.setItem('faction_reputations', all);
+
+    const logs = this.getItem<ReputationLog[]>('reputation_logs', []);
+    logs.unshift(res.log);
+    this.setItem('reputation_logs', logs);
+
+    return { reputation: this.decorateReputation(res.updated), log: res.log };
+  }
+
+  async deleteFactionReputation(campaignId: string, reputationId: string): Promise<void> {
+    const user = this.currentUser;
+    const role = await this.getCampaignRole(campaignId);
+    if (!canUserManageReputation(role)) {
+      throw new Error('دسترسی مجاز نیست.');
+    }
+
+    const all = this.getItem<FactionReputation[]>('faction_reputations', this.getSeedReputations(campaignId));
+    const filtered = all.filter(r => !(r.id === reputationId && r.campaignId === campaignId));
+    this.setItem('faction_reputations', filtered);
+  }
+
+  async listReputationLogs(campaignId: string, reputationId?: string): Promise<ReputationLog[]> {
+    const logs = this.getItem<ReputationLog[]>('reputation_logs', []);
+    if (reputationId) {
+      return logs.filter(l => l.reputationId === reputationId);
+    }
+    const reps = this.getItem<FactionReputation[]>('faction_reputations', this.getSeedReputations(campaignId));
+    const repIds = new Set(reps.filter(r => r.campaignId === campaignId).map(r => r.id));
+    return logs.filter(l => repIds.has(l.reputationId));
+  }
+
+  // --------------------------------------------------------------------
+  // Step 4.5: Party Treasury (LocalApi)
+  // --------------------------------------------------------------------
+  private getSeedPartyItems(campaignId: string): PartyItem[] {
+    const now = Date.now();
+    return [
+      {
+        id: `pitem-${campaignId}-1`,
+        campaignId,
+        name: 'معجون شفا (Healing Potion)',
+        quantity: 3,
+        category: 'potion',
+        description: '۲d۴+۲ امتیاز جان بازیابی می‌کند.',
+        notes: 'یافت‌شده در دخمه باستانی',
+        revision: 1,
+        createdAt: now - 86400000,
+        updatedAt: now - 86400000,
+      },
+      {
+        id: `pitem-${campaignId}-2`,
+        campaignId,
+        name: 'طناب کنفی ۵۰ فوتی',
+        quantity: 2,
+        category: 'misc',
+        description: 'طناب بافته‌شده محکم مناسب صعود.',
+        notes: '',
+        revision: 1,
+        createdAt: now - 86400000,
+        updatedAt: now - 86400000,
+      },
+      {
+        id: `pitem-${campaignId}-3`,
+        campaignId,
+        name: 'طومار سقوط پروانه (Feather Fall)',
+        quantity: 1,
+        category: 'scroll',
+        description: 'کاهش سرعت سقوط برای حداکثر ۵ نفر.',
+        notes: 'هدیه موبدان آذرین',
+        revision: 1,
+        createdAt: now - 86400000,
+        updatedAt: now - 86400000,
+      },
+    ];
+  }
+
+  private getSeedPartyCurrency(campaignId: string): PartyCurrency {
+    return {
+      campaignId,
+      balances: { gold: 180, silver: 45, copper: 120 },
+      revision: 1,
+      updatedAt: Date.now(),
+    };
+  }
+
+  async getPartyTreasury(campaignId: string): Promise<{ items: PartyItem[]; currency: PartyCurrency; locked: boolean; requireApproval: boolean }> {
+    const items = this.getItem<PartyItem[]>('party_items', this.getSeedPartyItems(campaignId)).filter(i => i.campaignId === campaignId);
+    const currencies = this.getItem<PartyCurrency[]>('party_currency', [this.getSeedPartyCurrency(campaignId)]);
+    let currency = currencies.find(c => c.campaignId === campaignId);
+    if (!currency) {
+      currency = this.getSeedPartyCurrency(campaignId);
+      currencies.push(currency);
+      this.setItem('party_currency', currencies);
+    }
+
+    const campaign = await this.getCampaign(campaignId);
+    const locked = Boolean(campaign?.settings?.treasuryLocked);
+    const requireApproval = Boolean(campaign?.settings?.treasuryRequireApproval);
+
+    return { items, currency, locked, requireApproval };
+  }
+
+  async updatePartyCurrency(
+    campaignId: string,
+    balances: Record<string, number>,
+    expectedRevision?: number,
+    note?: string
+  ): Promise<PartyCurrency> {
+    const campaign = await this.getCampaign(campaignId);
+    const user = this.currentUser;
+    const role = await this.getCampaignRole(campaignId);
+
+    const perms = canUserManageTreasury(role, campaign?.settings);
+    if (!perms.canModify) {
+      throw new Error(perms.reason || 'دسترسی مجاز نیست.');
+    }
+
+    const currencies = this.getItem<PartyCurrency[]>('party_currency', [this.getSeedPartyCurrency(campaignId)]);
+    let idx = currencies.findIndex(c => c.campaignId === campaignId);
+    if (idx === -1) {
+      currencies.push(this.getSeedPartyCurrency(campaignId));
+      idx = currencies.length - 1;
+    }
+
+    const current = currencies[idx];
+    const validation = validateCurrencyUpdate(current, balances, expectedRevision);
+    if (!validation.valid) {
+      throw new Error(validation.error);
+    }
+
+    const now = Date.now();
+    const updatedCurrency: PartyCurrency = {
+      campaignId,
+      balances,
+      revision: current.revision + 1,
+      updatedAt: now,
+    };
+    currencies[idx] = updatedCurrency;
+    this.setItem('party_currency', currencies);
+
+    // Audit log
+    const tlogs = this.getItem<TreasuryLogEntry[]>('treasury_logs', []);
+    tlogs.unshift({
+      id: `tlog-${now}-${Math.random().toString(36).substring(2, 7)}`,
+      campaignId,
+      actorParticipationId: null,
+      actorName: user?.name || 'کاربر',
+      type: 'currency',
+      itemRef: Object.entries(balances).map(([k, v]) => `${v} ${k}`).join('، '),
+      qty: null,
+      note: note || 'به‌روزرسانی موجودی سکه‌های خزانه',
+      createdAt: now,
+    });
+    this.setItem('treasury_logs', tlogs);
+
+    return updatedCurrency;
+  }
+
+  async addPartyItem(
+    campaignId: string,
+    item: Omit<PartyItem, 'id' | 'campaignId' | 'createdAt' | 'revision'>,
+    note?: string
+  ): Promise<PartyItem> {
+    const campaign = await this.getCampaign(campaignId);
+    const user = this.currentUser;
+    const role = await this.getCampaignRole(campaignId);
+
+    const perms = canUserManageTreasury(role, campaign?.settings);
+    if (!perms.canModify) {
+      throw new Error(perms.reason || 'دسترسی مجاز نیست.');
+    }
+
+    const all = this.getItem<PartyItem[]>('party_items', this.getSeedPartyItems(campaignId));
+    const now = Date.now();
+    const newItem: PartyItem = {
+      id: `pitem-${campaignId}-${now}-${Math.random().toString(36).substring(2, 6)}`,
+      campaignId,
+      name: item.name.trim(),
+      quantity: Math.max(1, item.quantity || 1),
+      description: item.description || '',
+      category: item.category || 'misc',
+      notes: item.notes || '',
+      revision: 1,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    all.push(newItem);
+    this.setItem('party_items', all);
+
+    const tlogs = this.getItem<TreasuryLogEntry[]>('treasury_logs', []);
+    tlogs.unshift({
+      id: `tlog-${now}-${Math.random().toString(36).substring(2, 7)}`,
+      campaignId,
+      actorParticipationId: null,
+      actorName: user?.name || 'کاربر',
+      type: 'add',
+      itemRef: newItem.name,
+      qty: newItem.quantity,
+      note: note || `افزودن ${newItem.quantity} عدد ${newItem.name} به خزانه`,
+      createdAt: now,
+    });
+    this.setItem('treasury_logs', tlogs);
+
+    return newItem;
+  }
+
+  async updatePartyItem(
+    campaignId: string,
+    itemId: string,
+    updates: Partial<PartyItem>,
+    expectedRevision?: number
+  ): Promise<PartyItem> {
+    const campaign = await this.getCampaign(campaignId);
+    const user = this.currentUser;
+    const role = await this.getCampaignRole(campaignId);
+
+    const perms = canUserManageTreasury(role, campaign?.settings);
+    if (!perms.canModify) {
+      throw new Error(perms.reason || 'دسترسی مجاز نیست.');
+    }
+
+    const all = this.getItem<PartyItem[]>('party_items', this.getSeedPartyItems(campaignId));
+    const idx = all.findIndex(i => i.id === itemId && i.campaignId === campaignId);
+    if (idx === -1) throw new Error('آیتم در خزانه یافت نشد.');
+
+    const current = all[idx];
+    if (expectedRevision !== undefined && current.revision !== expectedRevision) {
+      throw new Error('خطای همزمانی: این آیتم توسط بازیکن دیگری ویرایش شده است. لطفاً صفحه را تازه‌سازی کنید.');
+    }
+
+    const updated: PartyItem = {
+      ...current,
+      ...updates,
+      revision: current.revision + 1,
+      updatedAt: Date.now(),
+    };
+    all[idx] = updated;
+    this.setItem('party_items', all);
+    return updated;
+  }
+
+  async removePartyItem(
+    campaignId: string,
+    itemId: string,
+    expectedRevision?: number,
+    note?: string
+  ): Promise<void> {
+    const campaign = await this.getCampaign(campaignId);
+    const user = this.currentUser;
+    const role = await this.getCampaignRole(campaignId);
+
+    const perms = canUserManageTreasury(role, campaign?.settings);
+    if (!perms.canModify) {
+      throw new Error(perms.reason || 'دسترسی مجاز نیست.');
+    }
+
+    const all = this.getItem<PartyItem[]>('party_items', this.getSeedPartyItems(campaignId));
+    const idx = all.findIndex(i => i.id === itemId && i.campaignId === campaignId);
+    if (idx === -1) throw new Error('آیتم در خزانه یافت نشد.');
+
+    const item = all[idx];
+    if (expectedRevision !== undefined && item.revision !== expectedRevision) {
+      throw new Error('خطای همزمانی: این آیتم توسط بازیکن دیگری ویرایش شده است. لطفاً صفحه را تازه‌سازی کنید.');
+    }
+
+    all.splice(idx, 1);
+    this.setItem('party_items', all);
+
+    const tlogs = this.getItem<TreasuryLogEntry[]>('treasury_logs', []);
+    tlogs.unshift({
+      id: `tlog-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      campaignId,
+      actorParticipationId: null,
+      actorName: user?.name || 'کاربر',
+      type: 'remove',
+      itemRef: item.name,
+      qty: item.quantity,
+      note: note || `حذف ${item.name} از خزانه`,
+      createdAt: Date.now(),
+    });
+    this.setItem('treasury_logs', tlogs);
+  }
+
+  async transferPartyItem(
+    campaignId: string,
+    transfer: TreasuryTransferRequest
+  ): Promise<{ partyItem?: PartyItem | null; characterInventory: InventoryItem[]; treasuryLog: TreasuryLogEntry }> {
+    const campaign = await this.getCampaign(campaignId);
+    const user = this.currentUser;
+    const role = await this.getCampaignRole(campaignId);
+
+    const perms = canUserManageTreasury(role, campaign?.settings);
+    if (!perms.canModify) {
+      throw new Error(perms.reason || 'دسترسی مجاز نیست.');
+    }
+
+    // Find character participation
+    const parts = this.getItem<CharacterParticipation[]>('character_participations', []);
+    const part = parts.find(p => p.id === transfer.participationId && p.campaignId === campaignId);
+    if (!part) {
+      throw new Error('مشارکت کاراکتر در این کمپین یافت نشد.');
+    }
+
+    const characters = this.getItem<Character[]>('characters', SEED_CHARACTERS);
+    const charIdx = characters.findIndex(c => c.id === part.characterId);
+    if (charIdx === -1) {
+      throw new Error('کاراکتر مورد نظر یافت نشد.');
+    }
+
+    const character = characters[charIdx];
+    const partyItems = this.getItem<PartyItem[]>('party_items', this.getSeedPartyItems(campaignId)).filter(i => i.campaignId === campaignId);
+
+    const execResult = executeItemTransfer(
+      partyItems,
+      character.inventory || [],
+      transfer,
+      transfer.participationId
+    );
+
+    if (!execResult.success) {
+      throw new Error(execResult.error || 'خطا در انتقال آیتم');
+    }
+
+    // Save updated party items
+    const allPartyItems = this.getItem<PartyItem[]>('party_items', this.getSeedPartyItems(campaignId)).filter(i => i.campaignId !== campaignId);
+    allPartyItems.push(...execResult.updatedPartyItems);
+    this.setItem('party_items', allPartyItems);
+
+    // Save updated character inventory
+    character.inventory = execResult.updatedCharacterInventory;
+    characters[charIdx] = character;
+    this.setItem('characters', characters);
+
+    // Save treasury log
+    const tlogs = this.getItem<TreasuryLogEntry[]>('treasury_logs', []);
+    execResult.log.campaignId = campaignId;
+    execResult.log.actorName = character.name;
+    tlogs.unshift(execResult.log);
+    this.setItem('treasury_logs', tlogs);
+
+    const affectedPartyItem = execResult.updatedPartyItems.find(i => i.id === transfer.itemId) || null;
+
+    return {
+      partyItem: affectedPartyItem,
+      characterInventory: character.inventory,
+      treasuryLog: execResult.log,
+    };
+  }
+
+  async listTreasuryLogs(campaignId: string, limit = 50): Promise<TreasuryLogEntry[]> {
+    const tlogs = this.getItem<TreasuryLogEntry[]>('treasury_logs', []);
+    return tlogs.filter(l => l.campaignId === campaignId).slice(0, limit);
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -7904,6 +8456,124 @@ export class HttpApi implements ApiClient {
       method: 'POST',
       body: JSON.stringify(options || {})
     });
+  }
+
+  // --------------------------------------------------------------------
+  // Step 4.5: Faction Reputation (HttpApi)
+  // --------------------------------------------------------------------
+  async listFactionReputations(campaignId: string, participationId?: string): Promise<FactionReputation[]> {
+    const params = new URLSearchParams();
+    if (participationId) params.append('participationId', participationId);
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return this.fetchJson<FactionReputation[]>(`/c/${campaignId}/reputation${query}`);
+  }
+
+  async getFactionReputation(campaignId: string, reputationId: string): Promise<FactionReputation | null> {
+    return this.fetchJson<FactionReputation>(`/c/${campaignId}/reputation/${reputationId}`);
+  }
+
+  async createFactionReputation(campaignId: string, data: Partial<FactionReputation>): Promise<FactionReputation> {
+    return this.fetchJson<FactionReputation>(`/c/${campaignId}/reputation`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateFactionReputation(campaignId: string, reputationId: string, data: Partial<FactionReputation>): Promise<FactionReputation> {
+    return this.fetchJson<FactionReputation>(`/c/${campaignId}/reputation/${reputationId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async adjustFactionReputation(
+    campaignId: string,
+    reputationId: string,
+    delta: number,
+    reason: string,
+    sessionId?: string
+  ): Promise<{ reputation: FactionReputation; log: ReputationLog }> {
+    return this.fetchJson<{ reputation: FactionReputation; log: ReputationLog }>(`/c/${campaignId}/reputation/${reputationId}/adjust`, {
+      method: 'POST',
+      body: JSON.stringify({ delta, reason, sessionId })
+    });
+  }
+
+  async deleteFactionReputation(campaignId: string, reputationId: string): Promise<void> {
+    await this.fetchJson(`/c/${campaignId}/reputation/${reputationId}`, { method: 'DELETE' });
+  }
+
+  async listReputationLogs(campaignId: string, reputationId?: string): Promise<ReputationLog[]> {
+    const query = reputationId ? `?reputationId=${reputationId}` : '';
+    return this.fetchJson<ReputationLog[]>(`/c/${campaignId}/reputation-logs${query}`);
+  }
+
+  // --------------------------------------------------------------------
+  // Step 4.5: Party Treasury (HttpApi)
+  // --------------------------------------------------------------------
+  async getPartyTreasury(campaignId: string): Promise<{ items: PartyItem[]; currency: PartyCurrency; locked: boolean; requireApproval: boolean }> {
+    return this.fetchJson<{ items: PartyItem[]; currency: PartyCurrency; locked: boolean; requireApproval: boolean }>(`/c/${campaignId}/treasury`);
+  }
+
+  async updatePartyCurrency(
+    campaignId: string,
+    balances: Record<string, number>,
+    expectedRevision?: number,
+    note?: string
+  ): Promise<PartyCurrency> {
+    return this.fetchJson<PartyCurrency>(`/c/${campaignId}/treasury/currency`, {
+      method: 'PATCH',
+      body: JSON.stringify({ balances, expectedRevision, note })
+    });
+  }
+
+  async addPartyItem(
+    campaignId: string,
+    item: Omit<PartyItem, 'id' | 'campaignId' | 'createdAt' | 'revision'>,
+    note?: string
+  ): Promise<PartyItem> {
+    return this.fetchJson<PartyItem>(`/c/${campaignId}/treasury/items`, {
+      method: 'POST',
+      body: JSON.stringify({ ...item, note })
+    });
+  }
+
+  async updatePartyItem(
+    campaignId: string,
+    itemId: string,
+    updates: Partial<PartyItem>,
+    expectedRevision?: number
+  ): Promise<PartyItem> {
+    return this.fetchJson<PartyItem>(`/c/${campaignId}/treasury/items/${itemId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ ...updates, expectedRevision })
+    });
+  }
+
+  async removePartyItem(
+    campaignId: string,
+    itemId: string,
+    expectedRevision?: number,
+    note?: string
+  ): Promise<void> {
+    await this.fetchJson(`/c/${campaignId}/treasury/items/${itemId}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ expectedRevision, note })
+    });
+  }
+
+  async transferPartyItem(
+    campaignId: string,
+    transfer: TreasuryTransferRequest
+  ): Promise<{ partyItem?: PartyItem | null; characterInventory: InventoryItem[]; treasuryLog: TreasuryLogEntry }> {
+    return this.fetchJson<{ partyItem?: PartyItem | null; characterInventory: InventoryItem[]; treasuryLog: TreasuryLogEntry }>(`/c/${campaignId}/treasury/transfer`, {
+      method: 'POST',
+      body: JSON.stringify(transfer)
+    });
+  }
+
+  async listTreasuryLogs(campaignId: string, limit = 50): Promise<TreasuryLogEntry[]> {
+    return this.fetchJson<TreasuryLogEntry[]>(`/c/${campaignId}/treasury/logs?limit=${limit}`);
   }
 }
 

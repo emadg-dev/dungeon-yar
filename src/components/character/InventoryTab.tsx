@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Character, InventoryItem, ItemCategory } from '../../types';
+import { Character, InventoryItem, ItemCategory, CampaignSettings } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { ConfirmSheet } from '../mobile/ConfirmSheet';
 import { ActionMenu, ActionMenuItem } from '../common/ActionMenu';
+import { PartyTreasuryManager } from '../campaign/PartyTreasuryManager';
 import { 
   Package, Coins, Flame, Utensils, Search, Plus, 
   Trash2, ShieldCheck, Sparkles, MoreVertical, Check, Eye 
@@ -11,12 +12,22 @@ import {
 interface InventoryTabProps {
   character: Character;
   onUpdate: (updated: Character) => void;
+  campaignId?: string;
+  activeParticipationId?: string;
+  campaignSettings?: CampaignSettings | null;
 }
 
-export const InventoryTab: React.FC<InventoryTabProps> = ({ character, onUpdate }) => {
+export const InventoryTab: React.FC<InventoryTabProps> = ({
+  character,
+  onUpdate,
+  campaignId = 'zorvania-c1',
+  activeParticipationId,
+  campaignSettings
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showAddItem, setShowAddItem] = useState(false);
+  const [showTreasuryModal, setShowTreasuryModal] = useState(false);
   const [selectedItemDetail, setSelectedItemDetail] = useState<InventoryItem | null>(null);
   const [actionMenuItem, setActionMenuItem] = useState<InventoryItem | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; id: string; name: string } | null>(null);
@@ -271,6 +282,15 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ character, onUpdate 
             />
             <Search className="w-3.5 h-3.5 text-[#A39A89] absolute start-2.5 top-1/2 -translate-y-1/2" />
           </div>
+
+          <button
+            type="button"
+            onClick={() => setShowTreasuryModal(true)}
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] bg-[#201D19] border border-[#E0A030]/40 text-[#E0A030] hover:bg-[#2B2620] text-xs font-bold transition touch-target shrink-0"
+          >
+            <Coins className="w-3.5 h-3.5" />
+            <span>خزانه گروه</span>
+          </button>
 
           <button
             type="button"
@@ -536,6 +556,24 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ character, onUpdate 
           }}
         />
       )}
+
+      {/* Party Treasury BottomSheet */}
+      <BottomSheet
+        isOpen={showTreasuryModal}
+        onClose={() => setShowTreasuryModal(false)}
+        title="خزانه مشترک گروه"
+      >
+        <div className="p-3 max-h-[75vh] overflow-y-auto">
+          <PartyTreasuryManager
+            campaignId={campaignId}
+            userRole="player"
+            activeCharacter={character}
+            activeParticipationId={activeParticipationId}
+            campaignSettings={campaignSettings}
+            onUpdateCharacterInventory={(inv) => onUpdate({ ...character, inventory: inv })}
+          />
+        </div>
+      </BottomSheet>
     </div>
   );
 };

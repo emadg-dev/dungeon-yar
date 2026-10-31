@@ -5,6 +5,7 @@ import { BookOpen, Users, Sparkles, Compass, Calendar, Search, MapPin, Map as Ma
 import { Chip } from '../common/Chip';
 import { HandoutsTab } from './HandoutsTab';
 import { QuestsTab } from '../quest/QuestsTab';
+import { FactionReputationManager } from '../campaign/FactionReputationManager';
 
 interface CodexTabProps {
   revealedNpcs: NPC[];
@@ -373,19 +374,11 @@ export const CodexTab: React.FC<CodexTabProps> = ({
 
       {/* Factions Inner Tab */}
       {subTab === 'factions' && (
-        <div className="space-y-3">
-          {factions.map((fac, idx) => (
-            <div key={idx} className="surface-card rounded-[14px] p-4 border border-[#2F2A23] card-gold-top">
-              <div className="flex items-center justify-between mb-2 gap-2">
-                <h4 className="font-extrabold text-sm text-[#EDE6D8]">{fac.name}</h4>
-                <Chip variant="region" region={fac.region as any} />
-              </div>
-              <p className="text-xs text-[#E0A030] font-bold mb-1.5">{fac.motto}</p>
-              <p className="text-xs text-[#EDE6D8]/80 leading-relaxed select-text">
-                {fac.description}
-              </p>
-            </div>
-          ))}
+        <div className="space-y-4">
+          <FactionReputationManager
+            campaignId={campaignId}
+            userRole={isDm ? 'owner' : 'player'}
+          />
         </div>
       )}
     </div>

@@ -14,9 +14,11 @@ import { DmInvites } from './DmInvites';
 import { DmAuditLog } from './DmAuditLog';
 import { DmHandoutManager } from './DmHandoutManager';
 import { DmQuestManager } from './DmQuestManager';
+import { FactionReputationManager } from '../campaign/FactionReputationManager';
+import { PartyTreasuryManager } from '../campaign/PartyTreasuryManager';
 import { 
   LayoutDashboard, Swords, Library, Scroll, MoreHorizontal, 
-  Users, KeyRound, ShieldAlert, Sparkles, BookOpen, Compass, Award, Database, MapPin, Map as MapIcon 
+  Users, KeyRound, ShieldAlert, Sparkles, BookOpen, Compass, Award, Database, MapPin, Map as MapIcon, Flag, Coins 
 } from 'lucide-react';
 import { Quest } from '../../types';
 
@@ -161,7 +163,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
   onCompleteQuest,
 }) => {
   const [internalDmTab, setInternalDmTab] = useState<'dashboard' | 'encounters' | 'library' | 'narrative' | 'more'>('dashboard');
-  const [librarySubTab, setLibrarySubTab] = useState<'library_hub' | 'npcs' | 'items' | 'locations' | 'handouts' | 'quests'>('library_hub');
+  const [librarySubTab, setLibrarySubTab] = useState<'library_hub' | 'npcs' | 'items' | 'locations' | 'handouts' | 'quests' | 'reputation' | 'treasury'>('library_hub');
   const [narrativeSubTab, setNarrativeSubTab] = useState<'notes' | 'endings'>('notes');
   const [moreSubTab, setMoreSubTab] = useState<'users' | 'invites' | 'audit' | 'settings'>('users');
 
@@ -344,6 +346,30 @@ export const DmTools: React.FC<DmToolsProps> = ({
               <Scroll className="w-3.5 h-3.5" />
               <span>مأموریت‌ها ({quests.length})</span>
             </button>
+            <button
+              type="button"
+              onClick={() => setLibrarySubTab('reputation')}
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
+                librarySubTab === 'reputation'
+                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              }`}
+            >
+              <Flag className="w-3.5 h-3.5" />
+              <span>شهرت جناح‌ها</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setLibrarySubTab('treasury')}
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
+                librarySubTab === 'treasury'
+                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              }`}
+            >
+              <Coins className="w-3.5 h-3.5" />
+              <span>خزانه گروه</span>
+            </button>
           </div>
 
           {librarySubTab === 'library_hub' && (
@@ -426,6 +452,22 @@ export const DmTools: React.FC<DmToolsProps> = ({
                   await onCompleteQuest(qId, opts);
                 }
               }}
+            />
+          )}
+
+          {librarySubTab === 'reputation' && (
+            <FactionReputationManager
+              campaignId={activeCampaign?.id || 'zorvania-c1'}
+              userRole="owner"
+              participations={participations}
+            />
+          )}
+
+          {librarySubTab === 'treasury' && (
+            <PartyTreasuryManager
+              campaignId={activeCampaign?.id || 'zorvania-c1'}
+              userRole="owner"
+              campaignSettings={activeCampaign?.settings}
             />
           )}
         </div>

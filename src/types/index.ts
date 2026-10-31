@@ -59,6 +59,8 @@ export interface CampaignSettings {
   allowPlayerCreateCharacter: boolean;
   allowPlayerRecaps?: boolean;
   allowPlayerTickQuestObjectives?: boolean;
+  treasuryLocked?: boolean;
+  treasuryRequireApproval?: boolean;
   encounterDefaults: {
     showExactHp: boolean;
     showAc: boolean;
@@ -1938,3 +1940,91 @@ export interface Quest {
   sessionStartedNumber?: number;
   sessionEndedNumber?: number;
 }
+
+// ======================================================================
+// Step 4.5: Faction Reputation and Party Treasury
+// ======================================================================
+
+export interface FactionReputationThreshold {
+  threshold: number;
+  label: string;
+}
+
+export interface FactionReputation {
+  id: string;
+  campaignId: string;
+  factionId: string;
+  participationId?: string | null; // null = entire party, or specific character participation
+  value: number;
+  min: number;
+  max: number;
+  labels: FactionReputationThreshold[];
+  visible: boolean;
+  updatedAt: number;
+
+  // Joined/decorated fields for convenient UI rendering
+  factionName?: string;
+  factionDescription?: string;
+  factionRegion?: string;
+  characterName?: string;
+  currentLabel?: string;
+}
+
+export interface ReputationLog {
+  id: string;
+  reputationId: string;
+  delta: number;
+  reason: string;
+  sessionId?: string | null;
+  createdBy: string;
+  createdByName?: string;
+  createdAt: number;
+}
+
+export interface PartyItem {
+  id: string;
+  campaignId: string;
+  name: string;
+  quantity: number;
+  description?: string;
+  category?: string;
+  notes?: string;
+  revision: number;
+  createdAt: number;
+  updatedAt?: number;
+}
+
+export interface PartyCurrency {
+  campaignId: string;
+  balances: Record<string, number>;
+  revision: number;
+  updatedAt?: number;
+}
+
+export type TreasuryLogType = 'add' | 'remove' | 'transfer_in' | 'transfer_out' | 'currency';
+
+export interface TreasuryLogEntry {
+  id: string;
+  campaignId: string;
+  actorParticipationId?: string | null;
+  actorName?: string;
+  type: TreasuryLogType;
+  itemRef?: string | null;
+  qty?: number | null;
+  note?: string;
+  createdAt: number;
+}
+
+export interface TreasuryTransferRequest {
+  itemId?: string;
+  itemName?: string;
+  itemCategory?: string;
+  itemDescription?: string;
+  quantity: number;
+  direction: 'to_inventory' | 'to_treasury';
+  participationId: string;
+  characterId?: string;
+  currentRevision?: number;
+  note?: string;
+}
+

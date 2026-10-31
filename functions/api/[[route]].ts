@@ -7314,7 +7314,738 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return json({ success: true, quest: list[0], rewardGranted });
   }
 
+  // ====================================================================
+  // Step 4.5: Faction Reputation Endpoints
+  // ====================================================================
+
+  // Helper to format reputation row
+  const formatReputationRow = (r: any) => {
+    const labels = parseBlob(r.labels, [
+      { threshold: -50, label: 'دشمن خونی' },
+      { threshold: -10, label: 'خصمانه' },
+      { threshold: 0, label: 'بی‌طرف' },
+      { threshold: 20, label: 'دوستانه' },
+      { threshold: 60, label: 'متحد' }
+    ]);
+    const val = Number(r.value || 0);
+    // Find current label
+    const sorted = [...labels].sort((a: any, b: any) => a.threshold - b.threshold);
+    let currentLabel = sorted[0]?.label || 'بی‌طرف';
+    for (const item of sorted) {
+      if (val >= item.threshold) currentLabel = item.label;
+    }
+
+    return {
+      id: r.id,
+      campaignId: r.campaign_id,
+      factionId: r.faction_id,
+      participationId: r.participation_id || null,
+      value: val,
+      min: Number(r.min ?? -100),
+      max: Number(r.max ?? 100),
+      labels,
+      visible: Boolean(r.visible),
+      updatedAt: Number(r.updated_at),
+      factionName: r.faction_name || r.faction_id,
+      factionDescription: r.faction_description || '',
+      factionRegion: r.faction_region || '',
+      characterName: r.character_name || undefined,
+      currentLabel
+    };
+  };
+
+  // GET /api/c/:id/reputation — List reputation tracks (filtered for players)
+  if (path.match(/^\/c\/[^/]+\/reputation$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    let actorPartId: string | null = null;
+    if (!isDm) {
+      const partRow = await env.DB.prepare(`
+        SELECT cp.id FROM character_participations cp
+        JOIN characters c ON cp.character_id = c.id
+        WHERE cp.campaign_id = ? AND c.owner_id = ? AND cp.status = 'active'
+        LIMIT 1
+      `).bind(campId, actor.id).first();
+      actorPartId = partRow?.id || null;
+    }
+
+    let query = `
+      SELECT fr.*, f.name AS faction_name, f.description AS faction_description, f.region AS faction_region,
+             c.name AS character_name
+      FROM faction_reputation fr
+      LEFT JOIN factions f ON fr.faction_id = f.id
+      LEFT JOIN character_participations cp ON fr.participation_id = cp.id
+      LEFT JOIN characters c ON cp.character_id = c.id
+      WHERE fr.campaign_id = ?
+    `;
+
+    // Security: Players only receive visible tracks; hidden reputation is never returned
+    if (!isDm) {
+      query += ` AND fr.visible = 1 AND (fr.participation_id IS NULL OR fr.participation_id = ?)`;
+    }
+
+    query += ` ORDER BY fr.updated_at DESC`;
+
+    const stmt = isDm
+      ? env.DB.prepare(query).bind(campId)
+      : env.DB.prepare(query).bind(campId, actorPartId || '');
+
+    const rows = await stmt.all();
+    const result = (rows.results || []).map(formatReputationRow);
+    return json(result);
+  }
+
+  // GET /api/c/:id/reputation/:rid — Get single reputation track
+  if (path.match(/^\/c\/[^/]+\/reputation\/[^/]+$/) && method === 'GET') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const rid = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    const row = await env.DB.prepare(`
+      SELECT fr.*, f.name AS faction_name, f.description AS faction_description, f.region AS faction_region,
+             c.name AS character_name
+      FROM faction_reputation fr
+      LEFT JOIN factions f ON fr.faction_id = f.id
+      LEFT JOIN character_participations cp ON fr.participation_id = cp.id
+      LEFT JOIN characters c ON cp.character_id = c.id
+      WHERE fr.id = ? AND fr.campaign_id = ?
+    `).bind(rid, campId).first();
+
+    if (!row) return error('رکورد شهرت یافت نشد.', 404);
+    if (!isDm && !row.visible) return error('رکورد شهرت یافت نشد.', 404);
+
+    return json(formatReputationRow(row));
+  }
+
+  // POST /api/c/:id/reputation — Create reputation track (DM only)
+  if (path.match(/^\/c\/[^/]+\/reputation$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const body = await request.json().catch(() => ({})) as any;
+    if (!body.factionId) return error('شناسه جناح الزامی است.', 400);
+
+    const id = body.id || `rep-${campId}-${now}-${generateRandomToken(4)}`;
+    const factionId = String(body.factionId);
+    const participationId = body.participationId ? String(body.participationId) : null;
+    const value = typeof body.value === 'number' ? body.value : 0;
+    const min = typeof body.min === 'number' ? body.min : -100;
+    const max = typeof body.max === 'number' ? body.max : 100;
+    const labels = JSON.stringify(body.labels || [
+      { threshold: -50, label: 'دشمن خونی' },
+      { threshold: -10, label: 'خصمانه' },
+      { threshold: 0, label: 'بی‌طرف' },
+      { threshold: 20, label: 'دوستانه' },
+      { threshold: 60, label: 'متحد' }
+    ]);
+    const visible = body.visible !== false ? 1 : 0;
+
+    await env.DB.prepare(`
+      INSERT INTO faction_reputation (
+        id, campaign_id, faction_id, participation_id, value, min, max, labels, visible, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(id, campId, factionId, participationId, value, min, max, labels, visible, now).run();
+
+    await audit('reputation-create', id, { campaignId: campId, factionId, value });
+
+    const createdRow = await env.DB.prepare(`
+      SELECT fr.*, f.name AS faction_name, f.description AS faction_description, f.region AS faction_region,
+             c.name AS character_name
+      FROM faction_reputation fr
+      LEFT JOIN factions f ON fr.faction_id = f.id
+      LEFT JOIN character_participations cp ON fr.participation_id = cp.id
+      LEFT JOIN characters c ON cp.character_id = c.id
+      WHERE fr.id = ?
+    `).bind(id).first();
+
+    return json(formatReputationRow(createdRow));
+  }
+
+  // PATCH /api/c/:id/reputation/:rid — Update track (DM only)
+  if (path.match(/^\/c\/[^/]+\/reputation\/[^/]+$/) && method === 'PATCH') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const rid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const existing = await env.DB.prepare('SELECT * FROM faction_reputation WHERE id = ? AND campaign_id = ?').bind(rid, campId).first();
+    if (!existing) return error('رکورد شهرت یافت نشد.', 404);
+
+    const body = await request.json().catch(() => ({})) as any;
+    const value = typeof body.value === 'number' ? body.value : existing.value;
+    const min = typeof body.min === 'number' ? body.min : existing.min;
+    const max = typeof body.max === 'number' ? body.max : existing.max;
+    const labels = body.labels ? JSON.stringify(body.labels) : existing.labels;
+    const visible = body.visible !== undefined ? (body.visible ? 1 : 0) : existing.visible;
+    const participationId = body.participationId !== undefined ? (body.participationId ? String(body.participationId) : null) : existing.participation_id;
+
+    await env.DB.prepare(`
+      UPDATE faction_reputation SET
+        value = ?, min = ?, max = ?, labels = ?, visible = ?, participation_id = ?, updated_at = ?
+      WHERE id = ? AND campaign_id = ?
+    `).bind(value, min, max, labels, visible, participationId, now, rid, campId).run();
+
+    const updatedRow = await env.DB.prepare(`
+      SELECT fr.*, f.name AS faction_name, f.description AS faction_description, f.region AS faction_region,
+             c.name AS character_name
+      FROM faction_reputation fr
+      LEFT JOIN factions f ON fr.faction_id = f.id
+      LEFT JOIN character_participations cp ON fr.participation_id = cp.id
+      LEFT JOIN characters c ON cp.character_id = c.id
+      WHERE fr.id = ?
+    `).bind(rid).first();
+
+    return json(formatReputationRow(updatedRow));
+  }
+
+  // POST /api/c/:id/reputation/:rid/adjust — Adjust reputation with reason (DM only)
+  if (path.match(/^\/c\/[^/]+\/reputation\/[^/]+\/adjust$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const rid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const rep = await env.DB.prepare('SELECT * FROM faction_reputation WHERE id = ? AND campaign_id = ?').bind(rid, campId).first();
+    if (!rep) return error('رکورد شهرت یافت نشد.', 404);
+
+    const body = await request.json().catch(() => ({})) as any;
+    const delta = Number(body.delta || 0);
+    const reason = String(body.reason || 'تغییر شهرت');
+    const sessionId = body.sessionId ? String(body.sessionId) : null;
+
+    const min = Number(rep.min ?? -100);
+    const max = Number(rep.max ?? 100);
+    const currentVal = Number(rep.value || 0);
+    const newVal = Math.min(max, Math.max(min, currentVal + delta));
+    const actualDelta = newVal - currentVal;
+
+    await env.DB.prepare('UPDATE faction_reputation SET value = ?, updated_at = ? WHERE id = ?')
+      .bind(newVal, now, rid).run();
+
+    const logId = `replog-${now}-${generateRandomToken(4)}`;
+    await env.DB.prepare(`
+      INSERT INTO reputation_log (id, reputation_id, delta, reason, session_id, created_by, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(logId, rid, actualDelta, reason, sessionId, actor.id, now).run();
+
+    const logEntry = {
+      id: logId,
+      reputationId: rid,
+      delta: actualDelta,
+      reason,
+      sessionId,
+      createdBy: actor.id,
+      createdByName: actor.display_name,
+      createdAt: now
+    };
+
+    const updatedRow = await env.DB.prepare(`
+      SELECT fr.*, f.name AS faction_name, f.description AS faction_description, f.region AS faction_region,
+             c.name AS character_name
+      FROM faction_reputation fr
+      LEFT JOIN factions f ON fr.faction_id = f.id
+      LEFT JOIN character_participations cp ON fr.participation_id = cp.id
+      LEFT JOIN characters c ON cp.character_id = c.id
+      WHERE fr.id = ?
+    `).bind(rid).first();
+
+    return json({ reputation: formatReputationRow(updatedRow), log: logEntry });
+  }
+
+  // DELETE /api/c/:id/reputation/:rid — Delete track (DM only)
+  if (path.match(/^\/c\/[^/]+\/reputation\/[^/]+$/) && method === 'DELETE') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const rid = parts[4];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    await env.DB.prepare('DELETE FROM faction_reputation WHERE id = ? AND campaign_id = ?').bind(rid, campId).run();
+    return json({ success: true });
+  }
+
+  // GET /api/c/:id/reputation-logs — List logs
+  if (path.match(/^\/c\/[^/]+\/reputation-logs$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+
+    const url = new URL(request.url);
+    const reputationId = url.searchParams.get('reputationId');
+
+    let query = `
+      SELECT rl.*, u.name AS created_by_name
+      FROM reputation_log rl
+      JOIN faction_reputation fr ON rl.reputation_id = fr.id
+      LEFT JOIN users u ON rl.created_by = u.id
+      WHERE fr.campaign_id = ?
+    `;
+    const params: any[] = [campId];
+
+    if (reputationId) {
+      query += ` AND rl.reputation_id = ?`;
+      params.push(reputationId);
+    }
+    query += ` ORDER BY rl.created_at DESC LIMIT 100`;
+
+    const rows = await env.DB.prepare(query).bind(...params).all();
+    const logs = (rows.results || []).map((r: any) => ({
+      id: r.id,
+      reputationId: r.reputation_id,
+      delta: Number(r.delta),
+      reason: r.reason,
+      sessionId: r.session_id || null,
+      createdBy: r.created_by,
+      createdByName: r.created_by_name || 'دانجن‌مستر',
+      createdAt: Number(r.created_at)
+    }));
+    return json(logs);
+  }
+
+  // ====================================================================
+  // Step 4.5: Party Treasury Endpoints
+  // ====================================================================
+
+  // GET /api/c/:id/treasury — Get items, currency & settings
+  if (path.match(/^\/c\/[^/]+\/treasury$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+
+    const campRow = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ?').bind(campId).first();
+    const settings = parseBlob(campRow?.settings, {});
+    const locked = Boolean(settings.treasuryLocked);
+    const requireApproval = Boolean(settings.treasuryRequireApproval);
+
+    // Items
+    const itemRows = await env.DB.prepare(`
+      SELECT * FROM party_items WHERE campaign_id = ? ORDER BY created_at DESC
+    `).bind(campId).all();
+
+    const items = (itemRows.results || []).map((r: any) => ({
+      id: r.id,
+      campaignId: r.campaign_id,
+      name: r.name,
+      quantity: Number(r.quantity),
+      description: r.description || '',
+      category: r.category || 'misc',
+      notes: r.notes || '',
+      revision: Number(r.revision || 1),
+      createdAt: Number(r.created_at),
+      updatedAt: r.updated_at ? Number(r.updated_at) : undefined
+    }));
+
+    // Currency
+    let currRow = await env.DB.prepare('SELECT * FROM party_currency WHERE campaign_id = ?').bind(campId).first();
+    if (!currRow) {
+      await env.DB.prepare(`
+        INSERT INTO party_currency (campaign_id, balances, revision, updated_at)
+        VALUES (?, '{}', 1, ?)
+      `).bind(campId, now).run();
+      currRow = { campaign_id: campId, balances: '{}', revision: 1, updated_at: now };
+    }
+
+    const currency = {
+      campaignId: currRow.campaign_id,
+      balances: parseBlob(currRow.balances, {}),
+      revision: Number(currRow.revision || 1),
+      updatedAt: Number(currRow.updated_at)
+    };
+
+    return json({ items, currency, locked, requireApproval });
+  }
+
+  // PATCH /api/c/:id/treasury/currency — Update currency with revision check
+  if (path.match(/^\/c\/[^/]+\/treasury\/currency$/) && method === 'PATCH') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    const campRow = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ?').bind(campId).first();
+    const settings = parseBlob(campRow?.settings, {});
+    if (settings.treasuryLocked && !isDm) {
+      return error('خزانه گروه توسط دانجن‌مستر قفل شده است.', 403);
+    }
+
+    const body = await request.json().catch(() => ({})) as any;
+    const balances = body.balances || {};
+    const expectedRevision = body.expectedRevision;
+    const note = body.note;
+
+    let currRow = await env.DB.prepare('SELECT * FROM party_currency WHERE campaign_id = ?').bind(campId).first();
+    if (!currRow) {
+      await env.DB.prepare(`
+        INSERT INTO party_currency (campaign_id, balances, revision, updated_at)
+        VALUES (?, '{}', 1, ?)
+      `).bind(campId, now).run();
+      currRow = { campaign_id: campId, balances: '{}', revision: 1, updated_at: now };
+    }
+
+    // Strict revision check to prevent concurrent double-spend / overwrites
+    if (expectedRevision !== undefined && Number(currRow.revision) !== Number(expectedRevision)) {
+      return error('خطای همزمانی: موجودی سکه‌های خزانه هم‌زمان توسط کاربر دیگری تغییر یافته است.', 409);
+    }
+
+    const nextRevision = Number(currRow.revision) + 1;
+    await env.DB.prepare(`
+      UPDATE party_currency SET balances = ?, revision = ?, updated_at = ? WHERE campaign_id = ?
+    `).bind(JSON.stringify(balances), nextRevision, now, campId).run();
+
+    // Log to treasury_log
+    const logId = `tlog-${now}-${generateRandomToken(4)}`;
+    const currSummary = Object.entries(balances).map(([k, v]) => `${v} ${k}`).join('، ');
+    await env.DB.prepare(`
+      INSERT INTO treasury_log (id, campaign_id, actor_participation_id, type, item_ref, qty, note, created_at)
+      VALUES (?, ?, NULL, 'currency', ?, NULL, ?, ?)
+    `).bind(logId, campId, currSummary, note || 'به‌روزرسانی موجودی سکه‌های خزانه', now).run();
+
+    return json({
+      campaignId: campId,
+      balances,
+      revision: nextRevision,
+      updatedAt: now
+    });
+  }
+
+  // POST /api/c/:id/treasury/items — Add item to party stash
+  if (path.match(/^\/c\/[^/]+\/treasury\/items$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    const campRow = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ?').bind(campId).first();
+    const settings = parseBlob(campRow?.settings, {});
+    if (settings.treasuryLocked && !isDm) {
+      return error('خزانه گروه توسط دانجن‌مستر قفل شده است.', 403);
+    }
+
+    const body = await request.json().catch(() => ({})) as any;
+    if (!body.name || !body.name.trim()) return error('نام آیتم الزامی است.', 400);
+
+    const id = body.id || `pitem-${campId}-${now}-${generateRandomToken(4)}`;
+    const name = body.name.trim();
+    const quantity = Math.max(1, Number(body.quantity || 1));
+    const description = body.description || '';
+    const category = body.category || 'misc';
+    const notes = body.notes || '';
+    const note = body.note;
+
+    await env.DB.prepare(`
+      INSERT INTO party_items (id, campaign_id, name, quantity, description, category, notes, revision, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+    `).bind(id, campId, name, quantity, description, category, notes, now, now).run();
+
+    const logId = `tlog-${now}-${generateRandomToken(4)}`;
+    await env.DB.prepare(`
+      INSERT INTO treasury_log (id, campaign_id, actor_participation_id, type, item_ref, qty, note, created_at)
+      VALUES (?, ?, NULL, 'add', ?, ?, ?, ?)
+    `).bind(logId, campId, name, quantity, note || `افزودن ${quantity} عدد ${name} به خزانه`, now).run();
+
+    return json({
+      id,
+      campaignId: campId,
+      name,
+      quantity,
+      description,
+      category,
+      notes,
+      revision: 1,
+      createdAt: now,
+      updatedAt: now
+    });
+  }
+
+  // PATCH /api/c/:id/treasury/items/:iid — Update item with revision check
+  if (path.match(/^\/c\/[^/]+\/treasury\/items\/[^/]+$/) && method === 'PATCH') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const iid = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    const campRow = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ?').bind(campId).first();
+    const settings = parseBlob(campRow?.settings, {});
+    if (settings.treasuryLocked && !isDm) {
+      return error('خزانه گروه توسط دانجن‌مستر قفل شده است.', 403);
+    }
+
+    const existing = await env.DB.prepare('SELECT * FROM party_items WHERE id = ? AND campaign_id = ?').bind(iid, campId).first();
+    if (!existing) return error('آیتم یافت نشد.', 404);
+
+    const body = await request.json().catch(() => ({})) as any;
+    if (body.expectedRevision !== undefined && Number(existing.revision) !== Number(body.expectedRevision)) {
+      return error('خطای همزمانی: این آیتم توسط بازیکن دیگری ویرایش شده است. لطفاً صفحه را تازه‌سازی کنید.', 409);
+    }
+
+    const name = body.name ? body.name.trim() : existing.name;
+    const quantity = body.quantity !== undefined ? Math.max(1, Number(body.quantity)) : existing.quantity;
+    const description = body.description !== undefined ? body.description : existing.description;
+    const category = body.category !== undefined ? body.category : existing.category;
+    const notes = body.notes !== undefined ? body.notes : existing.notes;
+    const nextRevision = Number(existing.revision) + 1;
+
+    await env.DB.prepare(`
+      UPDATE party_items SET
+        name = ?, quantity = ?, description = ?, category = ?, notes = ?, revision = ?, updated_at = ?
+      WHERE id = ? AND campaign_id = ?
+    `).bind(name, quantity, description, category, notes, nextRevision, now, iid, campId).run();
+
+    return json({
+      id: iid,
+      campaignId: campId,
+      name,
+      quantity,
+      description,
+      category,
+      notes,
+      revision: nextRevision,
+      createdAt: Number(existing.created_at),
+      updatedAt: now
+    });
+  }
+
+  // DELETE /api/c/:id/treasury/items/:iid — Remove item with revision check
+  if (path.match(/^\/c\/[^/]+\/treasury\/items\/[^/]+$/) && method === 'DELETE') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const iid = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    const campRow = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ?').bind(campId).first();
+    const settings = parseBlob(campRow?.settings, {});
+    if (settings.treasuryLocked && !isDm) {
+      return error('خزانه گروه توسط دانجن‌مستر قفل شده است.', 403);
+    }
+
+    const existing = await env.DB.prepare('SELECT * FROM party_items WHERE id = ? AND campaign_id = ?').bind(iid, campId).first();
+    if (!existing) return error('آیتم یافت نشد.', 404);
+
+    const body = await request.json().catch(() => ({})) as any;
+    if (body.expectedRevision !== undefined && Number(existing.revision) !== Number(body.expectedRevision)) {
+      return error('خطای همزمانی: این آیتم توسط بازیکن دیگری ویرایش شده است. لطفاً صفحه را تازه‌سازی کنید.', 409);
+    }
+
+    await env.DB.prepare('DELETE FROM party_items WHERE id = ? AND campaign_id = ?').bind(iid, campId).run();
+
+    const logId = `tlog-${now}-${generateRandomToken(4)}`;
+    await env.DB.prepare(`
+      INSERT INTO treasury_log (id, campaign_id, actor_participation_id, type, item_ref, qty, note, created_at)
+      VALUES (?, ?, NULL, 'remove', ?, ?, ?, ?)
+    `).bind(logId, campId, existing.name, Number(existing.quantity), body.note || `حذف ${existing.name} از خزانه`, now).run();
+
+    return json({ success: true });
+  }
+
+  // POST /api/c/:id/treasury/transfer — Atomic item transfer with strict revision check
+  if (path.match(/^\/c\/[^/]+\/treasury\/transfer$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+    const isDm = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+
+    const campRow = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ?').bind(campId).first();
+    const settings = parseBlob(campRow?.settings, {});
+    if (settings.treasuryLocked && !isDm) {
+      return error('خزانه گروه توسط دانجن‌مستر قفل شده است.', 403);
+    }
+
+    const body = await request.json().catch(() => ({})) as any;
+    const direction = body.direction; // 'to_inventory' | 'to_treasury'
+    const partId = String(body.participationId);
+    const qty = Math.max(1, Number(body.quantity || 1));
+
+    if (!direction || !partId) return error('جهت انتقال و شناسه کاراکتر الزامی است.', 400);
+
+    const partRow = await env.DB.prepare('SELECT * FROM character_participations WHERE id = ? AND campaign_id = ?').bind(partId, campId).first();
+    if (!partRow) return error('مشارکت کاراکتر یافت نشد.', 404);
+
+    let playState = parseBlob(partRow.play_state, {});
+    let inv: any[] = Array.isArray(playState.inventory) ? playState.inventory : [];
+
+    let affectedPartyItem: any = null;
+    let logType: string = 'transfer_out';
+    let logItemRef: string = '';
+
+    if (direction === 'to_inventory') {
+      const itemId = String(body.itemId);
+      const partyItemRow = await env.DB.prepare('SELECT * FROM party_items WHERE id = ? AND campaign_id = ?').bind(itemId, campId).first();
+      if (!partyItemRow) return error('آیتم در خزانه یافت نشد.', 404);
+
+      // Concurrency check: Reject if revision doesn't match
+      if (body.currentRevision !== undefined && Number(partyItemRow.revision) !== Number(body.currentRevision)) {
+        return error('خطای همزمانی: این آیتم هم‌زمان توسط بازیکن دیگری برداشته یا ویرایش شده است. لطفاً صفحه را تازه‌سازی کنید.', 409);
+      }
+
+      if (Number(partyItemRow.quantity) < qty) {
+        return error(`موجودی کافی در خزانه وجود ندارد (موجودی فعلی: ${partyItemRow.quantity}).`, 400);
+      }
+
+      logItemRef = partyItemRow.name;
+      logType = 'transfer_out';
+
+      // Update party items
+      if (Number(partyItemRow.quantity) === qty) {
+        await env.DB.prepare('DELETE FROM party_items WHERE id = ? AND campaign_id = ?').bind(itemId, campId).run();
+        affectedPartyItem = null;
+      } else {
+        const nextQty = Number(partyItemRow.quantity) - qty;
+        const nextRev = Number(partyItemRow.revision) + 1;
+        await env.DB.prepare(`
+          UPDATE party_items SET quantity = ?, revision = ?, updated_at = ? WHERE id = ? AND campaign_id = ?
+        `).bind(nextQty, nextRev, now, itemId, campId).run();
+
+        affectedPartyItem = {
+          ...partyItemRow,
+          quantity: nextQty,
+          revision: nextRev,
+          updatedAt: now
+        };
+      }
+
+      // Add to character inventory
+      const existingInvIdx = inv.findIndex((ci: any) => ci.name && ci.name.trim().toLowerCase() === partyItemRow.name.trim().toLowerCase());
+      if (existingInvIdx >= 0) {
+        inv[existingInvIdx].quantity = Number(inv[existingInvIdx].quantity || 1) + qty;
+      } else {
+        inv.push({
+          id: `inv-${now}-${generateRandomToken(4)}`,
+          name: partyItemRow.name,
+          quantity: qty,
+          category: partyItemRow.category || 'misc',
+          description: partyItemRow.description || '',
+          weight: 1,
+          isEquipped: false
+        });
+      }
+    } else {
+      // to_treasury
+      const itemName = String(body.itemName || '').trim();
+      const existingInvIdx = inv.findIndex((ci: any) => (body.itemId && ci.id === body.itemId) || ci.name === itemName);
+      if (existingInvIdx === -1) return error('آیتم در کوله‌پشتی کاراکتر یافت نشد.', 404);
+
+      const charItem = inv[existingInvIdx];
+      if (Number(charItem.quantity || 1) < qty) {
+        return error(`موجودی در کوله‌پشتی کافی نیست (موجودی: ${charItem.quantity}).`, 400);
+      }
+
+      logItemRef = charItem.name;
+      logType = 'transfer_in';
+
+      // Deduct from character
+      if (Number(charItem.quantity || 1) === qty) {
+        inv.splice(existingInvIdx, 1);
+      } else {
+        inv[existingInvIdx].quantity = Number(charItem.quantity) - qty;
+      }
+
+      // Add to party_items
+      const partyMatch = await env.DB.prepare('SELECT * FROM party_items WHERE campaign_id = ? AND name = ?').bind(campId, charItem.name).first();
+      if (partyMatch) {
+        const nextQty = Number(partyMatch.quantity) + qty;
+        const nextRev = Number(partyMatch.revision) + 1;
+        await env.DB.prepare('UPDATE party_items SET quantity = ?, revision = ?, updated_at = ? WHERE id = ?')
+          .bind(nextQty, nextRev, now, partyMatch.id).run();
+        affectedPartyItem = { ...partyMatch, quantity: nextQty, revision: nextRev, updatedAt: now };
+      } else {
+        const newId = `pitem-${campId}-${now}-${generateRandomToken(4)}`;
+        await env.DB.prepare(`
+          INSERT INTO party_items (id, campaign_id, name, quantity, description, category, notes, revision, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, '', 1, ?, ?)
+        `).bind(newId, campId, charItem.name, qty, charItem.description || '', charItem.category || 'misc', now, now).run();
+        affectedPartyItem = {
+          id: newId,
+          campaignId: campId,
+          name: charItem.name,
+          quantity: qty,
+          description: charItem.description || '',
+          category: charItem.category || 'misc',
+          revision: 1,
+          createdAt: now,
+          updatedAt: now
+        };
+      }
+    }
+
+    // Persist updated play_state
+    playState.inventory = inv;
+    await env.DB.prepare('UPDATE character_participations SET play_state = ?, updated_at = ? WHERE id = ?')
+      .bind(JSON.stringify(playState), now, partId).run();
+
+    // Log to treasury_log
+    const logId = `tlog-${now}-${generateRandomToken(4)}`;
+    const note = body.note || (direction === 'to_inventory'
+      ? `انتقال ${qty} عدد ${logItemRef} به کوله‌پشتی کاراکتر`
+      : `انتقال ${qty} عدد ${logItemRef} به خزانه گروه`);
+
+    await env.DB.prepare(`
+      INSERT INTO treasury_log (id, campaign_id, actor_participation_id, type, item_ref, qty, note, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(logId, campId, partId, logType, logItemRef, qty, note, now).run();
+
+    const treasuryLog = {
+      id: logId,
+      campaignId: campId,
+      actorParticipationId: partId,
+      type: logType as any,
+      itemRef: logItemRef,
+      qty,
+      note,
+      createdAt: now
+    };
+
+    return json({
+      partyItem: affectedPartyItem,
+      characterInventory: inv,
+      treasuryLog
+    });
+  }
+
+  // GET /api/c/:id/treasury/logs — Activity audit log
+  if (path.match(/^\/c\/[^/]+\/treasury\/logs$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+
+    const url = new URL(request.url);
+    const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit') || 50)));
+
+    const rows = await env.DB.prepare(`
+      SELECT tl.*, c.name AS actor_name
+      FROM treasury_log tl
+      LEFT JOIN character_participations cp ON tl.actor_participation_id = cp.id
+      LEFT JOIN characters c ON cp.character_id = c.id
+      WHERE tl.campaign_id = ?
+      ORDER BY tl.created_at DESC
+      LIMIT ?
+    `).bind(campId, limit).all();
+
+    const logs = (rows.results || []).map((r: any) => ({
+      id: r.id,
+      campaignId: r.campaign_id,
+      actorParticipationId: r.actor_participation_id || null,
+      actorName: r.actor_name || undefined,
+      type: r.type,
+      itemRef: r.item_ref || null,
+      qty: r.qty !== null ? Number(r.qty) : null,
+      note: r.note || '',
+      createdAt: Number(r.created_at)
+    }));
+
+    return json(logs);
+  }
+
   // 404 Fallback
   return error(`مسیری با مشخصات ${method} ${path} یافت نشد.`, 404);
 };
+
 
