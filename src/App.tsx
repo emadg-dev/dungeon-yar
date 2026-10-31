@@ -10,7 +10,7 @@ import {
   LocationEntry, PlayerEncounterView, Campaign, MasterCharacter, CampaignInvite, 
   CampaignMember, CharacterHistoryEvent, CharacterParticipation, CampaignRole, CampaignSettings,
   LineageTemplate, BackgroundTemplate, Session, SessionStatus, SessionRsvpChoice,
-  SessionRecap, SessionHighlight, Quest
+  SessionRecap, SessionHighlight, Quest, NotificationItem
 } from './types';
 import { api, HttpApi } from './services/api';
 import { pageTitle } from './config/app';
@@ -65,6 +65,10 @@ const SessionAttendanceModal = React.lazy(() => import('./components/session/Ses
 const SessionClosingSheet = React.lazy(() => import('./components/session/SessionClosingSheet').then(m => ({ default: m.SessionClosingSheet })));
 const RecapArchiveSheet = React.lazy(() => import('./components/session/RecapArchiveSheet').then(m => ({ default: m.RecapArchiveSheet })));
 const RecapEditorSheet = React.lazy(() => import('./components/session/RecapEditorSheet').then(m => ({ default: m.RecapEditorSheet })));
+
+// Step 4.6: Notifications & Preferences
+const NotificationsDrawer = React.lazy(() => import('./components/notifications/NotificationsDrawer').then(m => ({ default: m.NotificationsDrawer })));
+const NotificationPreferencesModal = React.lazy(() => import('./components/notifications/NotificationPreferencesModal').then(m => ({ default: m.NotificationPreferencesModal })));
 
 // Loading skeleton fallback for tabs
 const TabSkeleton = () => (
@@ -210,6 +214,11 @@ export default function App() {
   // Step 4.4: Quests State
   const [campaignQuests, setCampaignQuests] = useState<Quest[]>([]);
 
+  // Step 4.6: Notifications State
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notificationPrefsOpen, setNotificationPrefsOpen] = useState(false);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+
   // Dice & Rest Modals
   const [diceModalOpen, setDiceModalOpen] = useState(false);
   const [presetRoll, setPresetRoll] = useState<{ sides: number; count: number; modifier: number; label: string } | null>(null);
@@ -290,6 +299,7 @@ export default function App() {
       setPendingApprovals(summary.pendingApprovals || []);
       const drafts = await api.listDraftParticipations().catch(() => []);
       setDraftParticipations(drafts);
+      await refreshNotifications();
     } catch (err: any) {
       if (err?.status === 401 || err?.message?.includes('نشست')) {
         setSessionExpiredSheetOpen(true);
@@ -957,6 +967,80 @@ export default function App() {
     }
   };
 
+  // Step 4.6: Notifications Helpers & Polling
+  const refreshNotifications = useCallback(async () => {
+    try {
+      const list = await api.listNotifications();
+      const unread = list.filter(n => !n.readAt).length;
+      setUnreadNotificationsCount(unread);
+    } catch {
+      // Ignore background notification check errors
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshNotifications();
+    const interval = setInterval(refreshNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [refreshNotifications, activeCampaignId, currentUser]);
+
+  const handleNotificationNavigation = async (
+    targetType?: string,
+    targetId?: string,
+    link?: string,
+    campaignId?: string | null
+  ) => {
+    setNotificationsOpen(false);
+
+    if (campaignId && campaignId !== activeCampaignId) {
+      await handleSelectCampaign(campaignId);
+    }
+
+    if (targetType === 'session') {
+      if (targetId) {
+        const sess = campaignSessions.find(s => s.id === targetId);
+        if (sess) {
+          setAttendanceModal({ isOpen: true, session: sess });
+          return;
+        }
+      }
+      setSessionListOpen(true);
+    } else if (targetType === 'quest') {
+      if (isDmView) {
+        setActiveDmTab('narrative');
+      } else {
+        handleSelectPlayerTab('codex');
+      }
+    } else if (targetType === 'handout') {
+      if (isDmView) {
+        setActiveDmTab('library');
+      } else {
+        handleSelectPlayerTab('codex');
+      }
+    } else if (targetType === 'encounter') {
+      if (isDmView) {
+        setActiveDmTab('encounters');
+      } else {
+        setLiveEncounterModalOpen(true);
+      }
+    } else if (targetType === 'approval') {
+      setCampaignApprovalsOpen(true);
+    } else if (targetType === 'level_up') {
+      setLevelUpModalOpen(true);
+    } else if (targetType === 'character' || targetType === 'backstory') {
+      if (targetId) {
+        window.location.hash = `#/characters/${targetId}`;
+      }
+    } else if (targetType === 'member') {
+      setCampaignMembersOpen(true);
+    } else if (targetType === 'invite') {
+      if (viewMode !== 'home') {
+        setViewMode('home');
+        window.location.hash = '#/';
+      }
+    }
+  };
+
   // Active Character & Participation in Campaign
   const activeCharacter = characters.find(c => c.id === activeCharId) || characters[0] || null;
   const activeParticipation = activeCharacter ? (campaignParticipations.find(p => p.characterId === activeCharacter.id) || null) : null;
@@ -1003,6 +1087,8 @@ export default function App() {
         pendingApprovalsCount={pendingApprovals.length}
         levelUpAvailable={Boolean(activeParticipation?.levelUpAvailable)}
         onOpenLevelUp={() => setLevelUpModalOpen(true)}
+        unreadNotificationsCount={unreadNotificationsCount}
+        onOpenNotifications={() => setNotificationsOpen(true)}
       />
 
       {/* Sticky Character Header & Sub-Tabs (In Campaign Space, Player View) */}
@@ -1226,7 +1312,7 @@ export default function App() {
                     if (activeCampaignId) await loadCampaignWorkspace(activeCampaignId);
                   }}
                   onRollDice={handleRollCheck}
-                  isHttpMode={import.meta.env.VITE_API_MODE === 'http'}
+                  isHttpMode={import.meta.env.VITE_API_MODE === 'http' && !(api as any).isLocalMode}
                   activeDmTab={activeDmTab}
                   onRefreshCharacters={() => activeCampaignId && loadCampaignWorkspace(activeCampaignId)}
                   onCreateCharacterForPlayer={() => handleOpenCharacterWizard(activeCampaign?.id)}
@@ -1877,7 +1963,7 @@ export default function App() {
             initialMode={authModalState.mode}
             initialInviteCode={authModalState.inviteCode}
             initialResetToken={authModalState.resetToken}
-            onSelectPreloadedUser={api instanceof HttpApi ? undefined : handleSwitchUser}
+            onSelectPreloadedUser={((api as any).isLocalMode || !(api instanceof HttpApi)) ? handleSwitchUser : undefined}
           />
         )}
 
@@ -1980,6 +2066,25 @@ export default function App() {
                 });
               }
             }}
+          />
+        )}
+
+        {/* Step 4.6: Notifications Drawer */}
+        <NotificationsDrawer
+          isOpen={notificationsOpen}
+          onClose={() => setNotificationsOpen(false)}
+          activeCampaignId={activeCampaignId}
+          onNavigateToTarget={handleNotificationNavigation}
+          onOpenPreferences={() => setNotificationPrefsOpen(true)}
+          onUnreadCountChange={setUnreadNotificationsCount}
+        />
+
+        {/* Step 4.6: Notification Preferences Modal */}
+        {notificationPrefsOpen && (
+          <NotificationPreferencesModal
+            isOpen={notificationPrefsOpen}
+            onClose={() => setNotificationPrefsOpen(false)}
+            campaignId={activeCampaignId}
           />
         )}
       </Suspense>

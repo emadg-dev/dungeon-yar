@@ -2028,3 +2028,83 @@ export interface TreasuryTransferRequest {
   note?: string;
 }
 
+// ======================================================================
+// Step 4.6: Notifications, Preferences & Web Push
+// ======================================================================
+
+export type NotificationType =
+  | 'invite_received'
+  | 'campaign_joined'
+  | 'session_scheduled'
+  | 'session_changed'
+  | 'session_cancelled'
+  | 'rsvp_reminder'
+  | 'poll_opened'
+  | 'poll_closed'
+  | 'handout_revealed'
+  | 'quest_updated'
+  | 'encounter_started'
+  | 'approval_decided'
+  | 'level_up_available'
+  | 'backstory_comment';
+
+export type NotificationTargetType =
+  | 'session'
+  | 'quest'
+  | 'handout'
+  | 'character'
+  | 'campaign'
+  | 'encounter'
+  | 'approval'
+  | 'backstory'
+  | 'member'
+  | 'level_up'
+  | 'invite';
+
+export interface NotificationPayload {
+  title: string;
+  body: string;
+  campaignId?: string | null;
+  campaignTitle?: string;
+  targetType?: NotificationTargetType;
+  targetId?: string;
+  link?: string;
+  actorName?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface NotificationItem {
+  id: string;
+  userId: string;
+  campaignId?: string | null;
+  type: NotificationType;
+  payload: NotificationPayload;
+  readAt?: number | null;
+  createdAt: number;
+  campaignTitle?: string;
+  isRead?: boolean;
+}
+
+export interface NotificationPref {
+  id?: string;
+  userId: string;
+  campaignId?: string | null;
+  types: Partial<Record<NotificationType, boolean>>;
+  pushEnabled: boolean;
+  updatedAt?: number;
+}
+
+export interface PushSubscriptionKeys {
+  p256dh: string;
+  auth: string;
+}
+
+export interface PushSubscriptionRecord {
+  id: string;
+  userId: string;
+  endpoint: string;
+  keys: PushSubscriptionKeys;
+  userAgent?: string;
+  createdAt: number;
+}
+

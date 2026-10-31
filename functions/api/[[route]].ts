@@ -37,7 +37,33 @@ import {
   filterQuestsForViewer,
   validateQuestPayload
 } from '../../shared/rules/questEngine';
-import type { CharacterParticipation, LevelUpPayload, XpAward, SheetChangeRequest, Session, SessionStatus, SessionRsvpChoice, SessionRecap, SessionHighlight, Handout, MapPin, Quest, QuestObjective, QuestRewardRef, QuestStatus } from '../../src/types';
+import {
+  isNotificationTypeMuted,
+  sanitizePayloadForPlayer,
+  computeLazySessionReminders,
+} from '../../shared/rules/notifications';
+import type {
+  CharacterParticipation,
+  LevelUpPayload,
+  XpAward,
+  SheetChangeRequest,
+  Session,
+  SessionStatus,
+  SessionRsvpChoice,
+  SessionRecap,
+  SessionHighlight,
+  Handout,
+  MapPin,
+  Quest,
+  QuestObjective,
+  QuestRewardRef,
+  QuestStatus,
+  NotificationType,
+  NotificationPayload,
+  NotificationItem,
+  NotificationPref,
+  PushSubscriptionRecord
+} from '../../src/types';
 
 interface Env {
   DB: any; // Cloudflare D1Database binding
@@ -436,6 +462,92 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         'INSERT INTO audit_log (id, actor_id, action, target_id, meta, created_at) VALUES (?, ?, ?, ?, ?, ?)'
       ).bind(auditId, currentUser?.id || null, action, targetId, meta ? JSON.stringify(meta) : null, Date.now()).run();
     } catch {}
+  };
+
+  // Helper for querying campaign member user IDs
+  const getCampaignMemberUserIds = async (campaignId: string, excludeUserId?: string): Promise<string[]> => {
+    if (!env.DB) return [];
+    try {
+      const rows = await env.DB.prepare(
+        'SELECT user_id FROM campaign_members WHERE campaign_id = ? AND status = "active"'
+      ).bind(campaignId).all();
+      const ids: string[] = (rows.results || []).map((r: any) => String(r.user_id));
+      return excludeUserId ? ids.filter((id: string) => id !== excludeUserId) : ids;
+    } catch {
+      return [];
+    }
+  };
+
+  // Helper for querying campaign DM user IDs (owner and co_dm)
+  const getCampaignDmUserIds = async (campaignId: string, excludeUserId?: string): Promise<string[]> => {
+    if (!env.DB) return [];
+    try {
+      const rows = await env.DB.prepare(
+        'SELECT user_id FROM campaign_members WHERE campaign_id = ? AND status = "active" AND role IN ("owner", "co_dm")'
+      ).bind(campaignId).all();
+      const ids: string[] = (rows.results || []).map((r: any) => String(r.user_id));
+      return excludeUserId ? ids.filter((id: string) => id !== excludeUserId) : ids;
+    } catch {
+      return [];
+    }
+  };
+
+  // Central server-side notification helper: notify(userIds, type, payload, campaignId)
+  // Checks preferences, sanitizes payload (never leaks DM secrets to players), inserts into notifications, and supports Web Push
+  const notify = async (
+    userIds: string | string[],
+    type: NotificationType,
+    payload: NotificationPayload,
+    campaignId?: string | null
+  ) => {
+    if (!env.DB) return;
+    const targetUserIds = Array.isArray(userIds) ? userIds : [userIds];
+    if (targetUserIds.length === 0) return;
+
+    const campId = campaignId !== undefined ? campaignId : (payload.campaignId || null);
+    const timestamp = Date.now();
+
+    for (const uid of targetUserIds) {
+      if (!uid) continue;
+      try {
+        // 1. Check user preferences
+        const prefRow = await env.DB.prepare(
+          'SELECT types, push_enabled FROM notification_prefs WHERE user_id = ? AND (campaign_id = ? OR campaign_id IS NULL) ORDER BY campaign_id DESC LIMIT 1'
+        ).bind(uid, campId).first();
+
+        let isMuted = false;
+        if (prefRow) {
+          try {
+            const typesObj = JSON.parse(prefRow.types || '{}');
+            if (typesObj[type] === false) {
+              isMuted = true;
+            }
+          } catch {}
+        }
+
+        if (isMuted) continue;
+
+        // 2. Check if user is DM for this campaign
+        let isDm = false;
+        if (campId) {
+          const mem = await env.DB.prepare(
+            'SELECT role FROM campaign_members WHERE campaign_id = ? AND user_id = ?'
+          ).bind(campId, uid).first();
+          isDm = mem?.role === 'owner' || mem?.role === 'co_dm';
+        }
+
+        // 3. Security: Sanitize payload so no DM-only secrets or private notes leak to players
+        const sanitized = sanitizePayloadForPlayer(payload, isDm);
+
+        // 4. Insert notification
+        const notifId = `notif-${timestamp}-${generateRandomToken(4)}`;
+        await env.DB.prepare(
+          'INSERT INTO notifications (id, user_id, campaign_id, type, payload, read_at, created_at) VALUES (?, ?, ?, ?, ?, NULL, ?)'
+        ).bind(notifId, uid, campId, type, JSON.stringify(sanitized), timestamp).run();
+      } catch (err) {
+        console.error('Error in notify helper:', err);
+      }
+    }
   };
 
   // Rate limit checker helper
@@ -1197,6 +1309,26 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       'UPDATE campaign_invites SET used_count = used_count + 1 WHERE id = ? AND used_count < max_uses'
     ).bind(inv.id).run();
     await audit('campaign-invite-accept', inv.id, { campaignId: campId, role: memberRole });
+
+    // Notify campaign DMs that a new member joined
+    try {
+      const dmIds = await getCampaignDmUserIds(campId, actor.id);
+      await notify(
+        dmIds,
+        'campaign_joined',
+        {
+          title: 'عضو جدید به کمپین پیوست',
+          body: `${actor.display_name} با نقش «${memberRole}» به کمپین «${camp.name || 'کمپین'}» پیوست.`,
+          campaignId: campId,
+          targetType: 'member',
+          targetId: actor.id,
+          link: `/campaign/${campId}/members`,
+          actorName: actor.display_name,
+        },
+        campId
+      );
+    } catch {}
+
     return json({ campaignId: campId, role: memberRole });
   }
 
@@ -1878,6 +2010,25 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       'INSERT INTO backstory_comments (id, character_id, section_id, author_id, body, resolved, created_at) VALUES (?, ?, ?, ?, ?, 0, ?)'
     ).bind(commentId, charId, sectionId, actor.id, commentBody, now).run();
 
+    // Notify character owner if commenter is not the owner
+    try {
+      const charOwnerRow = await env.DB.prepare('SELECT owner_id, name FROM characters WHERE id = ?').bind(charId).first();
+      if (charOwnerRow && charOwnerRow.owner_id !== actor.id) {
+        await notify(
+          String(charOwnerRow.owner_id),
+          'backstory_comment',
+          {
+            title: 'دیدگاه جدید دانجن‌مستر بر پیشینه',
+            body: `${actor.display_name} دیدگاهی بر پیشینه ${charOwnerRow.name || 'شخصیت'} ثبت کرد: "${commentBody.slice(0, 80)}"`,
+            targetType: 'backstory',
+            targetId: charId,
+            link: `/character/${charId}?tab=backstory`,
+            actorName: actor.display_name,
+          }
+        );
+      }
+    } catch {}
+
     return json({
       id: commentId,
       characterId: charId,
@@ -1931,7 +2082,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const status = body.status === 'approved' ? 'approved' : 'changes_requested';
     const comment = String(body.comment || '').trim();
 
-    const charRow = (await env.DB.prepare('SELECT data, revision FROM characters WHERE id = ?').bind(charId).first()) as { data: string; revision: number } | null;
+    const charRow = (await env.DB.prepare('SELECT owner_id, data, revision FROM characters WHERE id = ?').bind(charId).first()) as { owner_id: string; data: string; revision: number } | null;
     if (!charRow) return error('شخصیت یافت نشد.', 404);
 
     const char = parseBlob(charRow.data, {});
@@ -1960,6 +2111,24 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       }),
       now
     ).run();
+
+    // Notify character owner
+    try {
+      if (charRow.owner_id && charRow.owner_id !== actor.id) {
+        await notify(
+          String(charRow.owner_id),
+          'approval_decided',
+          {
+            title: status === 'approved' ? 'پیشینه داستانی تأیید شد' : 'درخواست اصلاح پیشینه داستانی',
+            body: comment || (status === 'approved' ? 'پیشینه داستانی شخصیت توسط دانجن‌مستر تأیید گردید.' : 'دانجن‌مستر درخواست بازنگری در پیشینه داستانی دارد.'),
+            targetType: 'backstory',
+            targetId: charId,
+            link: `/character/${charId}?tab=backstory`,
+            actorName: actor.display_name,
+          }
+        );
+      }
+    } catch {}
 
     return json(char);
   }
@@ -2314,6 +2483,30 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       'UPDATE character_participations SET status = ?, level = ?, pending_level_up = ?, updated_at = ? WHERE id = ? AND campaign_id = ?'
     ).bind(nextStatus, nextLevel, nextPending ? JSON.stringify(nextPending) : null, now, partId, campId).run();
     await audit(`participation-${action}`, partId, { campaignId: campId, comment });
+
+    // Notify player who owns this character participation
+    try {
+      const partUser = await env.DB.prepare('SELECT user_id, character_id FROM character_participations WHERE id = ?').bind(partId).first();
+      if (partUser && partUser.user_id) {
+        const charInfo = await env.DB.prepare('SELECT name FROM characters WHERE id = ?').bind(partUser.character_id).first();
+        const actionLabelFa = action === 'approve' ? 'تأیید شد' : action === 'reject' ? 'رد شد' : 'نیازمند اصلاح است';
+        await notify(
+          String(partUser.user_id),
+          'approval_decided',
+          {
+            title: `نتیجه بررسی شخصیت: ${actionLabelFa}`,
+            body: comment || `درخواست شخصیت «${charInfo?.name || 'شخصیت شما'}» توسط دانجن‌مستر ${actionLabelFa}.`,
+            campaignId: campId,
+            targetType: 'approval',
+            targetId: partId,
+            link: `/campaign/${campId}/character/${partId}`,
+            actorName: actor.display_name,
+          },
+          campId
+        );
+      }
+    } catch {}
+
     const updated = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
     return json(mapParticipation(updated));
   }
@@ -2632,6 +2825,29 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     ).run();
 
     await audit('approve-level-up', partId, { campaignId: campId, targetLevel: diff.toLevel });
+
+    // Notify player about level-up approval
+    try {
+      const partUser = await env.DB.prepare('SELECT user_id, character_id FROM character_participations WHERE id = ?').bind(partId).first();
+      if (partUser && partUser.user_id) {
+        const charInfo = await env.DB.prepare('SELECT name FROM characters WHERE id = ?').bind(partUser.character_id).first();
+        await notify(
+          String(partUser.user_id),
+          'approval_decided',
+          {
+            title: `ارتقای سطح تأیید شد: سطح ${diff.toLevel}`,
+            body: comment || `ارتقای سطح «${charInfo?.name || 'شخصیت شما'}» به سطح ${diff.toLevel} توسط دانجن‌مستر تأیید گردید.`,
+            campaignId: campId,
+            targetType: 'approval',
+            targetId: partId,
+            link: `/campaign/${campId}/character/${partId}`,
+            actorName: actor.display_name,
+          },
+          campId
+        );
+      }
+    } catch {}
+
     const finalPart = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
     return json(mapParticipation(finalPart));
   }
@@ -2645,6 +2861,29 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const body = await request.json().catch(() => ({})) as any;
     await env.DB.prepare('UPDATE character_participations SET pending_change = NULL, updated_at = ? WHERE id = ?').bind(now, partId).run();
     await audit('reject-level-up', partId, { campaignId: campId, comment: body?.comment });
+
+    // Notify player about level-up rejection
+    try {
+      const partUser = await env.DB.prepare('SELECT user_id, character_id FROM character_participations WHERE id = ?').bind(partId).first();
+      if (partUser && partUser.user_id) {
+        const charInfo = await env.DB.prepare('SELECT name FROM characters WHERE id = ?').bind(partUser.character_id).first();
+        await notify(
+          String(partUser.user_id),
+          'approval_decided',
+          {
+            title: `درخواست ارتقای سطح رد شد`,
+            body: body?.comment || `درخواست ارتقای سطح برای «${charInfo?.name || 'شخصیت شما'}» توسط دانجن‌مستر رد گردید.`,
+            campaignId: campId,
+            targetType: 'approval',
+            targetId: partId,
+            link: `/campaign/${campId}/character/${partId}`,
+            actorName: actor.display_name,
+          },
+          campId
+        );
+      }
+    } catch {}
+
     const finalPart = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
     return json(mapParticipation(finalPart));
   }
@@ -4659,6 +4898,26 @@ export const onRequest: PagesFunction<Env> = async (context) => {
        VALUES (?, ?, 1, 'start', 'مبارزه آغاز شد (دور ۱)', 1, ?)`
     ).bind(`evt-${t}-${generateRandomToken(4)}`, encId, t).run();
 
+    // Notify campaign members encounter has started
+    try {
+      const campId = encRow.scope_id || 'zorvania-c1';
+      const memberIds = await getCampaignMemberUserIds(campId, actor.id);
+      await notify(
+        memberIds,
+        'encounter_started',
+        {
+          title: `نبرد فعال آغاز شد: ${encRow.name}`,
+          body: `دانجن‌مستر رویارویی «${encRow.name}» را آغاز کرد. وارد صفحه نبرد شوید.`,
+          campaignId: campId,
+          targetType: 'encounter',
+          targetId: encId,
+          link: `/encounters?active=${encId}`,
+          actorName: actor.display_name,
+        },
+        campId
+      );
+    } catch {}
+
     return json({ success: true, status: 'active', round: 1, currentParticipantId: partRow?.id || null, version: nextVersion });
   }
 
@@ -5837,6 +6096,43 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     ).run();
 
     await audit('session-create', sid, { campaignId: campId, number: sessionNum, title });
+
+    // Notify campaign members about new session or poll
+    try {
+      const memberIds = await getCampaignMemberUserIds(campId, actor.id);
+      if (pollOptions && pollOptions.length > 0) {
+        await notify(
+          memberIds,
+          'poll_opened',
+          {
+            title: `نظرسنجی زمان جلسه ${sessionNum}: ${title}`,
+            body: `نظرسنجی برای تعیین تاریخ جلسه شماره ${sessionNum} ایجاد شد. لطفاً به گزینه‌ها رأی دهید.`,
+            campaignId: campId,
+            targetType: 'session',
+            targetId: sid,
+            link: `/campaign/${campId}/sessions?session=${sid}`,
+            actorName: actor.display_name,
+          },
+          campId
+        );
+      } else {
+        await notify(
+          memberIds,
+          'session_scheduled',
+          {
+            title: `جلسه ${sessionNum} زمان‌بندی شد: ${title}`,
+            body: scheduledAt ? `جلسه جدید برای تاریخ زمان‌بندی گردید.` : `جلسه شماره ${sessionNum} برنامه‌ریزی شد.`,
+            campaignId: campId,
+            targetType: 'session',
+            targetId: sid,
+            link: `/campaign/${campId}/sessions?session=${sid}`,
+            actorName: actor.display_name,
+          },
+          campId
+        );
+      }
+    } catch {}
+
     const created = await loadFullSession(campId, sid, 'owner');
     return json(created, 201);
   }
@@ -5888,6 +6184,43 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     ).run();
 
     await audit('session-update', sid, { campaignId: campId });
+
+    // Notify campaign members if cancelled or session details changed
+    try {
+      const memberIds = await getCampaignMemberUserIds(campId, actor.id);
+      if (status === 'cancelled' && existing.status !== 'cancelled') {
+        await notify(
+          memberIds,
+          'session_cancelled',
+          {
+            title: `لغو جلسه ${number}: ${title}`,
+            body: `جلسه شماره ${number} توسط دانجن‌مستر لغو شد.`,
+            campaignId: campId,
+            targetType: 'session',
+            targetId: sid,
+            link: `/campaign/${campId}/sessions`,
+            actorName: actor.display_name,
+          },
+          campId
+        );
+      } else if (scheduledAt !== existing.scheduled_at || placeText !== existing.place_text || onlineUrl !== existing.online_url) {
+        await notify(
+          memberIds,
+          'session_changed',
+          {
+            title: `تغییر مشخصات جلسه ${number}: ${title}`,
+            body: `زمان یا مکان جلسه شماره ${number} به‌روزرسانی شد.`,
+            campaignId: campId,
+            targetType: 'session',
+            targetId: sid,
+            link: `/campaign/${campId}/sessions?session=${sid}`,
+            actorName: actor.display_name,
+          },
+          campId
+        );
+      }
+    } catch {}
+
     const updated = await loadFullSession(campId, sid, 'owner');
     return json(updated);
   }
@@ -6019,6 +6352,26 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     await env.DB.prepare("UPDATE session_polls SET status = 'closed' WHERE id = ?").bind(poll.id).run();
 
     await audit('session-poll-confirm', sid, { optionId, startsAt: chosen.startsAt });
+
+    // Notify campaign members about poll closure and final date
+    try {
+      const memberIds = await getCampaignMemberUserIds(campId, actor.id);
+      await notify(
+        memberIds,
+        'poll_closed',
+        {
+          title: 'تاریخ نهایی جلسه مشخص شد',
+          body: `نظرسنجی تاریخ بسته شد و جلسه بر اساس آرای گروه برای تاریخ مقرر نهایی گردید.`,
+          campaignId: campId,
+          targetType: 'session',
+          targetId: sid,
+          link: `/campaign/${campId}/sessions?session=${sid}`,
+          actorName: actor.display_name,
+        },
+        campId
+      );
+    } catch {}
+
     const updated = await loadFullSession(campId, sid, 'owner');
     return json(updated);
   }
@@ -6850,6 +7203,50 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     }
 
     await audit('handout-reveal', hid, { campaignId: campId, title: existing.title, visibility: mode });
+
+    // Notify recipients about handout revealed
+    try {
+      if (mode === 'revealed') {
+        const memberIds = await getCampaignMemberUserIds(campId, actor.id);
+        await notify(
+          memberIds,
+          'handout_revealed',
+          {
+            title: `سند جدید آشکار شد: ${existing.title}`,
+            body: `دانجن‌مستر سند یا نقشه «${existing.title}» را برای گروه آشکار کرد.`,
+            campaignId: campId,
+            targetType: 'handout',
+            targetId: hid,
+            link: `/campaign/${campId}/handouts?handout=${hid}`,
+            actorName: actor.display_name,
+          },
+          campId
+        );
+      } else if (mode === 'selected' && Array.isArray(body.recipients) && body.recipients.length > 0) {
+        const placeholders = body.recipients.map(() => '?').join(',');
+        const partUsers = await env.DB.prepare(
+          `SELECT user_id FROM character_participations WHERE id IN (${placeholders})`
+        ).bind(...body.recipients).all();
+        const userIds = (partUsers.results || []).map((r: any) => String(r.user_id)).filter((id: string) => id !== actor.id);
+        if (userIds.length > 0) {
+          await notify(
+            userIds,
+            'handout_revealed',
+            {
+              title: `سند اختصاصی آشکار شد: ${existing.title}`,
+              body: `دانجن‌مستر سند یا نقشه «${existing.title}» را در اختیار شما قرار داد.`,
+              campaignId: campId,
+              targetType: 'handout',
+              targetId: hid,
+              link: `/campaign/${campId}/handouts?handout=${hid}`,
+              actorName: actor.display_name,
+            },
+            campId
+          );
+        }
+      }
+    } catch {}
+
     const updatedRow = await env.DB.prepare(`
       SELECT h.*, u.display_name AS created_by_name
       FROM handouts h
@@ -7301,6 +7698,25 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     }
 
     await audit('quest-complete', qid, { campaignId: campId, title: questRow.title, rewardGranted });
+
+    // Notify campaign members about quest completion
+    try {
+      const memberIds = await getCampaignMemberUserIds(campId, actor.id);
+      await notify(
+        memberIds,
+        'quest_updated',
+        {
+          title: `مأموریت تکمیل شد: ${questRow.title}`,
+          body: `مأموریت «${questRow.title}» با موفقیت به پایان رسید.`,
+          campaignId: campId,
+          targetType: 'quest',
+          targetId: qid,
+          link: `/campaign/${campId}/quests?quest=${qid}`,
+          actorName: actor.display_name,
+        },
+        campId
+      );
+    } catch {}
 
     const updatedRow = await env.DB.prepare(`
       SELECT q.*, l.name AS location_name, n.name AS giver_npc_name
@@ -8042,6 +8458,246 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     }));
 
     return json(logs);
+  }
+
+  // ----------------------------------------------------------------------
+  // Step 4.6: Notifications & Preferences Endpoints
+  // ----------------------------------------------------------------------
+
+  // GET /api/notifications — In-app notification inbox with lazy session reminder generation
+  if (path === '/notifications' && method === 'GET') {
+    const url = new URL(request.url);
+    const filterCampId = url.searchParams.get('campaign_id');
+    const unreadOnly = url.searchParams.get('unread_only') === 'true';
+
+    // 1. Lazy evaluation of session reminders (no cron required)
+    try {
+      const campRows = await env.DB.prepare(
+        'SELECT campaign_id FROM campaign_members WHERE user_id = ? AND status = "active"'
+      ).bind(actor.id).all();
+      const userCampIds = (campRows.results || []).map((r: any) => String(r.campaign_id));
+
+      if (userCampIds.length > 0) {
+        const placeholders = userCampIds.map(() => '?').join(',');
+        const sessRows = await env.DB.prepare(`
+          SELECT * FROM sessions
+          WHERE campaign_id IN (${placeholders})
+            AND status IN ('planned', 'confirmed')
+            AND scheduled_at IS NOT NULL
+        `).bind(...userCampIds).all();
+
+        const sessionsList: Session[] = [];
+        for (const sr of (sessRows.results || [])) {
+          const rsvps = await env.DB.prepare('SELECT * FROM session_rsvps WHERE session_id = ?').bind(sr.id).all();
+          sessionsList.push({
+            id: String(sr.id),
+            campaignId: String(sr.campaign_id),
+            number: Number(sr.number),
+            title: String(sr.title),
+            scheduledAt: sr.scheduled_at,
+            durationMinutes: Number(sr.duration_minutes || 180),
+            status: sr.status as any,
+            createdBy: String(sr.created_by),
+            createdAt: Number(sr.created_at),
+            updatedAt: Number(sr.updated_at),
+            rsvps: (rsvps.results || []).map((r: any) => ({
+              sessionId: String(r.session_id),
+              userId: String(r.user_id),
+              status: r.status,
+              updatedAt: Number(r.updated_at),
+            })),
+          });
+        }
+
+        const existingNotifs = await env.DB.prepare(
+          'SELECT * FROM notifications WHERE user_id = ? AND type = "rsvp_reminder"'
+        ).bind(actor.id).all();
+
+        const existingItems: NotificationItem[] = (existingNotifs.results || []).map((n: any) => ({
+          id: String(n.id),
+          userId: String(n.user_id),
+          campaignId: n.campaign_id || null,
+          type: n.type,
+          payload: parseBlob(n.payload, {}),
+          readAt: n.read_at ? Number(n.read_at) : null,
+          createdAt: Number(n.created_at),
+        }));
+
+        const reminders = computeLazySessionReminders({
+          userId: actor.id,
+          sessions: sessionsList,
+          existingNotifications: existingItems,
+          nowMs: now,
+          horizonHours: 24,
+        });
+
+        for (const rem of reminders) {
+          await env.DB.prepare(`
+            INSERT INTO notifications (id, user_id, campaign_id, type, payload, read_at, created_at)
+            VALUES (?, ?, ?, ?, ?, NULL, ?)
+          `).bind(rem.id, rem.userId, rem.campaignId, rem.type, JSON.stringify(rem.payload), rem.createdAt).run();
+        }
+      }
+    } catch (e) {
+      console.warn('Lazy session reminder evaluation failed:', e);
+    }
+
+    // 2. Fetch notifications for actor
+    let query = `
+      SELECT n.*, c.name AS campaign_title
+      FROM notifications n
+      LEFT JOIN campaigns c ON n.campaign_id = c.id
+      WHERE n.user_id = ?
+    `;
+    const params: any[] = [actor.id];
+
+    if (filterCampId) {
+      query += ' AND n.campaign_id = ?';
+      params.push(filterCampId);
+    }
+    if (unreadOnly) {
+      query += ' AND n.read_at IS NULL';
+    }
+
+    query += ' ORDER BY n.created_at DESC LIMIT 100';
+
+    const rows = await env.DB.prepare(query).bind(...params).all();
+
+    const items: NotificationItem[] = (rows.results || []).map((r: any) => {
+      const payload = parseBlob(r.payload, {});
+      return {
+        id: String(r.id),
+        userId: String(r.user_id),
+        campaignId: r.campaign_id || null,
+        type: r.type,
+        payload,
+        readAt: r.read_at ? Number(r.read_at) : null,
+        createdAt: Number(r.created_at),
+        campaignTitle: r.campaign_title || payload.campaignTitle || undefined,
+        isRead: !!r.read_at,
+      };
+    });
+
+    return json(items);
+  }
+
+  // POST /api/notifications/:id/read — mark single notification as read
+  if (path.match(/^\/notifications\/[^/]+\/read$/) && method === 'POST') {
+    const notifId = path.split('/')[2];
+    await env.DB.prepare('UPDATE notifications SET read_at = ? WHERE id = ? AND user_id = ?')
+      .bind(now, notifId, actor.id).run();
+    return json({ success: true, id: notifId, readAt: now });
+  }
+
+  // POST /api/notifications/read-all — mark all as read (optional campaign_id filter)
+  if (path === '/notifications/read-all' && method === 'POST') {
+    let body: any = {};
+    try { body = await request.json(); } catch {}
+    const campId = body.campaignId || new URL(request.url).searchParams.get('campaign_id');
+
+    if (campId) {
+      await env.DB.prepare('UPDATE notifications SET read_at = ? WHERE user_id = ? AND campaign_id = ? AND read_at IS NULL')
+        .bind(now, actor.id, campId).run();
+    } else {
+      await env.DB.prepare('UPDATE notifications SET read_at = ? WHERE user_id = ? AND read_at IS NULL')
+        .bind(now, actor.id).run();
+    }
+    return json({ success: true, readAt: now });
+  }
+
+  // DELETE /api/notifications/:id — delete notification
+  if (path.match(/^\/notifications\/[^/]+$/) && method === 'DELETE') {
+    const notifId = path.split('/')[2];
+    await env.DB.prepare('DELETE FROM notifications WHERE id = ? AND user_id = ?')
+      .bind(notifId, actor.id).run();
+    return json({ success: true, id: notifId });
+  }
+
+  // GET /api/notifications/preferences — get notification prefs (per-campaign or global)
+  if (path === '/notifications/preferences' && method === 'GET') {
+    const url = new URL(request.url);
+    const campId = url.searchParams.get('campaign_id');
+
+    let row;
+    if (campId) {
+      row = await env.DB.prepare('SELECT * FROM notification_prefs WHERE user_id = ? AND campaign_id = ?')
+        .bind(actor.id, campId).first();
+    }
+    if (!row) {
+      row = await env.DB.prepare('SELECT * FROM notification_prefs WHERE user_id = ? AND campaign_id IS NULL')
+        .bind(actor.id).first();
+    }
+
+    const pref: NotificationPref = {
+      id: row?.id ? String(row.id) : undefined,
+      userId: actor.id,
+      campaignId: campId || null,
+      types: row ? parseBlob(row.types, {}) : {},
+      pushEnabled: row ? row.push_enabled !== 0 : true,
+      updatedAt: row ? Number(row.updated_at) : undefined,
+    };
+    return json(pref);
+  }
+
+  // PUT /api/notifications/preferences — update notification prefs
+  if (path === '/notifications/preferences' && method === 'PUT') {
+    const body = await request.json() as any;
+    const campId = body.campaignId || null;
+    const typesObj = body.types || {};
+    const pushEnabled = body.pushEnabled !== undefined ? (body.pushEnabled ? 1 : 0) : 1;
+    const prefId = `pref-${actor.id}-${campId || 'global'}`;
+
+    await env.DB.prepare(`
+      INSERT INTO notification_prefs (id, user_id, campaign_id, types, push_enabled, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(user_id, campaign_id) DO UPDATE SET
+        types = excluded.types,
+        push_enabled = excluded.push_enabled,
+        updated_at = excluded.updated_at
+    `).bind(prefId, actor.id, campId, JSON.stringify(typesObj), pushEnabled, now).run();
+
+    return json({
+      id: prefId,
+      userId: actor.id,
+      campaignId: campId,
+      types: typesObj,
+      pushEnabled: !!pushEnabled,
+      updatedAt: now,
+    });
+  }
+
+  // POST /api/push/subscribe — register Web Push subscription
+  if (path === '/push/subscribe' && method === 'POST') {
+    const body = await request.json() as any;
+    const endpoint = String(body.endpoint || '').trim();
+    if (!endpoint) return error('آدرس پایانه اعلان (Endpoint) الزامی است.', 400);
+
+    const keys = body.keys || {};
+    const userAgent = request.headers.get('user-agent') || body.userAgent || '';
+    const subId = `sub-${now}-${generateRandomToken(4)}`;
+
+    await env.DB.prepare(`
+      INSERT INTO push_subscriptions (id, user_id, endpoint, keys, user_agent, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(endpoint) DO UPDATE SET
+        user_id = excluded.user_id,
+        keys = excluded.keys,
+        user_agent = excluded.user_agent,
+        created_at = excluded.created_at
+    `).bind(subId, actor.id, endpoint, JSON.stringify(keys), userAgent, now).run();
+
+    return json({ success: true, subscriptionId: subId });
+  }
+
+  // POST /api/push/unsubscribe — remove Web Push subscription
+  if (path === '/push/unsubscribe' && method === 'POST') {
+    const body = await request.json() as any;
+    const endpoint = String(body.endpoint || '').trim();
+    if (endpoint) {
+      await env.DB.prepare('DELETE FROM push_subscriptions WHERE endpoint = ? AND user_id = ?')
+        .bind(endpoint, actor.id).run();
+    }
+    return json({ success: true });
   }
 
   // 404 Fallback

@@ -4,7 +4,7 @@ import { APP_NAME_FA, APP_NAME_LATIN, APP_TAGLINE } from '../config/app';
 import { BottomSheet } from './mobile/BottomSheet';
 import { 
   CheckCircle2, RefreshCw, Shield, BookOpen, 
-  SunMedium, Type, LogOut, ChevronDown, MoreVertical, Sparkles, Swords
+  SunMedium, Type, LogOut, ChevronDown, MoreVertical, Sparkles, Swords, Bell
 } from 'lucide-react';
 
 export interface HeaderProps {
@@ -40,6 +40,8 @@ export interface HeaderProps {
   pendingApprovalsCount?: number;
   levelUpAvailable?: boolean;
   onOpenLevelUp?: () => void;
+  unreadNotificationsCount?: number;
+  onOpenNotifications?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -73,7 +75,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCampaignApprovals,
   pendingApprovalsCount = 0,
   levelUpAvailable = false,
-  onOpenLevelUp
+  onOpenLevelUp,
+  unreadNotificationsCount = 0,
+  onOpenNotifications
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isDm = activeCampaignRole === 'owner' || activeCampaignRole === 'co_dm' || currentUser?.role === 'dm';
@@ -253,6 +257,23 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
+          {/* Notifications Bell */}
+          {onOpenNotifications && (
+            <button
+              type="button"
+              onClick={onOpenNotifications}
+              className="relative p-1.5 rounded-[10px] text-xs font-bold transition border border-[#2F2A23] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] hover:border-[#E0A030] touch-target"
+              title="اعلان‌ها و رویدادها"
+            >
+              <Bell className="w-4 h-4" />
+              {unreadNotificationsCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#DC4437] text-white text-[10px] font-bold flex items-center justify-center border border-[#0E0D0C] shadow-sm animate-pulse">
+                  {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
+                </span>
+              )}
+            </button>
+          )}
+
           {/* User Account / Login Button */}
           {currentUser ? (
             <div className="flex items-center gap-1.5">
@@ -407,6 +428,28 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <Sparkles className="w-3.5 h-3.5 text-[#E0A030]" />
                 <span>مدیریت حساب کاربری و نشست‌ها</span>
+              </button>
+            )}
+
+            {/* Notifications and Events Button */}
+            {onOpenNotifications && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenNotifications();
+                }}
+                className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex items-center justify-between touch-target"
+              >
+                <div className="flex items-center gap-2">
+                  <Bell className="w-3.5 h-3.5 text-[#E0A030]" />
+                  <span>اعلان‌ها و رویدادها</span>
+                </div>
+                {unreadNotificationsCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-[#DC4437] text-white text-[10px] font-bold">
+                    {unreadNotificationsCount} جدید
+                  </span>
+                )}
               </button>
             )}
 

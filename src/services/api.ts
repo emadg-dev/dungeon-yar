@@ -94,8 +94,18 @@ import {
   PartyCurrency,
   TreasuryLogType,
   TreasuryLogEntry,
-  TreasuryTransferRequest
+  TreasuryTransferRequest,
+  NotificationType,
+  NotificationPayload,
+  NotificationItem,
+  NotificationPref,
+  PushSubscriptionRecord
 } from '../types';
+import {
+  isNotificationTypeMuted,
+  sanitizePayloadForPlayer,
+  computeLazySessionReminders
+} from '../../shared/rules/notifications';
 import { rollAbilityScores } from '../../shared/rules/engine';
 import { computeAuthoritativeParticipation, createSnapshot, pruneSnapshots } from '../../shared/rules/wizardEngine';
 import { computeLevelUpDiff, isLevelUpReady, isFieldLockedForPlayer, XP_THRESHOLDS } from '../../shared/rules/levelUpEngine';
@@ -152,7 +162,7 @@ import {
   validateCurrencyUpdate,
   executeItemTransfer
 } from '../../shared/rules/treasuryEngine';
-import { APP_NAME_FA } from '../config/app';
+import { APP_NAME_FA, APP_NAME_LATIN } from '../config/app';
 import {
   SEED_USERS,
   SEED_CHARACTERS,
@@ -778,6 +788,16 @@ export interface ApiClient {
   removePartyItem(campaignId: string, itemId: string, expectedRevision?: number, note?: string): Promise<void>;
   transferPartyItem(campaignId: string, transfer: TreasuryTransferRequest): Promise<{ partyItem?: PartyItem | null; characterInventory: InventoryItem[]; treasuryLog: TreasuryLogEntry }>;
   listTreasuryLogs(campaignId: string, limit?: number): Promise<TreasuryLogEntry[]>;
+
+  // Step 4.6: Notifications, Preferences & Web Push
+  listNotifications(campaignId?: string, unreadOnly?: boolean): Promise<NotificationItem[]>;
+  markNotificationRead(id: string): Promise<void>;
+  markAllNotificationsRead(campaignId?: string): Promise<void>;
+  deleteNotification(id: string): Promise<void>;
+  getNotificationPreferences(campaignId?: string): Promise<NotificationPref>;
+  updateNotificationPreferences(campaignId: string | null | undefined, data: { types?: Partial<Record<NotificationType, boolean>>; pushEnabled?: boolean }): Promise<NotificationPref>;
+  subscribePush(sub: { endpoint: string; keys: { p256dh: string; auth: string }; userAgent?: string }): Promise<void>;
+  unsubscribePush(endpoint: string): Promise<void>;
 }
 
 // ----------------------------------------------------------------------
@@ -6775,6 +6795,218 @@ export class LocalApi implements ApiClient {
     const tlogs = this.getItem<TreasuryLogEntry[]>('treasury_logs', []);
     return tlogs.filter(l => l.campaignId === campaignId).slice(0, limit);
   }
+
+  // --------------------------------------------------------------------
+  // Step 4.6: Notifications & Preferences (LocalApi)
+  // --------------------------------------------------------------------
+  private getSeedNotifications(): NotificationItem[] {
+    const now = Date.now();
+    return [
+      {
+        id: 'notif-seed-1',
+        userId: 'user-player1',
+        campaignId: 'zorvania-c1',
+        type: 'session_scheduled',
+        payload: {
+          title: 'جلسه ۵: دروازه‌های ورنا',
+          body: 'جلسه جدید بازی توسط دانجن‌مستر برای جمعه زمان‌بندی شد.',
+          campaignId: 'zorvania-c1',
+          campaignTitle: 'کمپین زروانیا',
+          targetType: 'session',
+          targetId: 'session-1',
+          link: '/campaign/zorvania-c1/sessions',
+          actorName: 'امید دانجن‌مستر',
+        },
+        readAt: null,
+        createdAt: now - 3600000 * 2,
+        campaignTitle: 'کمپین زروانیا',
+        isRead: false,
+      },
+      {
+        id: 'notif-seed-2',
+        userId: 'user-player1',
+        campaignId: 'zorvania-c1',
+        type: 'quest_updated',
+        payload: {
+          title: 'به‌روزرسانی مأموریت: راز جام کهن',
+          body: 'هدف جدیدی به مأموریت راز جام کهن افزوده شد.',
+          campaignId: 'zorvania-c1',
+          campaignTitle: 'کمپین زروانیا',
+          targetType: 'quest',
+          targetId: 'quest-1',
+          link: '/campaign/zorvania-c1/quests',
+          actorName: 'امید دانجن‌مستر',
+        },
+        readAt: null,
+        createdAt: now - 3600000 * 5,
+        campaignTitle: 'کمپین زروانیا',
+        isRead: false,
+      },
+      {
+        id: 'notif-seed-3',
+        userId: 'user-player1',
+        campaignId: null,
+        type: 'invite_received',
+        payload: {
+          title: 'به دانجن‌یار خوش آمدید!',
+          body: 'پلتفرم مدیریت بازی‌های نقش‌آفرینی دانجن‌یار آماده ماجراجویی شماست.',
+          targetType: 'campaign',
+          link: '/campaigns',
+        },
+        readAt: now - 86400000,
+        createdAt: now - 86400000 * 2,
+        campaignTitle: 'عمومی و حساب کاربری',
+        isRead: true,
+      },
+    ];
+  }
+
+  async listNotifications(campaignId?: string, unreadOnly = false): Promise<NotificationItem[]> {
+    const user = this.currentUser || SEED_USERS[1];
+    let all = this.getItem<NotificationItem[]>('notifications', this.getSeedNotifications());
+
+    // Lazy evaluation of upcoming sessions
+    try {
+      const sessions = this.getItem<Session[]>('sessions', SEED_SESSIONS);
+      const reminders = computeLazySessionReminders({
+        userId: user.id,
+        sessions,
+        existingNotifications: all,
+        nowMs: Date.now(),
+        horizonHours: 24,
+      });
+      if (reminders.length > 0) {
+        all = [...reminders, ...all];
+        this.setItem('notifications', all);
+      }
+    } catch {}
+
+    const campaigns = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const campMap = new Map(campaigns.map(c => [c.id, c.name]));
+
+    let userNotifs = all.filter(n => n.userId === user.id || n.userId === 'user-player1' || n.userId === 'user-dm');
+
+    if (campaignId) {
+      userNotifs = userNotifs.filter(n => n.campaignId === campaignId);
+    }
+    if (unreadOnly) {
+      userNotifs = userNotifs.filter(n => !n.readAt);
+    }
+
+    return userNotifs.map(n => ({
+      ...n,
+      campaignTitle: n.campaignId ? (campMap.get(n.campaignId) || n.payload.campaignTitle || 'کمپین') : 'اعلان‌های عمومی',
+      isRead: !!n.readAt,
+    })).sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  async markNotificationRead(id: string): Promise<void> {
+    const all = this.getItem<NotificationItem[]>('notifications', this.getSeedNotifications());
+    const notif = all.find(n => n.id === id);
+    if (notif) {
+      notif.readAt = Date.now();
+      notif.isRead = true;
+      this.setItem('notifications', all);
+    }
+  }
+
+  async markAllNotificationsRead(campaignId?: string): Promise<void> {
+    const user = this.currentUser || SEED_USERS[1];
+    const all = this.getItem<NotificationItem[]>('notifications', this.getSeedNotifications());
+    const now = Date.now();
+    for (const n of all) {
+      if (n.userId === user.id || n.userId === 'user-player1' || n.userId === 'user-dm') {
+        if (!campaignId || n.campaignId === campaignId) {
+          n.readAt = now;
+          n.isRead = true;
+        }
+      }
+    }
+    this.setItem('notifications', all);
+  }
+
+  async deleteNotification(id: string): Promise<void> {
+    const all = this.getItem<NotificationItem[]>('notifications', this.getSeedNotifications());
+    const filtered = all.filter(n => n.id !== id);
+    this.setItem('notifications', filtered);
+  }
+
+  async getNotificationPreferences(campaignId?: string): Promise<NotificationPref> {
+    const user = this.currentUser || SEED_USERS[1];
+    const prefs = this.getItem<NotificationPref[]>('notification_prefs', []);
+    let match = prefs.find(p => p.userId === user.id && (p.campaignId || null) === (campaignId || null));
+    if (!match && campaignId) {
+      match = prefs.find(p => p.userId === user.id && p.campaignId === null);
+    }
+    return match || {
+      userId: user.id,
+      campaignId: campaignId || null,
+      types: {},
+      pushEnabled: true,
+      updatedAt: Date.now(),
+    };
+  }
+
+  async updateNotificationPreferences(
+    campaignId: string | null | undefined,
+    data: { types?: Partial<Record<NotificationType, boolean>>; pushEnabled?: boolean }
+  ): Promise<NotificationPref> {
+    const user = this.currentUser || SEED_USERS[1];
+    const prefs = this.getItem<NotificationPref[]>('notification_prefs', []);
+    const cId = campaignId || null;
+    const now = Date.now();
+
+    let idx = prefs.findIndex(p => p.userId === user.id && (p.campaignId || null) === cId);
+    if (idx === -1) {
+      const newPref: NotificationPref = {
+        id: `pref-${user.id}-${cId || 'global'}`,
+        userId: user.id,
+        campaignId: cId,
+        types: data.types || {},
+        pushEnabled: data.pushEnabled ?? true,
+        updatedAt: now,
+      };
+      prefs.push(newPref);
+      this.setItem('notification_prefs', prefs);
+      return newPref;
+    }
+
+    prefs[idx] = {
+      ...prefs[idx],
+      types: data.types ? { ...prefs[idx].types, ...data.types } : prefs[idx].types,
+      pushEnabled: data.pushEnabled !== undefined ? data.pushEnabled : prefs[idx].pushEnabled,
+      updatedAt: now,
+    };
+    this.setItem('notification_prefs', prefs);
+    return prefs[idx];
+  }
+
+  async subscribePush(sub: { endpoint: string; keys: { p256dh: string; auth: string }; userAgent?: string }): Promise<void> {
+    const user = this.currentUser || SEED_USERS[1];
+    const subs = this.getItem<PushSubscriptionRecord[]>('push_subscriptions', []);
+    const idx = subs.findIndex(s => s.endpoint === sub.endpoint);
+    const now = Date.now();
+    const record: PushSubscriptionRecord = {
+      id: `sub-${now}-${Math.random().toString(36).substring(2, 6)}`,
+      userId: user.id,
+      endpoint: sub.endpoint,
+      keys: sub.keys,
+      userAgent: sub.userAgent || (typeof navigator !== 'undefined' ? navigator.userAgent : ''),
+      createdAt: now,
+    };
+    if (idx >= 0) {
+      subs[idx] = record;
+    } else {
+      subs.push(record);
+    }
+    this.setItem('push_subscriptions', subs);
+  }
+
+  async unsubscribePush(endpoint: string): Promise<void> {
+    const subs = this.getItem<PushSubscriptionRecord[]>('push_subscriptions', []);
+    const filtered = subs.filter(s => s.endpoint !== endpoint);
+    this.setItem('push_subscriptions', filtered);
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -6799,11 +7031,31 @@ export class HttpApi implements ApiClient {
       headers['X-Requested-With'] = 'zorvania';
     }
 
-    const res = await fetch(`${this.baseUrl}${url}`, {
-      ...options,
-      credentials: 'include',
-      headers
-    });
+    let res: Response;
+    try {
+      res = await fetch(`${this.baseUrl}${url}`, {
+        ...options,
+        credentials: 'include',
+        headers
+      });
+    } catch (netErr: any) {
+      const err = new Error(`Network failure connecting to ${url}: ${netErr?.message || netErr}`);
+      (err as any).isNetworkError = true;
+      throw err;
+    }
+
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await res.text().catch(() => '');
+      const err = new Error(
+        text.includes('<!doctype') || text.includes('<html')
+          ? 'HTML response received from /api (no backend server active)'
+          : `Non-JSON response received from ${url}: ${contentType}`
+      );
+      (err as any).isHtmlResponse = true;
+      (err as any).status = res.status;
+      throw err;
+    }
 
     if (!res.ok) {
       let errText = 'خطا در ارتباط با سرور';
@@ -8575,8 +8827,129 @@ export class HttpApi implements ApiClient {
   async listTreasuryLogs(campaignId: string, limit = 50): Promise<TreasuryLogEntry[]> {
     return this.fetchJson<TreasuryLogEntry[]>(`/c/${campaignId}/treasury/logs?limit=${limit}`);
   }
+
+  // Step 4.6: Notifications, Preferences & Web Push (HttpApi)
+  async listNotifications(campaignId?: string, unreadOnly?: boolean): Promise<NotificationItem[]> {
+    const params = new URLSearchParams();
+    if (campaignId) params.set('campaign_id', campaignId);
+    if (unreadOnly) params.set('unread_only', 'true');
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return this.fetchJson<NotificationItem[]>(`/notifications${qs}`);
+  }
+
+  async markNotificationRead(id: string): Promise<void> {
+    await this.fetchJson(`/notifications/${id}/read`, { method: 'POST' });
+  }
+
+  async markAllNotificationsRead(campaignId?: string): Promise<void> {
+    await this.fetchJson('/notifications/read-all', {
+      method: 'POST',
+      body: JSON.stringify({ campaignId })
+    });
+  }
+
+  async deleteNotification(id: string): Promise<void> {
+    await this.fetchJson(`/notifications/${id}`, { method: 'DELETE' });
+  }
+
+  async getNotificationPreferences(campaignId?: string): Promise<NotificationPref> {
+    const qs = campaignId ? `?campaign_id=${encodeURIComponent(campaignId)}` : '';
+    return this.fetchJson<NotificationPref>(`/notifications/preferences${qs}`);
+  }
+
+  async updateNotificationPreferences(
+    campaignId: string | null | undefined,
+    data: { types?: Partial<Record<NotificationType, boolean>>; pushEnabled?: boolean }
+  ): Promise<NotificationPref> {
+    return this.fetchJson<NotificationPref>('/notifications/preferences', {
+      method: 'PUT',
+      body: JSON.stringify({ campaignId: campaignId || null, ...data })
+    });
+  }
+
+  async subscribePush(sub: { endpoint: string; keys: { p256dh: string; auth: string }; userAgent?: string }): Promise<void> {
+    await this.fetchJson('/push/subscribe', {
+      method: 'POST',
+      body: JSON.stringify(sub)
+    });
+  }
+
+  async unsubscribePush(endpoint: string): Promise<void> {
+    await this.fetchJson('/push/unsubscribe', {
+      method: 'POST',
+      body: JSON.stringify({ endpoint })
+    });
+  }
 }
 
-// Global active Api instance: respects import.meta.env.VITE_API_MODE or runtime toggle
-const isHttpMode = import.meta.env.VITE_API_MODE === 'http';
-export const api: ApiClient = isHttpMode ? new HttpApi() : new LocalApi();
+// Global active Api instance: respects import.meta.env.VITE_API_MODE or runtime toggle.
+// Automatically falls back to LocalApi (preview) if the HTTP backend is unavailable or returns HTML.
+function createResilientApiClient(): ApiClient {
+  const localApi = new LocalApi();
+  const wantsHttp = import.meta.env.VITE_API_MODE === 'http';
+  if (!wantsHttp) {
+    return localApi;
+  }
+
+  const httpApi = new HttpApi();
+  let backendUnavailable = false;
+
+  return new Proxy(httpApi, {
+    get(target, prop, receiver) {
+      if (prop === 'liveChannel') {
+        return backendUnavailable ? localApi.liveChannel : target.liveChannel;
+      }
+
+      if (prop === 'isLocalMode') {
+        return backendUnavailable;
+      }
+
+      // If backend is already known to be unavailable, route directly to localApi
+      if (backendUnavailable) {
+        const fallbackProp = (localApi as any)[prop];
+        if (typeof fallbackProp === 'function') {
+          return fallbackProp.bind(localApi);
+        }
+        return fallbackProp;
+      }
+
+      const orig = (target as any)[prop];
+      if (typeof orig !== 'function') {
+        return Reflect.get(target, prop, receiver);
+      }
+
+      return async function (...args: any[]) {
+        if (backendUnavailable) {
+          const fallbackFn = (localApi as any)[prop];
+          return typeof fallbackFn === 'function' ? fallbackFn.apply(localApi, args) : undefined;
+        }
+
+        try {
+          return await orig.apply(target, args);
+        } catch (err: any) {
+          const isMissingBackend =
+            err?.isHtmlResponse ||
+            err?.isNetworkError ||
+            err?.message?.includes('<!doctype') ||
+            err?.message?.includes('is not valid JSON') ||
+            err?.message?.includes('HTML response received') ||
+            err?.message?.includes('Failed to fetch') ||
+            err?.message?.includes('Network failure') ||
+            err?.status === 404;
+
+          if (isMissingBackend) {
+            backendUnavailable = true;
+            console.warn(`[${APP_NAME_LATIN}] HTTP API unavailable (${err?.message || 'non-JSON'}). Seamlessly failing over to LocalApi (preview).`);
+            const fallbackFn = (localApi as any)[prop];
+            if (typeof fallbackFn === 'function') {
+              return fallbackFn.apply(localApi, args);
+            }
+          }
+          throw err;
+        }
+      };
+    }
+  });
+}
+
+export const api: ApiClient = createResilientApiClient();
