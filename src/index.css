@@ -1,4 +1,42 @@
 @import "tailwindcss";
+@import "./styles/tokens.css";
+
+@theme {
+  --color-bg: rgb(var(--color-bg-rgb) / <alpha-value>);
+  --color-surface: rgb(var(--color-surface-rgb) / <alpha-value>);
+  --color-surface-2: rgb(var(--color-surface-2-rgb) / <alpha-value>);
+  --color-surface-3: rgb(var(--color-surface-3-rgb) / <alpha-value>);
+  --color-border: rgb(var(--color-border-rgb) / <alpha-value>);
+  --color-border-strong: rgb(var(--color-border-strong-rgb) / <alpha-value>);
+  --color-text-primary: rgb(var(--color-text-rgb) / <alpha-value>);
+  --color-text-muted: rgb(var(--color-text-muted-rgb) / <alpha-value>);
+  --color-text-disabled: rgb(var(--color-text-disabled-rgb) / <alpha-value>);
+  --color-accent: rgb(var(--color-accent-rgb) / <alpha-value>);
+  --color-accent-hover: rgb(var(--color-accent-hover-rgb) / <alpha-value>);
+  --color-accent-glow: rgb(var(--color-accent-glow-rgb) / <alpha-value>);
+  --color-on-accent: rgb(var(--color-on-accent-rgb) / <alpha-value>);
+  --color-danger: rgb(var(--color-danger-rgb) / <alpha-value>);
+  --color-danger-hover: rgb(var(--color-danger-hover-rgb) / <alpha-value>);
+  --color-success: rgb(var(--color-success-rgb) / <alpha-value>);
+  --color-warning: rgb(var(--color-warning-rgb) / <alpha-value>);
+  --color-info: rgb(var(--color-info-rgb) / <alpha-value>);
+  --color-focus-ring: rgb(var(--color-focus-ring-rgb) / <alpha-value>);
+  --color-overlay: rgb(var(--color-overlay-rgb) / <alpha-value>);
+  --color-selection: rgb(var(--color-selection-rgb) / <alpha-value>);
+
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-pill: var(--radius-pill);
+
+  --shadow-glow-amber: var(--shadow-glow-amber);
+  --shadow-glow-amber-lg: var(--shadow-glow-amber-lg);
+  --shadow-glow-ember: var(--shadow-glow-ember);
+  --shadow-glow-heal: var(--shadow-glow-heal);
+}
 
 /* -------------------------------------------------------------
    Self-Hosted Vazirmatn (woff2, 400 / 600 / 800 Arabic + Latin)

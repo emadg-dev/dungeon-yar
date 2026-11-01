@@ -61,7 +61,7 @@ export const CampaignInvitesModal: React.FC<CampaignInvitesModalProps> = ({
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title="مدیریت دعوت‌نامه‌های کمپین">
-      <div className="space-y-4 py-2 text-right" dir="rtl">
+      <div className="space-y-4 py-2 text-start" dir="rtl">
         <div className="flex items-center justify-between">
           <p className="text-xs text-[#A39A89]">
             لینک‌های دعوت جهت پیوستن بازیکنان یا تماشاچیان جدید به کمپین «{campaign.name}»

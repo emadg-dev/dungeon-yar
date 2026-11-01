@@ -55,7 +55,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title="ایجاد کمپین جدید">
-      <form onSubmit={handleSubmit} className="space-y-4 py-2 text-right" dir="rtl">
+      <form onSubmit={handleSubmit} className="space-y-4 py-2 text-start" dir="rtl">
         {errorMsg && (
           <div className="p-3 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs">
             {errorMsg}

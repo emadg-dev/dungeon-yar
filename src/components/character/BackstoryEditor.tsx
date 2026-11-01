@@ -311,7 +311,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
   };
 
   return (
-    <div className="space-y-6 text-right" dir="rtl">
+    <div className="space-y-6 text-start" dir="rtl">
       {/* Top Action Bar & Review Status */}
       <div className="rounded-2xl bg-[#171513] border border-[#2F2A23] p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
         <div className="flex flex-wrap items-center gap-2">
@@ -1012,7 +1012,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
         onClose={() => setIsRevisionSheetOpen(false)}
         title="تاریخچه ویرایش‌های پیشینه (۱۰ نسخه اخیر)"
       >
-        <div className="space-y-3 py-2 text-right" dir="rtl">
+        <div className="space-y-3 py-2 text-start" dir="rtl">
           {loadingRevisions ? (
             <p className="text-xs text-[#A39A89] text-center py-4">در حال بارگذاری تاریخچه...</p>
           ) : revisions.length === 0 ? (
@@ -1050,7 +1050,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
           onClose={() => setIsReviewModalOpen(false)}
           title="داوری و بازبینی پیشینه داستانی"
         >
-          <div className="space-y-4 py-2 text-right" dir="rtl">
+          <div className="space-y-4 py-2 text-start" dir="rtl">
             <p className="text-xs text-[#A39A89]">
               شما به عنوان دانجن مستر می‌توانید پیشینه نگاشته‌شده توسط بازیکن را تأیید کرده یا درخواست اصلاح همراه با یادداشت ارسال کنید.
             </p>

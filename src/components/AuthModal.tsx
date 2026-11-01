@@ -450,7 +450,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     onSelectPreloadedUser(u.id);
                     onClose();
                   }}
-                  className="text-right p-2 rounded-[8px] bg-[#201D19] hover:bg-[#2F2A23] border border-[#2F2A23] text-[11px] font-bold text-[#EDE6D8] truncate touch-target"
+                  className="text-start p-2 rounded-[8px] bg-[#201D19] hover:bg-[#2F2A23] border border-[#2F2A23] text-[11px] font-bold text-[#EDE6D8] truncate touch-target"
                 >
                   <span className="text-[#E0A030] text-[10px] block">
                     {u.role === 'dm' ? 'دانجن مستر' : 'بازیکن'}

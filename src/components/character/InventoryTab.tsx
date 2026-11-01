@@ -336,7 +336,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 <button
                   type="button"
                   onClick={() => setSelectedItemDetail(item)}
-                  className="flex items-center gap-2.5 min-w-0 flex-1 text-right touch-target"
+                  className="flex items-center gap-2.5 min-w-0 flex-1 text-start touch-target"
                 >
                   {/* Amber "New" Dot for DM-granted items */}
                   {item.isNew && (

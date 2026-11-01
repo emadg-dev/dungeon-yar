@@ -413,7 +413,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                 type="file"
                 accept="image/*"
                 onChange={handleCoverUpload}
-                className="w-full text-xs text-[#A39A89] file:mr-0 file:ml-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#E0A030] file:text-[#0E0D0C] hover:file:bg-[#F2C265] cursor-pointer"
+                className="w-full text-xs text-[#A39A89] file:me-0 file:ms-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#E0A030] file:text-[#0E0D0C] hover:file:bg-[#F2C265] cursor-pointer"
               />
               {coverUrl && (
                 <div className="mt-2 w-full h-32 rounded-xl overflow-hidden border border-[#E0A030]/30">
@@ -529,7 +529,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setCalendarSource('zorvania')}
-                  className={`p-2.5 rounded-xl border text-right transition ${
+                  className={`p-2.5 rounded-xl border text-start transition ${
                     calendarSource === 'zorvania'
                       ? 'border-[#E0A030] bg-[#E0A030]/10 text-[#F2C265] font-bold'
                       : 'border-[#2F2A23] bg-[#0E0D0C] text-[#A39A89]'
@@ -542,7 +542,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setCalendarSource('scratch')}
-                  className={`p-2.5 rounded-xl border text-right transition ${
+                  className={`p-2.5 rounded-xl border text-start transition ${
                     calendarSource === 'scratch'
                       ? 'border-[#E0A030] bg-[#E0A030]/10 text-[#F2C265] font-bold'
                       : 'border-[#2F2A23] bg-[#0E0D0C] text-[#A39A89]'
@@ -566,7 +566,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                   <div key={idx} className="p-2 rounded-lg bg-[#0E0D0C] border border-[#2F2A23] flex items-center justify-between text-xs">
                     <div>
                       <span className="font-bold text-[#F2C265]">{f.name}</span>
-                      <span className="text-[#A39A89] text-[10px] mr-2">({f.region})</span>
+                      <span className="text-[#A39A89] text-[10px] me-2">({f.region})</span>
                       <p className="text-[11px] text-[#A39A89]">{f.description}</p>
                     </div>
                     <Trash2 
@@ -630,7 +630,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                   <div>
                     <h4 className="text-xs font-bold text-[#EDE6D8]">{n.name}</h4>
                     <span className="text-[11px] text-[#F2C265]">{n.title || 'شخصیت'}</span>
-                    <span className="text-[10px] text-[#A39A89] mr-2">جان: {n.hp} | زره: {n.ac}</span>
+                    <span className="text-[10px] text-[#A39A89] me-2">جان: {n.hp} | زره: {n.ac}</span>
                   </div>
                   <Trash2 
                     className="w-4 h-4 text-[#A39A89] hover:text-[#E8836B] cursor-pointer" 
@@ -940,7 +940,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 text-right" dir="rtl">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 text-start" dir="rtl">
       <div className="bg-[rgba(18,16,14,0.88)] backdrop-blur-xl border border-[#E0A030]/30 rounded-t-3xl sm:rounded-3xl w-full max-w-3xl max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_24px_60px_rgba(0,0,0,0.5)]">
         {/* Header Bar */}
         <div className="p-4 border-b border-[#2F2A23] flex items-center justify-between bg-[#171513]">

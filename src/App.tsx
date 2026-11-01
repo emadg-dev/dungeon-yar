@@ -77,6 +77,11 @@ const ConflictResolutionModal = React.lazy(() => import('./components/common/Con
 // Step 5.4: Instance Admin Console Modal
 const AdminConsoleModal = React.lazy(() => import('./components/admin/AdminConsoleModal').then(m => ({ default: m.AdminConsoleModal })));
 
+// Stage A3: Dev-only UI Gallery route
+const DevUiGallery = import.meta.env.DEV
+  ? React.lazy(() => import('./components/dev/DevUiGallery').then(m => ({ default: m.DevUiGallery })))
+  : null;
+
 // Loading skeleton fallback for tabs
 const TabSkeleton = () => (
   <div className="space-y-4 p-2 animate-pulse" dir="rtl">
@@ -93,7 +98,7 @@ const TabSkeleton = () => (
 
 export default function App() {
   // Top-level Navigation View Mode
-  const [viewMode, setViewMode] = useState<'home' | 'character_master' | 'campaign_space'>('home');
+  const [viewMode, setViewMode] = useState<'home' | 'character_master' | 'campaign_space' | 'dev_ui'>('home');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
 
@@ -501,6 +506,10 @@ export default function App() {
     }
     if (clean === 'login') {
       setAuthModalState({ isOpen: true, mode: 'login' });
+      return;
+    }
+    if (clean === 'dev/ui' || clean === 'dev') {
+      setViewMode('dev_ui');
       return;
     }
 
@@ -1133,7 +1142,7 @@ export default function App() {
         // Multi-Campaign Props
         activeCampaignName={activeCampaign?.name}
         activeCampaignRole={activeCampaign?.myRole}
-        viewMode={viewMode}
+        viewMode={viewMode === 'dev_ui' ? 'home' : viewMode}
         onOpenCampaignSwitcher={() => setCampaignSwitcherOpen(true)}
         onGoHome={() => {
           setViewMode('home');
@@ -1266,6 +1275,11 @@ export default function App() {
                 return merged;
               }}
             />
+          )}
+
+          {/* VIEW DEV: UI GALLERY (Excluded from production builds) */}
+          {viewMode === 'dev_ui' && DevUiGallery && (
+            <DevUiGallery />
           )}
 
           {/* VIEW 3: CAMPAIGN WORKSPACE */}

@@ -24,7 +24,7 @@ export const CampaignSwitcherModal: React.FC<CampaignSwitcherModalProps> = ({
 }) => {
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title="جابجایی بین کمپین‌ها">
-      <div className="space-y-4 py-2 text-right" dir="rtl">
+      <div className="space-y-4 py-2 text-start" dir="rtl">
         {/* Go Home Button */}
         <button
           onClick={() => {

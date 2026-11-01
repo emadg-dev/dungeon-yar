@@ -998,7 +998,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                           }
                         }
                       }}
-                      className={`p-2.5 rounded-xl border text-xs font-medium text-right transition-all flex items-center justify-between ${
+                      className={`p-2.5 rounded-xl border text-xs font-medium text-start transition-all flex items-center justify-between ${
                         isChecked
                           ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
                           : 'bg-[#171513] border-[#2F2A23] text-[#C9C0AE] hover:border-[#3A342B]'
@@ -1356,7 +1356,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
       {/* ------------------------------------------------------------- */}
       {showClassCompare && (
         <div className="fixed inset-0 z-60 bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-[#171513] border border-[#2F2A23] rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden text-right shadow-2xl" dir="rtl">
+          <div className="bg-[#171513] border border-[#2F2A23] rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden text-start shadow-2xl" dir="rtl">
             <div className="p-4 border-b border-[#2F2A23] flex items-center justify-between">
               <h3 className="text-sm font-bold text-[#F2C265] flex items-center gap-2">
                 <Scale className="w-4 h-4" />
