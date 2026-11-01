@@ -100,20 +100,6 @@ export default defineConfig(() => {
               },
             },
             {
-              urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'google-fonts-cache',
-                expiration: {
-                  maxEntries: 20,
-                  maxAgeSeconds: 60 * 60 * 24 * 365,
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-              },
-            },
-            {
               // Stale-While-Revalidate for non-auth GET data requests
               urlPattern: ({ url, request }) => {
                 if (request.method !== 'GET') return false;
@@ -140,6 +126,9 @@ export default defineConfig(() => {
         },
       }),
     ],
+    define: {
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
+    },
     resolve: {
       alias: {
         '@': path.resolve('.'),
@@ -158,6 +147,9 @@ export default defineConfig(() => {
               if (/[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id)) {
                 return 'vendor-react';
               }
+            }
+            if (id.includes('/src/data/seed') || id.includes('/src/data/shanshin') || id.includes('/src/data/endings') || id.includes('/src/data/calendar')) {
+              return 'data-seed';
             }
           },
         },
