@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, startTransition } from 'react';
 import { Campaign, MasterCharacter, CampaignInvite, User, CharacterParticipation } from '../../types';
 import { APP_NAME_FA } from '../../config/app';
 import { 
@@ -212,7 +212,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <div className="flex items-center p-1 bg-[#141210] border border-[#2F2A23] rounded-xl text-xs">
                 <button
                   type="button"
-                  onClick={() => setCampaignTab('current')}
+                  onClick={() => {
+                    startTransition(() => {
+                      setCampaignTab('current');
+                    });
+                  }}
                   className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 min-h-[36px] ${
                     campaignTab === 'current'
                       ? 'bg-[#E0A030] text-[#0E0D0C] shadow'
@@ -227,7 +231,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCampaignTab('past')}
+                  onClick={() => {
+                    startTransition(() => {
+                      setCampaignTab('past');
+                    });
+                  }}
                   className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 min-h-[36px] ${
                     campaignTab === 'past'
                       ? 'bg-[#E0A030] text-[#0E0D0C] shadow'

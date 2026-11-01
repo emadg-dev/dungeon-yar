@@ -122,6 +122,10 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
                       <img
                         src={char.portraitUrl || 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=300&q=80'}
                         alt={char.name}
+                        loading="lazy"
+                        decoding="async"
+                        width={32}
+                        height={32}
                         className="w-8 h-8 rounded-lg object-cover border border-[#E0A030]/20"
                       />
                       <div>

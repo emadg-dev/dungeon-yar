@@ -416,6 +416,10 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                       <img
                         src={handout.mediaUrl || `/api/media/${handout.mediaId}`}
                         alt={handout.title}
+                        loading="lazy"
+                        decoding="async"
+                        width={48}
+                        height={48}
                         className="w-full h-full object-cover group-hover:scale-110 transition duration-200"
                       />
                     ) : (

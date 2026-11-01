@@ -25,8 +25,8 @@ export function useVisualViewport() {
       setIsKeyboardOpen(isOpen);
     };
 
-    window.visualViewport.addEventListener('resize', handleResize);
-    window.visualViewport.addEventListener('scroll', handleResize);
+    window.visualViewport.addEventListener('resize', handleResize, { passive: true });
+    window.visualViewport.addEventListener('scroll', handleResize, { passive: true });
 
     return () => {
       window.visualViewport?.removeEventListener('resize', handleResize);

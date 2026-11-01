@@ -317,7 +317,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
             return (
               <div
                 key={char.id}
-                className="surface-card rounded-[14px] p-3.5 border border-[#2F2A23] transition hover:border-[#2F2A23]/80 space-y-3"
+                className="surface-card rounded-[14px] p-3.5 border border-[#2F2A23] transition hover:border-[#2F2A23]/80 space-y-3 content-visibility-card"
               >
                 {/* Header: Portrait, Name, Class & "Needs Attention" Badge */}
                 <div className="flex items-center justify-between gap-2">
@@ -325,6 +325,10 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                     <img
                       src={char.portraitUrl || 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=120&q=80'}
                       alt={char.name}
+                      loading="lazy"
+                      decoding="async"
+                      width={44}
+                      height={44}
                       className="w-11 h-11 rounded-[10px] object-cover border border-[#2F2A23] shrink-0"
                     />
                     <div className="min-w-0">

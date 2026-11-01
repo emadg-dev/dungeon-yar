@@ -251,6 +251,10 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                     <img
                       src={mediaPreviewUrl}
                       alt="پیش‌نمایش"
+                      loading="lazy"
+                      decoding="async"
+                      width={320}
+                      height={176}
                       className="max-h-44 mx-auto rounded-[8px] object-contain border border-[#2F2A23]"
                     />
                     <label className="inline-block px-3 py-1.5 rounded-[8px] bg-[#2A241C] hover:bg-[#383126] text-xs text-[#EDE6D8] cursor-pointer touch-target transition">

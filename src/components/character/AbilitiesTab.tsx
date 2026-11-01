@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useDeferredValue } from 'react';
 import { Character, AbilityName, SkillDefinition } from '../../types';
 import { getAbilityModifier, formatModifier } from '../../utils/dice';
 import { deriveSheet } from '../../../shared/rules/engine';
@@ -20,6 +20,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
   const [customSkillName, setCustomSkillName] = useState('');
   const [customSkillAbility, setCustomSkillAbility] = useState<AbilityName>('int');
   const [skillsSearch, setSkillsSearch] = useState('');
+  const deferredSkillsSearch = useDeferredValue(skillsSearch);
 
   const derived = deriveSheet({ character });
   const profBonus = derived.proficiencyBonus;
@@ -94,8 +95,8 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
   };
 
   const filteredSkills = character.skills.filter(s =>
-    !skillsSearch || s.nameFa.toLowerCase().includes(skillsSearch.toLowerCase()) ||
-    abilityLabels[s.ability].fa.includes(skillsSearch)
+    !deferredSkillsSearch || s.nameFa.toLowerCase().includes(deferredSkillsSearch.toLowerCase()) ||
+    abilityLabels[s.ability].fa.includes(deferredSkillsSearch)
   );
 
   const abilityKeys: AbilityName[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];

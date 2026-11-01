@@ -114,6 +114,10 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
                 <img
                   src={u.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80'}
                   alt={u.name}
+                  loading="lazy"
+                  decoding="async"
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-xl object-cover border border-[#E0A030]/30"
                 />
                 <div>

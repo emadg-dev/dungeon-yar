@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useDeferredValue, startTransition } from 'react';
 import { LocationEntry, LocationRegion } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Chip } from '../common/Chip';
@@ -30,6 +30,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
   onDeleteLocation
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredSearch = useDeferredValue(searchQuery);
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
   const [editingLocation, setEditingLocation] = useState<LocationEntry | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -112,10 +113,10 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
   };
 
   const filteredLocations = locations.filter(l => {
-    const matchesSearch = !searchQuery || 
-      l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (l.dmNotes && l.dmNotes.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesSearch = !deferredSearch || 
+      l.name.toLowerCase().includes(deferredSearch.toLowerCase()) ||
+      l.description.toLowerCase().includes(deferredSearch.toLowerCase()) ||
+      (l.dmNotes && l.dmNotes.toLowerCase().includes(deferredSearch.toLowerCase()));
     const matchesRegion = selectedRegion === 'all' || l.region === selectedRegion;
     return matchesSearch && matchesRegion;
   });
@@ -149,7 +150,11 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
         <button
           type="button"
-          onClick={() => setSelectedRegion('all')}
+          onClick={() => {
+            startTransition(() => {
+              setSelectedRegion('all');
+            });
+          }}
           className={`py-1 px-3 rounded-full text-xs font-bold transition shrink-0 touch-target ${
             selectedRegion === 'all'
               ? 'bg-[#E0A030] text-[#0E0D0C]'
@@ -164,7 +169,11 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
             <button
               type="button"
               key={r}
-              onClick={() => setSelectedRegion(r)}
+              onClick={() => {
+                startTransition(() => {
+                  setSelectedRegion(r);
+                });
+              }}
               className={`py-1 px-3 rounded-full text-xs font-bold transition shrink-0 touch-target ${
                 selectedRegion === r
                   ? 'bg-[#E0A030] text-[#0E0D0C]'

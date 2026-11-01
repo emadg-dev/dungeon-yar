@@ -268,6 +268,7 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
             ref={imageRef}
             src={imageUrl}
             alt={alt}
+            decoding="async"
             draggable={false}
             className="max-w-full max-h-[62vh] sm:max-h-[72vh] object-contain rounded-[8px] pointer-events-none select-none shadow-2xl"
           />

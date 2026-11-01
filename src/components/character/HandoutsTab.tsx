@@ -223,6 +223,10 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
                       <img
                         src={handout.mediaUrl || `/api/media/${handout.mediaId}`}
                         alt={handout.title}
+                        loading="lazy"
+                        decoding="async"
+                        width={320}
+                        height={128}
                         className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                       />
                       {isUnread && (

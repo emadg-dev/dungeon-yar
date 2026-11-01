@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, startTransition } from 'react';
 import { Character, Weapon, Feature, WeaponTemplate, Companion } from '../../types';
 import { deriveSheet } from '../../../shared/rules/engine';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -166,7 +166,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
               return (
                 <div
                   key={w.id}
-                  className="surface-card rounded-[14px] p-3.5 flex flex-col justify-between transition border border-[#2F2A23] hover:border-[#2F2A23]/80"
+                  className="surface-card rounded-[14px] p-3.5 flex flex-col justify-between transition border border-[#2F2A23] hover:border-[#2F2A23]/80 content-visibility-card"
                 >
                   <div>
                     {/* Header: Name + Badge */}
@@ -337,7 +337,11 @@ export const CombatTab: React.FC<CombatTabProps> = ({
             <button
               key={chip.id}
               type="button"
-              onClick={() => setFeatureFilter(chip.id as any)}
+              onClick={() => {
+                startTransition(() => {
+                  setFeatureFilter(chip.id as any);
+                });
+              }}
               className={`px-3 py-1.5 rounded-[10px] text-xs font-bold transition whitespace-nowrap touch-target ${
                 featureFilter === chip.id
                   ? 'bg-[#E0A030] text-[#0E0D0C]'

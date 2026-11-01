@@ -557,6 +557,10 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                 <img
                   src={portraitUrl}
                   alt={name || 'پیش‌نمایش پرتره'}
+                  loading="lazy"
+                  decoding="async"
+                  width={64}
+                  height={64}
                   className="w-16 h-16 rounded-2xl object-cover border-2 border-[#E0A030]/40 shadow-md shrink-0"
                 />
                 <div className="flex-1 space-y-2">
@@ -570,7 +574,15 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                           portraitUrl === url ? 'border-[#E0A030] scale-105' : 'border-[#2F2A23] opacity-60 hover:opacity-100'
                         }`}
                       >
-                        <img src={url} alt={`Avatar ${i}`} className="w-full h-full object-cover" />
+                        <img
+                          src={url}
+                          alt={`Avatar ${i}`}
+                          loading="lazy"
+                          decoding="async"
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                        />
                       </button>
                     ))}
                   </div>
@@ -1244,6 +1256,10 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                 <img
                   src={portraitUrl}
                   alt={name}
+                  loading="lazy"
+                  decoding="async"
+                  width={64}
+                  height={64}
                   className="w-16 h-16 rounded-2xl object-cover border-2 border-[#E0A030]/40 shrink-0"
                 />
                 <div>
