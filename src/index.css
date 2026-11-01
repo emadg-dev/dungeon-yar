@@ -524,13 +524,12 @@ textarea:focus-visible {
    ------------------------------------------------------------- */
 .liquid-dock {
   position: fixed;
-  bottom: 0.75rem;
+  bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
   inset-inline: 0;
   z-index: 30;
   margin-inline: auto;
   max-width: 28rem;
   padding-inline: 0.75rem;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
   pointer-events: none; /* track re-enables pointer events */
 }
 .liquid-dock__track {
