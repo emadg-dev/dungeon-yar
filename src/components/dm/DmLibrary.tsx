@@ -7,6 +7,7 @@ import {
 } from '../../types';
 import { api } from '../../services/api';
 import { BottomSheet } from '../mobile/BottomSheet';
+import { VirtualList } from '../common/VirtualList';
 import { LineageEditorSheet } from './LineageEditorSheet';
 import { BackgroundEditorSheet } from './BackgroundEditorSheet';
 import { ClassEditorSheet } from './ClassEditorSheet';
@@ -786,6 +787,83 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             هیچ موجودیتی با فیلترهای مشخص‌شده در این منبع پیدا نشد. منبع یا عبارت جستجو را تغییر دهید.
           </p>
         </div>
+      ) : items.length > 50 ? (
+        <VirtualList
+          items={items}
+          itemHeight={140}
+          height={600}
+          keyExtractor={(item) => `${item.itemType}-${item.id}`}
+          renderItem={(item) => {
+            const isSelected = isRefSelected({ type: item.itemType, id: item.id });
+            return (
+              <div className="pb-3">
+                <div
+                  onClick={() => {
+                    if (multiSelectMode) {
+                      toggleSelectRef({ type: item.itemType, id: item.id });
+                    } else {
+                      setDetailItem(item);
+                    }
+                  }}
+                  className={`relative rounded-2xl p-4 border transition-all cursor-pointer shadow-md flex flex-col justify-between content-visibility-card ${
+                    isSelected
+                      ? 'bg-[#E0A030]/10 border-[#E0A030] ring-1 ring-[#E0A030]'
+                      : 'bg-[#171513] border-[#2F2A23] hover:border-[#E0A030]/40'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        {multiSelectMode && (
+                          <div className="text-[#F2C265]">
+                            {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-[#A39A89]" />}
+                          </div>
+                        )}
+                        <h4 className="text-sm font-bold text-[#EDE6D8] hover:text-[#F2C265] transition-colors line-clamp-1">
+                          {item.name || item.title}
+                        </h4>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {renderTypeBadge(item.itemType)}
+                        <button
+                          type="button"
+                          onClick={(e) => handleToggleFavorite(e, item)}
+                          className={`p-1 rounded-lg transition ${
+                            item.isFavorite ? 'text-[#F2C265]' : 'text-[#8A8374] hover:text-[#A39A89]'
+                          }`}
+                          title="علاقه‌مندی"
+                        >
+                          <Star className={`w-4 h-4 ${item.isFavorite ? 'fill-[#F2C265]' : ''}`} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-[#A39A89] mt-2 line-clamp-2 leading-relaxed">
+                      {item.description || item.body || item.mechanicalEffect || 'بدون توضیحات تکمیلی.'}
+                    </p>
+                  </div>
+
+                  <div className="mt-3 pt-2.5 border-t border-[#2F2A23]/60 flex items-center justify-between text-[11px] text-[#A39A89]">
+                    <div className="flex items-center gap-2">
+                      {item.region && (
+                        <span className="px-2 py-0.5 rounded-md bg-[#2F2A23] text-[#EDE6D8]">
+                          {item.region}
+                        </span>
+                      )}
+                      {renderLinkBadge(item)}
+                    </div>
+
+                    <div className="flex items-center gap-1 text-[#F2C265] text-xs font-semibold">
+                      <span>مشاهده جزئیات</span>
+                      <ChevronLeftIcon className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          }}
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {items.map(item => {

@@ -417,7 +417,15 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
               />
               {coverUrl && (
                 <div className="mt-2 w-full h-32 rounded-xl overflow-hidden border border-[#E0A030]/30">
-                  <img src={coverUrl} alt="Cover preview" className="w-full h-full object-cover" />
+                  <img
+                    src={coverUrl}
+                    alt="Cover preview"
+                    loading="lazy"
+                    decoding="async"
+                    width={320}
+                    height={128}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               )}
             </div>

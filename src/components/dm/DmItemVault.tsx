@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useDeferredValue, startTransition } from 'react';
 import { ItemLibraryEntry, ItemLibraryCategory, Character, RewardPackage, WeaponTemplate } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { 
@@ -35,6 +35,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
 }) => {
   const [subTab, setSubTab] = useState<'items' | 'rewards'>('items');
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredSearch = useDeferredValue(searchQuery);
   const [selectedCat, setSelectedCat] = useState<string>('all');
   const [isCreating, setIsCreating] = useState(false);
   const [giveModalItem, setGiveModalItem] = useState<ItemLibraryEntry | null>(null);
@@ -112,9 +113,9 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
 
   const filteredItems = items.filter(item => {
     const matchesCat = selectedCat === 'all' || item.category === selectedCat;
-    const matchesSearch = !searchQuery || item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.whoItsFor.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = !deferredSearch || item.name.toLowerCase().includes(deferredSearch.toLowerCase()) ||
+      item.description.toLowerCase().includes(deferredSearch.toLowerCase()) ||
+      item.whoItsFor.toLowerCase().includes(deferredSearch.toLowerCase());
     return matchesCat && matchesSearch;
   });
 
@@ -333,7 +334,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
             {filteredItems.map(item => (
               <div
                 key={item.id}
-                className="bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030]/30 rounded-2xl p-4 shadow-lg flex flex-col justify-between"
+                className="bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030]/30 rounded-2xl p-4 shadow-lg flex flex-col justify-between content-visibility-card"
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">

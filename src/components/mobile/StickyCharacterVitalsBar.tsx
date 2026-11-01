@@ -54,6 +54,9 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
               src={character.portraitUrl || 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=120&q=80'}
               alt={character.name}
               loading="lazy"
+              decoding="async"
+              width={32}
+              height={32}
               className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover border border-[#E0A030]/30 shrink-0"
             />
             <div className="min-w-0">

@@ -73,6 +73,8 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
               alt={character.name}
               loading="lazy"
               decoding="async"
+              width={36}
+              height={36}
               className={`rounded-[10px] object-cover border border-[#2F2A23] shrink-0 transition-all duration-150 ${
                 isScrolled ? 'w-7 h-7' : 'w-9 h-9 sm:w-10 sm:h-10'
               }`}

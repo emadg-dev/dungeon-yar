@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 
-export interface SafeImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+export interface SafeImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> {
   src?: string | null;
   alt: string;
   width?: number | string;

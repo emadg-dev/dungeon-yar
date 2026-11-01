@@ -275,6 +275,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               alt={character.name}
               loading="lazy"
               decoding="async"
+              width={96}
+              height={96}
               className="w-20 h-20 sm:w-24 sm:h-24 rounded-[12px] object-cover border border-[#2F2A23] shadow-md"
             />
             <button

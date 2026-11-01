@@ -1,10 +1,141 @@
-import React, { useState, useDeferredValue, startTransition } from 'react';
+import React, { useState, useDeferredValue, startTransition, memo } from 'react';
 import { NPC, NpcType } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
+import { VirtualList } from '../common/VirtualList';
+import { SafeImage } from '../common/SafeImage';
 import { 
   Users, Plus, Search, Edit3, Trash2, Copy, 
   Eye, EyeOff, Shield, Heart, Zap, Sparkles 
 } from 'lucide-react';
+
+const typeLabels: Record<NpcType, string> = {
+  boss: 'باس اصلی (Boss)',
+  guardian: 'نگهبان معبد (Guardian)',
+  elite: 'دشمن نخبه (Elite)',
+  minion: 'موجود ضعیف (Minion)',
+  hazard: 'خطر محیطی (Hazard)',
+  neutral: 'شخصیت بی‌طرف (Neutral)',
+  ally: 'متحد و همراه (Ally)',
+  merchant: 'بازرگان و سوداگر (Merchant)',
+  'quest-giver': 'مأموریت‌دهنده (Quest Giver)',
+  'guardian-construct': 'سازه نگهبان (Construct)',
+  other: 'سایر'
+};
+
+interface NpcCardRowProps {
+  npc: NPC;
+  onToggleRevealed: (npc: NPC) => void;
+  onDuplicate: (npc: NPC) => void;
+  onStartEdit: (npc: NPC) => void;
+  onDeleteNpc: (id: string) => void;
+}
+
+const NpcCardRow = memo<NpcCardRowProps>(({
+  npc,
+  onToggleRevealed,
+  onDuplicate,
+  onStartEdit,
+  onDeleteNpc,
+}) => (
+  <div
+    className="bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030]/30 rounded-2xl p-4 shadow-lg flex flex-col justify-between content-visibility-card"
+  >
+    <div>
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="flex items-center gap-3">
+          <SafeImage
+            src={npc.portraitUrl || 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=200&q=80'}
+            alt={npc.name}
+            width={56}
+            height={56}
+            className="w-14 h-14 rounded-xl object-cover border border-[#E0A030]/30 shrink-0"
+          />
+          <div>
+            <h4 className="font-bold text-sm text-[#EDE6D8]">{npc.name}</h4>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#201D19] text-[#C9C0AE]">
+              {typeLabels[npc.type]}
+            </span>
+            <span className="text-[10px] text-[#8A8374] block mt-0.5">
+              {npc.locationTag} • {npc.sessionTag}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => onToggleRevealed(npc)}
+            title={npc.isRevealed ? 'آشکار برای بازیکنان (کلیک برای پنهان کردن)' : 'پنهان از بازیکنان (کلیک برای آشکارسازی)'}
+            className={`p-1.5 rounded-lg text-xs transition border ${
+              npc.isRevealed
+                ? 'bg-[#E0A030]/20 text-[#F2C265] border-[#E0A030]/30'
+                : 'bg-[#201D19] text-[#8A8374] border-[#3A342B]'
+            }`}
+          >
+            {npc.isRevealed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={() => onDuplicate(npc)}
+            title="تکثیر NPC"
+            className="p-1.5 rounded-lg bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8]"
+          >
+            <Copy className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => onStartEdit(npc)}
+            title="ویرایش"
+            className="p-1.5 rounded-lg bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8]"
+          >
+            <Edit3 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => onDeleteNpc(npc.id)}
+            title="حذف"
+            className="p-1.5 rounded-lg bg-[#201D19] text-[#A39A89] hover:text-[#E8836B]"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Combat Stats Bar */}
+      <div className="grid grid-cols-2 gap-2 text-xs bg-[#131110] p-2.5 rounded-xl border border-[#2F2A23] mb-3">
+        <div>
+          <span className="text-[10px] text-[#8A8374] block">درجه زرهی (AC):</span>
+          <span className="font-bold text-[#F2C265]">{npc.ac}</span>
+        </div>
+        <div>
+          <span className="text-[10px] text-[#8A8374] block">جان (HP):</span>
+          <span className="font-bold text-[#E8836B] font-mono">{npc.hp.max}</span>
+        </div>
+      </div>
+
+      <p className="text-xs text-[#C9C0AE] leading-relaxed mb-3">
+        {npc.description}
+      </p>
+
+      {/* Special Abilities / Phases */}
+      {npc.specialAbilities?.length > 0 && (
+        <div className="space-y-1.5 mb-3">
+          {npc.specialAbilities.map((sa, idx) => (
+            <div key={idx} className="p-2 rounded-lg bg-[#181c28] border border-[#2F2A23] text-xs">
+              <span className="font-bold text-[#F2C265] block">{sa.name}</span>
+              <p className="text-[11px] text-[#C9C0AE] mt-0.5">{sa.description}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    {/* DM Secret Notes */}
+    {(npc.notes || (npc as any).dmNotes) && (
+      <div className="p-2.5 rounded-xl bg-[#20120d] border border-[#C2512B]/40 text-xs text-[#E8836B]">
+        <span className="font-bold block mb-0.5">یادداشت محرمانه DM:</span>
+        <p className="text-[11px] leading-relaxed">{npc.notes || (npc as any).dmNotes}</p>
+      </div>
+    )}
+  </div>
+));
+NpcCardRow.displayName = 'NpcCardRow';
 
 interface DmNpcManagerProps {
   npcs: NPC[];
@@ -347,109 +478,38 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
       </BottomSheet>
 
       {/* NPCs Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredNpcs.map(npc => (
-          <div
-            key={npc.id}
-            className="bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030]/30 rounded-2xl p-4 shadow-lg flex flex-col justify-between content-visibility-card"
-          >
-            <div>
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <div className="flex items-center gap-3">
-                  <img
-                    src={npc.portraitUrl || 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=200&q=80'}
-                    alt={npc.name}
-                    loading="lazy"
-                    decoding="async"
-                    width={56}
-                    height={56}
-                    className="w-14 h-14 rounded-xl object-cover border border-[#E0A030]/30 shrink-0"
-                  />
-                  <div>
-                    <h4 className="font-bold text-sm text-[#EDE6D8]">{npc.name}</h4>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#201D19] text-[#C9C0AE]">
-                      {typeLabels[npc.type]}
-                    </span>
-                    <span className="text-[10px] text-[#8A8374] block mt-0.5">
-                      {npc.locationTag} • {npc.sessionTag}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => toggleRevealed(npc)}
-                    title={npc.isRevealed ? 'آشکار برای بازیکنان (کلیک برای پنهان کردن)' : 'پنهان از بازیکنان (کلیک برای آشکارسازی)'}
-                    className={`p-1.5 rounded-lg text-xs transition border ${
-                      npc.isRevealed
-                        ? 'bg-[#E0A030]/20 text-[#F2C265] border-[#E0A030]/30'
-                        : 'bg-[#201D19] text-[#8A8374] border-[#3A342B]'
-                    }`}
-                  >
-                    {npc.isRevealed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                  </button>
-                  <button
-                    onClick={() => handleDuplicate(npc)}
-                    title="تکثیر NPC"
-                    className="p-1.5 rounded-lg bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8]"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleStartEdit(npc)}
-                    title="ویرایش"
-                    className="p-1.5 rounded-lg bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8]"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => onDeleteNpc(npc.id)}
-                    title="حذف"
-                    className="p-1.5 rounded-lg bg-[#201D19] text-[#A39A89] hover:text-[#E8836B]"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Combat Stats Bar */}
-              <div className="grid grid-cols-2 gap-2 text-xs bg-[#131110] p-2.5 rounded-xl border border-[#2F2A23] mb-3">
-                <div>
-                  <span className="text-[10px] text-[#8A8374] block">درجه زرهی (AC):</span>
-                  <span className="font-bold text-[#F2C265]">{npc.ac}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-[#8A8374] block">جان (HP):</span>
-                  <span className="font-bold text-[#E8836B] font-mono">{npc.hp.max}</span>
-                </div>
-              </div>
-
-              <p className="text-xs text-[#C9C0AE] leading-relaxed mb-3">
-                {npc.description}
-              </p>
-
-              {/* Special Abilities / Phases */}
-              {npc.specialAbilities?.length > 0 && (
-                <div className="space-y-1.5 mb-3">
-                  {npc.specialAbilities.map((sa, idx) => (
-                    <div key={idx} className="p-2 rounded-lg bg-[#181c28] border border-[#2F2A23] text-xs">
-                      <span className="font-bold text-[#F2C265] block">{sa.name}</span>
-                      <p className="text-[11px] text-[#C9C0AE] mt-0.5">{sa.description}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
+      {filteredNpcs.length > 50 ? (
+        <VirtualList
+          items={filteredNpcs}
+          itemHeight={240}
+          height={600}
+          keyExtractor={(npc) => npc.id}
+          renderItem={(npc) => (
+            <div className="pb-4">
+              <NpcCardRow
+                npc={npc}
+                onToggleRevealed={toggleRevealed}
+                onDuplicate={handleDuplicate}
+                onStartEdit={handleStartEdit}
+                onDeleteNpc={onDeleteNpc}
+              />
             </div>
-
-            {/* Tactics Tips for DM */}
-            {npc.tacticsTips && (
-              <div className="p-2.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/25 text-[11px] text-[#F2C265]">
-                <strong>نکته دانجن مستر:</strong> {npc.tacticsTips}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+          )}
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredNpcs.map(npc => (
+            <NpcCardRow
+              key={npc.id}
+              npc={npc}
+              onToggleRevealed={toggleRevealed}
+              onDuplicate={handleDuplicate}
+              onStartEdit={handleStartEdit}
+              onDeleteNpc={onDeleteNpc}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

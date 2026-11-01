@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, startTransition } from 'react';
 import { 
   MasterCharacter, CharacterHistoryEvent, CharacterParticipation, BackstorySection,
   Campaign, LineageTemplate, BackgroundTemplate, NPC, CharacterRevision, BackstoryComment
@@ -262,6 +262,10 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           <img
             src={charData.portraitUrl || 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=300&q=80'}
             alt={charData.name}
+            loading="lazy"
+            decoding="async"
+            width={112}
+            height={112}
             className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-[#E0A030]/30 shadow-lg"
           />
         </div>
@@ -310,7 +314,11 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
       {/* Tabs Strip */}
       <div className="flex rounded-2xl bg-[#131110]/90 border border-[#2F2A23] p-1.5 gap-1.5">
         <button
-          onClick={() => setActiveTab('identity')}
+          onClick={() => {
+            startTransition(() => {
+              setActiveTab('identity');
+            });
+          }}
           className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
             activeTab === 'identity'
               ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
@@ -320,7 +328,11 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           هویت و بک‌استوری
         </button>
         <button
-          onClick={() => setActiveTab('history')}
+          onClick={() => {
+            startTransition(() => {
+              setActiveTab('history');
+            });
+          }}
           className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
             activeTab === 'history'
               ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
@@ -330,7 +342,11 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           خط زمانی و وقایع ({toPersianDigits(history.length)})
         </button>
         <button
-          onClick={() => setActiveTab('campaigns')}
+          onClick={() => {
+            startTransition(() => {
+              setActiveTab('campaigns');
+            });
+          }}
           className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
             activeTab === 'campaigns'
               ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
@@ -768,6 +784,8 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
             <img 
               src={charData.portraitUrl} 
               alt={charData.name} 
+              width={80}
+              height={80}
               className="w-20 h-20 object-cover border border-black rounded"
             />
           )}

@@ -60,6 +60,8 @@ export const EntityCard: React.FC<EntityCardProps> = ({
                 alt={title}
                 loading="lazy"
                 decoding="async"
+                width={48}
+                height={48}
                 className="w-10 h-10 sm:w-12 sm:h-12 rounded-[10px] object-cover border border-[#2F2A23] shrink-0"
               />
             )}
