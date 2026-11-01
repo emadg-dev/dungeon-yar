@@ -251,6 +251,10 @@ export interface LiveChannel {
 // ----------------------------------------------------------------------
 // LocalLiveChannel (BroadcastChannel + storage events for instant tab sync)
 // ----------------------------------------------------------------------
+const LIVE_CHANNEL_NAME = 'dy_live_sync';
+const LIVE_SIGNAL_KEY = 'dy_live_signal';
+const LIVE_EVENT_NAME = 'dy_live_event';
+
 export class LocalLiveChannel implements LiveChannel {
   private listeners = new Set<LiveChannelCallback>();
   private channel: BroadcastChannel | null = null;
@@ -258,7 +262,7 @@ export class LocalLiveChannel implements LiveChannel {
   constructor() {
     if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
       try {
-        this.channel = new BroadcastChannel('zorvania_live_sync');
+        this.channel = new BroadcastChannel(LIVE_CHANNEL_NAME);
         this.channel.onmessage = (ev) => {
           if (ev.data) {
             this.notifyLocal(ev.data.activeEncounterId, ev.data.version, ev.data.data);
@@ -269,14 +273,14 @@ export class LocalLiveChannel implements LiveChannel {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', (e) => {
-        if (e.key === 'zorvania_live_signal' && e.newValue) {
+        if (e.key === LIVE_SIGNAL_KEY && e.newValue) {
           try {
             const data = JSON.parse(e.newValue);
             this.notifyLocal(data.activeEncounterId, data.version, data.data);
           } catch {}
         }
       });
-      window.addEventListener('zorvania_live_event', (e: any) => {
+      window.addEventListener(LIVE_EVENT_NAME, (e: any) => {
         if (e.detail) {
           this.notifyLocal(e.detail.activeEncounterId, e.detail.version, e.detail.data);
         }
@@ -308,10 +312,10 @@ export class LocalLiveChannel implements LiveChannel {
       this.channel?.postMessage(payload);
     } catch {}
     try {
-      localStorage.setItem('zorvania_live_signal', JSON.stringify(payload));
+      localStorage.setItem(LIVE_SIGNAL_KEY, JSON.stringify(payload));
     } catch {}
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('zorvania_live_event', { detail: payload }));
+      window.dispatchEvent(new CustomEvent(LIVE_EVENT_NAME, { detail: payload }));
     }
   }
 }
@@ -854,7 +858,7 @@ export interface ApiClient {
 // LocalApi Adapter (localStorage-based preview with full simulation)
 // "Preview only — not secure"
 // ----------------------------------------------------------------------
-const STORAGE_PREFIX = 'zorvania_';
+const STORAGE_PREFIX = 'dy_';
 
 export class LocalApi implements ApiClient {
   public liveChannel: LiveChannel = new LocalLiveChannel();
