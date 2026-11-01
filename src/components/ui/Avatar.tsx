@@ -51,6 +51,8 @@ export const Avatar: React.FC<AvatarProps> = ({
         <img
           src={src}
           alt={alt}
+          loading="lazy"
+          decoding="async"
           onError={() => setHasError(true)}
           className="w-full h-full object-cover"
         />

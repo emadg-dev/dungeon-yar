@@ -1,13 +1,108 @@
-import React, { useState } from 'react';
+import React, { useState, useDeferredValue, startTransition, useCallback, memo } from 'react';
 import { Character, InventoryItem, ItemCategory, CampaignSettings } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { ConfirmSheet } from '../mobile/ConfirmSheet';
 import { ActionMenu, ActionMenuItem } from '../common/ActionMenu';
 import { PartyTreasuryManager } from '../campaign/PartyTreasuryManager';
+import { VirtualList } from '../common/VirtualList';
 import { 
   Package, Coins, Flame, Utensils, Search, Plus, 
   Trash2, ShieldCheck, Sparkles, MoreVertical, Check, Eye 
 } from 'lucide-react';
+
+interface InventoryItemRowProps {
+  item: InventoryItem;
+  onSelectDetail: (item: InventoryItem) => void;
+  onAdjustQuantity: (id: string, delta: number) => void;
+  onOpenActionMenu: (item: InventoryItem) => void;
+}
+
+const InventoryItemRow = memo<InventoryItemRowProps>(({
+  item,
+  onSelectDetail,
+  onAdjustQuantity,
+  onOpenActionMenu
+}) => (
+  <div
+    className="surface-2-card rounded-[12px] p-2.5 border border-[#2F2A23] flex items-center justify-between gap-2 transition hover:border-[#2F2A23]/80 content-visibility-card"
+  >
+    {/* Left: Item Info (Tap = Detail Sheet) */}
+    <button
+      type="button"
+      onClick={() => onSelectDetail(item)}
+      className="flex items-center gap-2.5 min-w-0 flex-1 text-start touch-target"
+    >
+      {/* Amber "New" Dot for DM-granted items */}
+      {item.isNew && (
+        <span
+          className="w-2.5 h-2.5 rounded-full bg-[#E0A030] shadow-[0_0_8px_rgba(224,160,48,0.8)] shrink-0 animate-pulse"
+          title="شیء جدید از طرف دانجن مستر"
+        />
+      )}
+
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="font-extrabold text-xs text-[#EDE6D8] truncate">{item.name}</span>
+          
+          {/* Badges: Equipped / Quest / Artifact */}
+          {item.isEquipped && (
+            <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#6F9E78]/15 text-[#6F9E78] border border-[#6F9E78]/30 font-bold shrink-0">
+              مجهز
+            </span>
+          )}
+          {item.isQuest && (
+            <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#C97B4A]/15 text-[#C97B4A] border border-[#C97B4A]/30 font-bold shrink-0">
+              مأموریت
+            </span>
+          )}
+          {item.isArtifact && (
+            <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30 font-bold shrink-0">
+              آرتیفکت
+            </span>
+          )}
+        </div>
+
+        <div className="text-[10px] text-[#A39A89] mt-0.5 truncate">
+          وزن: {item.weight} کیلو • {item.description || 'بدون توضیحات'}
+        </div>
+      </div>
+    </button>
+
+    {/* Right: Quantity Stepper & ⋯ Action Menu */}
+    <div className="flex items-center gap-1.5 shrink-0">
+      <div className="flex items-center gap-1 bg-[#0E0D0C] p-0.5 rounded-[8px] border border-[#2F2A23]">
+        <button
+          type="button"
+          onClick={() => onAdjustQuantity(item.id, -1)}
+          className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target flex items-center justify-center"
+        >
+          -
+        </button>
+        <span className="font-mono text-xs font-extrabold text-[#EDE6D8] min-w-[20px] text-center dice-ltr">
+          {item.quantity}
+        </span>
+        <button
+          type="button"
+          onClick={() => onAdjustQuantity(item.id, 1)}
+          className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target flex items-center justify-center"
+        >
+          +
+        </button>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onOpenActionMenu(item)}
+        className="w-9 h-9 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] flex items-center justify-center touch-target"
+        title="منوی عملیات"
+        aria-label={`عملیات برای ${item.name}`}
+      >
+        <MoreVertical className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+));
+InventoryItemRow.displayName = 'InventoryItemRow';
 
 interface InventoryTabProps {
   character: Character;
@@ -123,14 +218,16 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
     { id: 'quest', label: 'مأموریت و کلیدی' }
   ];
 
+  const deferredSearch = useDeferredValue(searchQuery);
+
   const filteredItems = character.inventory.filter(item => {
     const matchesCategory =
       selectedCategory === 'all' ||
       (selectedCategory === 'quest' ? item.isQuest : item.category === selectedCategory);
     const matchesSearch =
-      !searchQuery ||
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      !deferredSearch ||
+      item.name.toLowerCase().includes(deferredSearch.toLowerCase()) ||
+      (item.description && item.description.toLowerCase().includes(deferredSearch.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
@@ -308,7 +405,11 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             <button
               key={cat.id}
               type="button"
-              onClick={() => setSelectedCategory(cat.id)}
+              onClick={() => {
+                startTransition(() => {
+                  setSelectedCategory(cat.id);
+                });
+              }}
               className={`px-3 py-1.5 rounded-[10px] text-xs font-bold transition whitespace-nowrap touch-target ${
                 selectedCategory === cat.id
                   ? 'bg-[#E0A030] text-[#0E0D0C]'
@@ -326,88 +427,32 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             <div className="text-center py-8 text-[#A39A89] text-xs">
               شیئی در این دسته‌بندی یافت نشد.
             </div>
+          ) : filteredItems.length > 50 ? (
+            <VirtualList
+              items={filteredItems}
+              itemHeight={68}
+              height={520}
+              keyExtractor={(item) => item.id}
+              renderItem={(item) => (
+                <div className="pb-2">
+                  <InventoryItemRow
+                    item={item}
+                    onSelectDetail={setSelectedItemDetail}
+                    onAdjustQuantity={adjustItemQuantity}
+                    onOpenActionMenu={setActionMenuItem}
+                  />
+                </div>
+              )}
+            />
           ) : (
             filteredItems.map(item => (
-              <div
+              <InventoryItemRow
                 key={item.id}
-                className="surface-2-card rounded-[12px] p-2.5 border border-[#2F2A23] flex items-center justify-between gap-2 transition hover:border-[#2F2A23]/80"
-              >
-                {/* Left: Item Info (Tap = Detail Sheet) */}
-                <button
-                  type="button"
-                  onClick={() => setSelectedItemDetail(item)}
-                  className="flex items-center gap-2.5 min-w-0 flex-1 text-start touch-target"
-                >
-                  {/* Amber "New" Dot for DM-granted items */}
-                  {item.isNew && (
-                    <span
-                      className="w-2.5 h-2.5 rounded-full bg-[#E0A030] shadow-[0_0_8px_rgba(224,160,48,0.8)] shrink-0 animate-pulse"
-                      title="شیء جدید از طرف دانجن مستر"
-                    />
-                  )}
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-extrabold text-xs text-[#EDE6D8] truncate">{item.name}</span>
-                      
-                      {/* Badges: Equipped / Quest / Artifact */}
-                      {item.isEquipped && (
-                        <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#6F9E78]/15 text-[#6F9E78] border border-[#6F9E78]/30 font-bold shrink-0">
-                          مجهز
-                        </span>
-                      )}
-                      {item.isQuest && (
-                        <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#C97B4A]/15 text-[#C97B4A] border border-[#C97B4A]/30 font-bold shrink-0">
-                          مأموریت
-                        </span>
-                      )}
-                      {item.isArtifact && (
-                        <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30 font-bold shrink-0">
-                          آرتیفکت
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="text-[10px] text-[#A39A89] mt-0.5 truncate">
-                      وزن: {item.weight} کیلو • {item.description || 'بدون توضیحات'}
-                    </div>
-                  </div>
-                </button>
-
-                {/* Right: Quantity Stepper & ⋯ Action Menu */}
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <div className="flex items-center gap-1 bg-[#0E0D0C] p-0.5 rounded-[8px] border border-[#2F2A23]">
-                    <button
-                      type="button"
-                      onClick={() => adjustItemQuantity(item.id, -1)}
-                      className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target flex items-center justify-center"
-                    >
-                      -
-                    </button>
-                    <span className="font-mono text-xs font-extrabold text-[#EDE6D8] min-w-[20px] text-center dice-ltr">
-                      {item.quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => adjustItemQuantity(item.id, 1)}
-                      className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target flex items-center justify-center"
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  {/* ⋯ Action Menu Trigger Button (Visible alternative to long-press) */}
-                  <button
-                    type="button"
-                    onClick={() => setActionMenuItem(item)}
-                    className="w-9 h-9 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] flex items-center justify-center touch-target"
-                    title="منوی عملیات"
-                    aria-label={`عملیات برای ${item.name}`}
-                  >
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+                item={item}
+                onSelectDetail={setSelectedItemDetail}
+                onAdjustQuantity={adjustItemQuantity}
+                onOpenActionMenu={setActionMenuItem}
+              />
             ))
           )}
         </div>

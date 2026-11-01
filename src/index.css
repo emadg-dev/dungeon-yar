@@ -394,13 +394,9 @@
 }
 
 /* Standard tokens for cards and surfaces */
-/* Flat cards upgraded to glass panels (Jib-be-jib §2): translucent bg +
-   backdrop blur + inner highlight shadow. Existing `surface-card` class
-   usages across the app pick this up automatically. */
+/* Opaque solid background for scrolling content to prevent GPU paint thrash */
 .surface-card {
-  background: rgba(23, 21, 19, 0.82);
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  background: #171513;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 14px;
   box-shadow:
@@ -409,12 +405,21 @@
 }
 
 .surface-2-card {
-  background: rgba(32, 29, 25, 0.78);
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  background: #201D19;
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 14px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* B3 Runtime: Content-visibility optimization for long off-screen sections */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 240px;
+}
+
+.content-visibility-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 90px;
 }
 
 /* Explicit glass-card utility (Jib-be-jib §12 sample, dark glass) */

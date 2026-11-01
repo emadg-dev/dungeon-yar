@@ -1,10 +1,75 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { DiceRollResult, CampaignDiceRoll, User } from '../types';
 import { rollDice, formatModifier } from '../utils/dice';
 import { triggerHaptic } from '../utils/haptics';
 import { BottomSheet } from './mobile/BottomSheet';
+import { VirtualList } from './common/VirtualList';
 import { Dices, Flame, Skull, Table, Lock, Eye, RefreshCw, Sparkles, User as UserIcon } from 'lucide-react';
 import { api } from '../services/api';
+
+interface DiceRollCardRowProps {
+  roll: CampaignDiceRoll;
+}
+
+const DiceRollCardRow = memo<DiceRollCardRowProps>(({ roll }) => {
+  const isCrit = roll.details?.isCritical;
+  const isFumble = roll.details?.isFumble;
+  const dateStr = new Date(roll.createdAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  return (
+    <div
+      className={`p-3 rounded-2xl border transition-all content-visibility-card ${
+        isCrit
+          ? 'bg-[#E0A030]/15 border-[#E0A030]/50 shadow-md shadow-[#E0A030]/20'
+          : isFumble
+          ? 'bg-[#C2512B]/15 border-[#C2512B]/50 shadow-md shadow-[#C2512B]/20'
+          : 'bg-[#171513] border-[#2F2A23]'
+      }`}
+    >
+      <div className="flex items-center justify-between text-xs mb-1">
+        <div className="flex items-center gap-1.5">
+          <UserIcon className="w-3.5 h-3.5 text-[#F2C265]" />
+          <span className="font-bold text-[#EDE6D8]">{roll.userName}</span>
+          {roll.characterName && (
+            <span className="text-[10px] text-[#A39A89]">({roll.characterName})</span>
+          )}
+          {roll.visibility === 'dm_only' && (
+            <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#C2512B]/20 text-[#E8836B] border border-[#C2512B]/30 flex items-center gap-0.5">
+              <Lock className="w-2.5 h-2.5" /> مخفی
+            </span>
+          )}
+        </div>
+        <span className="text-[10px] text-[#8A8374] font-mono">{dateStr}</span>
+      </div>
+
+      <div className="flex items-center justify-between mt-2">
+        <div>
+          <span className="text-xs text-[#F2C265] font-semibold block">{roll.rollType}</span>
+          <span className="text-[10px] text-[#A39A89] font-mono">{roll.diceExpression}</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {isCrit && (
+            <span className="text-[10px] font-black text-[#F2C265] px-2 py-0.5 rounded-full bg-[#E0A030]/20 border border-[#E0A030]/40">
+              ۲۰ طبیعی!
+            </span>
+          )}
+          {isFumble && (
+            <span className="text-[10px] font-black text-[#D66138] px-2 py-0.5 rounded-full bg-[#C2512B]/20 border border-[#C2512B]/40">
+              ۱ طبیعی!
+            </span>
+          )}
+          <span className={`text-2xl font-black font-mono ${
+            isCrit ? 'text-[#F2C265]' : isFumble ? 'text-[#D66138]' : 'text-[#EDE6D8]'
+          }`}>
+            {roll.total}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+});
+DiceRollCardRow.displayName = 'DiceRollCardRow';
 
 interface DiceRollerModalProps {
   isOpen: boolean;
@@ -399,66 +464,22 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                 <div className="p-8 text-center border border-dashed border-[#2F2A23] rounded-2xl text-[#8A8374] text-xs">
                   هنوز هیچ تاسی در این میز بازی پرتاب نشده است.
                 </div>
-              ) : (
-                tableRolls.map(roll => {
-                  const isCrit = roll.details?.isCritical;
-                  const isFumble = roll.details?.isFumble;
-                  const dateStr = new Date(roll.createdAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-                  return (
-                    <div
-                      key={roll.id}
-                      className={`p-3 rounded-2xl border transition-all ${
-                        isCrit
-                          ? 'bg-[#E0A030]/15 border-[#E0A030]/50 shadow-md shadow-[#E0A030]/20'
-                          : isFumble
-                          ? 'bg-[#C2512B]/15 border-[#C2512B]/50 shadow-md shadow-[#C2512B]/20'
-                          : 'bg-[#171513] border-[#2F2A23]'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <div className="flex items-center gap-1.5">
-                          <UserIcon className="w-3.5 h-3.5 text-[#F2C265]" />
-                          <span className="font-bold text-[#EDE6D8]">{roll.userName}</span>
-                          {roll.characterName && (
-                            <span className="text-[10px] text-[#A39A89]">({roll.characterName})</span>
-                          )}
-                          {roll.visibility === 'dm_only' && (
-                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#C2512B]/20 text-[#E8836B] border border-[#C2512B]/30 flex items-center gap-0.5">
-                              <Lock className="w-2.5 h-2.5" /> مخفی
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[10px] text-[#8A8374] font-mono">{dateStr}</span>
-                      </div>
-
-                      <div className="flex items-center justify-between mt-2">
-                        <div>
-                          <span className="text-xs text-[#F2C265] font-semibold block">{roll.rollType}</span>
-                          <span className="text-[10px] text-[#A39A89] font-mono">{roll.diceExpression}</span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          {isCrit && (
-                            <span className="text-[10px] font-black text-[#F2C265] px-2 py-0.5 rounded-full bg-[#E0A030]/20 border border-[#E0A030]/40">
-                              ۲۰ طبیعی!
-                            </span>
-                          )}
-                          {isFumble && (
-                            <span className="text-[10px] font-black text-[#D66138] px-2 py-0.5 rounded-full bg-[#C2512B]/20 border border-[#C2512B]/40">
-                              ۱ طبیعی!
-                            </span>
-                          )}
-                          <span className={`text-2xl font-black font-mono ${
-                            isCrit ? 'text-[#F2C265]' : isFumble ? 'text-[#D66138]' : 'text-[#EDE6D8]'
-                          }`}>
-                            {roll.total}
-                          </span>
-                        </div>
-                      </div>
+              ) : tableRolls.length > 50 ? (
+                <VirtualList
+                  items={tableRolls}
+                  itemHeight={88}
+                  height={480}
+                  keyExtractor={(r) => r.id}
+                  renderItem={(roll) => (
+                    <div className="pb-2">
+                      <DiceRollCardRow roll={roll} />
                     </div>
-                  );
-                })
+                  )}
+                />
+              ) : (
+                tableRolls.map(roll => (
+                  <DiceRollCardRow key={roll.id} roll={roll} />
+                ))
               )}
             </div>
           </div>

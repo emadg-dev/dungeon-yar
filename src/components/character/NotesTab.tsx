@@ -1,11 +1,118 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useDeferredValue, startTransition, memo } from 'react';
 import { Character, CharacterNote, NoteCategory } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { ConfirmSheet } from '../mobile/ConfirmSheet';
+import { VirtualList } from '../common/VirtualList';
 import { 
   FileText, Pin, Eye, EyeOff, Search, Plus, 
   Trash2, Edit3, Check, Tag, PinOff 
 } from 'lucide-react';
+
+interface NoteCardRowProps {
+  note: CharacterNote;
+  categoryLabel: string;
+  onTogglePin: (note: CharacterNote) => void;
+  onToggleShare: (note: CharacterNote) => void;
+  onStartEdit: (note: CharacterNote) => void;
+  onDeleteRequest: (id: string, title: string) => void;
+}
+
+const NoteCardRow = memo<NoteCardRowProps>(({
+  note,
+  categoryLabel,
+  onTogglePin,
+  onToggleShare,
+  onStartEdit,
+  onDeleteRequest,
+}) => (
+  <div
+    className={`surface-card rounded-[14px] p-3.5 border transition content-visibility-card ${
+      note.pinned
+        ? 'border-[#E0A030]/40 card-gold-top shadow-sm'
+        : 'border-[#2F2A23]'
+    }`}
+  >
+    {/* Card Header */}
+    <div className="flex items-center justify-between mb-2 gap-2">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        {note.pinned && (
+          <Pin className="w-3.5 h-3.5 text-[#E0A030] fill-[#E0A030] shrink-0" />
+        )}
+        <h4 className="font-extrabold text-xs sm:text-sm text-[#EDE6D8] truncate">
+          {note.title}
+        </h4>
+        <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#201D19] text-[#A39A89] border border-[#2F2A23] shrink-0">
+          {categoryLabel}
+        </span>
+      </div>
+
+      {/* Top Action Buttons (Pin, Share with DM, Edit, Delete) */}
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          type="button"
+          onClick={() => onTogglePin(note)}
+          className={`p-1.5 rounded-[8px] border transition touch-target ${
+            note.pinned
+              ? 'bg-[#E0A030]/15 text-[#E0A030] border-[#E0A030]/30'
+              : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
+          }`}
+          title={note.pinned ? 'برداشتن سنجاق' : 'سنجاق به بالا'}
+          aria-label={note.pinned ? 'برداشتن سنجاق' : 'سنجاق به بالا'}
+        >
+          {note.pinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onToggleShare(note)}
+          className={`flex items-center gap-1 px-2 py-1 rounded-[8px] text-[10px] font-bold border transition touch-target ${
+            note.sharedWithDm
+              ? 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/40'
+              : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23]'
+          }`}
+          title={note.sharedWithDm ? 'به اشتراک گذاشته شده با دانجن مستر' : 'محرمانه (فقط خودت)'}
+          aria-label="تغییر اشتراک‌گذاری با دانجن مستر"
+        >
+          {note.sharedWithDm ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+          <span className="hidden sm:inline">{note.sharedWithDm ? 'دیده‌شده توسط DM' : 'خصوصی'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onStartEdit(note)}
+          className="p-1.5 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target"
+          title="ویرایش یادداشت"
+        >
+          <Edit3 className="w-3.5 h-3.5" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onDeleteRequest(note.id, note.title)}
+          className="p-1.5 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#C2512B] border border-[#2F2A23] touch-target"
+          title="حذف یادداشت"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+
+    {/* Note Body Text */}
+    <p className="text-xs text-[#EDE6D8]/80 whitespace-pre-wrap leading-relaxed select-text">
+      {note.body}
+    </p>
+
+    {note.sessionTag && (
+      <div className="mt-2 pt-2 border-t border-[#2F2A23] flex items-center justify-between text-[10px] text-[#A39A89]">
+        <span>برچسب جلسه: {note.sessionTag}</span>
+        {note.sharedWithDm && (
+          <span className="text-[#6F9E78] font-bold">دیده‌شده توسط DM</span>
+        )}
+      </div>
+    )}
+  </div>
+));
+NoteCardRow.displayName = 'NoteCardRow';
 
 interface NotesTabProps {
   character: Character;
@@ -35,6 +142,21 @@ export const NotesTab: React.FC<NotesTabProps> = ({
   const [noteCategory, setNoteCategory] = useState<NoteCategory>('journal');
   const [noteShared, setNoteShared] = useState(false);
   const [notePinned, setNotePinned] = useState(false);
+
+  // Debounced draft autosave (~800 ms)
+  const draftTimerRef = useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+    if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
+    draftTimerRef.current = setTimeout(() => {
+      if (noteTitle) localStorage.setItem('zorvania_draft_note_title', noteTitle);
+      else localStorage.removeItem('zorvania_draft_note_title');
+      if (noteBody) localStorage.setItem('zorvania_draft_note_body', noteBody);
+      else localStorage.removeItem('zorvania_draft_note_body');
+    }, 800);
+    return () => {
+      if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
+    };
+  }, [noteTitle, noteBody]);
 
   // Edit Note State
   const [editTitle, setEditTitle] = useState('');
@@ -121,14 +243,16 @@ export const NotesTab: React.FC<NotesTabProps> = ({
     { id: 'locations', label: 'مکان‌ها' },
   ];
 
+  const deferredSearch = useDeferredValue(searchQuery);
+
   // Filter and sort with pinned first
   const filteredNotes = notes
     .filter(note => {
       const matchCat = selectedCategory === 'all' || note.category === selectedCategory;
       const matchSearch =
-        !searchQuery ||
-        note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        note.body.toLowerCase().includes(searchQuery.toLowerCase());
+        !deferredSearch ||
+        note.title.toLowerCase().includes(deferredSearch.toLowerCase()) ||
+        note.body.toLowerCase().includes(deferredSearch.toLowerCase());
       return matchCat && matchSearch;
     })
     .sort((a, b) => {
@@ -169,7 +293,11 @@ export const NotesTab: React.FC<NotesTabProps> = ({
             <button
               key={cat.id}
               type="button"
-              onClick={() => setSelectedCategory(cat.id)}
+              onClick={() => {
+                startTransition(() => {
+                  setSelectedCategory(cat.id);
+                });
+              }}
               className={`px-3 py-1.5 rounded-[10px] text-xs font-bold transition whitespace-nowrap touch-target ${
                 selectedCategory === cat.id
                   ? 'bg-[#E0A030] text-[#0E0D0C]'
@@ -188,99 +316,36 @@ export const NotesTab: React.FC<NotesTabProps> = ({
           <div className="surface-card rounded-[14px] text-center py-10 text-[#A39A89] text-xs">
             یادداشتی یافت نشد. با فشردن «یادداشت نو» اولین واقعه‌نگاری خود را ثبت کنید.
           </div>
+        ) : filteredNotes.length > 50 ? (
+          <VirtualList
+            items={filteredNotes}
+            itemHeight={130}
+            height={560}
+            keyExtractor={(n) => n.id}
+            renderItem={(note) => (
+              <div className="pb-3">
+                <NoteCardRow
+                  note={note}
+                  categoryLabel={categoryLabels[note.category] || note.category}
+                  onTogglePin={togglePin}
+                  onToggleShare={toggleShare}
+                  onStartEdit={handleStartEdit}
+                  onDeleteRequest={(id, title) => setDeleteConfirm({ isOpen: true, id, title })}
+                />
+              </div>
+            )}
+          />
         ) : (
           filteredNotes.map(note => (
-            <div
+            <NoteCardRow
               key={note.id}
-              className={`surface-card rounded-[14px] p-3.5 border transition ${
-                note.pinned
-                  ? 'border-[#E0A030]/40 card-gold-top shadow-sm'
-                  : 'border-[#2F2A23]'
-              }`}
-            >
-              {/* Card Header */}
-              <div className="flex items-center justify-between mb-2 gap-2">
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  {note.pinned && (
-                    <Pin className="w-3.5 h-3.5 text-[#E0A030] fill-[#E0A030] shrink-0" />
-                  )}
-                  <h4 className="font-extrabold text-xs sm:text-sm text-[#EDE6D8] truncate">
-                    {note.title}
-                  </h4>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#201D19] text-[#A39A89] border border-[#2F2A23] shrink-0">
-                    {categoryLabels[note.category] || note.category}
-                  </span>
-                </div>
-
-                {/* Top Action Buttons (Pin, Share with DM, Edit, Delete) */}
-                <div className="flex items-center gap-1 shrink-0">
-                  {/* Pin Toggle */}
-                  <button
-                    type="button"
-                    onClick={() => togglePin(note)}
-                    className={`p-1.5 rounded-[8px] border transition touch-target ${
-                      note.pinned
-                        ? 'bg-[#E0A030]/15 text-[#E0A030] border-[#E0A030]/30'
-                        : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
-                    }`}
-                    title={note.pinned ? 'برداشتن سنجاق' : 'سنجاق به بالا'}
-                    aria-label={note.pinned ? 'برداشتن سنجاق' : 'سنجاق به بالا'}
-                  >
-                    {note.pinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
-                  </button>
-
-                  {/* "Share with DM" Eye Toggle */}
-                  <button
-                    type="button"
-                    onClick={() => toggleShare(note)}
-                    className={`flex items-center gap-1 px-2 py-1 rounded-[8px] text-[10px] font-bold border transition touch-target ${
-                      note.sharedWithDm
-                        ? 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/40'
-                        : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23]'
-                    }`}
-                    title={note.sharedWithDm ? 'به اشتراک گذاشته شده با دانجن مستر' : 'محرمانه (فقط خودت)'}
-                    aria-label="تغییر اشتراک‌گذاری با دانجن مستر"
-                  >
-                    {note.sharedWithDm ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                    <span className="hidden sm:inline">{note.sharedWithDm ? 'دیده‌شده توسط DM' : 'خصوصی'}</span>
-                  </button>
-
-                  {/* Edit Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleStartEdit(note)}
-                    className="p-1.5 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target"
-                    title="ویرایش یادداشت"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                  </button>
-
-                  {/* Delete Button */}
-                  <button
-                    type="button"
-                    onClick={() => setDeleteConfirm({ isOpen: true, id: note.id, title: note.title })}
-                    className="p-1.5 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#C2512B] border border-[#2F2A23] touch-target"
-                    title="حذف یادداشت"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Note Body Text */}
-              <p className="text-xs text-[#EDE6D8]/80 whitespace-pre-wrap leading-relaxed select-text">
-                {note.body}
-              </p>
-
-              {note.sessionTag && (
-                <div className="mt-2 pt-2 border-t border-[#2F2A23] flex items-center justify-between text-[10px] text-[#A39A89]">
-                  <span>برچسب جلسه: {note.sessionTag}</span>
-                  {note.sharedWithDm && (
-                    <span className="text-[#6F9E78] font-bold">دیده‌شده توسط DM</span>
-                  )}
-                </div>
-              )}
-            </div>
+              note={note}
+              categoryLabel={categoryLabels[note.category] || note.category}
+              onTogglePin={togglePin}
+              onToggleShare={toggleShare}
+              onStartEdit={handleStartEdit}
+              onDeleteRequest={(id, title) => setDeleteConfirm({ isOpen: true, id, title })}
+            />
           ))
         )}
       </div>
@@ -388,10 +453,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
               required
               placeholder="مثلاً: گفت‌وگو با پیشوای نوژان در معبد سنگی"
               value={noteTitle}
-              onChange={(e) => {
-                setNoteTitle(e.target.value);
-                localStorage.setItem('zorvania_draft_note_title', e.target.value);
-              }}
+              onChange={(e) => setNoteTitle(e.target.value)}
               className="w-full py-2 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
             />
           </div>
@@ -430,10 +492,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
               required
               placeholder="شرح جزئیات..."
               value={noteBody}
-              onChange={(e) => {
-                setNoteBody(e.target.value);
-                localStorage.setItem('zorvania_draft_note_body', e.target.value);
-              }}
+              onChange={(e) => setNoteBody(e.target.value)}
               className="w-full p-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] leading-relaxed focus:border-[#E0A030] focus:outline-none"
             />
           </div>

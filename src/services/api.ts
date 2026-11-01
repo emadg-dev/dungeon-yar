@@ -326,6 +326,7 @@ export class HttpLiveChannel implements LiveChannel {
   private lastActiveId: string | null = null;
   private errorCount = 0;
   private isPolling = false;
+  private abortController: AbortController | null = null;
 
   constructor(private fetchJson: <T>(url: string, opts?: RequestInit) => Promise<T>) {
     if (typeof document !== 'undefined') {
@@ -333,6 +334,11 @@ export class HttpLiveChannel implements LiveChannel {
         if (!document.hidden) {
           this.errorCount = 0;
           this.pollNow();
+        } else {
+          if (this.abortController) {
+            this.abortController.abort();
+            this.abortController = null;
+          }
         }
       });
     }
@@ -375,6 +381,10 @@ export class HttpLiveChannel implements LiveChannel {
   }
 
   private stopPolling() {
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
     if (this.pollTimer) {
       clearTimeout(this.pollTimer);
       this.pollTimer = null;
@@ -387,19 +397,29 @@ export class HttpLiveChannel implements LiveChannel {
       return; // Pause while hidden (Acceptance Test 8)
     }
 
+    if (this.abortController) {
+      this.abortController.abort();
+    }
+    const ac = new AbortController();
+    this.abortController = ac;
     this.isPolling = true;
+
     try {
-      const live = await this.fetchJson<LiveSyncStatus>('/live');
+      const live = await this.fetchJson<LiveSyncStatus>('/live', { signal: ac.signal });
       this.errorCount = 0;
       if (live.version !== this.lastVersion || live.activeEncounterId !== this.lastActiveId) {
         this.lastVersion = live.version;
         this.lastActiveId = live.activeEncounterId;
         this.notify(live.activeEncounterId, live.version);
       }
-    } catch {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       this.errorCount = Math.min(this.errorCount + 1, 6);
     } finally {
       this.isPolling = false;
+      if (this.abortController === ac) {
+        this.abortController = null;
+      }
       if (this.listeners.size > 0 && (typeof document === 'undefined' || !document.hidden)) {
         // Base interval: 3s if active encounter, 15s if idle (Acceptance Test 8)
         const baseInterval = this.lastActiveId ? 3000 : 15000;

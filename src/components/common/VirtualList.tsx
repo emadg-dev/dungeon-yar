@@ -83,7 +83,7 @@ export function VirtualList<T>({
     <div
       ref={containerRef}
       className={`overflow-y-auto relative ${className}`}
-      style={{ height, willChange: 'transform' }}
+      style={{ height }}
     >
       <div style={{ height: totalHeight, width: '100%', position: 'relative' }}>
         <div

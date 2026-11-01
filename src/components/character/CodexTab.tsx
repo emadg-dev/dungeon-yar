@@ -258,7 +258,15 @@ export const CodexTab: React.FC<CodexTabProps> = ({
                   </div>
                   {loc.imageUrl && (
                     <div className="w-full h-32 rounded-[10px] overflow-hidden border border-[#2F2A23] bg-[#0E0D0C]">
-                      <img src={loc.imageUrl} alt={loc.name} className="w-full h-full object-cover" />
+                      <img
+                        src={loc.imageUrl}
+                        alt={loc.name}
+                        loading="lazy"
+                        decoding="async"
+                        width={320}
+                        height={128}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   )}
                   <p className="text-xs text-[#EDE6D8]/80 leading-relaxed select-text">
