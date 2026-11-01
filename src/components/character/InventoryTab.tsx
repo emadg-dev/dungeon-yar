@@ -267,7 +267,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             </div>
             <div>
               <h4 className="text-xs font-extrabold text-[#EDE6D8]">جیره غذایی (Rations)</h4>
-              <p className="text-[10px] text-[#A39A89]">۱ جیره در روز، مانع خستگی</p>
+              <p className="text-[10px] text-[#A39A89]">1 جیره در روز، مانع خستگی</p>
             </div>
           </div>
 
@@ -302,7 +302,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             </div>
             <div>
               <h4 className="text-xs font-extrabold text-[#EDE6D8]">چراغ روغنی (Lanterns)</h4>
-              <p className="text-[10px] text-[#A39A89]">هر چراغ ≈ ۶ ساعت روشنایی</p>
+              <p className="text-[10px] text-[#A39A89]">هر چراغ ≈ 6 ساعت روشنایی</p>
             </div>
           </div>
 

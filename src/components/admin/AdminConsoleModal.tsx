@@ -344,7 +344,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#E0A030] flex items-center gap-1.5">
                       <KeyRound className="w-4 h-4" />
-                      <span>لینک تغییر رمز یک‌بارمصرف (معتبر تا ۲۴ ساعت)</span>
+                      <span>لینک تغییر رمز یک‌بارمصرف (معتبر تا 24 ساعت)</span>
                     </span>
                     <button
                       onClick={() => setGeneratedReset(null)}
@@ -407,9 +407,9 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                         {u.email}
                       </p>
                       <div className="text-[10px] text-[#736B5E] flex items-center gap-3">
-                        <span>عضویت: {new Date(u.createdAt).toLocaleDateString('fa-IR')}</span>
+                        <span>عضویت: {new Date(u.createdAt).toLocaleDateString('fa-IR-u-nu-latn')}</span>
                         {u.lastLoginAt && (
-                          <span>آخرین ورود: {new Date(u.lastLoginAt).toLocaleDateString('fa-IR')}</span>
+                          <span>آخرین ورود: {new Date(u.lastLoginAt).toLocaleDateString('fa-IR-u-nu-latn')}</span>
                         )}
                       </div>
                     </div>
@@ -508,8 +508,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                       </p>
                       <div className="text-[10px] text-[#736B5E] flex items-center gap-3">
                         <span>شناسه: <code className="font-mono text-[#EDE6D8]">{c.id}</code></span>
-                        <span>ایجاد: {new Date(c.createdAt).toLocaleDateString('fa-IR')}</span>
-                        <span>آخرین فعالیت: {new Date(c.updatedAt).toLocaleDateString('fa-IR')}</span>
+                        <span>ایجاد: {new Date(c.createdAt).toLocaleDateString('fa-IR-u-nu-latn')}</span>
+                        <span>آخرین فعالیت: {new Date(c.updatedAt).toLocaleDateString('fa-IR-u-nu-latn')}</span>
                       </div>
                     </div>
 
@@ -613,7 +613,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                     onChange={(e) => setSettings({ ...settings, storageWarningThresholdBytes: Number(e.target.value) * 1024 * 1024 })}
                     className="w-full py-2 px-3 rounded-[10px] bg-[#171513] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
                   />
-                  <p className="text-[10px] text-[#A39A89]">سقف رایگان پلن کلودفلر D1 معادل ۱۰۰۰ مگابایت (۱ گیگابایت) است.</p>
+                  <p className="text-[10px] text-[#A39A89]">سقف رایگان پلن کلودفلر D1 معادل 1000 مگابایت (1 گیگابایت) است.</p>
                 </div>
               </div>
 
@@ -676,7 +676,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                         <code className="text-[10px] text-[#736B5E] font-mono">{t.table}</code>
                       </div>
                       <div className="text-left">
-                        <span className="text-xs font-extrabold text-[#E0A030] block">{t.count.toLocaleString('fa-IR')} رکورد</span>
+                        <span className="text-xs font-extrabold text-[#E0A030] block">{t.count.toLocaleString('fa-IR-u-nu-latn')} رکورد</span>
                         <span className="text-[10px] text-[#A39A89]">{formatBytes(t.estimatedBytes)}</span>
                       </div>
                     </div>
@@ -703,28 +703,28 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                 <div className="grid grid-cols-2 gap-2 pt-2">
                   <div className="p-3 rounded-[10px] bg-[#171513] border border-[#2F2A23]">
                     <span className="text-[11px] text-[#A39A89] block">تصاویر و فایل‌های یتیم</span>
-                    <span className="text-sm font-extrabold text-[#EDE6D8]">{cleanupReport.counts.orphanMedia.toLocaleString('fa-IR')} مورد</span>
+                    <span className="text-sm font-extrabold text-[#EDE6D8]">{cleanupReport.counts.orphanMedia.toLocaleString('fa-IR-u-nu-latn')} مورد</span>
                   </div>
 
                   <div className="p-3 rounded-[10px] bg-[#171513] border border-[#2F2A23]">
                     <span className="text-[11px] text-[#A39A89] block">کدهای دعوت منقضی</span>
-                    <span className="text-sm font-extrabold text-[#EDE6D8]">{cleanupReport.counts.expiredInvites.toLocaleString('fa-IR')} مورد</span>
+                    <span className="text-sm font-extrabold text-[#EDE6D8]">{cleanupReport.counts.expiredInvites.toLocaleString('fa-IR-u-nu-latn')} مورد</span>
                   </div>
 
                   <div className="p-3 rounded-[10px] bg-[#171513] border border-[#2F2A23]">
                     <span className="text-[11px] text-[#A39A89] block">نشست‌های باطل‌شده</span>
-                    <span className="text-sm font-extrabold text-[#EDE6D8]">{cleanupReport.counts.expiredSessions.toLocaleString('fa-IR')} مورد</span>
+                    <span className="text-sm font-extrabold text-[#EDE6D8]">{cleanupReport.counts.expiredSessions.toLocaleString('fa-IR-u-nu-latn')} مورد</span>
                   </div>
 
                   <div className="p-3 rounded-[10px] bg-[#171513] border border-[#2F2A23]">
                     <span className="text-[11px] text-[#A39A89] block">لینک‌های تغییر رمز قدیمی</span>
-                    <span className="text-sm font-extrabold text-[#EDE6D8]">{cleanupReport.counts.oldPasswordResets.toLocaleString('fa-IR')} مورد</span>
+                    <span className="text-sm font-extrabold text-[#EDE6D8]">{cleanupReport.counts.oldPasswordResets.toLocaleString('fa-IR-u-nu-latn')} مورد</span>
                   </div>
                 </div>
 
                 <div className="pt-2 flex items-center justify-between text-xs text-[#A39A89]">
                   <span>مجموع رکوردهای قابل پاک‌سازی: <strong className="text-[#E0A030]">{cleanupReport.cleanedTotal}</strong></span>
-                  <span>آخرین بررسی: {new Date(cleanupReport.executedAt).toLocaleTimeString('fa-IR')}</span>
+                  <span>آخرین بررسی: {new Date(cleanupReport.executedAt).toLocaleTimeString('fa-IR-u-nu-latn')}</span>
                 </div>
               </div>
 

@@ -14,7 +14,7 @@ interface DiceRollCardRowProps {
 const DiceRollCardRow = memo<DiceRollCardRowProps>(({ roll }) => {
   const isCrit = roll.details?.isCritical;
   const isFumble = roll.details?.isFumble;
-  const dateStr = new Date(roll.createdAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dateStr = new Date(roll.createdAt).toLocaleTimeString('fa-IR-u-nu-latn', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
   return (
     <div
@@ -51,12 +51,12 @@ const DiceRollCardRow = memo<DiceRollCardRowProps>(({ roll }) => {
         <div className="flex items-center gap-2">
           {isCrit && (
             <span className="text-[10px] font-black text-[#F2C265] px-2 py-0.5 rounded-full bg-[#E0A030]/20 border border-[#E0A030]/40">
-              ۲۰ طبیعی!
+              20 طبیعی!
             </span>
           )}
           {isFumble && (
             <span className="text-[10px] font-black text-[#D66138] px-2 py-0.5 rounded-full bg-[#C2512B]/20 border border-[#C2512B]/40">
-              ۱ طبیعی!
+              1 طبیعی!
             </span>
           )}
           <span className={`text-2xl font-black font-mono ${
@@ -288,12 +288,12 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
 
                   {latestRoll.isCritical && (
                     <span className="px-2.5 py-1 text-xs font-black bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030] rounded-full flex items-center gap-1 animate-pulse">
-                      <Flame className="w-3.5 h-3.5" /> بحرانی طبیعی! (۲۰)
+                      <Flame className="w-3.5 h-3.5" /> بحرانی طبیعی! (20)
                     </span>
                   )}
                   {latestRoll.isFumble && (
                     <span className="px-2.5 py-1 text-xs font-black bg-[#C2512B]/25 text-[#C2512B] border border-[#C2512B] rounded-full flex items-center gap-1">
-                      <Skull className="w-3.5 h-3.5" /> شکست فاجعه‌بار! (۱)
+                      <Skull className="w-3.5 h-3.5" /> شکست فاجعه‌بار! (1)
                     </span>
                   )}
                 </div>
@@ -447,7 +447,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-[#C9C0AE]">
-                پرتاب‌های زنده میز بازی (۵۰ پرتاب اخیر)
+                پرتاب‌های زنده میز بازی (50 پرتاب اخیر)
               </span>
               <button
                 onClick={fetchTableRolls}

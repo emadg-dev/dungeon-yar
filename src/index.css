@@ -532,6 +532,9 @@ textarea:focus-visible {
   padding-inline: 0.75rem;
   pointer-events: none; /* track re-enables pointer events */
 }
+body.in-encounter .liquid-dock {
+  display: none !important;
+}
 .liquid-dock__track {
   position: relative;
   display: flex;

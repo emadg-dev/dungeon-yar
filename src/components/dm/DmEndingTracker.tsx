@@ -169,7 +169,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
           <div className="flex items-center justify-between border-b border-[#2F2A23] pb-2">
             <span className="text-xs font-black text-[#F2C265] flex items-center gap-1.5">
               <Eye className="w-4 h-4 text-[#F2C265]" />
-              حقیقت ({truthCount} از ۶ منبع)
+              حقیقت ({truthCount} از 6 منبع)
             </span>
             <span className="text-[11px] text-[#A39A89]">کشف اسرار بنیادی</span>
           </div>
@@ -198,7 +198,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
           <div className="flex items-center justify-between border-b border-[#2F2A23] pb-2">
             <span className="text-xs font-black text-[#F2C265] flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-[#F2C265]" />
-              راه‌اندازهای آریامن ({aryaman.count} از ۵)
+              راه‌اندازهای آریامن ({aryaman.count} از 5)
             </span>
             <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border ${
               aryaman.state === 'returned' ? 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/40' :
@@ -233,7 +233,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
           <div className="flex items-center justify-between border-b border-[#2F2A23] pb-2">
             <span className="text-xs font-black text-[#F2C265] flex items-center gap-1.5">
               <Flame className="w-4 h-4 text-[#F2C265]" />
-              اخگرها ({state.embersPercentage}٪ از ۱۰۰٪)
+              اخگرها ({state.embersPercentage}٪ از 100٪)
             </span>
             <label className="flex items-center gap-1 text-[11px] text-[#F2C265] cursor-pointer font-bold">
               <input
@@ -289,7 +289,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
           <div className="flex items-center justify-between border-b border-[#2F2A23] pb-2">
             <span className="text-xs font-black text-[#E8836B] flex items-center gap-1.5">
               <AlertTriangle className="w-4 h-4 text-[#E8836B]" />
-              آشفتگی ({chaosScore} از ۱۰)
+              آشفتگی ({chaosScore} از 10)
             </span>
             <span className="text-[11px] text-[#A39A89]">
               {chaosScore >= 7 ? 'سقوط اجباری جهان' : chaosScore >= 4 ? 'زخم در پایان‌ها' : 'ثبات نسبی'}
@@ -298,7 +298,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
 
           <div className="space-y-2 text-xs">
             <div className="flex items-center justify-between p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
-              <span className="text-[#C9C0AE]">مهر کلید شکسته (+۱ هر کدام، حداکثر ۳):</span>
+              <span className="text-[#C9C0AE]">مهر کلید شکسته (+1 هر کدام، حداکثر 3):</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -315,7 +315,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
             </div>
 
             <div className="flex items-center justify-between p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
-              <span className="text-[#C9C0AE]">متحد اصلی کشته‌شده (+۱ هر کدام، حداکثر ۳):</span>
+              <span className="text-[#C9C0AE]">متحد اصلی کشته‌شده (+1 هر کدام، حداکثر 3):</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -332,7 +332,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
             </div>
 
             <div className="flex items-center justify-between p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
-              <span className="text-[#C9C0AE]">فرقه/جناح دشمن‌شده (+۱ هر کدام، حداکثر ۳):</span>
+              <span className="text-[#C9C0AE]">فرقه/جناح دشمن‌شده (+1 هر کدام، حداکثر 3):</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -349,7 +349,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
             </div>
 
             <label className="flex items-center justify-between p-2 rounded-xl bg-[#181c28] border border-[#2F2A23] cursor-pointer select-none">
-              <span className="text-[#C9C0AE]">آستانه مهارنشده سنگ‌خواب یا وردان (+۱):</span>
+              <span className="text-[#C9C0AE]">آستانه مهارنشده سنگ‌خواب یا وردان (+1):</span>
               <input
                 type="checkbox"
                 checked={state.chaos.unrestrainedThreshold}
@@ -359,7 +359,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
             </label>
 
             <div className="flex items-center justify-between p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
-              <span className="text-[#6F9E78]">آشتی دادن جناح یا نجات متحد (-۱ کاهش):</span>
+              <span className="text-[#6F9E78]">آشتی دادن جناح یا نجات متحد (-1 کاهش):</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"

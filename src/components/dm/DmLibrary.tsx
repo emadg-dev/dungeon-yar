@@ -670,7 +670,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 : 'bg-[#2F2A23]/80 hover:bg-[#2F2A23] text-[#EDE6D8]'
             }`}
           >
-            پایه ۵e (SRD)
+            پایه 5e (SRD)
           </button>
 
           {/* Dynamic User Packs */}
@@ -1108,17 +1108,17 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
           isOpen={importSheet.isOpen}
           onClose={() => setImportSheet(prev => ({ ...prev, isOpen: false }))}
           title={
-            importSheet.step === 1 ? 'مرحله ۱: انتخاب و وابستگی‌ها' :
-            importSheet.step === 2 ? 'مرحله ۲: گزینه‌های سفارشی‌سازی' :
-            'مرحله ۳: پیش‌نمایش و تأیید نهایی'
+            importSheet.step === 1 ? 'مرحله 1: انتخاب و وابستگی‌ها' :
+            importSheet.step === 2 ? 'مرحله 2: گزینه‌های سفارشی‌سازی' :
+            'مرحله 3: پیش‌نمایش و تأیید نهایی'
           }
         >
           <div className="space-y-4 py-2 text-right" dir="rtl">
             {/* Step Indicators */}
             <div className="flex items-center justify-between text-xs font-bold text-[#A39A89] border-b border-[#2F2A23] pb-2">
-              <span className={importSheet.step === 1 ? 'text-[#F2C265] font-black' : ''}>۱. انتخاب</span>
-              <span className={importSheet.step === 2 ? 'text-[#F2C265] font-black' : ''}>۲. تنظیمات تبدیل</span>
-              <span className={importSheet.step === 3 ? 'text-[#F2C265] font-black' : ''}>۳. پیش‌نمایش</span>
+              <span className={importSheet.step === 1 ? 'text-[#F2C265] font-black' : ''}>1. انتخاب</span>
+              <span className={importSheet.step === 2 ? 'text-[#F2C265] font-black' : ''}>2. تنظیمات تبدیل</span>
+              <span className={importSheet.step === 3 ? 'text-[#F2C265] font-black' : ''}>3. پیش‌نمایش</span>
             </div>
 
             {/* STEP 1: Selection & Dependencies */}

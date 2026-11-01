@@ -215,11 +215,11 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-xs text-[#EDE6D8]">چک‌لیست راه‌اندازی و آمادگی کمپین</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#6F9E78]/20 text-[#6F9E78] font-bold">
-                {activeCampaign?.wizardState?.completed?.length || 8}/۸ گام
+                {activeCampaign?.wizardState?.completed?.length || 8}/8 گام
               </span>
             </div>
             <p className="text-[11px] text-[#A39A89] mt-0.5">
-              مشخصات، قوانین ۵e، تقویم، جناح‌ها، هیولاها، لوت و جلسه‌ی صفر
+              مشخصات، قوانین 5e، تقویم، جناح‌ها، هیولاها، لوت و جلسه‌ی صفر
             </p>
           </div>
         </div>
@@ -416,7 +416,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                         className="px-2 py-1.5 rounded-lg bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-[#EDE6D8] flex items-center justify-center gap-1 font-bold transition"
                       >
                         <Clock className="w-3.5 h-3.5 text-[#E0A030]" />
-                        <span>اسنپ‌شات‌ها (۱۰)</span>
+                        <span>اسنپ‌شات‌ها (10)</span>
                       </button>
                     )}
 
@@ -432,7 +432,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                         className="px-2 py-1.5 rounded-lg bg-[#201D19] border border-[#2F2A23] hover:border-[#C2512B] text-[#E8836B] flex items-center justify-center gap-1 font-bold transition"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
-                        <span>واگرد ارتقا (-۱)</span>
+                        <span>واگرد ارتقا (-1)</span>
                       </button>
                     )}
                   </div>

@@ -297,7 +297,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               </h3>
               <p className="text-xs text-[#A39A89]">
                 بونوس مهارت (Proficiency): <span className="font-mono text-[#F2C265] font-bold">+{nextProf}</span>
-                {nextProf > currentProf && <span className="text-[#6F9E78] font-bold me-1"> (+۱ افزایش!)</span>}
+                {nextProf > currentProf && <span className="text-[#6F9E78] font-bold me-1"> (+1 افزایش!)</span>}
               </p>
             </div>
 
@@ -355,7 +355,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
 
               {/* CON Breakdown formula display */}
               <div className="p-3 rounded-xl bg-[#131110] border border-[#2F2A23] space-y-2">
-                <span className="text-[11px] text-[#A39A89] block">فرمول استاندارد ۵e: تاس جان (1d{hitDie}) + اصلاحگر بنیه</span>
+                <span className="text-[11px] text-[#A39A89] block">فرمول استاندارد 5e: تاس جان (1d{hitDie}) + اصلاحگر بنیه</span>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-[#A39A89]">اصلاحگر بنیه (CON {conScore}):</span>
                   <span className="font-mono font-bold text-[#F2C265]">
@@ -423,7 +423,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                         : 'bg-[#201D19] text-[#A39A89] border-[#3A342B]'
                     }`}
                   >
-                    +۲ به یک ویژگی
+                    +2 به یک ویژگی
                   </button>
                   <button
                     type="button"
@@ -434,18 +434,18 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                         : 'bg-[#201D19] text-[#A39A89] border-[#3A342B]'
                     }`}
                   >
-                    +۱ به دو ویژگی
+                    +1 به دو ویژگی
                   </button>
                 </div>
               </div>
 
               <p className="text-[11px] text-[#A39A89] leading-relaxed">
-                طبق قوانین رسمی ۵e، سقف طبیعی هر ویژگی برابر ۲۰ است. در این کمپین فیت‌ها (Feats) غیرفعال بوده و تنها ارتقای مستقیم امتیازات ویژگی مجاز است.
+                طبق قوانین رسمی 5e، سقف طبیعی هر ویژگی برابر 20 است. در این کمپین فیت‌ها (Feats) غیرفعال بوده و تنها ارتقای مستقیم امتیازات ویژگی مجاز است.
               </p>
 
               {asiMode === 'plus2' ? (
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-[#EDE6D8]">انتخاب ویژگی (+۲):</label>
+                  <label className="block text-xs font-bold text-[#EDE6D8]">انتخاب ویژگی (+2):</label>
                   <select
                     value={asiStat1}
                     onChange={(e) => setAsiStat1(e.target.value as AbilityName)}
@@ -456,7 +456,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                       const isMaxed = cur >= 20;
                       return (
                         <option key={stat} value={stat} disabled={isMaxed}>
-                          {abilityFa[stat]} — فعلی: {cur} {cur + 2 <= 20 ? `(می‌شود ${cur + 2})` : '(سقف ۲۰ پر است!)'}
+                          {abilityFa[stat]} — فعلی: {cur} {cur + 2 <= 20 ? `(می‌شود ${cur + 2})` : '(سقف 20 پر است!)'}
                         </option>
                       );
                     })}
@@ -465,7 +465,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-[#EDE6D8]">ویژگی اول (+۱):</label>
+                    <label className="block text-xs font-bold text-[#EDE6D8]">ویژگی اول (+1):</label>
                     <select
                       value={asiStat1}
                       onChange={(e) => setAsiStat1(e.target.value as AbilityName)}
@@ -483,7 +483,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-[#EDE6D8]">ویژگی دوم (+۱):</label>
+                    <label className="block text-xs font-bold text-[#EDE6D8]">ویژگی دوم (+1):</label>
                     <select
                       value={asiStat2}
                       onChange={(e) => setAsiStat2(e.target.value as AbilityName)}
@@ -511,10 +511,10 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
             <div className="surface-card rounded-xl p-4 border border-[#2F2A23] space-y-3">
               <div className="flex items-center gap-2">
                 <Star className="w-5 h-5 text-[#E0A030]" />
-                <span className="text-xs font-bold text-[#EDE6D8]">انتخاب زیرکلاس اختصاصی (سطح ۳)</span>
+                <span className="text-xs font-bold text-[#EDE6D8]">انتخاب زیرکلاس اختصاصی (سطح 3)</span>
               </div>
               <p className="text-[11px] text-[#A39A89]">
-                با رسیدن به سطح ۳، مسیر تخصصی خود را برای کلاس {character.className} برگزینید.
+                با رسیدن به سطح 3، مسیر تخصصی خود را برای کلاس {character.className} برگزینید.
               </p>
 
               <div className="space-y-2">

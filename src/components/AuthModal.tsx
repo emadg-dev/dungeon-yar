@@ -77,10 +77,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     if (mode === 'register') {
       if (!displayName.trim() || displayName.length < 2 || displayName.length > 40) {
-        errors.displayName = 'نام نمایشی باید بین ۲ تا ۴۰ نویسه باشد.';
+        errors.displayName = 'نام نمایشی باید بین 2 تا 40 نویسه باشد.';
       }
       if (!password || password.length < 8) {
-        errors.password = 'رمز عبور باید حداقل ۸ نویسه باشد.';
+        errors.password = 'رمز عبور باید حداقل 8 نویسه باشد.';
       }
       if (password && email && password.toLowerCase() === email.toLowerCase()) {
         errors.password = 'رمز عبور نمی‌تواند مشابه ایمیل باشد.';
@@ -92,7 +92,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         errors.resetToken = 'توکن تغییر رمز الزامی است.';
       }
       if (!password || password.length < 8) {
-        errors.password = 'رمز عبور جدید باید حداقل ۸ نویسه باشد.';
+        errors.password = 'رمز عبور جدید باید حداقل 8 نویسه باشد.';
       }
       if (password !== confirmPassword) {
         errors.confirmPassword = 'تکرار رمز عبور همخوانی ندارد.';
@@ -346,7 +346,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="حداقل ۸ نویسه"
+                  placeholder="حداقل 8 نویسه"
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                   dir="ltr"
                   enterKeyHint={mode === 'reset' ? 'next' : 'done'}
@@ -378,7 +378,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </div>
                   <div className="flex justify-between items-center text-[10px] text-[#A39A89]">
                     <span>استحکام رمز: {strengthLabels[strength]}</span>
-                    <span>حداقل ۸ کاراکتر</span>
+                    <span>حداقل 8 کاراکتر</span>
                   </div>
                 </div>
               )}

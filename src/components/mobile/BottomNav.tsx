@@ -19,6 +19,7 @@ interface BottomNavProps {
   isKeyboardOpen?: boolean;
   hasActiveEncounter?: boolean;
   onOpenActiveEncounter?: () => void;
+  isInCombat?: boolean;
 }
 
 /**
@@ -41,9 +42,23 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   isKeyboardOpen = false,
   hasActiveEncounter = false,
   onOpenActiveEncounter,
+  isInCombat = false,
 }) => {
-  // Hide bottom nav while on-screen keyboard is open to avoid covering inputs
-  if (isKeyboardOpen) return null;
+  // Hide bottom nav while on-screen keyboard is open OR during encounter/combat
+  const [inEncounterClass, setInEncounterClass] = React.useState(false);
+
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const checkClass = () => {
+      setInEncounterClass(document.body.classList.contains('in-encounter'));
+    };
+    checkClass();
+    const observer = new MutationObserver(checkClass);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
+  if (isKeyboardOpen || isInCombat || inEncounterClass) return null;
 
   // Home Navigation (Section 5: خانه / شخصیت‌ها / کمپین‌ها / حساب)
   if (isHomeView) {

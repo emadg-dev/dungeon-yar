@@ -163,10 +163,10 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
     portraitUrl: '',
     description: '',
     locationTag: '',
-    sessionTag: 'جلسه ۲',
-    ac: '۱۴',
+    sessionTag: 'جلسه 2',
+    ac: '14',
     hp: { current: 30, max: 30 },
-    speed: '۹ متر',
+    speed: '9 متر',
     abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
     savingThrows: '',
     resistances: '',
@@ -201,16 +201,16 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
       portraitUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=400&q=80',
       description: '',
       locationTag: 'معبد زروانیا',
-      sessionTag: 'جلسه ۲',
-      ac: '۱۴',
+      sessionTag: 'جلسه 2',
+      ac: '14',
       hp: { current: 35, max: 35 },
-      speed: '۹ متر',
+      speed: '9 متر',
       abilities: { str: 12, dex: 12, con: 12, int: 10, wis: 10, cha: 10 },
       savingThrows: '',
       resistances: '',
       vulnerabilities: '',
       immunities: '',
-      attacks: [{ id: 'atk-1', name: 'ضربه فیزیکی', toHit: '+۴', damage: '1d8 + 2' }],
+      attacks: [{ id: 'atk-1', name: 'ضربه فیزیکی', toHit: '+4', damage: '1d8 + 2' }],
       specialAbilities: [],
       tacticsTips: '',
       lootDrops: '',
@@ -376,7 +376,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
               <input
                 type="text"
                 value={formData.ac}
-                placeholder="آشوبناک ۱۶ / مهارشده ۱۰"
+                placeholder="آشوبناک 16 / مهارشده 10"
                 onChange={(e) => setFormData({ ...formData, ac: e.target.value })}
                 className="w-full py-2 px-3 rounded-xl bg-[#131110] border border-[#3A342B] text-sm text-[#EDE6D8] font-bold"
               />

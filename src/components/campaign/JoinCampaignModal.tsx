@@ -100,7 +100,7 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
                   className="px-3.5 py-2 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-bold hover:bg-[#F2C265] transition-colors inline-flex items-center gap-1.5"
                 >
                   <Sparkles className="w-4 h-4" />
-                  ساخت شخصیت با ویزارد ۸ مرحله‌ای
+                  ساخت شخصیت با ویزارد 8 مرحله‌ای
                 </button>
               )}
             </div>

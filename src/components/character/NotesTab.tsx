@@ -138,7 +138,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
   // New Note State
   const [noteTitle, setNoteTitle] = useState(() => localStorage.getItem('zorvania_draft_note_title') || '');
   const [noteBody, setNoteBody] = useState(() => localStorage.getItem('zorvania_draft_note_body') || '');
-  const [noteSession, setNoteSession] = useState('جلسه ۲');
+  const [noteSession, setNoteSession] = useState('جلسه 2');
   const [noteCategory, setNoteCategory] = useState<NoteCategory>('journal');
   const [noteShared, setNoteShared] = useState(false);
   const [notePinned, setNotePinned] = useState(false);

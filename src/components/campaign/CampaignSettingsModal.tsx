@@ -182,7 +182,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
               onChange={e => setSettings({ ...settings, units: e.target.value as any })}
               className="bg-[#131110] border border-[#2F2A23] rounded-xl px-3 py-1.5 text-xs text-[#EDE6D8]"
             >
-              <option value="feet">فوت (Feet / ۵e)</option>
+              <option value="feet">فوت (Feet / 5e)</option>
               <option value="meters">متر (Meters)</option>
             </select>
           </div>

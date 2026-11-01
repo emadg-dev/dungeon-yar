@@ -19,7 +19,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
   const [newCompName, setNewCompName] = useState('');
   const [newCompAc, setNewCompAc] = useState(13);
   const [newCompHp, setNewCompHp] = useState(15);
-  const [newCompAtk, setNewCompAtk] = useState('ضربه تماسی (+۴، 1d6+2)');
+  const [newCompAtk, setNewCompAtk] = useState('ضربه تماسی (+4، 1d6+2)');
 
   // Default companions based on character class & level derived from rules engine
   const derived = deriveSheet({ character });
@@ -48,7 +48,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
           hp: { max: constructMaxHp, current: constructMaxHp },
           attack: {
             name: 'کوبش بازوی برنزی',
-            toHit: '+۵',
+            toHit: '+5',
             damage: '1d8 + 3 کوبشی',
             description: 'ضربه سنگین هیدرولیکی سازه باستانی'
           },
@@ -65,7 +65,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
           hp: { max: manaMaxHp, current: manaMaxHp },
           attack: {
             name: 'نیش خاردار / چنگال ریشه',
-            toHit: '+۴',
+            toHit: '+4',
             damage: '1d6 + 2 نافذ',
             description: 'حمله ناگهانی از دل بیشه باستانی'
           },
@@ -97,7 +97,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
       hp: { max: Number(newCompHp) || 15, current: Number(newCompHp) || 15 },
       attack: {
         name: 'حمله همراه',
-        toHit: '+۳',
+        toHit: '+3',
         damage: newCompAtk || '1d6+2',
       },
       description: 'همراه ماجراجو'
@@ -136,7 +136,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
           <Bot className="w-8 h-8 text-[#8A8374] mx-auto" />
           <h4 className="text-xs font-bold text-[#C9C0AE]">هنوز همراهی برای این شخصیت فعال نشده است</h4>
           <p className="text-[11px] text-[#8A8374] max-w-xs mx-auto">
-            دیوانزاد در سطح ۳ به «سازه همراه» (AC 15) و پیمان‌بان در سطح ۴ به «همراه جنگل» دسترسی پیدا می‌کنند.
+            دیوانزاد در سطح 3 به «سازه همراه» (AC 15) و پیمان‌بان در سطح 4 به «همراه جنگل» دسترسی پیدا می‌کنند.
           </p>
         </div>
       ) : (
@@ -202,28 +202,28 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
                       onClick={() => handleAdjustHp(comp.id, -5)}
                       className="w-8 h-8 rounded-lg bg-[#C2512B]/15 active:bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs font-bold touch-target select-none"
                     >
-                      -۵
+                      -5
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, -1)}
                       className="w-8 h-8 rounded-lg bg-[#C2512B]/15 active:bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs font-bold touch-target select-none"
                     >
-                      -۱
+                      -1
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, +1)}
                       className="w-8 h-8 rounded-lg bg-[#6F9E78]/15 active:bg-[#6F9E78]/15 border border-[#6F9E78]/30 text-[#6F9E78] text-xs font-bold touch-target select-none"
                     >
-                      +۱
+                      +1
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, +5)}
                       className="w-8 h-8 rounded-lg bg-[#6F9E78]/15 active:bg-[#6F9E78]/15 border border-[#6F9E78]/30 text-[#6F9E78] text-xs font-bold touch-target select-none"
                     >
-                      +۵
+                      +5
                     </button>
                   </div>
                 </div>
@@ -301,7 +301,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
               type="text"
               value={newCompAtk}
               onChange={(e) => setNewCompAtk(e.target.value)}
-              placeholder="+۴ برای اصابت، 1d6+2 کوبشی"
+              placeholder="+4 برای اصابت، 1d6+2 کوبشی"
               className="w-full p-2.5 rounded-xl bg-[#201D19] border border-[#3A342B] text-sm text-[#EDE6D8]"
             />
           </div>

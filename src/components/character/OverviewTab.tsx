@@ -170,12 +170,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   const exhaustionEffects = [
     'بدون اثر منفی',
-    'سطح ۱: ضعف (Disadvantage) در چک‌های توانایی',
-    'سطح ۲: سرعت نصف می‌شود',
-    'سطح ۳: ضعف در پرتاب‌های حمله و تست‌های نجات',
-    'سطح ۴: حداکثر جان نصف می‌شود',
-    'سطح ۵: سرعت به ۰ کاهش می‌یابد',
-    'سطح ۶: مرگ ناگهانی از فرسودگی!'
+    'سطح 1: ضعف (Disadvantage) در چک‌های توانایی',
+    'سطح 2: سرعت نصف می‌شود',
+    'سطح 3: ضعف در پرتاب‌های حمله و تست‌های نجات',
+    'سطح 4: حداکثر جان نصف می‌شود',
+    'سطح 5: سرعت به 0 کاهش می‌یابد',
+    'سطح 6: مرگ ناگهانی از فرسودگی!'
   ];
 
   return (
@@ -479,7 +479,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               />
               <span className="text-[11px] text-[#A39A89]">متر</span>
             </div>
-            <span className="text-[10px] text-[#A39A89]">۳۰ فوت</span>
+            <span className="text-[10px] text-[#A39A89]">30 فوت</span>
           </div>
 
           {/* 3. Initiative */}
@@ -506,7 +506,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 type="button"
                 onClick={() => adjustHitDice(-1)}
                 className="w-7 h-7 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] touch-target flex items-center justify-center"
-                title="مصرف ۱ تاس جان"
+                title="مصرف 1 تاس جان"
               >
                 -
               </button>
@@ -517,7 +517,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 type="button"
                 onClick={() => adjustHitDice(1)}
                 className="w-7 h-7 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] touch-target flex items-center justify-center"
-                title="بازیابی ۱ تاس جان"
+                title="بازیابی 1 تاس جان"
               >
                 +
               </button>

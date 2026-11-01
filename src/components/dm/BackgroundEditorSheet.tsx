@@ -162,7 +162,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">مهارت‌های مهارتی (۲ مهارت)</label>
+              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">مهارت‌های مهارتی (2 مهارت)</label>
               <input
                 type="text"
                 value={skillProficienciesText}
@@ -201,7 +201,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
               value={equipmentText}
               onChange={e => setEquipmentText(e.target.value)}
               rows={3}
-              placeholder="یک بطری جوهر تیره&#10;لباس‌های سفر ساده&#10;کیسه حاوی ۱۰ سکه نقره"
+              placeholder="یک بطری جوهر تیره&#10;لباس‌های سفر ساده&#10;کیسه حاوی 10 سکه نقره"
               className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl p-3 text-xs text-[#EDE6D8] resize-y"
             />
           </div>

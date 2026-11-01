@@ -74,7 +74,7 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
           <div className="space-y-3 max-h-96 overflow-y-auto no-scrollbar">
             {approvals.map((item, idx) => {
               const isSelected = activeItemId === item.participationId;
-              const dateStr = new Date(item.requestedAt).toLocaleDateString('fa-IR');
+              const dateStr = new Date(item.requestedAt).toLocaleDateString('fa-IR-u-nu-latn');
               const diff = item.details?.diff;
 
               return (

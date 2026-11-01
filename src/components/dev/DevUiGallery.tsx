@@ -211,7 +211,7 @@ export const DevUiGallery: React.FC = () => {
               <h2 className="text-sm font-bold text-amber-400">کنترل‌های عددی و وضعیت (Toggles)</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <NumberStepper
-                  label="امتیاز توانایی (تارگت لمسی ۴۴px)"
+                  label="امتیاز توانایی (تارگت لمسی 44px)"
                   value={stepperVal}
                   onChange={setStepperVal}
                   min={1}
@@ -254,7 +254,7 @@ export const DevUiGallery: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <StatCard label="سلامت فعلی" value={38} subValue={45} icon={<Heart className="w-4 h-4 text-red-400" />} />
               <StatCard label="کلاس زره (AC)" value={16} modifier={2} icon={<Shield className="w-4 h-4 text-amber-400" />} />
-              <StatCard label="سرعت حرکت" value="۳۰" subValue="فوت" />
+              <StatCard label="سرعت حرکت" value="30" subValue="فوت" />
               <StatCard label="ابتکار نبرد" value="+3" modifier="مدافع" />
             </div>
 
@@ -346,7 +346,7 @@ export const DevUiGallery: React.FC = () => {
             <SectionAccordion
               title="بخش تاشو آکاردئونی (SectionAccordion)"
               subtitle="نمونه کامپوننت قابل جمع‌شدن برای لیست‌های فشرده موبایل"
-              badge={<Badge variant="accent">۳ آیتم</Badge>}
+              badge={<Badge variant="accent">3 آیتم</Badge>}
             >
               <p className="text-xs text-stone-300 py-2 leading-relaxed">
                 این کامپوننت به شکل کاملاً دسترسی‌پذیر با `aria-expanded` و انیمیشن آرام برای فشرده‌سازی اطلاعات طولانی در شیت کاراکتر و داشبورد مستر طراحی شده است.
@@ -366,7 +366,7 @@ export const DevUiGallery: React.FC = () => {
               </div>
               <div className="pt-2">
                 <PipTracker
-                  label="اسلات‌های جادوی سطح ۲ (کلیک برای فعال/غیرفعال)"
+                  label="اسلات‌های جادوی سطح 2 (کلیک برای فعال/غیرفعال)"
                   current={pipsVal}
                   max={4}
                   onChange={setPipsVal}

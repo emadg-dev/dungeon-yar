@@ -177,7 +177,7 @@ describe('Templates & Editors - Step 3.2 Unit Tests', () => {
         base: 14,
         abilityMods: ['dex'],
         unarmored: false,
-        note: 'زره متوسط ورنا (14 + DEX mod تا سقف ۲)'
+        note: 'زره متوسط ورنا (14 + DEX mod تا سقف 2)'
       });
 
       const mobad = SEED_CLASS_TEMPLATES.find(c => c.name === 'موبد آذرین');

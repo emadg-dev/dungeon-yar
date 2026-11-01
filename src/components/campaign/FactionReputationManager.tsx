@@ -418,7 +418,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                   {/* Threshold steps tags */}
                   <div className="flex justify-between text-[10px] text-[#A39A89] px-0.5 pt-0.5">
                     <span>خصومت ({rep.min})</span>
-                    <span>بی‌طرف (۰)</span>
+                    <span>بی‌طرف (0)</span>
                     <span>اتحاد ({rep.max})</span>
                   </div>
                 </div>
@@ -570,7 +570,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                 <div>
                   <p className="font-bold text-[#EDE6D8] leading-relaxed">{log.reason}</p>
                   <p className="text-[11px] text-[#A39A89] mt-1">
-                    ثبت توسط: {log.createdByName || 'دانجن‌مستر'} • {new Date(log.createdAt).toLocaleDateString('fa-IR')}
+                    ثبت توسط: {log.createdByName || 'دانجن‌مستر'} • {new Date(log.createdAt).toLocaleDateString('fa-IR-u-nu-latn')}
                   </p>
                 </div>
                 <span

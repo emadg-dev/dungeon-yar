@@ -72,7 +72,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
   const [approvalLevelUp, setApprovalLevelUp] = useState(false);
   const [backstoryVisibility, setBackstoryVisibility] = useState<'party' | 'dm_only'>('party');
   const [diceVisibility, setDiceVisibility] = useState<'table' | 'dm_only'>('table');
-  const [houseRulesText, setHouseRulesText] = useState('قوانین رسمی ۵e به همراه قوانین خانه.');
+  const [houseRulesText, setHouseRulesText] = useState('قوانین رسمی 5e به همراه قوانین خانه.');
 
   // Step 3: دنیا (World)
   const [calendarSource, setCalendarSource] = useState<'zorvania' | 'scratch'>('zorvania');
@@ -104,13 +104,13 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
   // Step 6: جلسه‌ی صفر (Session Zero)
   const [sessionZeroTitle, setSessionZeroTitle] = useState('سند جلسه صفر و پیمان میز بازی');
   const [sessionZeroExpectations, setSessionZeroExpectations] = useState('تمرکز بر کار گروهی، حل معما و روایت داستانی.');
-  const [sessionZeroSchedule, setSessionZeroSchedule] = useState('پنج‌شنبه‌ها ساعت ۱۸:۰۰');
+  const [sessionZeroSchedule, setSessionZeroSchedule] = useState('پنج‌شنبه‌ها ساعت 18:00');
   const [sessionZeroLinesAndVeils, setSessionZeroLinesAndVeils] = useState('بدون خشونت علیه بی‌گناهان، حفظ احترام متقابل بازیکنان.');
   const [sessionZeroXCard, setSessionZeroXCard] = useState(true);
 
   // Step 7: دعوت‌ها (Invites)
   const [invites, setInvites] = useState<{ label: string; role: CampaignRole; maxUses: number; note: string }[]>([
-    { label: 'بازیکن ۱', role: 'player', maxUses: 1, note: 'خوش آمدید' }
+    { label: 'بازیکن 1', role: 'player', maxUses: 1, note: 'خوش آمدید' }
   ]);
   const [newInviteLabel, setNewInviteLabel] = useState('');
   const [newInviteRole, setNewInviteRole] = useState<CampaignRole>('player');
@@ -336,7 +336,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
       case 1:
         return (
           <div className="space-y-4">
-            <h3 className="text-sm font-black text-[#F2C265]">گام ۱: مشخصات هویتی و بصری کمپین</h3>
+            <h3 className="text-sm font-black text-[#F2C265]">گام 1: مشخصات هویتی و بصری کمپین</h3>
             <div>
               <label className="block text-xs font-bold text-[#EDE6D8] mb-1">نام کمپین *</label>
               <input
@@ -408,7 +408,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">تصویر جلد (فشرده‌سازی خودکار ≤۱۵۰KB)</label>
+              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">تصویر جلد (فشرده‌سازی خودکار ≤150KB)</label>
               <input
                 type="file"
                 accept="image/*"
@@ -435,7 +435,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
       case 2:
         return (
           <div className="space-y-4">
-            <h3 className="text-sm font-black text-[#F2C265]">گام ۲: قوانین میز و تنظیمات ۵e</h3>
+            <h3 className="text-sm font-black text-[#F2C265]">گام 2: قوانین میز و تنظیمات 5e</h3>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -526,7 +526,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
       case 3:
         return (
           <div className="space-y-4">
-            <h3 className="text-sm font-black text-[#F2C265]">گام ۳: دنیا، گاه‌شمار و جناح‌ها</h3>
+            <h3 className="text-sm font-black text-[#F2C265]">گام 3: دنیا، گاه‌شمار و جناح‌ها</h3>
 
             <div className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] space-y-2">
               <span className="text-xs font-bold text-[#EDE6D8] block flex items-center gap-1.5">
@@ -544,7 +544,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                   }`}
                 >
                   <div className="font-bold">گاه‌شمار شاه‌روزان زروانیا</div>
-                  <div className="text-[10px] text-[#A39A89] mt-0.5">۱۲ ماه ۳۰ روزه + ۵ روز برون‌گاه اساطیری</div>
+                  <div className="text-[10px] text-[#A39A89] mt-0.5">12 ماه 30 روزه + 5 روز برون‌گاه اساطیری</div>
                 </button>
 
                 <button
@@ -627,7 +627,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
       case 4:
         return (
           <div className="space-y-4">
-            <h3 className="text-sm font-black text-[#F2C265]">گام ۴: بازیگران و شخصیت‌های غیربازیکن (Cast & NPCs)</h3>
+            <h3 className="text-sm font-black text-[#F2C265]">گام 4: بازیگران و شخصیت‌های غیربازیکن (Cast & NPCs)</h3>
             <p className="text-xs text-[#A39A89]">
               مجموعه‌ای از NPC‌ها، هیولاها و راویان اولیه این ماجراجویی را انتخاب یا اضافه کنید:
             </p>
@@ -692,7 +692,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
       case 5:
         return (
           <div className="space-y-4">
-            <h3 className="text-sm font-black text-[#F2C265]">گام ۵: آیتم‌ها، آثار باستانی و پاداش‌ها (Loot & Vault)</h3>
+            <h3 className="text-sm font-black text-[#F2C265]">گام 5: آیتم‌ها، آثار باستانی و پاداش‌ها (Loot & Vault)</h3>
 
             <div className="space-y-2 max-h-56 overflow-y-auto">
               {lootItems.map((item, idx) => (
@@ -750,7 +750,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
       case 6:
         return (
           <div className="space-y-4">
-            <h3 className="text-sm font-black text-[#F2C265]">گام ۶: سند جلسه‌ی صفر و توافقات میز بازی</h3>
+            <h3 className="text-sm font-black text-[#F2C265]">گام 6: سند جلسه‌ی صفر و توافقات میز بازی</h3>
             <p className="text-xs text-[#A39A89]">
               این سند به عنوان مرجع قوانین رفتاری، ایمنی و جدول زمانی برای بازیکنان قابل مطالعه خواهد بود.
             </p>
@@ -812,7 +812,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
       case 7:
         return (
           <div className="space-y-4">
-            <h3 className="text-sm font-black text-[#F2C265]">گام ۷: دعوت‌نامه‌ها برای بازیکنان</h3>
+            <h3 className="text-sm font-black text-[#F2C265]">گام 7: دعوت‌نامه‌ها برای بازیکنان</h3>
             <p className="text-xs text-[#A39A89]">
               برای اعضای گروه خود کدهای دعوت آماده کنید تا پس از راه‌اندازی سریعاً وارد میز شوند:
             </p>
@@ -879,7 +879,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
       case 8:
         return (
           <div className="space-y-4">
-            <h3 className="text-sm font-black text-[#F2C265]">گام ۸: مرور نهایی و شروع کمپین</h3>
+            <h3 className="text-sm font-black text-[#F2C265]">گام 8: مرور نهایی و شروع کمپین</h3>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">

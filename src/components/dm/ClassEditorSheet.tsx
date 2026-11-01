@@ -316,14 +316,14 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
         {/* 8 Tab Navigation Buttons */}
         <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none border-b border-[#2F2A23]">
           {[
-            { id: 'basics', label: '۱. مبانی' },
-            { id: 'skills_equip', label: '۲. مهارت و تجهیزات' },
-            { id: 'ac_resources', label: '۳. زره و منابع' },
-            { id: 'spells', label: '۴. جادوها' },
-            { id: 'features', label: '۵. ویژگی‌های ۱–۲۰' },
-            { id: 'subclasses', label: '۶. زیرکلاس‌ها' },
-            { id: 'companions', label: '۷. همراهان' },
-            { id: 'hp_table', label: '۸. جدول جان' }
+            { id: 'basics', label: '1. مبانی' },
+            { id: 'skills_equip', label: '2. مهارت و تجهیزات' },
+            { id: 'ac_resources', label: '3. زره و منابع' },
+            { id: 'spells', label: '4. جادوها' },
+            { id: 'features', label: '5. ویژگی‌های 1–20' },
+            { id: 'subclasses', label: '6. زیرکلاس‌ها' },
+            { id: 'companions', label: '7. همراهان' },
+            { id: 'hp_table', label: '8. جدول جان' }
           ].map(tab => (
             <button
               key={tab.id}
@@ -494,7 +494,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                     const newId = `group_${Date.now()}`;
                     setStartingEquipmentChoices(prev => [
                       ...prev,
-                      { id: newId, label: 'گزینه جدید', options: [{ label: 'مورد اول', items: ['آیتم ۱'] }] }
+                      { id: newId, label: 'گزینه جدید', options: [{ label: 'مورد اول', items: ['آیتم 1'] }] }
                     ]);
                   }}
                   className="px-2 py-1 rounded-lg bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/40 text-[11px] font-bold flex items-center gap-1"
@@ -773,14 +773,14 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                         onChange={e => setCasterType(e.target.value as any)}
                         className="w-full bg-[#171513] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8]"
                       >
-                        <option value="full">جادوگر کامل (Full Caster: سطح ۱ تا ۹)</option>
-                        <option value="half">نیمه‌جادوگر (Half Caster: سطح ۱ تا ۵)</option>
+                        <option value="full">جادوگر کامل (Full Caster: سطح 1 تا 9)</option>
+                        <option value="half">نیمه‌جادوگر (Half Caster: سطح 1 تا 5)</option>
                       </select>
                     </div>
                   </div>
 
                   <div className="p-2.5 rounded-xl bg-[#171513] text-[11px] text-[#A39A89]">
-                    <span className="text-[#F2C265] font-bold block mb-1">پیش‌نمایش اسلات‌های جادو در سطح ۵:</span>
+                    <span className="text-[#F2C265] font-bold block mb-1">پیش‌نمایش اسلات‌های جادو در سطح 5:</span>
                     {spellcastingEnabled && (
                       <div className="flex gap-2">
                         {computeSlots(casterType === 'full' ? 'full_caster' : 'half_caster', 5).map((qty, idx) => (
@@ -801,7 +801,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
         {activeTab === 'features' && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-[#EDE6D8]">مرور کلی ویژگی‌ها (سطوح ۱ تا ۲۰):</span>
+              <span className="font-bold text-[#EDE6D8]">مرور کلی ویژگی‌ها (سطوح 1 تا 20):</span>
               <div className="flex items-center gap-2 text-[11px] text-[#A39A89]">
                 <span>حمله مضاعف: سطح {extraAttackLevel || '—'}</span>
               </div>
@@ -1048,7 +1048,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
               <Sparkles className="w-4 h-4 text-[#F2C265]" />
               <span className="font-extrabold text-[#F2C265]">اعتبارسنجی زنده با موتور قوانین (Rules Engine Validation):</span>
             </div>
-            <span className="text-[10px] text-[#A39A89]">پیش‌نمایش سطوح ۱، ۵، ۱۱ و ۲۰</span>
+            <span className="text-[10px] text-[#A39A89]">پیش‌نمایش سطوح 1، 5، 11 و 20</span>
           </div>
 
           {/* Validation Matrix Table */}

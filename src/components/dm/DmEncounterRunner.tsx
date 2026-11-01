@@ -52,7 +52,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
   const [newEncForm, setNewEncForm] = useState({
     name: 'نبرد جدید',
     locationId: '',
-    sessionTag: 'جلسه ۱',
+    sessionTag: 'جلسه 1',
     dmNotes: '',
     settings: {
       showExactHp: false,
@@ -79,7 +79,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
   const [customMonster, setCustomMonster] = useState({
     name: 'مهاجم ناشناس',
     hp: 25,
-    ac: '۱۳',
+    ac: '13',
     initiative: ''
   });
 
@@ -102,6 +102,16 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
     'فلج (Paralyzed)',
     'مهارشده با فره (Stabilized)'
   ];
+
+  // Mark in-encounter on document.body so BottomNav is hidden and doesn't overlap sticky encounter controls
+  useEffect(() => {
+    if (selectedEncounterId && currentEncounter) {
+      document.body.classList.add('in-encounter');
+      return () => {
+        document.body.classList.remove('in-encounter');
+      };
+    }
+  }, [selectedEncounterId, currentEncounter]);
 
   // Load live encounters list
   const loadEncounters = useCallback(async () => {
@@ -726,7 +736,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 type="text"
                 value={newEncForm.sessionTag}
                 onChange={(e) => setNewEncForm(prev => ({ ...prev, sessionTag: e.target.value }))}
-                placeholder="مثال: جلسه ۴"
+                placeholder="مثال: جلسه 4"
                 className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target"
               />
             </div>
@@ -737,7 +747,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 rows={2}
                 value={newEncForm.dmNotes}
                 onChange={(e) => setNewEncForm(prev => ({ ...prev, dmNotes: e.target.value }))}
-                placeholder="رویدادهای محیطی در دور ۳، نقاط ضعف یا تاکتیک‌ها..."
+                placeholder="رویدادهای محیطی در دور 3، نقاط ضعف یا تاکتیک‌ها..."
                 className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#C2512B]/40 focus:border-[#C2512B] focus:outline-none text-sm touch-target"
               />
             </div>
@@ -1116,7 +1126,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                       }}
                       className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#EDE6D8] font-black text-xs hover:bg-[#C2512B]/30 transition touch-target flex items-center justify-center border border-[#2F2A23]"
                     >
-                      -۱
+                      -1
                     </button>
                     <button
                       type="button"
@@ -1129,7 +1139,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                       }}
                       className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#EDE6D8] font-black text-xs hover:bg-[#6F9E78]/30 transition touch-target flex items-center justify-center border border-[#2F2A23]"
                     >
-                      +۱
+                      +1
                     </button>
                     <button
                       type="button"
@@ -1221,7 +1231,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                     <button
                       type="button"
                       onClick={async () => {
-                        const phaseInput = prompt('نام فاز جدید (مثال: فاز ۲ - شعله‌های سرخ):', p.phase || '');
+                        const phaseInput = prompt('نام فاز جدید (مثال: فاز 2 - شعله‌های سرخ):', p.phase || '');
                         if (phaseInput !== null) {
                           await api.updateEncounterParticipant(currentEncounter.id, p.id, { phase: phaseInput.trim() || null });
                           setActiveMenuParticipantId(null);
@@ -1257,7 +1267,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
       </div>
 
       {/* Sticky Bottom Bar (§2.5) */}
-      <div className="fixed bottom-0 inset-x-0 z-20 surface-card border-t border-[#2F2A23] p-2.5 pb-[calc(env(safe-area-inset-bottom,0px)+10px)] backdrop-blur-md bg-[#171513]/95 shadow-[0_-4px_25px_rgba(0,0,0,0.8)]">
+      <div className="fixed bottom-0 inset-x-0 z-40 surface-card border-t border-[#2F2A23] p-2.5 pb-[calc(env(safe-area-inset-bottom,0px)+10px)] backdrop-blur-md bg-[#171513]/98 shadow-[0_-4px_25px_rgba(0,0,0,0.8)]">
         <div className="max-w-md mx-auto flex items-center gap-2">
           <button
             type="button"
@@ -1377,7 +1387,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
 
               {/* Quantity Counter (§2.2) */}
               <div className="flex items-center justify-between p-2 rounded-[8px] bg-[#171513] border border-[#2F2A23]">
-                <span className="text-xs text-[#EDE6D8] font-bold">تعداد (شماره‌گذاری خودکار ۱…۴):</span>
+                <span className="text-xs text-[#EDE6D8] font-bold">تعداد (شماره‌گذاری خودکار 1…4):</span>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -1566,7 +1576,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <div className="p-3 rounded-[12px] bg-[#171513] border border-[#2F2A23] text-center">
             <span className="text-xs text-[#A39A89] block mb-1">مقدار تغییر:</span>
             <span className="text-2xl font-black text-[#E0A030] tracking-wider min-h-[36px] block">
-              {keypadAmount || '۰'}
+              {keypadAmount || '0'}
             </span>
             <span className="text-[11px] text-[#A39A89] mt-1 block">
               HP فعلی: {keypadTarget?.hp} / {keypadTarget?.maxHp}

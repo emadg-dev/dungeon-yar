@@ -79,7 +79,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!displayName.trim() || displayName.length < 2 || displayName.length > 40) {
-      showMsg('نام نمایشی باید بین ۲ تا ۴۰ نویسه باشد.', 'error');
+      showMsg('نام نمایشی باید بین 2 تا 40 نویسه باشد.', 'error');
       return;
     }
     setLoading(true);
@@ -101,7 +101,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
       return;
     }
     if (!newPassword || newPassword.length < 8) {
-      showMsg('رمز عبور جدید باید حداقل ۸ نویسه باشد.', 'error');
+      showMsg('رمز عبور جدید باید حداقل 8 نویسه باشد.', 'error');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -385,7 +385,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-[11px] text-[#A39A89]">رمز عبور جدید (حداقل ۸ نویسه)</label>
+                <label className="block text-[11px] text-[#A39A89]">رمز عبور جدید (حداقل 8 نویسه)</label>
                 <input
                   type="password"
                   value={newPassword}
@@ -490,7 +490,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     </p>
                     <span className="text-[10px] text-[#A39A89] flex items-center gap-1">
                       <Clock className="w-3 h-3 text-[#A39A89]" />
-                      آخرین فعالیت: {new Date(s.lastSeenAt).toLocaleDateString('fa-IR')} {new Date(s.lastSeenAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}
+                      آخرین فعالیت: {new Date(s.lastSeenAt).toLocaleDateString('fa-IR-u-nu-latn')} {new Date(s.lastSeenAt).toLocaleTimeString('fa-IR-u-nu-latn', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
 
@@ -599,7 +599,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                 </button>
               ) : (
                 <div className="p-3 rounded-[8px] bg-[#171513] border border-[#C2512B] space-y-2">
-                  <span className="text-xs font-bold text-[#C2512B] block">آیا ۱۰۰٪ مطمئن هستید؟ این عملیات غیرقابل بازگشت است.</span>
+                  <span className="text-xs font-bold text-[#C2512B] block">آیا 100٪ مطمئن هستید؟ این عملیات غیرقابل بازگشت است.</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"

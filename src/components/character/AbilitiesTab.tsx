@@ -294,7 +294,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
                   >
                     <div className="text-xs font-bold text-[#EDE6D8] truncate">{skill.nameFa}</div>
                     <div className="text-[10px] text-[#A39A89]">
-                      {abilityLabels[skill.ability].shortFa} {skill.expertise ? '• تخصص ۲x' : skill.proficient ? '• مسلط' : ''}
+                      {abilityLabels[skill.ability].shortFa} {skill.expertise ? '• تخصص 2x' : skill.proficient ? '• مسلط' : ''}
                     </div>
                   </button>
                 </div>

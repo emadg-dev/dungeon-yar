@@ -426,7 +426,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
               >
                 <div>
                   <span className="text-[11px] text-[#A39A89] block">{getCurrencyLabel(currKey)}</span>
-                  <span className="text-base font-black text-[#EDE6D8]">{amount.toLocaleString('fa-IR')}</span>
+                  <span className="text-base font-black text-[#EDE6D8]">{amount.toLocaleString('fa-IR-u-nu-latn')}</span>
                 </div>
                 <div className="w-7 h-7 rounded-lg bg-[#201D19] border border-[#2F2A23] flex items-center justify-center text-[#E0A030] text-xs font-black">
                   {currKey.slice(0, 2).toUpperCase()}
@@ -804,7 +804,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
                   <div className="space-y-1">
                     <p className="font-bold text-[#EDE6D8] leading-relaxed">{log.note || log.itemRef}</p>
                     <p className="text-[11px] text-[#A39A89]">
-                      عامل: {log.actorName || 'کاربر سیستم'} • {new Date(log.createdAt).toLocaleDateString('fa-IR')}
+                      عامل: {log.actorName || 'کاربر سیستم'} • {new Date(log.createdAt).toLocaleDateString('fa-IR-u-nu-latn')}
                     </p>
                   </div>
 

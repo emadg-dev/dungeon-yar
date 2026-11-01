@@ -123,9 +123,9 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
               type="button"
               onClick={() => adjustHp(-1)}
               className="touch-target-lg w-12 h-12 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#C2512B] hover:border-[#C2512B]/60 font-black text-sm active:scale-95"
-              title="کاهش ۱ جان"
+              title="کاهش 1 جان"
             >
-              -۱
+              -1
             </button>
 
             {/* HP Value Display */}
@@ -148,9 +148,9 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
               type="button"
               onClick={() => adjustHp(1)}
               className="touch-target-lg w-12 h-12 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#6F9E78] hover:border-[#6F9E78]/60 font-black text-sm active:scale-95"
-              title="افزایش ۱ جان"
+              title="افزایش 1 جان"
             >
-              +۱
+              +1
             </button>
           </div>
         </div>

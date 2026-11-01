@@ -180,7 +180,7 @@ describe('historyEngine', () => {
       expect(res).not.toBeNull();
       expect(res?.days).toBe(3);
       expect(res?.hours).toBe(5);
-      expect(res?.text).toContain('۳ روز و ۵ ساعت مانده');
+      expect(res?.text).toContain('3 روز و 5 ساعت مانده');
       expect(res?.isImminent).toBe(false);
     });
 
@@ -190,7 +190,7 @@ describe('historyEngine', () => {
 
       const res = calculateCountdown(future, now);
       expect(res?.isImminent).toBe(true);
-      expect(res?.text).toContain('۴ ساعت و ۱۵ دقیقه مانده');
+      expect(res?.text).toContain('4 ساعت و 15 دقیقه مانده');
     });
 
     it('handles past sessions properly', () => {

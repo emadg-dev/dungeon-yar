@@ -524,7 +524,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                   {/* Events Timeline in this Group */}
                   <div className="relative border-r-2 border-[#E0A030]/25 pe-4 space-y-4 me-2">
                     {group.events.map((event, idx) => {
-                      const dateStr = new Date(event.timestamp).toLocaleDateString('fa-IR');
+                      const dateStr = new Date(event.timestamp).toLocaleDateString('fa-IR-u-nu-latn');
                       const title = event.payload?.title || event.title || 'رویداد ثبت‌شده';
                       const desc = event.payload?.description || event.description || (event as any).text || '';
 

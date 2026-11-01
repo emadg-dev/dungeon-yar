@@ -49,6 +49,16 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
     }
   }, [isMyTurn]);
 
+  // Hide BottomNav dock while live encounter modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('in-encounter');
+      return () => {
+        document.body.classList.remove('in-encounter');
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen || !encounter) return null;
 
   // Find player's participant entry
@@ -206,17 +216,17 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
                   type="button"
                   onClick={() => onUpdateCharacterHp(Math.max(0, activeCharacter.hp.current - 1))}
                   className="w-8 h-8 rounded-[8px] bg-[#201D19] hover:bg-[#C2512B]/20 text-[#E8836B] font-black text-sm transition touch-target border border-[#2F2A23] flex items-center justify-center"
-                  title="کاهش ۱ سلامت"
+                  title="کاهش 1 سلامت"
                 >
-                  -۱
+                  -1
                 </button>
                 <button
                   type="button"
                   onClick={() => onUpdateCharacterHp(Math.min(activeCharacter.hp.max, activeCharacter.hp.current + 1))}
                   className="w-8 h-8 rounded-[8px] bg-[#201D19] hover:bg-[#6F9E78]/20 text-[#6F9E78] font-black text-sm transition touch-target border border-[#2F2A23] flex items-center justify-center"
-                  title="افزایش ۱ سلامت"
+                  title="افزایش 1 سلامت"
                 >
-                  +۱
+                  +1
                 </button>
               </div>
             )}

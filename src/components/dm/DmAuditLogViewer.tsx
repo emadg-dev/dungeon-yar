@@ -162,7 +162,7 @@ export const DmAuditLogViewer: React.FC<DmAuditLogViewerProps> = ({
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] text-[#736B5E] flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        <span>{new Date(l.createdAt).toLocaleDateString('fa-IR')} {new Date(l.createdAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span>{new Date(l.createdAt).toLocaleDateString('fa-IR-u-nu-latn')} {new Date(l.createdAt).toLocaleTimeString('fa-IR-u-nu-latn', { hour: '2-digit', minute: '2-digit' })}</span>
                       </span>
 
                       {l.meta && (
