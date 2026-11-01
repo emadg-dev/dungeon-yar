@@ -100,19 +100,20 @@ export default defineConfig(() => {
               },
             },
             {
-              // Stale-While-Revalidate for non-auth GET data requests
+              // Stale-While-Revalidate ONLY for non-sensitive public GET data (public packs, rules, templates)
+              // NEVER cache authorization-sensitive /api responses (campaigns, characters, sessions, recaps across users)
               urlPattern: ({ url, request }) => {
                 if (request.method !== 'GET') return false;
                 const path = url.pathname;
-                const isAuth = path.startsWith('/api/auth') || path.startsWith('/api/me');
-                return path.startsWith('/api/') && !isAuth;
+                const isNonSensitive = path.startsWith('/api/rule-sets') || path.startsWith('/api/public') || path.startsWith('/api/packs/public');
+                return isNonSensitive;
               },
               handler: 'StaleWhileRevalidate',
               options: {
-                cacheName: 'api-data-cache',
+                cacheName: 'api-public-data-cache',
                 expiration: {
-                  maxEntries: 60,
-                  maxAgeSeconds: 60 * 60 * 24, // 1 day
+                  maxEntries: 40,
+                  maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
                 },
                 cacheableResponse: {
                   statuses: [0, 200],

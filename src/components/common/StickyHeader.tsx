@@ -23,11 +23,22 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 40);
+    const handleScroll = (e?: Event) => {
+      const mainEl = document.getElementById('main-content');
+      const scrollY = mainEl ? mainEl.scrollTop : window.scrollY;
+      setIsScrolled(scrollY > 40);
     };
+
+    const mainEl = document.getElementById('main-content');
+    if (mainEl) {
+      mainEl.addEventListener('scroll', handleScroll, { passive: true });
+    }
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    return () => {
+      mainEl?.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   const adjustHp = (delta: number) => {

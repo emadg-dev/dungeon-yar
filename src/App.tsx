@@ -1117,7 +1117,7 @@ export default function App() {
   const activeParticipation = activeCharacter ? (campaignParticipations.find(p => p.characterId === activeCharacter.id) || null) : null;
 
   return (
-    <div className="min-h-screen text-[#EDE6D8] flex flex-col font-sans selection:bg-[#E0A030]/25 selection:text-[#E0A030]" dir="rtl">
+    <div className="h-[100dvh] max-h-[100dvh] overflow-hidden text-[#EDE6D8] flex flex-col font-sans selection:bg-[#E0A030]/25 selection:text-[#E0A030]" dir="rtl">
       {/* Toast notifications */}
       {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
 
@@ -1182,8 +1182,8 @@ export default function App() {
         />
       )}
 
-      {/* Main Body */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-4 pt-3 sm:pt-6 pb-28 sm:pb-24 overflow-x-hidden">
+      {/* Main Body - Only <main> scrolls in the mobile app shell */}
+      <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-4 pt-3 sm:pt-6 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:pb-24 overflow-y-auto overscroll-y-contain overflow-x-hidden">
         <Suspense fallback={<TabSkeleton />}>
           {/* VIEW 1: HOME DASHBOARD */}
           {viewMode === 'home' && (
