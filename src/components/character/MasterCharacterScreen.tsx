@@ -214,7 +214,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
   };
 
   return (
-    <div className="space-y-6 pb-24 text-right" dir="rtl">
+    <div className="space-y-6 pb-24 text-start" dir="rtl">
       {/* Top Header */}
       <div className="flex items-center justify-between">
         <button
@@ -266,7 +266,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           />
         </div>
 
-        <div className="flex-1 text-center sm:text-right space-y-2">
+        <div className="flex-1 text-center sm:text-start space-y-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-[#F2C265]">{charData.name}</h1>
@@ -506,7 +506,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                   </div>
 
                   {/* Events Timeline in this Group */}
-                  <div className="relative border-r-2 border-[#E0A030]/25 pr-4 space-y-4 mr-2">
+                  <div className="relative border-r-2 border-[#E0A030]/25 pe-4 space-y-4 me-2">
                     {group.events.map((event, idx) => {
                       const dateStr = new Date(event.timestamp).toLocaleDateString('fa-IR');
                       const title = event.payload?.title || event.title || 'رویداد ثبت‌شده';

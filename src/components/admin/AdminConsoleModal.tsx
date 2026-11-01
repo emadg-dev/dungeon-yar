@@ -308,7 +308,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
             <span>پاک‌سازی داده‌های یتیم</span>
           </button>
 
-          <div className="mr-auto pl-2">
+          <div className="mr-auto ps-2">
             <button
               onClick={() => loadTabData(activeTab)}
               disabled={loading}

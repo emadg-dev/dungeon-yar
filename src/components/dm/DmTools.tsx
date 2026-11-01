@@ -1,26 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate, LocationEntry, Campaign, CharacterParticipation, Session, SessionRsvpChoice, SessionRecap } from '../../types';
-import { DmDashboard } from './DmDashboard';
-import { DmEncounterRunner } from './DmEncounterRunner';
-import { DmLibrary } from './DmLibrary';
-import { DmNpcManager } from './DmNpcManager';
-import { DmItemVault } from './DmItemVault';
-import { DmLocationManager } from './DmLocationManager';
-import { DmCampaignNotes } from './DmCampaignNotes';
-import { DmEndingTracker } from './DmEndingTracker';
-import { DmSettings } from './DmSettings';
-import { DmUsers } from './DmUsers';
-import { DmInvites } from './DmInvites';
-import { DmAuditLog } from './DmAuditLog';
-import { DmHandoutManager } from './DmHandoutManager';
-import { DmQuestManager } from './DmQuestManager';
-import { FactionReputationManager } from '../campaign/FactionReputationManager';
-import { PartyTreasuryManager } from '../campaign/PartyTreasuryManager';
 import { 
   LayoutDashboard, Swords, Library, Scroll, MoreHorizontal, 
   Users, KeyRound, ShieldAlert, Sparkles, BookOpen, Compass, Award, Database, MapPin, Map as MapIcon, Flag, Coins 
 } from 'lucide-react';
 import { Quest } from '../../types';
+
+// Lazy-loaded DM Sub-Views for optimal code-splitting
+const DmDashboard = React.lazy(() => import('./DmDashboard').then(m => ({ default: m.DmDashboard })));
+const DmEncounterRunner = React.lazy(() => import('./DmEncounterRunner').then(m => ({ default: m.DmEncounterRunner })));
+const DmLibrary = React.lazy(() => import('./DmLibrary').then(m => ({ default: m.DmLibrary })));
+const DmNpcManager = React.lazy(() => import('./DmNpcManager').then(m => ({ default: m.DmNpcManager })));
+const DmItemVault = React.lazy(() => import('./DmItemVault').then(m => ({ default: m.DmItemVault })));
+const DmLocationManager = React.lazy(() => import('./DmLocationManager').then(m => ({ default: m.DmLocationManager })));
+const DmCampaignNotes = React.lazy(() => import('./DmCampaignNotes').then(m => ({ default: m.DmCampaignNotes })));
+const DmEndingTracker = React.lazy(() => import('./DmEndingTracker').then(m => ({ default: m.DmEndingTracker })));
+const DmSettings = React.lazy(() => import('./DmSettings').then(m => ({ default: m.DmSettings })));
+const DmUsers = React.lazy(() => import('./DmUsers').then(m => ({ default: m.DmUsers })));
+const DmInvites = React.lazy(() => import('./DmInvites').then(m => ({ default: m.DmInvites })));
+const DmAuditLog = React.lazy(() => import('./DmAuditLog').then(m => ({ default: m.DmAuditLog })));
+const DmHandoutManager = React.lazy(() => import('./DmHandoutManager').then(m => ({ default: m.DmHandoutManager })));
+const DmQuestManager = React.lazy(() => import('./DmQuestManager').then(m => ({ default: m.DmQuestManager })));
+const FactionReputationManager = React.lazy(() => import('../campaign/FactionReputationManager').then(m => ({ default: m.FactionReputationManager })));
+const PartyTreasuryManager = React.lazy(() => import('../campaign/PartyTreasuryManager').then(m => ({ default: m.PartyTreasuryManager })));
+
+const DmToolSkeleton: React.FC = () => (
+  <div className="space-y-4 p-4 animate-pulse" dir="rtl">
+    <div className="h-24 bg-surface rounded-xl border border-border" />
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="h-32 bg-surface rounded-xl border border-border" />
+      <div className="h-32 bg-surface rounded-xl border border-border" />
+    </div>
+  </div>
+);
 
 interface DmToolsProps {
   characters: Character[];

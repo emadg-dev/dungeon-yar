@@ -401,7 +401,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
 
                   <div className="w-full h-2 rounded-full bg-[#1A1815] border border-[#2F2A23] overflow-hidden p-0.5 relative">
                     {/* Neutral center mark */}
-                    <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-[#4A4337] z-10" />
+                    <div className="absolute top-0 bottom-0 start-1/2 w-0.5 bg-[#4A4337] z-10" />
 
                     <div
                       className={`h-full rounded-full transition-all duration-300 ${

@@ -56,7 +56,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title="تنظیمات و قواعد کمپین">
-      <form onSubmit={handleSubmit} className="space-y-5 py-2 text-right max-h-[75vh] overflow-y-auto pr-1" dir="rtl">
+      <form onSubmit={handleSubmit} className="space-y-5 py-2 text-start max-h-[75vh] overflow-y-auto pe-1" dir="rtl">
         {/* Approvals Group */}
         <div className="p-4 rounded-2xl bg-[#131110]/80 border border-[#2F2A23] space-y-3">
           <h4 className="text-xs font-bold text-[#F2C265] flex items-center gap-2">

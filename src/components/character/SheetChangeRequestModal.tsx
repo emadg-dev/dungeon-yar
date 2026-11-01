@@ -79,7 +79,7 @@ export const SheetChangeRequestModal: React.FC<SheetChangeRequestModalProps> = (
       title="درخواست تغییر به دانجن مستر"
       subtitle={`شخصیت: ${characterName}`}
     >
-      <div className="space-y-4 py-2 text-right" dir="rtl">
+      <div className="space-y-4 py-2 text-start" dir="rtl">
         <div className="p-3.5 rounded-xl bg-[#171513] border border-[#E0A030]/40 flex items-start gap-2.5">
           <Shield className="w-5 h-5 text-[#E0A030] shrink-0 mt-0.5" />
           <p className="text-xs text-[#EDE6D8]/90 leading-relaxed">

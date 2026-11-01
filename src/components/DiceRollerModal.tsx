@@ -394,7 +394,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
               </button>
             </div>
 
-            <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-96 overflow-y-auto pe-1">
               {tableRolls.length === 0 ? (
                 <div className="p-8 text-center border border-dashed border-[#2F2A23] rounded-2xl text-[#8A8374] text-xs">
                   هنوز هیچ تاسی در این میز بازی پرتاب نشده است.

@@ -59,7 +59,7 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title={`صف بررسی و تأیید دانجن مستر (${approvals.length})`}>
-      <div className="space-y-4 py-2 text-right" dir="rtl">
+      <div className="space-y-4 py-2 text-start" dir="rtl">
         <p className="text-xs text-[#A39A89]">
           درخواست‌های ورود شخصیت جدید، ارتقای سطح (Level-Up) و تغییرات برگه کاراکتر که نیازمند تأیید رسمی راوی هستند.
         </p>

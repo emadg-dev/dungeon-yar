@@ -295,7 +295,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Bell className="w-4 h-4" />
               {unreadNotificationsCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#DC4437] text-white text-[10px] font-bold flex items-center justify-center border border-[#0E0D0C] shadow-sm animate-pulse">
+                <span className="absolute -top-1 -end-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#DC4437] text-white text-[10px] font-bold flex items-center justify-center border border-[#0E0D0C] shadow-sm animate-pulse">
                   {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
                 </span>
               )}
@@ -405,7 +405,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setMobileMenuOpen(false);
                         onOpenCampaignSettings();
                       }}
-                      className="w-full text-right py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
+                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
                     >
                       <span>تنظیمات قوانین و واحدها</span>
                     </button>
@@ -417,7 +417,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setMobileMenuOpen(false);
                         onOpenCampaignMembers();
                       }}
-                      className="w-full text-right py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
+                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
                     >
                       <span>اعضا و تعیین نقش‌ها</span>
                     </button>
@@ -429,7 +429,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setMobileMenuOpen(false);
                         onOpenCampaignInvites();
                       }}
-                      className="w-full text-right py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
+                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
                     >
                       <span>ساخت و مدیریت کدهای دعوت</span>
                     </button>
@@ -441,7 +441,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setMobileMenuOpen(false);
                         onOpenCampaignApprovals();
                       }}
-                      className="w-full text-right py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
+                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
                     >
                       <span>تأیید کاراکترها و ارتقای لول</span>
                       {pendingApprovalsCount > 0 && (
@@ -520,7 +520,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onSelectCharacter(c.id);
                         setMobileMenuOpen(false);
                       }}
-                      className={`w-full text-right p-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-between border touch-target ${
+                      className={`w-full text-start p-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-between border touch-target ${
                         activeCharacterId === c.id
                           ? 'bg-[#E0A030]/15 text-[#E0A030] border-[#E0A030]/40'
                           : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23]'
@@ -547,7 +547,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onSwitchUser(u.id);
                         setMobileMenuOpen(false);
                       }}
-                      className={`w-full text-right p-2 rounded-[8px] text-xs font-bold transition flex items-center justify-between touch-target ${
+                      className={`w-full text-start p-2 rounded-[8px] text-xs font-bold transition flex items-center justify-between touch-target ${
                         currentUser?.id === u.id
                           ? 'bg-[#E0A030]/10 text-[#E0A030]'
                           : 'text-[#A39A89] hover:text-[#EDE6D8]'

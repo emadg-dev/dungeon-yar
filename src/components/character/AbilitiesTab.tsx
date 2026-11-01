@@ -289,7 +289,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
                   <button
                     type="button"
                     onClick={() => onRollCheck(20, 1, totalMod, `چک مهارت ${skill.nameFa} (${abilityLabels[skill.ability].shortFa})`)}
-                    className="text-right truncate flex-1 hover:text-[#E0A030] transition touch-target"
+                    className="text-start truncate flex-1 hover:text-[#E0A030] transition touch-target"
                   >
                     <div className="text-xs font-bold text-[#EDE6D8] truncate">{skill.nameFa}</div>
                     <div className="text-[10px] text-[#A39A89]">

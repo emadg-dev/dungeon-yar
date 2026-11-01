@@ -279,7 +279,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             />
             <button
               onClick={() => setIsEditingBasics(!isEditingBasics)}
-              className="absolute -bottom-1.5 -right-1.5 p-2 rounded-[10px] bg-[#E0A030] text-[#0E0D0C] shadow-md hover:bg-[#F2C265] transition touch-target"
+              className="absolute -bottom-1.5 -end-1.5 p-2 rounded-[10px] bg-[#E0A030] text-[#0E0D0C] shadow-md hover:bg-[#F2C265] transition touch-target"
               title="ویرایش مشخصات"
               aria-label="ویرایش مشخصات"
             >
@@ -403,7 +403,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
       {/* Sheet Lock & Integrity Indicator */}
       <div className="surface-card rounded-[14px] p-3 border border-[#2F2A23] flex flex-col sm:flex-row items-center justify-between gap-2.5">
-        <div className="flex items-center gap-2.5 text-right w-full sm:w-auto">
+        <div className="flex items-center gap-2.5 text-start w-full sm:w-auto">
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
             Boolean(sheetLocked)
               ? 'bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30'

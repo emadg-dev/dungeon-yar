@@ -346,7 +346,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                       key={c.id}
                       type="button"
                       onClick={() => onSelectActiveCharacter(c.id)}
-                      className={`text-right p-2.5 rounded-[10px] border flex items-center justify-between transition-all touch-target ${
+                      className={`text-start p-2.5 rounded-[10px] border flex items-center justify-between transition-all touch-target ${
                         activeCharacterId === c.id
                           ? 'bg-[#E0A030]/15 text-[#E0A030] border-[#E0A030]/50 font-bold'
                           : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23] hover:border-[#E0A030]/40'
