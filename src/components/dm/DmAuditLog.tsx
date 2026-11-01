@@ -121,7 +121,7 @@ export const DmAuditLog: React.FC<DmAuditLogProps> = ({ campaignId }) => {
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <span className="font-bold text-[#EDE6D8]">{getActionFa(item.action)}</span>
                     <span className="text-[10px] text-[#A39A89] font-mono" dir="ltr">
-                      {new Date(item.createdAt).toLocaleDateString('fa-IR')} {new Date(item.createdAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                      {new Date(item.createdAt).toLocaleDateString('fa-IR-u-nu-latn')} {new Date(item.createdAt).toLocaleTimeString('fa-IR-u-nu-latn', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </span>
                   </div>
 

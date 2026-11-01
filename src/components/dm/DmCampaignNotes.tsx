@@ -24,7 +24,7 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
   // Form State
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<CampaignNoteCategory>('session');
-  const [sessionNum, setSessionNum] = useState('جلسه ۲');
+  const [sessionNum, setSessionNum] = useState('جلسه 2');
   const [content, setContent] = useState('');
   const [tagsStr, setTagsStr] = useState('معبد, زروانیا');
 
@@ -38,7 +38,7 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
   const handleStartCreate = () => {
     setTitle('');
     setCategory('session');
-    setSessionNum('جلسه ۲');
+    setSessionNum('جلسه 2');
     setContent('');
     setTagsStr('');
     setEditingNote(null);
@@ -202,7 +202,7 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
               type="text"
               value={tagsStr}
               onChange={(e) => setTagsStr(e.target.value)}
-              placeholder="جلسه۱, معبد, خط_اصلی"
+              placeholder="جلسه1, معبد, خط_اصلی"
               className="w-full py-2 px-3 rounded-xl bg-[#131110] border border-[#3A342B] text-sm text-[#EDE6D8]"
             />
           </div>

@@ -316,7 +316,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
                   <span>مصرف: {inv.usedCount} از {inv.maxUses} بار</span>
                   <span>•</span>
                   <span>
-                    انقضا: {new Date(inv.expiresAt).toLocaleDateString('fa-IR')}
+                    انقضا: {new Date(inv.expiresAt).toLocaleDateString('fa-IR-u-nu-latn')}
                   </span>
                   {inv.assignCharacterId && (
                     <>

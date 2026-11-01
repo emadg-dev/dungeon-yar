@@ -1667,6 +1667,7 @@ export default function App() {
         isKeyboardOpen={isKeyboardOpen}
         hasActiveEncounter={Boolean(activeLiveEncounter && activeLiveEncounter.status === 'active')}
         onOpenActiveEncounter={() => setLiveEncounterModalOpen(true)}
+        isInCombat={Boolean(liveEncounterModalOpen)}
       />
 
       {/* Global & Multi-Campaign Modals */}

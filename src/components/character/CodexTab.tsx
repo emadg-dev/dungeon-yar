@@ -67,10 +67,10 @@ export const CodexTab: React.FC<CodexTabProps> = ({
 
   const calendarEvents = [
     { day: 'روز نخست مهر', event: 'آغاز سال نو زمانی و اعتدال پاییز', region: 'مشترک' },
-    { day: 'شب ۱۰ آبان', event: 'هم‌رسایی ماه و شکاف‌های واقعیت ورنا', region: 'ورنا' },
+    { day: 'شب 10 آبان', event: 'هم‌رسایی ماه و شکاف‌های واقعیت ورنا', region: 'ورنا' },
     { day: 'نیمه آذر', event: 'کاروان‌های بزرگ نمک در کویر خاموش', region: 'کویر خاموش' },
     { day: 'شب یلدا', event: 'جشن آتشین موبدان در سپیدارون', region: 'سپیدارون' },
-    { day: 'روز ۲۰ دی', event: 'سالگرد پیمان بزرگ ثبات در شان‌شین', region: 'شان‌شین' },
+    { day: 'روز 20 دی', event: 'سالگرد پیمان بزرگ ثبات در شان‌شین', region: 'شان‌شین' },
   ];
 
   const filteredLocations = revealedLocations.filter(loc =>

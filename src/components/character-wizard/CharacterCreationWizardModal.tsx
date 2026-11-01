@@ -272,7 +272,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         cha: res.scores[5]
       };
       setServerRolls({ dice: res.rolls, scores: res.scores, assigned });
-      setToastNotice('پرتاب ۴d۶ با موفقیت در سرور انجام شد.');
+      setToastNotice('پرتاب 4d6 با موفقیت در سرور انجام شد.');
     } catch (err: any) {
       setErrorMsg(err.message || 'خطا در ریختن تاس‌های ویژگی.');
     } finally {
@@ -531,7 +531,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             <div className="border-b border-[#2F2A23] pb-3">
               <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
                 <User className="w-5 h-5 text-[#E0A030]" />
-                گام ۱: هویت، نام و تبار کاراکتر
+                گام 1: هویت، نام و تبار کاراکتر
               </h3>
               <p className="text-xs text-[#A39A89] mt-1">
                 نام قهرمان و تصویر چهره او را مشخص کنید. تبار و نژاد، توانایی‌های سرشتی شخصیت را معین می‌کنند.
@@ -552,7 +552,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
 
             {/* Portrait Selection / Upload */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-[#C9C0AE]">پرتره و چهره کاراکتر (سقف ۱۵۰ کیلوبایت)</label>
+              <label className="block text-xs font-bold text-[#C9C0AE]">پرتره و چهره کاراکتر (سقف 150 کیلوبایت)</label>
               <div className="flex items-center gap-4">
                 <img
                   src={portraitUrl}
@@ -689,7 +689,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
               <div>
                 <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
                   <Swords className="w-5 h-5 text-[#E0A030]" />
-                  گام ۲: کلاس بازی (Class)
+                  گام 2: کلاس بازی (Class)
                 </h3>
                 <p className="text-xs text-[#A39A89] mt-1">
                   کلاس، نقش رزمی، نحوه بقا و ویژگی‌های جادویی شما را تعیین می‌کند.
@@ -754,7 +754,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             <div className="border-b border-[#2F2A23] pb-3">
               <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
                 <Dice5 className="w-5 h-5 text-[#E0A030]" />
-                گام ۳: ویژگی‌های پایه (Ability Scores)
+                گام 3: ویژگی‌های پایه (Ability Scores)
               </h3>
               <p className="text-xs text-[#A39A89] mt-1">
                 روش تعیین امتیازات خود را انتخاب کرده و امتیازات را تخصیص دهید.
@@ -767,7 +767,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                 const labels: Record<AbilityMethod, string> = {
                   standard_array: 'آرایه استاندارد',
                   point_buy: 'خرید امتیاز (Point Buy)',
-                  roll: 'پرتاب تاس (۴d۶ سرور)',
+                  roll: 'پرتاب تاس (4d6 سرور)',
                   class_base: 'پایه کلاس',
                   manual: 'دستی'
                 };
@@ -798,11 +798,11 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                     <span className={`text-lg font-bold ${currentPointBuyCost > 27 ? 'text-[#D66138]' : 'text-[#F2C265]'}`}>
                       {currentPointBuyCost}
                     </span>
-                    <span className="text-xs text-[#8A8374]">/ ۲۷ امتیاز</span>
+                    <span className="text-xs text-[#8A8374]">/ 27 امتیاز</span>
                   </div>
                 </div>
                 <div className="text-[11px] text-[#A39A89] text-left">
-                  امتیاز ۸ تا ۱۵ مجاز است.
+                  امتیاز 8 تا 15 مجاز است.
                 </div>
               </div>
             )}
@@ -819,7 +819,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                     className="px-3 py-1.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-bold hover:bg-[#F2C265] transition-all flex items-center gap-1.5"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isRolling ? 'animate-spin' : ''}`} />
-                    <span>ریختن تاس جدید (۴d۶)</span>
+                    <span>ریختن تاس جدید (4d6)</span>
                   </button>
                 </div>
 
@@ -942,7 +942,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             <div className="border-b border-[#2F2A23] pb-3">
               <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-[#E0A030]" />
-                گام ۴: پیشینه و مهارت‌ها (Background & Skills)
+                گام 4: پیشینه و مهارت‌ها (Background & Skills)
               </h3>
               <p className="text-xs text-[#A39A89] mt-1">
                 پیشینه، زندگی قبل از ماجراجویی شماست. مهارت‌ها با برچسب منبع مشخص می‌شوند.
@@ -1062,7 +1062,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             <div className="border-b border-[#2F2A23] pb-3">
               <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
                 <Shield className="w-5 h-5 text-[#E0A030]" />
-                گام ۵: تجهیزات و اسلحه آغازین (Equipment)
+                گام 5: تجهیزات و اسلحه آغازین (Equipment)
               </h3>
               <p className="text-xs text-[#A39A89] mt-1">
                 سلاح آغازین و تجهیزات رزمی خود را تعیین کنید. پیش‌نمایش زنده‌ی زره (AC) و جان در پایین مشخص است.
@@ -1150,7 +1150,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             <div className="border-b border-[#2F2A23] pb-3">
               <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
                 <Wand2 className="w-5 h-5 text-[#E0A030]" />
-                گام ۶: وردها و جادوها (Spellcasting)
+                گام 6: وردها و جادوها (Spellcasting)
               </h3>
               <p className="text-xs text-[#A39A89] mt-1">
                 ترفندهای جادویی آغازین (Cantrips) و اسپل‌های آماده شده را تعیین کنید.
@@ -1158,7 +1158,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             </div>
 
             <div className="p-4 rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-2">
-              <span className="text-xs font-bold text-[#EDE6D8]">اسلات‌های جادویی سطح ۱:</span>
+              <span className="text-xs font-bold text-[#EDE6D8]">اسلات‌های جادویی سطح 1:</span>
               <div className="flex items-center gap-2 pt-1 font-mono text-sm text-[#F2C265]">
                 {computeSlots(activeClass?.name || '', 1).map((cnt, lvl) => (
                   <span key={lvl} className="px-3 py-1 rounded-xl bg-[#201D19] border border-[#2F2A23]">
@@ -1192,7 +1192,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
               <div>
                 <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
                   <Award className="w-5 h-5 text-[#E0A030]" />
-                  گام ۷: پیش‌داستان و انگیزه‌ها (اختیاری)
+                  گام 7: پیش‌داستان و انگیزه‌ها (اختیاری)
                 </h3>
                 <p className="text-xs text-[#A39A89] mt-1">
                   می‌توانید این گام را رد کرده و بعداً در بخش پرونده شخصیت تکمیل نمایید.
@@ -1243,7 +1243,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             <div className="border-b border-[#2F2A23] pb-3">
               <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
                 <Check className="w-5 h-5 text-[#6F9E78]" />
-                گام ۸: بازبینی نهایی و تایید (Review & Submit)
+                گام 8: بازبینی نهایی و تایید (Review & Submit)
               </h3>
               <p className="text-xs text-[#A39A89] mt-1">
                 اطلاعات شناسنامه و مقادیر بازتولید شده توسط موتور قوانین را بررسی کنید.

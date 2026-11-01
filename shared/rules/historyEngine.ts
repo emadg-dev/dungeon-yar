@@ -46,8 +46,14 @@ export interface CountdownResult {
 }
 
 export function toPersianDigits(n: number | string): string {
+  if (n === null || n === undefined) return '';
   const pDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-  return String(n).replace(/\d/g, d => pDigits[parseInt(d, 10)]);
+  const aDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  let s = String(n);
+  for (let i = 0; i < 10; i++) {
+    s = s.replaceAll(pDigits[i], String(i)).replaceAll(aDigits[i], String(i));
+  }
+  return s;
 }
 
 export interface LegacyJoinValidation {

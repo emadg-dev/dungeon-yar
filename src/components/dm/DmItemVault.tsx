@@ -409,7 +409,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-bold text-sm text-[#F2C265]">{rew.title}</h4>
                     <span className="text-[10px] text-[#8A8374] font-mono">
-                      {new Date(rew.createdAt).toLocaleDateString('fa-IR')}
+                      {new Date(rew.createdAt).toLocaleDateString('fa-IR-u-nu-latn')}
                     </span>
                   </div>
                   <p className="text-xs text-[#C9C0AE] mb-3">{rew.description}</p>

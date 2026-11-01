@@ -85,7 +85,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
                 onClick={() => handleAdvance(1)}
                 className="py-2.5 px-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] active:bg-[#C97B4A] active:text-[#0E0D0C] text-xs font-bold text-[#EDE6D8] transition border border-[#3A342B] flex items-center justify-center gap-1 touch-target cursor-pointer"
               >
-                <span>+۱ روز</span>
+                <span>+1 روز</span>
               </button>
               <button
                 type="button"
@@ -93,7 +93,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
                 onClick={() => handleAdvance(7)}
                 className="py-2.5 px-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] active:bg-[#C97B4A] active:text-[#0E0D0C] text-xs font-bold text-[#EDE6D8] transition border border-[#3A342B] flex items-center justify-center gap-1 touch-target cursor-pointer"
               >
-                <span>+۷ روز (۱ هفته)</span>
+                <span>+7 روز (1 هفته)</span>
               </button>
               <button
                 type="button"
@@ -102,7 +102,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
                 className="py-2.5 px-2 rounded-xl bg-[#E0A030]/20 hover:bg-[#E0A030]/30 border border-[#E0A030]/40 text-xs font-bold text-[#F2C265] transition flex items-center justify-center gap-1 touch-target cursor-pointer"
               >
                 <FastForward className="w-3.5 h-3.5 shrink-0" />
-                <span>+۱ ماه (۳۰ روز)</span>
+                <span>+1 ماه (30 روز)</span>
               </button>
             </div>
           </div>
@@ -112,7 +112,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
         <div className="space-y-2">
           <h4 className="text-xs font-bold text-[#A39A89] flex items-center gap-1">
             <BookOpen className="w-3.5 h-3.5 text-[#F2C265] shrink-0" />
-            <span>ماه‌های ۱۲گانه و جشن‌های آغاز ماه (۳۰ روزه)</span>
+            <span>ماه‌های 12گانه و جشن‌های آغاز ماه (30 روزه)</span>
           </h4>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-56 overflow-y-auto p-1 scrollbar-none">
             {CALENDAR_MONTHS.map(m => {
@@ -131,7 +131,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
                     <span className="text-[10px] px-1 py-0.2 rounded bg-[#201D19] text-[#A39A89]">{m.season}</span>
                   </div>
                   <div className="text-[11px] text-[#F2C265]/80 mt-1">
-                    روز ۱: جشن {m.festival}
+                    روز 1: جشن {m.festival}
                   </div>
                 </div>
               );
@@ -143,7 +143,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
         <div className="space-y-2">
           <h4 className="text-xs font-bold text-[#9B72CF] flex items-center gap-1">
             <Sparkles className="w-3.5 h-3.5 text-[#9B72CF] shrink-0" />
-            <span>۵ روز برون‌گاه پس از ۳۰ واپسان (خارج از سال‌شمار)</span>
+            <span>5 روز برون‌گاه پس از 30 واپسان (خارج از سال‌شمار)</span>
           </h4>
           <div className="space-y-1.5 max-h-48 overflow-y-auto p-1">
             {CALENDAR_OFF_DAYS.map(off => (

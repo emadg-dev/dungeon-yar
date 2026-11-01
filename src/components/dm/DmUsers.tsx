@@ -269,7 +269,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
             </button>
           </div>
           <p className="text-[11px] text-[#EDE6D8]/90 leading-relaxed">
-            هشدار امنیتی: این پیوند تنها یک‌بار مصرف است و ۲۴ ساعت اعتبار دارد. آن را کپی کرده و برای بازیکن ارسال فرمایید:
+            هشدار امنیتی: این پیوند تنها یک‌بار مصرف است و 24 ساعت اعتبار دارد. آن را کپی کرده و برای بازیکن ارسال فرمایید:
           </p>
           <div className="flex items-center gap-2">
             <input
@@ -344,7 +344,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
 
                 <div className="text-[10px] text-[#A39A89]/80 flex items-center gap-2 pt-0.5">
                   <span>
-                    آخرین ورود: {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString('fa-IR') : 'هرگز'}
+                    آخرین ورود: {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString('fa-IR-u-nu-latn') : 'هرگز'}
                   </span>
                   <span>•</span>
                   <span>نشست‌های فعال: {u.activeSessionCount || 0}</span>

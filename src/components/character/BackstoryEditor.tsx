@@ -846,7 +846,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
                     type="text"
                     value={item.label}
                     onChange={e => handleUpdateTimeline(idx, { label: e.target.value })}
-                    placeholder="مقطع یا سال (مثلاً بهار ۱۴۹۵)..."
+                    placeholder="مقطع یا سال (مثلاً بهار 1495)..."
                     className="bg-[#0E0D0C] border border-[#2F2A23] rounded-lg px-2.5 py-1 text-xs text-[#F2C265] font-bold flex-1"
                   />
                   <div className="flex items-center gap-2">
@@ -1010,7 +1010,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
       <BottomSheet
         isOpen={isRevisionSheetOpen}
         onClose={() => setIsRevisionSheetOpen(false)}
-        title="تاریخچه ویرایش‌های پیشینه (۱۰ نسخه اخیر)"
+        title="تاریخچه ویرایش‌های پیشینه (10 نسخه اخیر)"
       >
         <div className="space-y-3 py-2 text-start" dir="rtl">
           {loadingRevisions ? (
@@ -1019,7 +1019,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
             <p className="text-xs text-[#8A8374] text-center py-4">هنوز نسخه‌ای در تاریخچه ثبت نشده است.</p>
           ) : (
             revisions.map((rev, idx) => {
-              const dateStr = new Date(rev.createdAt).toLocaleString('fa-IR');
+              const dateStr = new Date(rev.createdAt).toLocaleString('fa-IR-u-nu-latn');
               return (
                 <div key={rev.id || idx} className="p-3.5 rounded-xl bg-[#141210] border border-[#2F2A23] flex items-center justify-between gap-3">
                   <div>

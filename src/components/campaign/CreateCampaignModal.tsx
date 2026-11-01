@@ -93,7 +93,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
                 <Sparkles className="w-4 h-4 text-[#F2C265]" />
                 <h4 className="text-xs font-bold">زروانیا</h4>
               </div>
-              <p className="text-[10px] line-clamp-2">کلاس‌های اختصاصی، لور ورنا، سلاح‌های عهد و تقویم ۳۶۵ روزه</p>
+              <p className="text-[10px] line-clamp-2">کلاس‌های اختصاصی، لور ورنا، سلاح‌های عهد و تقویم 365 روزه</p>
             </div>
 
             <div
@@ -106,9 +106,9 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
             >
               <div className="flex items-center gap-2 mb-1">
                 <BookOpen className="w-4 h-4 text-[#7FB4D6]" />
-                <h4 className="text-xs font-bold">پایه ۵e</h4>
+                <h4 className="text-xs font-bold">پایه 5e</h4>
               </div>
-              <p className="text-[10px] line-clamp-2">ساختار خالص مکانیک D&D 5e، ۶ ویژگی، مهارت‌ها و شرایط استاندارد</p>
+              <p className="text-[10px] line-clamp-2">ساختار خالص مکانیک D&D 5e، 6 ویژگی، مهارت‌ها و شرایط استاندارد</p>
             </div>
 
             <div

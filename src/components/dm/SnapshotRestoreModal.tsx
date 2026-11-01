@@ -74,11 +74,11 @@ export const SnapshotRestoreModal: React.FC<SnapshotRestoreModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="بازگردانی وضعیت و اسنپ‌شات"
-      subtitle={`شخصیت: ${characterName} (۱۰ وضعیت اخیر)`}
+      subtitle={`شخصیت: ${characterName} (10 وضعیت اخیر)`}
     >
       <div className="space-y-4 py-2 text-right" dir="rtl">
         <p className="text-xs text-[#A39A89]">
-          دانجن‌یار به‌طور خودکار هنگام هر ارتقای سطح، پذیرش یا بازسازی، یک اسنپ‌شات امنیتی ثبت می‌کند (تا ۱۰ نسخه اخیر).
+          دانجن‌یار به‌طور خودکار هنگام هر ارتقای سطح، پذیرش یا بازسازی، یک اسنپ‌شات امنیتی ثبت می‌کند (تا 10 نسخه اخیر).
         </p>
 
         {loading ? (
@@ -94,7 +94,7 @@ export const SnapshotRestoreModal: React.FC<SnapshotRestoreModalProps> = ({
         ) : (
           <div className="space-y-2.5 max-h-80 overflow-y-auto no-scrollbar">
             {snapshots.map(snap => {
-              const dateStr = new Date(snap.created_at).toLocaleDateString('fa-IR');
+              const dateStr = new Date(snap.created_at).toLocaleDateString('fa-IR-u-nu-latn');
               const isRestoring = restoringId === snap.id;
 
               return (

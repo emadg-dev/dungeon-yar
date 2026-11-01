@@ -458,7 +458,7 @@ export interface LevelUpDiff {
   hpGain: number;
   newMaxHp: number;
   oldMaxHp: number;
-  hpBreakdown: string; // e.g. "تاس (۶) + بنیه (+۲) = +۸"
+  hpBreakdown: string; // e.g. "تاس (6) + بنیه (+2) = +8"
   abilityChanges?: Partial<Record<AbilityName, { before: number; after: number }>>;
   newFeatures: Array<{ name: string; description: string }>;
   unlockedSubclass?: string;

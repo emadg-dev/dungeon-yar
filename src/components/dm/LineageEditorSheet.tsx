@@ -376,7 +376,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
                 min={0}
                 max={120}
                 step={30}
-                placeholder="۰ یا ۶۰ فوت"
+                placeholder="0 یا 60 فوت"
                 className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] min-h-[44px]"
               />
             </div>
