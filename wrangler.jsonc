@@ -7,12 +7,12 @@
 		{
 			"binding": "DB",
 			"database_name": "zorvania-db",
-			"database_id": "cbf8e947-4d93-4043-9ee6-476b3daac4a1"
+			"database_id": "17169094-7118-4d18-9a5d-bb701efac793"
 		},
 		{
 			"binding": "zorvania_db",
 			"database_name": "zorvania-db",
-			"database_id": "cbf8e947-4d93-4043-9ee6-476b3daac4a1"
+			"database_id": "17169094-7118-4d18-9a5d-bb701efac793"
 		}
 	],
 	"vars": {
