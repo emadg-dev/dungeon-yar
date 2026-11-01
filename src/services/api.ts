@@ -99,8 +99,20 @@ import {
   NotificationPayload,
   NotificationItem,
   NotificationPref,
-  PushSubscriptionRecord
+  PushSubscriptionRecord,
+  AccountExportData,
+  AccountDeleteOptions,
+  CampaignAuditLogEntry,
+  AdminUserItem,
+  AdminCampaignItem,
+  InstanceSettings,
+  StorageStats,
+  CleanupReport
 } from '../types';
+import {
+  calculateStorageStats,
+  computeOrphanCleanupReport
+} from '../../shared/rules/securityEngine';
 import {
   isNotificationTypeMuted,
   sanitizePayloadForPlayer,
@@ -818,6 +830,24 @@ export interface ApiClient {
   syncOfflineEdits(edits: OfflineEditItem[]): Promise<{ syncedIds: string[]; conflicts: ConflictDetails[] }>;
   resolveSyncConflict(conflictId: string, resolution: 'client' | 'server'): Promise<void>;
   listSyncConflicts(campaignId?: string): Promise<ConflictDetails[]>;
+
+  // Step 5.3: Account Export & Deletion, Campaign Audit Log
+  exportAccountData(): Promise<AccountExportData>;
+  deleteAccount(options: AccountDeleteOptions): Promise<{ success: boolean; mode: string }>;
+  getCampaignAuditLog(campaignId: string, limit?: number): Promise<CampaignAuditLogEntry[]>;
+
+  // Step 5.4: Instance Admin Console & Storage Monitor
+  getAdminUsers(): Promise<AdminUserItem[]>;
+  toggleAdminUserStatus(userId: string): Promise<{ success: boolean; newStatus: 'active' | 'disabled' }>;
+  generateAdminResetLink(userId: string): Promise<{ token: string; resetUrl: string }>;
+  revokeAdminUserSessions(userId: string): Promise<{ success: boolean; revokedCount: number }>;
+  getAdminCampaigns(): Promise<AdminCampaignItem[]>;
+  archiveAdminCampaign(campaignId: string): Promise<{ success: boolean }>;
+  restoreAdminCampaign(campaignId: string): Promise<{ success: boolean }>;
+  getInstanceSettings(): Promise<InstanceSettings>;
+  updateInstanceSettings(settings: Partial<InstanceSettings>): Promise<InstanceSettings>;
+  getStorageStats(): Promise<StorageStats>;
+  runOrphanCleanup(dryRun: boolean): Promise<CleanupReport>;
 }
 
 // ----------------------------------------------------------------------
@@ -7307,6 +7337,193 @@ export class LocalApi implements ApiClient {
     const stored = this.getItem<ConflictDetails[]>('sync_conflicts', []);
     return campaignId ? stored.filter(c => c.campaignId === campaignId) : stored;
   }
+
+  // Step 5.3: Account Export & Deletion, Campaign Audit Log
+  async exportAccountData(): Promise<AccountExportData> {
+    const user = this.currentUser;
+    const characters = this.getItem<Character[]>('characters', []).filter(c => c.ownerId === user?.id);
+    const charIds = new Set(characters.map(c => c.id));
+    const participations = this.getItem<CharacterParticipation[]>('character_participations', []).filter(p => charIds.has(p.characterId));
+    const notes = this.getItem<any[]>('notes', []).filter(n => n.authorId === user?.id);
+    const diceHistory = this.getItem<any[]>('dice_history', []);
+    const sessionsAttended = this.getItem<any[]>('session_attendance', []);
+    const recapDrafts = this.getItem<any[]>('session_recaps', []).filter(r => r.authorId === user?.id);
+
+    return {
+      user: user as any,
+      characters: characters as any,
+      characterParticipations: participations,
+      notes,
+      diceHistory,
+      sessionsAttended,
+      recapDrafts,
+      exportedAt: Date.now()
+    };
+  }
+
+  async deleteAccount(options: AccountDeleteOptions): Promise<{ success: boolean; mode: string }> {
+    const user = this.currentUser;
+    if (!user) throw new Error('کاربر وارد نشده است.');
+    if (!options.password) throw new Error('رمز عبور فعلی الزامی است.');
+
+    const users = this.getItem<User[]>('users', []);
+    const targetIdx = users.findIndex(u => u.id === user.id);
+    if (targetIdx !== -1) {
+      if (options.mode === 'anonymize') {
+        users[targetIdx].email = `deleted-${user.id.substring(0, 8)}@anonymized.local`;
+        users[targetIdx].name = 'کاربر حذف‌شده';
+        users[targetIdx].displayName = 'کاربر حذف‌شده';
+        users[targetIdx].status = 'disabled';
+      } else {
+        users[targetIdx].status = 'disabled';
+        const chars = this.getItem<Character[]>('characters', []);
+        for (const c of chars) {
+          if (c.ownerId === user.id) (c as any).deletedAt = Date.now();
+        }
+        this.setItem('characters', chars);
+      }
+      this.setItem('users', users);
+    }
+
+    this.currentUser = null;
+    localStorage.removeItem(this.getKey('current_user'));
+    return { success: true, mode: options.mode };
+  }
+
+  async getCampaignAuditLog(campaignId: string, limit = 50): Promise<CampaignAuditLogEntry[]> {
+    const logs = this.getItem<CampaignAuditLogEntry[]>('audit_logs', []);
+    return logs
+      .filter(l => l.targetId === campaignId || JSON.stringify(l.meta || {}).includes(campaignId))
+      .slice(0, limit);
+  }
+
+  // Step 5.4: Instance Admin Console & Storage Monitor
+  async getAdminUsers(): Promise<AdminUserItem[]> {
+    const users = this.getItem<User[]>('users', []);
+    const members = this.getItem<any[]>('campaign_members', []);
+    return users.map(u => ({
+      id: u.id,
+      email: u.email,
+      displayName: u.displayName || u.name,
+      role: (u.role as any) === 'dm' ? 'dm' : 'player',
+      platformRole: u.platformRole || 'user',
+      status: u.status || 'active',
+      mustChangePassword: !!u.mustChangePassword,
+      createdAt: u.createdAt || Date.now(),
+      lastLoginAt: u.lastLoginAt || null,
+      campaignsCount: members.filter(m => m.userId === u.id && m.status === 'active').length,
+      storageUsedBytes: 1024 * 50
+    }));
+  }
+
+  async toggleAdminUserStatus(userId: string): Promise<{ success: boolean; newStatus: 'active' | 'disabled' }> {
+    const users = this.getItem<User[]>('users', []);
+    const u = users.find(x => x.id === userId);
+    if (!u) throw new Error('کاربر یافت نشد.');
+    u.status = u.status === 'active' ? 'disabled' : 'active';
+    this.setItem('users', users);
+    return { success: true, newStatus: u.status as any };
+  }
+
+  async generateAdminResetLink(userId: string): Promise<{ token: string; resetUrl: string }> {
+    const token = `reset-preview-${Date.now()}`;
+    return { token, resetUrl: `/reset?token=${token}` };
+  }
+
+  async revokeAdminUserSessions(userId: string): Promise<{ success: boolean; revokedCount: number }> {
+    return { success: true, revokedCount: 1 };
+  }
+
+  async getAdminCampaigns(): Promise<AdminCampaignItem[]> {
+    const camps = this.getItem<Campaign[]>('campaigns', []);
+    const members = this.getItem<any[]>('campaign_members', []);
+    const users = this.getItem<User[]>('users', []);
+    return camps.map(c => {
+      const owner = users.find(u => u.id === c.ownerId);
+      return {
+        id: c.id,
+        name: c.name,
+        ownerId: c.ownerId,
+        ownerName: owner?.displayName || owner?.name || 'دانجن‌مستر',
+        ownerEmail: owner?.email || '',
+        status: (c.status as any) || 'active',
+        memberCount: members.filter(m => m.campaignId === c.id && m.status === 'active').length,
+        storageUsedBytes: 1024 * 250,
+        createdAt: c.createdAt || Date.now(),
+        updatedAt: c.updatedAt || Date.now(),
+        lastActivityAt: c.updatedAt || Date.now()
+      };
+    });
+  }
+
+  async archiveAdminCampaign(campaignId: string): Promise<{ success: boolean }> {
+    const camps = this.getItem<Campaign[]>('campaigns', []);
+    const c = camps.find(x => x.id === campaignId);
+    if (c) {
+      c.status = 'archived' as any;
+      c.updatedAt = Date.now();
+      this.setItem('campaigns', camps);
+    }
+    return { success: true };
+  }
+
+  async restoreAdminCampaign(campaignId: string): Promise<{ success: boolean }> {
+    const camps = this.getItem<Campaign[]>('campaigns', []);
+    const c = camps.find(x => x.id === campaignId);
+    if (c) {
+      c.status = 'active';
+      c.updatedAt = Date.now();
+      this.setItem('campaigns', camps);
+    }
+    return { success: true };
+  }
+
+  async getInstanceSettings(): Promise<InstanceSettings> {
+    return this.getItem<InstanceSettings>('instance_settings', {
+      allowCampaignCreation: true,
+      registrationMode: 'invite',
+      perUserMediaQuotaBytes: 5 * 1024 * 1024,
+      perCampaignMediaQuotaBytes: 20 * 1024 * 1024,
+      storageWarningThresholdBytes: 800 * 1024 * 1024
+    });
+  }
+
+  async updateInstanceSettings(settings: Partial<InstanceSettings>): Promise<InstanceSettings> {
+    const current = await this.getInstanceSettings();
+    const updated = { ...current, ...settings };
+    this.setItem('instance_settings', updated);
+    return updated;
+  }
+
+  async getStorageStats(): Promise<StorageStats> {
+    const settings = await this.getInstanceSettings();
+    const tableCounts: Record<string, number> = {
+      media: this.getItem<any[]>('media', []).length,
+      character_participations: this.getItem<any[]>('character_participations', []).length,
+      characters: this.getItem<any[]>('characters', []).length,
+      encounters: this.getItem<any[]>('encounters', []).length,
+      encounter_events: this.getItem<any[]>('encounter_events', []).length,
+      campaigns: this.getItem<any[]>('campaigns', []).length,
+      sessions: this.getItem<any[]>('sessions', []).length,
+      handouts: this.getItem<any[]>('handouts', []).length,
+      notes: this.getItem<any[]>('notes', []).length,
+      audit_log: this.getItem<any[]>('audit_logs', []).length,
+      dice_rolls: this.getItem<any[]>('dice_history', []).length,
+      notifications: this.getItem<any[]>('notifications', []).length,
+      auth_sessions: 1
+    };
+    return calculateStorageStats(tableCounts, 0, settings.storageWarningThresholdBytes);
+  }
+
+  async runOrphanCleanup(dryRun: boolean): Promise<CleanupReport> {
+    return computeOrphanCleanupReport({
+      orphanMedia: 0,
+      expiredInvites: 0,
+      expiredSessions: 0,
+      oldLoginAttempts: 0,
+      oldPasswordResets: 0
+    }, dryRun);
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -9237,6 +9454,83 @@ export class HttpApi implements ApiClient {
   async listSyncConflicts(campaignId?: string): Promise<ConflictDetails[]> {
     const qs = campaignId ? `?campaignId=${encodeURIComponent(campaignId)}` : '';
     return this.fetchJson<ConflictDetails[]>(`/sync/conflicts${qs}`);
+  }
+
+  // Step 5.3: Account Export & Deletion, Campaign Audit Log
+  async exportAccountData(): Promise<AccountExportData> {
+    return this.fetchJson<AccountExportData>('/account/export');
+  }
+
+  async deleteAccount(options: AccountDeleteOptions): Promise<{ success: boolean; mode: string }> {
+    return this.fetchJson<{ success: boolean; mode: string }>('/account/delete', {
+      method: 'POST',
+      body: JSON.stringify(options)
+    });
+  }
+
+  async getCampaignAuditLog(campaignId: string, limit = 50): Promise<CampaignAuditLogEntry[]> {
+    return this.fetchJson<CampaignAuditLogEntry[]>(`/c/${campaignId}/audit-log?limit=${limit}`);
+  }
+
+  // Step 5.4: Instance Admin Console & Storage Monitor
+  async getAdminUsers(): Promise<AdminUserItem[]> {
+    return this.fetchJson<AdminUserItem[]>('/admin/users');
+  }
+
+  async toggleAdminUserStatus(userId: string): Promise<{ success: boolean; newStatus: 'active' | 'disabled' }> {
+    return this.fetchJson<{ success: boolean; newStatus: 'active' | 'disabled' }>(`/admin/users/${userId}/toggle-status`, {
+      method: 'POST'
+    });
+  }
+
+  async generateAdminResetLink(userId: string): Promise<{ token: string; resetUrl: string }> {
+    return this.fetchJson<{ token: string; resetUrl: string }>(`/admin/users/${userId}/reset-link`, {
+      method: 'POST'
+    });
+  }
+
+  async revokeAdminUserSessions(userId: string): Promise<{ success: boolean; revokedCount: number }> {
+    return this.fetchJson<{ success: boolean; revokedCount: number }>(`/admin/users/${userId}/revoke-sessions`, {
+      method: 'POST'
+    });
+  }
+
+  async getAdminCampaigns(): Promise<AdminCampaignItem[]> {
+    return this.fetchJson<AdminCampaignItem[]>('/admin/campaigns');
+  }
+
+  async archiveAdminCampaign(campaignId: string): Promise<{ success: boolean }> {
+    return this.fetchJson<{ success: boolean }>(`/admin/campaigns/${campaignId}/archive`, {
+      method: 'POST'
+    });
+  }
+
+  async restoreAdminCampaign(campaignId: string): Promise<{ success: boolean }> {
+    return this.fetchJson<{ success: boolean }>(`/admin/campaigns/${campaignId}/restore`, {
+      method: 'POST'
+    });
+  }
+
+  async getInstanceSettings(): Promise<InstanceSettings> {
+    return this.fetchJson<InstanceSettings>('/admin/settings');
+  }
+
+  async updateInstanceSettings(settings: Partial<InstanceSettings>): Promise<InstanceSettings> {
+    return this.fetchJson<InstanceSettings>('/admin/settings', {
+      method: 'PUT',
+      body: JSON.stringify(settings)
+    });
+  }
+
+  async getStorageStats(): Promise<StorageStats> {
+    return this.fetchJson<StorageStats>('/admin/storage');
+  }
+
+  async runOrphanCleanup(dryRun: boolean): Promise<CleanupReport> {
+    return this.fetchJson<CleanupReport>('/admin/cleanup', {
+      method: 'POST',
+      body: JSON.stringify({ dryRun })
+    });
   }
 }
 

@@ -1184,3 +1184,13 @@ CREATE TABLE IF NOT EXISTS sync_conflicts (
 
 CREATE INDEX IF NOT EXISTS idx_sync_conflicts_campaign ON sync_conflicts(campaign_id, resolved);
 CREATE INDEX IF NOT EXISTS idx_sync_conflicts_user ON sync_conflicts(user_id, resolved);
+
+-- 64. Instance Settings (Step 5.4 - Platform & Instance Configuration)
+CREATE TABLE IF NOT EXISTS instance_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_log_target_created ON audit_log(target_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_log_actor_created ON audit_log(actor_id, created_at DESC);

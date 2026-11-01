@@ -45,6 +45,12 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   // Sessions list
   const [sessions, setSessions] = useState<UserSession[]>([]);
 
+  // Account deletion form
+  const [deleteMode, setDeleteMode] = useState<'anonymize' | 'remove_all'>('anonymize');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   // Feedback states
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -164,19 +170,41 @@ export const AccountModal: React.FC<AccountModalProps> = ({
 
   const handleExportData = async () => {
     try {
-      const data = await api.exportMyData();
+      const data = await api.exportAccountData();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const dlUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = dlUrl;
-      a.download = `${APP_NAME_LATIN.toLowerCase()}-export-${currentUser.displayName || currentUser.name}-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `${APP_NAME_LATIN.toLowerCase()}-account-export-${currentUser.displayName || currentUser.name}-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(dlUrl);
-      showMsg('داده‌های کاراکترها و یادداشت‌های شما دانلود شد.');
+      showMsg(`پشتیبان کامل دانلود شد (${data.characters?.length || 0} شخصیت، ${data.notes?.length || 0} یادداشت).`);
     } catch (err: any) {
       showMsg(err.message || 'خطا در خروجی داده‌ها.', 'error');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      showMsg('وارد کردن رمز عبور فعلی الزامی است.', 'error');
+      return;
+    }
+    setDeleting(true);
+    try {
+      await api.deleteAccount({
+        password: deletePassword,
+        mode: deleteMode
+      });
+      alert('حساب کاربری شما با موفقیت حذف شد.');
+      onLogout();
+      onClose();
+    } catch (err: any) {
+      showMsg(err.message || 'خطا در حذف حساب کاربری.', 'error');
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -500,6 +528,99 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               </button>
             </div>
 
+            {/* Danger Zone: Account Deletion */}
+            <div className="p-3.5 rounded-[12px] bg-[#C2512B]/10 border border-[#C2512B]/35 space-y-3">
+              <div className="flex items-center gap-2 text-[#C2512B]">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <h4 className="text-xs font-extrabold">منطقه خطر: حذف حساب کاربری</h4>
+              </div>
+              <p className="text-[11px] text-[#A39A89] leading-relaxed">
+                با حذف حساب، نشست‌های شما منقضی شده و دسترسی شما قطع می‌شود. نحوه مدیریت داده‌ها را انتخاب کنید:
+              </p>
+
+              <div className="space-y-2">
+                <label className="flex items-start gap-2 p-2.5 rounded-[8px] bg-[#171513] border border-[#2F2A23] cursor-pointer">
+                  <input
+                    type="radio"
+                    name="deleteMode"
+                    value="anonymize"
+                    checked={deleteMode === 'anonymize'}
+                    onChange={() => setDeleteMode('anonymize')}
+                    className="mt-0.5 accent-[#E0A030]"
+                  />
+                  <div className="text-[11px]">
+                    <strong className="text-[#EDE6D8] block">ناشناس‌سازی (توصیه‌شده برای حفظ کمپین‌ها)</strong>
+                    <span className="text-[#A39A89]">نام شما به «کاربر حذف‌شده» تبدیل می‌شود تا رکورد بازی و یادداشت‌های ثبت‌شده برای بقیه بازیکنان و کمپین خراب نشود. کمپین‌های تحت مالکیت شما به دستیار DM یا حالت بایگانی منتقل می‌گردد.</span>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-2 p-2.5 rounded-[8px] bg-[#171513] border border-[#2F2A23] cursor-pointer">
+                  <input
+                    type="radio"
+                    name="deleteMode"
+                    value="remove_all"
+                    checked={deleteMode === 'remove_all'}
+                    onChange={() => setDeleteMode('remove_all')}
+                    className="mt-0.5 accent-[#C2512B]"
+                  />
+                  <div className="text-[11px]">
+                    <strong className="text-[#EDE6D8] block">حذف کامل حساب و کاراکترها</strong>
+                    <span className="text-[#A39A89]">حساب کاربری و تمام شخصیت‌های اختصاصی شما غیرفعال و نشانه‌گذاری حذف می‌شوند.</span>
+                  </div>
+                </label>
+              </div>
+
+              <div className="space-y-1.5 pt-1">
+                <label className="block text-[11px] text-[#EDE6D8] font-bold">برای تأیید، رمز عبور فعلی خود را وارد کنید:</label>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder="رمز عبور فعلی"
+                  dir="ltr"
+                  className="w-full py-2 px-3 rounded-[8px] bg-[#171513] border border-[#C2512B]/40 text-xs text-[#EDE6D8] focus:border-[#C2512B] outline-none min-h-[44px]"
+                />
+              </div>
+
+              {!showDeleteConfirm ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!deletePassword) {
+                      showMsg('ابتدا رمز عبور فعلی خود را وارد نمایید.', 'error');
+                      return;
+                    }
+                    setShowDeleteConfirm(true);
+                  }}
+                  className="py-2 px-3 rounded-[8px] bg-[#C2512B]/20 text-[#C2512B] hover:bg-[#C2512B]/30 border border-[#C2512B]/40 text-xs font-bold touch-target min-h-[44px] flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>درخواست حذف حساب کاربری</span>
+                </button>
+              ) : (
+                <div className="p-3 rounded-[8px] bg-[#171513] border border-[#C2512B] space-y-2">
+                  <span className="text-xs font-bold text-[#C2512B] block">آیا ۱۰۰٪ مطمئن هستید؟ این عملیات غیرقابل بازگشت است.</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={deleting}
+                      onClick={handleDeleteAccount}
+                      className="py-1.5 px-3 rounded-[6px] bg-[#C2512B] text-white hover:bg-[#A84322] font-bold text-xs touch-target min-h-[40px]"
+                    >
+                      {deleting ? 'در حال حذف...' : 'بله، حسابم را حذف کن'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      className="py-1.5 px-3 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] text-xs font-bold touch-target min-h-[40px]"
+                    >
+                      انصراف
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="pt-2 border-t border-[#2F2A23]">
               <button
                 type="button"
@@ -507,9 +628,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   onLogout();
                   onClose();
                 }}
-                className="w-full py-2.5 rounded-[10px] bg-[#C2512B]/15 text-[#C2512B] hover:bg-[#C2512B]/25 border border-[#C2512B]/35 font-extrabold text-xs transition touch-target flex items-center justify-center gap-2 min-h-[44px]"
+                className="w-full py-2.5 rounded-[10px] bg-[#201D19] text-[#EDE6D8] hover:text-[#C2512B] hover:bg-[#201D19]/80 border border-[#2F2A23] font-extrabold text-xs transition touch-target flex items-center justify-center gap-2 min-h-[44px]"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-4 h-4 text-[#A39A89]" />
                 <span>خروج از حساب کاربری</span>
               </button>
             </div>

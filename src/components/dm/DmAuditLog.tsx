@@ -3,20 +3,29 @@ import { AuditLogEntry } from '../../types';
 import { api } from '../../services/api';
 import { Scroll, Filter, Clock, RefreshCw, Shield, User, Key, UserCheck, Trash2 } from 'lucide-react';
 
-export const DmAuditLog: React.FC = () => {
+interface DmAuditLogProps {
+  campaignId?: string;
+}
+
+export const DmAuditLog: React.FC<DmAuditLogProps> = ({ campaignId }) => {
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [actionFilter, setActionFilter] = useState('');
 
   useEffect(() => {
     loadLogs();
-  }, []);
+  }, [campaignId]);
 
   const loadLogs = async () => {
     setLoading(true);
     try {
-      const data = await api.getAuditLog(100);
-      setLogs(data);
+      if (campaignId) {
+        const data = await api.getCampaignAuditLog(campaignId, 100);
+        setLogs(data as any);
+      } else {
+        const data = await api.getAuditLog(100);
+        setLogs(data);
+      }
     } catch {}
     finally {
       setLoading(false);
