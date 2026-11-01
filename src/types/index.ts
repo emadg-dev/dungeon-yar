@@ -383,6 +383,7 @@ export interface CharacterParticipation {
   sheetLocked?: boolean;
   sessionsAttended?: number;
   levelUpAvailable?: boolean;
+  revision?: number;
   joinedAt: number;
   updatedAt: number;
   pendingLevelUp?: {
@@ -959,6 +960,7 @@ export interface CharacterNote {
   category: NoteCategory;
   pinned: boolean;
   sharedWithDm: boolean;
+  revision?: number;
   updatedAt: string;
 }
 
@@ -2137,5 +2139,31 @@ export interface PushSubscriptionRecord {
   keys: PushSubscriptionKeys;
   userAgent?: string;
   createdAt: number;
+}
+
+// Step 5.2 Offline sync, revisions & conflict types
+export type {
+  OfflineEditField,
+  OfflineEditItem,
+  ConflictDetails,
+  SyncStatus
+} from '../../shared/rules/offlineEngine';
+
+export interface SyncConflictRecord {
+  id: string;
+  campaignId: string;
+  entityType: string;
+  entityId: string;
+  participationId?: string | null;
+  field: string;
+  baseRevision: number;
+  serverRevision: number;
+  clientValue: any;
+  serverValue: any;
+  resolved: boolean;
+  resolution?: 'client' | 'server';
+  userId: string;
+  createdAt: number;
+  resolvedAt?: number | null;
 }
 

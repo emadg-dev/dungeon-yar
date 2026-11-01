@@ -85,12 +85,13 @@ export default defineConfig(() => {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
           runtimeCaching: [
             {
-              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+              // Self-hosted and external Vazirmatn font woff2
+              urlPattern: /.*\/fonts\/.*\.(?:woff2?|ttf|eot)$/i,
               handler: 'CacheFirst',
               options: {
-                cacheName: 'google-fonts-cache',
+                cacheName: 'vazirmatn-fonts-cache',
                 expiration: {
-                  maxEntries: 10,
+                  maxEntries: 30,
                   maxAgeSeconds: 60 * 60 * 24 * 365,
                 },
                 cacheableResponse: {
@@ -99,13 +100,33 @@ export default defineConfig(() => {
               },
             },
             {
-              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+              urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
               handler: 'CacheFirst',
               options: {
-                cacheName: 'gstatic-fonts-cache',
+                cacheName: 'google-fonts-cache',
                 expiration: {
                   maxEntries: 20,
                   maxAgeSeconds: 60 * 60 * 24 * 365,
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
+              },
+            },
+            {
+              // Stale-While-Revalidate for non-auth GET data requests
+              urlPattern: ({ url, request }) => {
+                if (request.method !== 'GET') return false;
+                const path = url.pathname;
+                const isAuth = path.startsWith('/api/auth') || path.startsWith('/api/me');
+                return path.startsWith('/api/') && !isAuth;
+              },
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'api-data-cache',
+                expiration: {
+                  maxEntries: 60,
+                  maxAgeSeconds: 60 * 60 * 24, // 1 day
                 },
                 cacheableResponse: {
                   statuses: [0, 200],
@@ -122,6 +143,29 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         '@': path.resolve('.'),
+      },
+    },
+    build: {
+      chunkSizeWarningLimit: 600,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('react-dom')) {
+                return 'vendor-react';
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+              if (id.includes('motion')) {
+                return 'vendor-motion';
+              }
+              if (id.includes('@google/genai')) {
+                return 'vendor-genai';
+              }
+            }
+          },
+        },
       },
     },
     server: {

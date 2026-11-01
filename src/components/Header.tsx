@@ -4,7 +4,8 @@ import { APP_NAME_FA, APP_NAME_LATIN, APP_TAGLINE } from '../config/app';
 import { BottomSheet } from './mobile/BottomSheet';
 import { 
   CheckCircle2, RefreshCw, Shield, BookOpen, 
-  SunMedium, Type, LogOut, ChevronDown, MoreVertical, Sparkles, Swords, Bell
+  SunMedium, Type, LogOut, ChevronDown, MoreVertical, Sparkles, Swords, Bell,
+  WifiOff, AlertTriangle
 } from 'lucide-react';
 
 export interface HeaderProps {
@@ -17,7 +18,9 @@ export interface HeaderProps {
   onOpenAuth: () => void;
   onOpenAccount?: () => void;
   onLogout: () => void;
-  saveStatus?: 'saved' | 'saving' | 'idle';
+  saveStatus?: 'saved' | 'saving' | 'offline' | 'conflict' | 'idle';
+  conflictCount?: number;
+  onOpenConflicts?: () => void;
   isDmView?: boolean;
   onToggleDmView?: () => void;
   wakeLockActive?: boolean;
@@ -55,6 +58,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAccount,
   onLogout,
   saveStatus = 'saved',
+  conflictCount = 0,
+  onOpenConflicts,
   isDmView = false,
   onToggleDmView,
   wakeLockActive = false,
@@ -196,9 +201,30 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-          {/* Autosave Status Icon (when in campaign) */}
-          {viewMode === 'campaign_space' && (
-            <div className="flex items-center px-1" title={saveStatus === 'saving' ? 'در حال ذخیره‌سازی...' : 'ذخیره شد'}>
+          {/* Autosave / Offline / Conflict Status Indicator */}
+          {saveStatus === 'conflict' ? (
+            <button
+              type="button"
+              onClick={onOpenConflicts}
+              className="flex items-center gap-1 px-2 py-1 rounded-[8px] bg-[#C2512B]/20 text-[#C2512B] border border-[#C2512B]/50 hover:bg-[#C2512B]/30 animate-pulse text-xs font-black transition touch-target"
+              title={`${conflictCount || 1} مغایرت در همگام‌سازی - جهت حل لمس کنید`}
+            >
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>{conflictCount || '!'}</span>
+            </button>
+          ) : saveStatus === 'offline' ? (
+            <div
+              className="flex items-center gap-1 px-1.5 py-1 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] text-[11px]"
+              title="حالت آفلاین - تغییرات در صف ذخیره هستند"
+            >
+              <WifiOff className="w-3.5 h-3.5 text-[#A39A89]" />
+              <span className="hidden sm:inline">آفلاین</span>
+            </div>
+          ) : (
+            <div
+              className="flex items-center px-1"
+              title={saveStatus === 'saving' ? 'در حال همگام‌سازی...' : 'همه تغییرات ذخیره شدند'}
+            >
               {saveStatus === 'saving' ? (
                 <RefreshCw className="w-3.5 h-3.5 text-[#E0A030] animate-spin" />
               ) : (

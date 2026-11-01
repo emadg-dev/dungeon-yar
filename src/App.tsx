@@ -25,6 +25,7 @@ import {
   Heart, Zap, Swords, Sparkles, Shield, AlertTriangle, KeyRound, LogIn, RefreshCw, UserCheck 
 } from 'lucide-react';
 import { BottomSheet } from './components/mobile/BottomSheet';
+import { useOfflineSync, offlineSyncManager } from './services/offlineSync';
 
 // Route-level code splitting
 const OverviewTab = React.lazy(() => import('./components/character/OverviewTab').then(m => ({ default: m.OverviewTab })));
@@ -69,6 +70,9 @@ const RecapEditorSheet = React.lazy(() => import('./components/session/RecapEdit
 // Step 4.6: Notifications & Preferences
 const NotificationsDrawer = React.lazy(() => import('./components/notifications/NotificationsDrawer').then(m => ({ default: m.NotificationsDrawer })));
 const NotificationPreferencesModal = React.lazy(() => import('./components/notifications/NotificationPreferencesModal').then(m => ({ default: m.NotificationPreferencesModal })));
+
+// Step 5.2: Offline Conflict Resolution Modal
+const ConflictResolutionModal = React.lazy(() => import('./components/common/ConflictResolutionModal').then(m => ({ default: m.ConflictResolutionModal })));
 
 // Loading skeleton fallback for tabs
 const TabSkeleton = () => (
@@ -228,6 +232,8 @@ export default function App() {
     type: 'short'
   });
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'idle'>('saved');
+  const { syncStatus, queueLength, conflicts, resolveConflict } = useOfflineSync();
+  const [conflictModalOpen, setConflictModalOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   // WakeLock, Virtual Viewport & Font Scale
@@ -609,10 +615,57 @@ export default function App() {
     setTimeout(() => window.scrollTo({ top: prevPos, behavior: 'instant' }), 20);
   };
 
-  // Character Update with Debounced Save
+  // Character Update with Debounced Save & Offline Queue
   const handleUpdateCharacter = useCallback((updated: Character) => {
     setCharacters(prev => prev.map(c => c.id === updated.id ? updated : c));
     setSaveStatus('saving');
+
+    // Enqueue gameplay fields to offline sync manager
+    if (activeCampaignId) {
+      const part = campaignParticipations.find(p => p.characterId === updated.id);
+      if (part) {
+        if (updated.hp?.current !== undefined) {
+          offlineSyncManager.enqueue({
+            campaignId: activeCampaignId,
+            participationId: part.id,
+            characterId: updated.id,
+            field: 'currentHp',
+            baseRevision: part.revision || 1,
+            value: updated.hp.current,
+          });
+        }
+        if (updated.hp?.temp !== undefined) {
+          offlineSyncManager.enqueue({
+            campaignId: activeCampaignId,
+            participationId: part.id,
+            characterId: updated.id,
+            field: 'tempHp',
+            baseRevision: part.revision || 1,
+            value: updated.hp.temp,
+          });
+        }
+        if (updated.inventory) {
+          offlineSyncManager.enqueue({
+            campaignId: activeCampaignId,
+            participationId: part.id,
+            characterId: updated.id,
+            field: 'inventory',
+            baseRevision: part.revision || 1,
+            value: updated.inventory,
+          });
+        }
+        if (updated.customResources) {
+          offlineSyncManager.enqueue({
+            campaignId: activeCampaignId,
+            participationId: part.id,
+            characterId: updated.id,
+            field: 'customResources',
+            baseRevision: part.revision || 1,
+            value: updated.customResources,
+          });
+        }
+      }
+    }
 
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(async () => {
@@ -628,7 +681,7 @@ export default function App() {
         setSaveStatus('saved');
       }
     }, 600);
-  }, []);
+  }, [activeCampaignId, campaignParticipations]);
 
   // Quick Roll Trigger
   const handleRollCheck = (sides: number, count: number, modifier: number, label: string) => {
@@ -1061,7 +1114,9 @@ export default function App() {
         onOpenAuth={() => setAuthModalState({ isOpen: true, mode: 'login' })}
         onOpenAccount={() => setAccountModalOpen(true)}
         onLogout={handleLogout}
-        saveStatus={saveStatus}
+        saveStatus={syncStatus !== 'saved' ? syncStatus : saveStatus}
+        conflictCount={conflicts.length}
+        onOpenConflicts={() => setConflictModalOpen(true)}
         isDmView={isDmView}
         onToggleDmView={() => setIsDmView(!isDmView)}
         wakeLockActive={wakeLockActive}
@@ -2095,6 +2150,22 @@ export default function App() {
             isOpen={notificationPrefsOpen}
             onClose={() => setNotificationPrefsOpen(false)}
             campaignId={activeCampaignId}
+          />
+        )}
+
+        {/* Step 5.2: Offline Conflict Resolution Modal */}
+        {conflictModalOpen && (
+          <ConflictResolutionModal
+            isOpen={conflictModalOpen}
+            onClose={() => setConflictModalOpen(false)}
+            conflicts={conflicts}
+            onResolve={async (conflictId, strategy) => {
+              await resolveConflict(conflictId, strategy);
+              if (conflicts.length <= 1) {
+                setConflictModalOpen(false);
+              }
+              showToast(strategy === 'client' ? 'تغییر شما حفظ و اعمال شد.' : 'نسخه سرور پذیرفته شد.');
+            }}
           />
         )}
       </Suspense>

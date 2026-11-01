@@ -512,6 +512,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       <img
                         src={char.portraitUrl || 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=300&q=80'}
                         alt={char.name}
+                        loading="lazy"
+                        decoding="async"
+                        width={56}
+                        height={56}
                         className="w-14 h-14 rounded-xl object-cover border border-[#E0A030]/30 shrink-0 group-hover:scale-105 transition-transform"
                       />
                       <div className="min-w-0 flex-1">

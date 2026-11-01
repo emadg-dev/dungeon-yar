@@ -208,6 +208,7 @@ CREATE TABLE IF NOT EXISTS character_participations (
   level_up_available INTEGER DEFAULT 0,
   pending_level_up TEXT,
   pending_change TEXT,
+  revision INTEGER DEFAULT 1,
   joined_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
   UNIQUE(character_id, campaign_id),
@@ -662,6 +663,7 @@ CREATE TABLE IF NOT EXISTS notes (
   title TEXT NOT NULL,
   shared_with_dm INTEGER NOT NULL DEFAULT 0,
   data TEXT NOT NULL,
+  revision INTEGER DEFAULT 1,
   updated_at INTEGER NOT NULL,
   FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (character_id) REFERENCES characters(id) ON DELETE SET NULL
@@ -1160,3 +1162,25 @@ CREATE INDEX IF NOT EXISTS idx_char_history_campaign_time ON character_history_e
 CREATE INDEX IF NOT EXISTS idx_participations_char_status ON character_participations(character_id, status);
 CREATE INDEX IF NOT EXISTS idx_sessions_campaign_scheduled ON sessions(campaign_id, scheduled_at ASC);
 CREATE INDEX IF NOT EXISTS idx_members_user_status ON campaign_members(user_id, status);
+
+-- 63. Sync Conflicts table (Step 5.2 Offline sync, revisions and conflict auditing)
+CREATE TABLE IF NOT EXISTS sync_conflicts (
+  id TEXT PRIMARY KEY,
+  campaign_id TEXT NOT NULL,
+  entity_type TEXT NOT NULL,
+  entity_id TEXT NOT NULL,
+  participation_id TEXT,
+  field TEXT NOT NULL,
+  base_revision INTEGER NOT NULL,
+  server_revision INTEGER NOT NULL,
+  client_value TEXT NOT NULL,
+  server_value TEXT NOT NULL,
+  resolved INTEGER DEFAULT 0,
+  resolution TEXT,
+  user_id TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  resolved_at INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS idx_sync_conflicts_campaign ON sync_conflicts(campaign_id, resolved);
+CREATE INDEX IF NOT EXISTS idx_sync_conflicts_user ON sync_conflicts(user_id, resolved);

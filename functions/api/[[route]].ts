@@ -42,6 +42,15 @@ import {
   sanitizePayloadForPlayer,
   computeLazySessionReminders,
 } from '../../shared/rules/notifications';
+import {
+  detectConflict,
+  resolveConflict,
+  getFieldLabelFa
+} from '../../shared/rules/offlineEngine';
+import type {
+  OfflineEditItem,
+  ConflictDetails
+} from '../../shared/rules/offlineEngine';
 import type {
   CharacterParticipation,
   LevelUpPayload,
@@ -8888,6 +8897,140 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         .bind(endpoint, actor.id).run();
     }
     return json({ success: true });
+  }
+
+  // POST /api/sync/edits — batch sync offline gameplay edits with revision conflict detection
+  if (path === '/sync/edits' && method === 'POST') {
+    const body = await request.json() as any;
+    const edits: OfflineEditItem[] = Array.isArray(body.edits) ? body.edits : [];
+    const syncedIds: string[] = [];
+    const conflicts: ConflictDetails[] = [];
+
+    for (const edit of edits) {
+      if (edit.field === 'notes') {
+        const note = await env.DB.prepare('SELECT * FROM notes WHERE id = ? OR character_id = ?')
+          .bind(edit.participationId, edit.characterId).first() as any;
+        if (note) {
+          const conflict = detectConflict(edit, { revision: Number(note.revision) || 1, notes: note.data });
+          if (conflict) {
+            conflicts.push(conflict);
+            await env.DB.prepare(`
+              INSERT INTO sync_conflicts (id, campaign_id, entity_type, entity_id, participation_id, field, base_revision, server_revision, client_value, server_value, resolved, user_id, created_at)
+              VALUES (?, ?, 'note', ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+            `).bind(conflict.id, edit.campaignId, note.id, edit.participationId, edit.field, conflict.baseRevision, conflict.serverRevision, JSON.stringify(conflict.clientValue), JSON.stringify(conflict.serverValue), actor.id, now).run();
+            continue;
+          }
+          await env.DB.prepare('UPDATE notes SET data = ?, revision = COALESCE(revision, 1) + 1, updated_at = ? WHERE id = ?')
+            .bind(String(edit.value), now, note.id).run();
+          syncedIds.push(edit.id);
+        } else {
+          syncedIds.push(edit.id);
+        }
+      } else {
+        const part = await env.DB.prepare('SELECT * FROM character_participations WHERE id = ?')
+          .bind(edit.participationId).first() as any;
+        if (!part) {
+          syncedIds.push(edit.id);
+          continue;
+        }
+
+        const serverObj = {
+          revision: Number(part.revision) || 1,
+          currentHp: Number(part.current_hp),
+          tempHp: Number(part.temp_hp),
+          inventory: parseBlob(part.inventory, []),
+          customResources: parseBlob(part.custom_resources, []),
+        };
+
+        const conflict = detectConflict(edit, serverObj);
+        if (conflict) {
+          conflicts.push(conflict);
+          await env.DB.prepare(`
+            INSERT INTO sync_conflicts (id, campaign_id, entity_type, entity_id, participation_id, field, base_revision, server_revision, client_value, server_value, resolved, user_id, created_at)
+            VALUES (?, ?, 'character_participation', ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+          `).bind(conflict.id, edit.campaignId, part.id, edit.participationId, edit.field, conflict.baseRevision, conflict.serverRevision, JSON.stringify(conflict.clientValue), JSON.stringify(conflict.serverValue), actor.id, now).run();
+          continue;
+        }
+
+        if (edit.field === 'currentHp') {
+          await env.DB.prepare('UPDATE character_participations SET current_hp = ?, revision = COALESCE(revision, 1) + 1, updated_at = ? WHERE id = ?')
+            .bind(Number(edit.value), now, part.id).run();
+        } else if (edit.field === 'tempHp') {
+          await env.DB.prepare('UPDATE character_participations SET temp_hp = ?, revision = COALESCE(revision, 1) + 1, updated_at = ? WHERE id = ?')
+            .bind(Number(edit.value), now, part.id).run();
+        } else if (edit.field === 'inventory') {
+          await env.DB.prepare('UPDATE character_participations SET inventory = ?, revision = COALESCE(revision, 1) + 1, updated_at = ? WHERE id = ?')
+            .bind(JSON.stringify(edit.value), now, part.id).run();
+        } else if (edit.field === 'customResources') {
+          await env.DB.prepare('UPDATE character_participations SET custom_resources = ?, revision = COALESCE(revision, 1) + 1, updated_at = ? WHERE id = ?')
+            .bind(JSON.stringify(edit.value), now, part.id).run();
+        }
+
+        syncedIds.push(edit.id);
+      }
+    }
+
+    return json({ syncedIds, conflicts });
+  }
+
+  // POST /api/sync/conflicts/:id/resolve — resolve a detected sync conflict
+  if (path.startsWith('/sync/conflicts/') && path.endsWith('/resolve') && method === 'POST') {
+    const parts = path.split('/');
+    const conflictId = parts[3];
+    const body = await request.json() as any;
+    const resolution = body.resolution === 'server' ? 'server' : 'client';
+
+    const row = await env.DB.prepare('SELECT * FROM sync_conflicts WHERE id = ?').bind(conflictId).first() as any;
+    if (row && resolution === 'client') {
+      const clientVal = JSON.parse(row.client_value);
+      if (row.entity_type === 'character_participation') {
+        if (row.field === 'currentHp') {
+          await env.DB.prepare('UPDATE character_participations SET current_hp = ?, revision = COALESCE(revision, 1) + 1, updated_at = ? WHERE id = ?')
+            .bind(Number(clientVal), now, row.entity_id).run();
+        } else if (row.field === 'tempHp') {
+          await env.DB.prepare('UPDATE character_participations SET temp_hp = ?, revision = COALESCE(revision, 1) + 1, updated_at = ? WHERE id = ?')
+            .bind(Number(clientVal), now, row.entity_id).run();
+        } else if (row.field === 'inventory') {
+          await env.DB.prepare('UPDATE character_participations SET inventory = ?, revision = COALESCE(revision, 1) + 1, updated_at = ? WHERE id = ?')
+            .bind(JSON.stringify(clientVal), now, row.entity_id).run();
+        } else if (row.field === 'customResources') {
+          await env.DB.prepare('UPDATE character_participations SET custom_resources = ?, revision = COALESCE(revision, 1) + 1, updated_at = ? WHERE id = ?')
+            .bind(JSON.stringify(clientVal), now, row.entity_id).run();
+        }
+      }
+    }
+
+    await env.DB.prepare('UPDATE sync_conflicts SET resolved = 1, resolution = ?, resolved_at = ? WHERE id = ?')
+      .bind(resolution, now, conflictId).run();
+
+    return json({ success: true });
+  }
+
+  // GET /api/sync/conflicts — list unresolved conflicts
+  if (path === '/sync/conflicts' && method === 'GET') {
+    const campId = url.searchParams.get('campaignId');
+    let q = 'SELECT * FROM sync_conflicts WHERE resolved = 0';
+    const params: any[] = [];
+    if (campId) {
+      q += ' AND campaign_id = ?';
+      params.push(campId);
+    }
+    const rows = await env.DB.prepare(q).bind(...params).all();
+    const conflicts = (rows.results || []).map((r: any) => ({
+      id: r.id,
+      editId: r.id,
+      campaignId: r.campaign_id,
+      participationId: r.participation_id,
+      field: r.field,
+      fieldLabelFa: getFieldLabelFa(r.field),
+      clientValue: parseBlob(r.client_value, r.client_value),
+      serverValue: parseBlob(r.server_value, r.server_value),
+      baseRevision: Number(r.base_revision),
+      serverRevision: Number(r.server_revision),
+      timestamp: Number(r.created_at),
+      resolved: false,
+    }));
+    return json(conflicts);
   }
 
   // 404 Fallback

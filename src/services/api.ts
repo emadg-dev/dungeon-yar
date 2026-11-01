@@ -167,6 +167,15 @@ import {
   validateLegacyJoin,
   calculateCountdown
 } from '../../shared/rules/historyEngine';
+import {
+  detectConflict,
+  resolveConflict,
+  getFieldLabelFa
+} from '../../shared/rules/offlineEngine';
+import type {
+  OfflineEditItem,
+  ConflictDetails
+} from '../../shared/rules/offlineEngine';
 import { APP_NAME_FA, APP_NAME_LATIN } from '../config/app';
 import {
   SEED_USERS,
@@ -804,6 +813,11 @@ export interface ApiClient {
   updateNotificationPreferences(campaignId: string | null | undefined, data: { types?: Partial<Record<NotificationType, boolean>>; pushEnabled?: boolean }): Promise<NotificationPref>;
   subscribePush(sub: { endpoint: string; keys: { p256dh: string; auth: string }; userAgent?: string }): Promise<void>;
   unsubscribePush(endpoint: string): Promise<void>;
+
+  // Step 5.2: Offline Sync & Conflicts
+  syncOfflineEdits(edits: OfflineEditItem[]): Promise<{ syncedIds: string[]; conflicts: ConflictDetails[] }>;
+  resolveSyncConflict(conflictId: string, resolution: 'client' | 'server'): Promise<void>;
+  listSyncConflicts(campaignId?: string): Promise<ConflictDetails[]>;
 }
 
 // ----------------------------------------------------------------------
@@ -1056,11 +1070,23 @@ export class LocalApi implements ApiClient {
   }
 
   async logout(): Promise<void> {
+    if (typeof window !== 'undefined' && 'caches' in window) {
+      try {
+        const keys = await window.caches.keys();
+        await Promise.all(keys.map(k => window.caches.delete(k)));
+      } catch {}
+    }
     this.currentUser = null;
     this.setItem('active_user_id', null);
   }
 
   async logoutAll(): Promise<void> {
+    if (typeof window !== 'undefined' && 'caches' in window) {
+      try {
+        const keys = await window.caches.keys();
+        await Promise.all(keys.map(k => window.caches.delete(k)));
+      } catch {}
+    }
     if (this.currentUser) {
       const sessions = this.getItem<UserSession[]>('sessions', []);
       const filtered = sessions.filter(s => s.userId !== this.currentUser!.id);
@@ -7183,6 +7209,104 @@ export class LocalApi implements ApiClient {
     const filtered = subs.filter(s => s.endpoint !== endpoint);
     this.setItem('push_subscriptions', filtered);
   }
+
+  // Step 5.2: Offline Sync & Conflicts (LocalApi)
+  async syncOfflineEdits(edits: OfflineEditItem[]): Promise<{ syncedIds: string[]; conflicts: ConflictDetails[] }> {
+    const syncedIds: string[] = [];
+    const conflicts: ConflictDetails[] = [];
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const allNotes = this.getItem<CharacterNote[]>('character_notes', SEED_CHARACTER_NOTES);
+
+    for (const edit of edits) {
+      if (edit.field === 'notes') {
+        const note = allNotes.find(n => n.id === edit.participationId || n.characterId === edit.characterId);
+        if (note) {
+          const conflict = detectConflict(edit, { revision: note.revision || 1, notes: note.body });
+          if (conflict) {
+            conflicts.push(conflict);
+            continue;
+          }
+          note.body = String(edit.value);
+          note.revision = (note.revision || 1) + 1;
+          note.updatedAt = new Date().toISOString();
+          syncedIds.push(edit.id);
+        } else {
+          syncedIds.push(edit.id);
+        }
+      } else {
+        const part = allParts.find(p => p.id === edit.participationId);
+        if (!part) {
+          syncedIds.push(edit.id);
+          continue;
+        }
+
+        const conflict = detectConflict(edit, part);
+        if (conflict) {
+          conflicts.push(conflict);
+          continue;
+        }
+
+        if (edit.field === 'currentHp') {
+          part.currentHp = Number(edit.value);
+        } else if (edit.field === 'tempHp') {
+          part.tempHp = Number(edit.value);
+        } else if (edit.field === 'inventory') {
+          part.inventory = Array.isArray(edit.value) ? edit.value : part.inventory;
+        } else if (edit.field === 'customResources') {
+          part.customResources = Array.isArray(edit.value) ? edit.value : part.customResources;
+        }
+
+        part.revision = (part.revision || 1) + 1;
+        part.updatedAt = Date.now();
+        syncedIds.push(edit.id);
+      }
+    }
+
+    if (syncedIds.length > 0) {
+      this.setItem('character_participations', allParts);
+      this.setItem('character_notes', allNotes);
+    }
+
+    if (conflicts.length > 0) {
+      const stored = this.getItem<ConflictDetails[]>('sync_conflicts', []);
+      stored.push(...conflicts);
+      this.setItem('sync_conflicts', stored);
+    }
+
+    return { syncedIds, conflicts };
+  }
+
+  async resolveSyncConflict(conflictId: string, resolution: 'client' | 'server'): Promise<void> {
+    const stored = this.getItem<ConflictDetails[]>('sync_conflicts', []);
+    const idx = stored.findIndex(c => c.id === conflictId);
+    if (idx === -1) return;
+
+    const conflict = stored[idx];
+    const { chosenValue, discardEdit } = resolveConflict(conflict, resolution);
+
+    if (!discardEdit) {
+      const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+      const part = allParts.find(p => p.id === conflict.participationId);
+      if (part) {
+        if (conflict.field === 'currentHp') part.currentHp = Number(chosenValue);
+        else if (conflict.field === 'tempHp') part.tempHp = Number(chosenValue);
+        else if (conflict.field === 'inventory') part.inventory = chosenValue;
+        else if (conflict.field === 'customResources') part.customResources = chosenValue;
+        else if (conflict.field === 'notes') part.notes = String(chosenValue);
+        part.revision = (part.revision || 1) + 1;
+        part.updatedAt = Date.now();
+        this.setItem('character_participations', allParts);
+      }
+    }
+
+    stored.splice(idx, 1);
+    this.setItem('sync_conflicts', stored);
+  }
+
+  async listSyncConflicts(campaignId?: string): Promise<ConflictDetails[]> {
+    const stored = this.getItem<ConflictDetails[]>('sync_conflicts', []);
+    return campaignId ? stored.filter(c => c.campaignId === campaignId) : stored;
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -7199,6 +7323,7 @@ export class HttpApi implements ApiClient {
   private async fetchJson<T>(url: string, options: RequestInit = {}): Promise<T> {
     const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method?.toUpperCase() || '');
     const headers: Record<string, string> = {
+      'Accept': 'application/json',
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string> || {})
     };
@@ -7220,33 +7345,41 @@ export class HttpApi implements ApiClient {
       throw err;
     }
 
-    const contentType = res.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
-      const text = await res.text().catch(() => '');
-      const err = new Error(
-        text.includes('<!doctype') || text.includes('<html')
-          ? 'HTML response received from /api (no backend server active)'
-          : `Non-JSON response received from ${url}: ${contentType}`
-      );
+    const rawText = await res.text().catch(() => '');
+    const trimmed = rawText.trim();
+    const isHtml =
+      trimmed.startsWith('<') ||
+      trimmed.toLowerCase().includes('<!doctype') ||
+      trimmed.toLowerCase().includes('<html') ||
+      (res.headers.get('content-type') || '').includes('text/html');
+
+    if (isHtml) {
+      const err = new Error('HTML response received from /api (no backend server active)');
       (err as any).isHtmlResponse = true;
       (err as any).status = res.status;
       throw err;
     }
 
-    if (!res.ok) {
-      let errText = 'خطا در ارتباط با سرور';
-      try {
-        const body = await res.json();
-        errText = body.error || body.message || errText;
-      } catch {
-        errText = `HTTP Error ${res.status}`;
-      }
-      const err = new Error(errText);
+    let body: any;
+    try {
+      body = JSON.parse(rawText || '{}');
+    } catch (parseErr: any) {
+      const err = new Error(`Invalid JSON response from ${url}: ${parseErr?.message || parseErr}`);
+      (err as any).isParseError = true;
+      (err as any).isHtmlResponse = isHtml;
       (err as any).status = res.status;
       throw err;
     }
 
-    return res.json();
+    if (!res.ok) {
+      const errText = body?.error || body?.message || `HTTP Error ${res.status}`;
+      const err = new Error(errText);
+      (err as any).status = res.status;
+      (err as any).data = body;
+      throw err;
+    }
+
+    return body as T;
   }
 
   async login(email: string, password?: string): Promise<User> {
@@ -7266,17 +7399,38 @@ export class HttpApi implements ApiClient {
   }
 
   async logout(): Promise<void> {
-    await this.fetchJson('/auth/logout', { method: 'POST' });
+    try {
+      await this.fetchJson('/auth/logout', { method: 'POST' });
+    } finally {
+      if (typeof window !== 'undefined' && 'caches' in window) {
+        try {
+          const keys = await window.caches.keys();
+          await Promise.all(keys.map(k => window.caches.delete(k)));
+        } catch {}
+      }
+    }
   }
 
   async logoutAll(): Promise<void> {
-    await this.fetchJson('/auth/logout-all', { method: 'POST' });
+    try {
+      await this.fetchJson('/auth/logout-all', { method: 'POST' });
+    } finally {
+      if (typeof window !== 'undefined' && 'caches' in window) {
+        try {
+          const keys = await window.caches.keys();
+          await Promise.all(keys.map(k => window.caches.delete(k)));
+        } catch {}
+      }
+    }
   }
 
   async getMe(): Promise<AuthMeResponse> {
     try {
       return await this.fetchJson<AuthMeResponse>('/auth/me');
-    } catch {
+    } catch (err: any) {
+      if (err?.isHtmlResponse || err?.isNetworkError || err?.isParseError || err?.status === 404) {
+        throw err;
+      }
       return { user: null, activeCharacterId: null, mustChangePassword: false };
     }
   }
@@ -9064,6 +9218,26 @@ export class HttpApi implements ApiClient {
       body: JSON.stringify({ endpoint })
     });
   }
+
+  // Step 5.2: Offline Sync & Conflicts (HttpApi)
+  async syncOfflineEdits(edits: OfflineEditItem[]): Promise<{ syncedIds: string[]; conflicts: ConflictDetails[] }> {
+    return this.fetchJson<{ syncedIds: string[]; conflicts: ConflictDetails[] }>('/sync/edits', {
+      method: 'POST',
+      body: JSON.stringify({ edits })
+    });
+  }
+
+  async resolveSyncConflict(conflictId: string, resolution: 'client' | 'server'): Promise<void> {
+    await this.fetchJson(`/sync/conflicts/${conflictId}/resolve`, {
+      method: 'POST',
+      body: JSON.stringify({ resolution })
+    });
+  }
+
+  async listSyncConflicts(campaignId?: string): Promise<ConflictDetails[]> {
+    const qs = campaignId ? `?campaignId=${encodeURIComponent(campaignId)}` : '';
+    return this.fetchJson<ConflictDetails[]>(`/sync/conflicts${qs}`);
+  }
 }
 
 // Global active Api instance: respects import.meta.env.VITE_API_MODE or runtime toggle.
@@ -9111,14 +9285,20 @@ function createResilientApiClient(): ApiClient {
         try {
           return await orig.apply(target, args);
         } catch (err: any) {
+          const errMsg = String(err?.message || '').toLowerCase();
           const isMissingBackend =
             err?.isHtmlResponse ||
             err?.isNetworkError ||
-            err?.message?.includes('<!doctype') ||
-            err?.message?.includes('is not valid JSON') ||
-            err?.message?.includes('HTML response received') ||
-            err?.message?.includes('Failed to fetch') ||
-            err?.message?.includes('Network failure') ||
+            err?.isParseError ||
+            err instanceof SyntaxError ||
+            err?.name === 'SyntaxError' ||
+            errMsg.includes('<!doctype') ||
+            errMsg.includes('<html') ||
+            errMsg.includes('not valid json') ||
+            errMsg.includes('unexpected token') ||
+            errMsg.includes('html response received') ||
+            errMsg.includes('failed to fetch') ||
+            errMsg.includes('network failure') ||
             err?.status === 404;
 
           if (isMissingBackend) {
