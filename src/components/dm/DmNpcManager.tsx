@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useDeferredValue, startTransition } from 'react';
 import { NPC, NpcType } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { 
@@ -127,11 +127,13 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
     onUpdateNpc({ ...npc, isRevealed: !npc.isRevealed });
   };
 
+  const deferredSearch = useDeferredValue(searchQuery);
+
   const filteredNpcs = npcs.filter(npc => {
     const matchesType = selectedType === 'all' || npc.type === selectedType;
-    const matchesSearch = !searchQuery || npc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      npc.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      npc.locationTag.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = !deferredSearch || npc.name.toLowerCase().includes(deferredSearch.toLowerCase()) ||
+      npc.description.toLowerCase().includes(deferredSearch.toLowerCase()) ||
+      npc.locationTag.toLowerCase().includes(deferredSearch.toLowerCase());
     return matchesType && matchesSearch;
   });
 
@@ -349,7 +351,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
         {filteredNpcs.map(npc => (
           <div
             key={npc.id}
-            className="bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030]/30 rounded-2xl p-4 shadow-lg flex flex-col justify-between"
+            className="bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030]/30 rounded-2xl p-4 shadow-lg flex flex-col justify-between content-visibility-card"
           >
             <div>
               <div className="flex items-start justify-between gap-2 mb-3">
@@ -357,6 +359,10 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
                   <img
                     src={npc.portraitUrl || 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=200&q=80'}
                     alt={npc.name}
+                    loading="lazy"
+                    decoding="async"
+                    width={56}
+                    height={56}
                     className="w-14 h-14 rounded-xl object-cover border border-[#E0A030]/30 shrink-0"
                   />
                   <div>

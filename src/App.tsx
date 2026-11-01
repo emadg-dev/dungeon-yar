@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense, startTransition } from 'react';
 import { 
   User, Character, CharacterNote, NPC, ItemLibraryEntry, 
   RewardPackage, CampaignNote, Encounter, WeaponTemplate, ClassTemplate, DiceRollResult,
@@ -21,6 +21,7 @@ import { StickyHeader } from './components/common/StickyHeader';
 import { Toast } from './components/common/Toast';
 import { useWakeLock } from './hooks/useWakeLock';
 import { useVisualViewport } from './hooks/useVisualViewport';
+import { useVisibilityPolling } from './hooks/useVisibilityPolling';
 import { 
   Heart, Zap, Swords, Sparkles, Shield, AlertTriangle, KeyRound, LogIn, RefreshCw, UserCheck 
 } from 'lucide-react';
@@ -606,7 +607,9 @@ export default function App() {
   // Tab Selection with History Hash
   const handleSelectPlayerTab = (tab: typeof activePlayerTab) => {
     scrollPositionsRef.current[`player_${activePlayerTab}`] = window.scrollY;
-    setActivePlayerTab(tab);
+    startTransition(() => {
+      setActivePlayerTab(tab);
+    });
     if (activeCampaignId) {
       window.location.hash = `#c/${activeCampaignId}/${tab}`;
     } else {
@@ -618,7 +621,9 @@ export default function App() {
 
   const handleSelectDmTab = (tab: typeof activeDmTab) => {
     scrollPositionsRef.current[`dm_${activeDmTab}`] = window.scrollY;
-    setActiveDmTab(tab);
+    startTransition(() => {
+      setActiveDmTab(tab);
+    });
     if (activeCampaignId) {
       window.location.hash = `#c/${activeCampaignId}/dm/${tab}`;
     } else {
@@ -693,7 +698,7 @@ export default function App() {
         console.error('Save error:', err);
         setSaveStatus('saved');
       }
-    }, 600);
+    }, 800);
   }, [activeCampaignId, campaignParticipations]);
 
   // Quick Roll Trigger
@@ -1044,11 +1049,11 @@ export default function App() {
     }
   }, []);
 
-  useEffect(() => {
-    refreshNotifications();
-    const interval = setInterval(refreshNotifications, 30000);
-    return () => clearInterval(interval);
-  }, [refreshNotifications, activeCampaignId, currentUser]);
+  useVisibilityPolling({
+    onPoll: refreshNotifications,
+    intervalMs: 30000,
+    enabled: Boolean(currentUser),
+  });
 
   const handleNotificationNavigation = async (
     targetType?: string,

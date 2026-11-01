@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useDeferredValue, startTransition } from 'react';
 import { 
   Campaign, ContentPack, ContentPackKind, EntityScopeType, CloneEntityType, 
   EntityRef, CloneOptions, CloneManifest, CloneJob, LocationEntry, NPC, 
@@ -39,6 +39,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
   const [source, setSource] = useState<string>('current_campaign');
   const [typeFilter, setTypeFilter] = useState<EntityTypeFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredSearch = useDeferredValue(searchQuery);
   const [tagFilter, setTagFilter] = useState('');
   const [regionFilter, setRegionFilter] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'name' | 'favorite'>('newest');
@@ -168,7 +169,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
       const res = await api.getLibraryItems({
         source,
         type: typeFilter === 'all' ? undefined : typeFilter,
-        q: searchQuery || undefined,
+        q: deferredSearch || undefined,
         tag: tagFilter || undefined,
         region: regionFilter || undefined,
         sort: sortBy,
@@ -189,7 +190,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
   useEffect(() => {
     loadItems();
-  }, [source, typeFilter, searchQuery, tagFilter, regionFilter, sortBy]);
+  }, [source, typeFilter, deferredSearch, tagFilter, regionFilter, sortBy]);
 
   // Toggle favorite
   const handleToggleFavorite = async (e: React.MouseEvent, item: any) => {
@@ -710,7 +711,11 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <button
               key={chip.id}
               type="button"
-              onClick={() => setTypeFilter(chip.id as EntityTypeFilter)}
+              onClick={() => {
+                startTransition(() => {
+                  setTypeFilter(chip.id as EntityTypeFilter);
+                });
+              }}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition min-h-[36px] ${
                 typeFilter === chip.id
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
@@ -795,7 +800,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                     setDetailItem(item);
                   }
                 }}
-                className={`relative rounded-2xl p-4 border transition-all cursor-pointer shadow-md flex flex-col justify-between ${
+                className={`relative rounded-2xl p-4 border transition-all cursor-pointer shadow-md flex flex-col justify-between content-visibility-card ${
                   isSelected
                     ? 'bg-[#E0A030]/10 border-[#E0A030] ring-1 ring-[#E0A030]'
                     : 'bg-[#171513] border-[#2F2A23] hover:border-[#E0A030]/40'

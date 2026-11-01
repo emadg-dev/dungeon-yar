@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Upload, FileText, Image as ImageIcon, Map as MapIcon, Eye, EyeOff, Users, AlertCircle, Check } from 'lucide-react';
 import { Handout, HandoutKind, HandoutVisibility } from '../../types';
 import { compressImageToWebp, formatBytes, base64ToFile } from '../../utils/imageCompress';
@@ -29,7 +29,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
   initialHandout,
   campaignCharacters = [],
   onSave,
-  onUploadMedia,
+  onUploadMedia
 }) => {
   const [title, setTitle] = useState(initialHandout?.title || '');
   const [kind, setKind] = useState<HandoutKind>(initialHandout?.kind || 'text');
@@ -38,6 +38,17 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(
     initialHandout?.mediaUrl || (initialHandout?.mediaId ? `/api/media/${initialHandout.mediaId}` : null)
   );
+  const createdObjectUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (createdObjectUrlRef.current) {
+        URL.revokeObjectURL(createdObjectUrlRef.current);
+        createdObjectUrlRef.current = null;
+      }
+    };
+  }, []);
+
   const [visibility, setVisibility] = useState<HandoutVisibility>(initialHandout?.visibility || 'hidden');
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>(initialHandout?.recipients || []);
   const [tagsInput, setTagsInput] = useState((initialHandout?.tags || []).join('، '));
@@ -67,7 +78,16 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
       // Upload media
       const res = await onUploadMedia(compressedFile);
       setMediaId(res.mediaId);
-      setMediaPreviewUrl(res.mediaUrl || URL.createObjectURL(compressedFile));
+      if (createdObjectUrlRef.current) {
+        URL.revokeObjectURL(createdObjectUrlRef.current);
+      }
+      if (res.mediaUrl) {
+        setMediaPreviewUrl(res.mediaUrl);
+      } else {
+        const objUrl = URL.createObjectURL(compressedFile);
+        createdObjectUrlRef.current = objUrl;
+        setMediaPreviewUrl(objUrl);
+      }
     } catch (err: any) {
       setUploadError(err.message || 'خطا در فشرده‌سازی یا آپلود تصویر');
       setCompressionInfo(null);

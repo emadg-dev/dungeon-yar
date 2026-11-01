@@ -10,9 +10,9 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles: Record<CardVariant, string> = {
-  surface: 'bg-stone-900/85 backdrop-blur-md border border-stone-800/80 shadow-md',
-  'surface-2': 'bg-stone-900/50 backdrop-blur-sm border border-stone-800/60',
-  glass: 'bg-stone-900/70 backdrop-blur-xl border border-white/5 shadow-xl',
+  surface: 'bg-[#171513] border border-stone-800/80 shadow-md',
+  'surface-2': 'bg-[#1E1B18] border border-stone-800/60',
+  glass: 'bg-stone-900/80 border border-white/5 shadow-xl',
   outlined: 'bg-transparent border border-stone-800',
 };
 
