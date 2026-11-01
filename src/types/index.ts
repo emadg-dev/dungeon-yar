@@ -2167,3 +2167,107 @@ export interface SyncConflictRecord {
   resolvedAt?: number | null;
 }
 
+// ==============================================================
+// STEP 5.3: SECURITY HARDENING, ACCOUNT EXPORT & AUDIT LOG TYPES
+// ==============================================================
+
+export interface AccountExportData {
+  version?: string;
+  exportedAt: number;
+  user: any;
+  characters: any[];
+  participations?: any[];
+  characterParticipations?: any[];
+  historyEvents?: any[];
+  notes: any[];
+  campaigns?: any[];
+  diceHistory?: any[];
+  sessionsAttended?: any[];
+  recapDrafts?: any[];
+}
+
+export interface AccountDeleteOptions {
+  mode: 'anonymize' | 'remove_all';
+  password?: string;
+}
+
+export interface CampaignAuditLogEntry {
+  id: string;
+  actorId: string | null;
+  actorName?: string;
+  action: string;
+  targetId: string | null;
+  meta?: any;
+  createdAt: number;
+}
+
+// ==============================================================
+// STEP 5.4: INSTANCE ADMIN CONSOLE AND USAGE MONITOR TYPES
+// ==============================================================
+
+export interface InstanceSettings {
+  allowCampaignCreation: boolean;
+  registrationMode: 'open' | 'invite';
+  perUserMediaQuotaBytes: number;
+  perCampaignMediaQuotaBytes: number;
+  storageWarningThresholdBytes: number;
+}
+
+export interface AdminUserItem {
+  id: string;
+  email: string;
+  displayName: string;
+  role: 'dm' | 'player';
+  platformRole: 'admin' | 'user';
+  status: 'active' | 'disabled';
+  mustChangePassword: boolean;
+  createdAt: number;
+  lastLoginAt: number | null;
+  campaignsCount: number;
+  storageUsedBytes: number;
+}
+
+export interface AdminCampaignItem {
+  id: string;
+  name: string;
+  ownerId: string;
+  ownerName?: string;
+  ownerEmail?: string;
+  status: 'active' | 'archived' | 'paused' | 'draft';
+  memberCount: number;
+  storageUsedBytes: number;
+  createdAt: number;
+  updatedAt: number;
+  lastActivityAt?: number;
+}
+
+export interface TableStorageInfo {
+  table: string;
+  labelFa: string;
+  count: number;
+  estimatedBytes: number;
+}
+
+export interface StorageStats {
+  tables: TableStorageInfo[];
+  totalBytes: number;
+  thresholdBytes: number;
+  isOverThreshold: boolean;
+  warningPercent: number;
+}
+
+export interface CleanupCounts {
+  orphanMedia: number;
+  expiredInvites: number;
+  expiredSessions: number;
+  oldLoginAttempts: number;
+  oldPasswordResets: number;
+}
+
+export interface CleanupReport {
+  dryRun: boolean;
+  counts: CleanupCounts;
+  executedAt: number;
+  cleanedTotal: number;
+}
+

@@ -74,6 +74,9 @@ const NotificationPreferencesModal = React.lazy(() => import('./components/notif
 // Step 5.2: Offline Conflict Resolution Modal
 const ConflictResolutionModal = React.lazy(() => import('./components/common/ConflictResolutionModal').then(m => ({ default: m.ConflictResolutionModal })));
 
+// Step 5.4: Instance Admin Console Modal
+const AdminConsoleModal = React.lazy(() => import('./components/admin/AdminConsoleModal').then(m => ({ default: m.AdminConsoleModal })));
+
 // Loading skeleton fallback for tabs
 const TabSkeleton = () => (
   <div className="space-y-4 p-2 animate-pulse" dir="rtl">
@@ -146,6 +149,7 @@ export default function App() {
     mode: 'login'
   });
   const [accountModalOpen, setAccountModalOpen] = useState(false);
+  const [adminConsoleOpen, setAdminConsoleOpen] = useState(false);
   const [sessionExpiredSheetOpen, setSessionExpiredSheetOpen] = useState(false);
 
   // Multi-campaign Modals
@@ -1144,6 +1148,7 @@ export default function App() {
         onOpenLevelUp={() => setLevelUpModalOpen(true)}
         unreadNotificationsCount={unreadNotificationsCount}
         onOpenNotifications={() => setNotificationsOpen(true)}
+        onOpenAdminConsole={() => setAdminConsoleOpen(true)}
       />
 
       {/* Sticky Character Header & Sub-Tabs (In Campaign Space, Player View) */}
@@ -2051,6 +2056,17 @@ export default function App() {
             }}
             onLogout={handleLogout}
           />
+        )}
+
+        {/* Instance Admin Console Modal */}
+        {adminConsoleOpen && currentUser && (
+          <React.Suspense fallback={null}>
+            <AdminConsoleModal
+              isOpen={adminConsoleOpen}
+              onClose={() => setAdminConsoleOpen(false)}
+              currentUser={currentUser}
+            />
+          </React.Suspense>
         )}
 
         {/* 401 Session Expired Friendly Sheet */}

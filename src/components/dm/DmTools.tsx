@@ -581,7 +581,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
           )}
 
           {moreSubTab === 'audit' && (
-            <DmAuditLog />
+            <DmAuditLog campaignId={activeCampaign?.id} />
           )}
 
           {moreSubTab === 'settings' && (

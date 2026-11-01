@@ -45,6 +45,7 @@ export interface HeaderProps {
   onOpenLevelUp?: () => void;
   unreadNotificationsCount?: number;
   onOpenNotifications?: () => void;
+  onOpenAdminConsole?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -82,7 +83,8 @@ export const Header: React.FC<HeaderProps> = ({
   levelUpAvailable = false,
   onOpenLevelUp,
   unreadNotificationsCount = 0,
-  onOpenNotifications
+  onOpenNotifications,
+  onOpenAdminConsole
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isDm = activeCampaignRole === 'owner' || activeCampaignRole === 'co_dm' || currentUser?.role === 'dm';
@@ -303,6 +305,17 @@ export const Header: React.FC<HeaderProps> = ({
           {/* User Account / Login Button */}
           {currentUser ? (
             <div className="flex items-center gap-1.5">
+              {currentUser.platformRole === 'admin' && onOpenAdminConsole && (
+                <button
+                  type="button"
+                  onClick={onOpenAdminConsole}
+                  className="py-1 px-2.5 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/40 text-[#E0A030] hover:bg-[#E0A030]/25 text-xs font-bold transition touch-target flex items-center gap-1 min-h-[36px]"
+                  title="کنسول مدیریت سامانه"
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">مدیریت</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
@@ -454,6 +467,21 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <Sparkles className="w-3.5 h-3.5 text-[#E0A030]" />
                 <span>مدیریت حساب کاربری و نشست‌ها</span>
+              </button>
+            )}
+
+            {/* Instance Admin Console Button */}
+            {currentUser?.platformRole === 'admin' && onOpenAdminConsole && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenAdminConsole();
+                }}
+                className="w-full py-2.5 px-3 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/40 text-xs font-extrabold text-[#E0A030] flex items-center justify-center gap-2 touch-target min-h-[44px]"
+              >
+                <Shield className="w-3.5 h-3.5" />
+                <span>کنسول مدیریت سامانه (ادمین)</span>
               </button>
             )}
 

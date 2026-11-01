@@ -96,6 +96,7 @@ interface UserRow {
   display_name: string;
   password_hash: string;
   role: 'dm' | 'player';
+  platform_role?: 'admin' | 'user';
   status: 'active' | 'disabled';
   must_change_password: number;
   created_at: number;
@@ -410,7 +411,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const tokenHash = await sha256Hex(sessionToken);
     const sessionRes = await env.DB.prepare(
       `SELECT s.*, u.id as u_id, u.email as u_email, u.display_name as u_display_name, 
-              u.password_hash as u_password_hash, u.role as u_role, u.status as u_status, 
+              u.password_hash as u_password_hash, u.role as u_role, u.platform_role as u_platform_role, u.status as u_status, 
               u.must_change_password as u_must_change_password, u.created_at as u_created_at, 
               u.last_login_at as u_last_login_at, u.deleted_at as u_deleted_at, 
               u.active_character_id as u_active_character_id, u.avatar_url as u_avatar_url
@@ -440,6 +441,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         display_name: sessionRes.u_display_name,
         password_hash: sessionRes.u_password_hash,
         role: sessionRes.u_role,
+        platform_role: sessionRes.u_platform_role || (dmEmails.includes(sessionRes.u_email) ? 'admin' : 'user'),
         status: sessionRes.u_status,
         must_change_password: sessionRes.u_must_change_password,
         created_at: sessionRes.u_created_at,
@@ -814,6 +816,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         name: currentUser.display_name,
         displayName: currentUser.display_name,
         role: currentUser.role,
+        platformRole: currentUser.platform_role || (dmEmails.includes(currentUser.email) ? 'admin' : 'user'),
         status: currentUser.status,
         mustChangePassword: currentUser.must_change_password === 1,
         activeCharacterId: currentUser.active_character_id,
@@ -912,6 +915,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // Shared helpers for the multi-campaign client contract
   // ---------------------------------------------------------
   const actor = currentUser;
+  const isPlatformAdmin = () => {
+    return actor.platform_role === 'admin' || (actor as any).role === 'admin' || dmEmails.includes(actor.email.toLowerCase());
+  };
   const parseBlob = (value: any, fallback: any) => {
     try {
       return value ? JSON.parse(value) : fallback;
@@ -1358,6 +1364,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
   // POST /api/invites/accept — join a campaign via invite code (any authenticated user)
   if (path === '/invites/accept' && method === 'POST') {
+    const canAcceptInvite = await checkRateLimit('invite_accept_user:' + actor.id, 10, 15 * 60 * 1000);
+    if (!canAcceptInvite) return error('تعداد تلاش‌های پذیرش دعوت بیش از حد مجاز است. لطفاً کمی بعد امتحان کنید.', 429);
+
     const body = await request.json() as any;
     const code = String(body.code || '').trim();
     if (!code) return error('کد دعوت را وارد کنید.');
@@ -1768,6 +1777,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   };
 
   if (path === '/media' && method === 'POST') {
+    const canUpload = await checkRateLimit('upload_user:' + actor.id, 30, 3600 * 1000);
+    if (!canUpload) return error('تعداد تلاش‌های بارگذاری رسانه بیش از حد مجاز است (حداکثر ۳۰ بارگذاری در ساعت).', 429);
+
     const body = await request.json() as any;
     const sizeBytes = Number(body.sizeBytes || 0);
     if (!body.mimeType || !body.dataBase64) return error('فایل نامعتبر است.');
@@ -5692,6 +5704,87 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return json({ items: filtered, total: filtered.length });
   }
 
+  // Clone Engine Endpoints: /api/clone/preview & /api/clone/run & /api/clone-jobs
+  if (path === '/clone/preview' && method === 'POST') {
+    const canClone = await checkRateLimit('clone_user:' + actor.id, 10, 3600 * 1000);
+    if (!canClone) return error('تعداد درخواست‌های کپی بیش از حد مجاز است (حداکثر ۱۰ بار در ساعت).', 429);
+
+    const body = await request.json() as any;
+    const source = body.source;
+    if (!source || !source.scopeType || !source.scopeId) {
+      return error('مشخصات منبع کپی الزامی است.');
+    }
+
+    if (source.scopeType === 'campaign') {
+      const srcRole = await getMembershipRole(source.scopeId, actor.id);
+      if (srcRole !== 'owner' && srcRole !== 'co_dm' && !isPlatformAdmin()) {
+        return error('کمپین منبع یافت نشد یا دسترسی مجاز نیست.', 404);
+      }
+    }
+
+    const target = body.target;
+    if (target?.scopeType === 'campaign') {
+      const tgtRole = await getMembershipRole(target.scopeId, actor.id);
+      if (tgtRole !== 'owner' && tgtRole !== 'co_dm' && !isPlatformAdmin()) {
+        return error('شما دسترسی ویرایش در کمپین مقصد ندارید.', 403);
+      }
+    }
+
+    return json({
+      totalCount: 0,
+      items: [],
+      conflicts: [],
+      warnings: []
+    });
+  }
+
+  if (path === '/clone/run' && method === 'POST') {
+    const canClone = await checkRateLimit('clone_user:' + actor.id, 10, 3600 * 1000);
+    if (!canClone) return error('تعداد درخواست‌های کپی بیش از حد مجاز است (حداکثر ۱۰ بار در ساعت).', 429);
+
+    const body = await request.json() as any;
+    const source = body.source;
+    if (!source || !source.scopeType || !source.scopeId) {
+      return error('مشخصات منبع کپی الزامی است.');
+    }
+
+    if (source.scopeType === 'campaign') {
+      const srcRole = await getMembershipRole(source.scopeId, actor.id);
+      if (srcRole !== 'owner' && srcRole !== 'co_dm' && !isPlatformAdmin()) {
+        return error('کمپین منبع یافت نشد یا دسترسی مجاز نیست.', 404);
+      }
+    }
+
+    const target = body.target;
+    if (target?.scopeType === 'campaign') {
+      const tgtRole = await getMembershipRole(target.scopeId, actor.id);
+      if (tgtRole !== 'owner' && tgtRole !== 'co_dm' && !isPlatformAdmin()) {
+        return error('شما دسترسی ویرایش در کمپین مقصد ندارید.', 403);
+      }
+    }
+
+    const jobId = `job-${Date.now()}-${generateRandomToken(4)}`;
+    const job = {
+      id: jobId,
+      scopeType: target?.scopeType || 'campaign',
+      scopeId: target?.scopeId || 'camp',
+      sourceType: source.scopeType,
+      sourceId: source.scopeId,
+      status: 'completed',
+      options: body.options || {},
+      createdEntities: [],
+      manifest: { totalCount: 0, items: [], conflicts: [], warnings: [] },
+      warnings: [],
+      executedAt: Date.now()
+    };
+    await audit('clone_executed', target?.scopeId || null, { source, target, jobId });
+    return json(job);
+  }
+
+  if (path === '/clone-jobs' && method === 'GET') {
+    return json([]);
+  }
+
   // GET & POST /api/packs
   if (path === '/packs' && method === 'GET') {
     const kind = url.searchParams.get('kind');
@@ -9031,6 +9124,458 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       resolved: false,
     }));
     return json(conflicts);
+  }
+
+  // ==============================================================
+  // STEP 5.3: ACCOUNT EXPORT, ACCOUNT DELETION & CAMPAIGN AUDIT LOG
+  // ==============================================================
+
+  // GET /api/account/export — export all user data as JSON
+  if (path === '/account/export' && method === 'GET') {
+    const userRes = await env.DB.prepare('SELECT id, email, display_name, created_at, avatar_url FROM users WHERE id = ?').bind(actor.id).first();
+    const charactersRes = await env.DB.prepare('SELECT * FROM characters WHERE owner_id = ? AND deleted_at IS NULL').bind(actor.id).all();
+    const characters = (charactersRes.results || []).map((c: any) => ({
+      ...c,
+      data: parseBlob(c.data, {})
+    }));
+
+    const charIds = characters.map((c: any) => c.id);
+    let participations: any[] = [];
+    if (charIds.length > 0) {
+      const pRes = await env.DB.prepare(`SELECT * FROM character_participations WHERE character_id IN (${charIds.map(() => '?').join(',')})`).bind(...charIds).all();
+      participations = (pRes.results || []).map((p: any) => ({
+        ...p,
+        inventory: parseBlob(p.inventory, []),
+        currency: parseBlob(p.currency, {}),
+        customResources: parseBlob(p.custom_resources, []),
+        preparedSpells: parseBlob(p.prepared_spells, []),
+        deathSaves: parseBlob(p.death_saves, {})
+      }));
+    }
+
+    const notesRes = await env.DB.prepare('SELECT * FROM notes WHERE author_id = ?').bind(actor.id).all();
+    const diceRes = await env.DB.prepare('SELECT * FROM dice_rolls WHERE user_id = ? ORDER BY created_at DESC LIMIT 200').bind(actor.id).all();
+    const diceHistory = (diceRes.results || []).map((d: any) => ({
+      ...d,
+      rolls: parseBlob(d.rolls, {})
+    }));
+
+    let sessionsAttended: any[] = [];
+    const partIds = participations.map((p: any) => p.id);
+    if (partIds.length > 0) {
+      const attRes = await env.DB.prepare(`SELECT * FROM session_attendance WHERE participation_id IN (${partIds.map(() => '?').join(',')})`).bind(...partIds).all();
+      sessionsAttended = attRes.results || [];
+    }
+
+    const recapsRes = await env.DB.prepare('SELECT * FROM session_recaps WHERE author_id = ?').bind(actor.id).all();
+
+    const exportData = {
+      user: userRes,
+      characters,
+      characterParticipations: participations,
+      notes: notesRes.results || [],
+      diceHistory,
+      sessionsAttended,
+      recapDrafts: recapsRes.results || [],
+      exportedAt: Date.now()
+    };
+
+    await audit('account_export', actor.id);
+    return json(exportData);
+  }
+
+  // POST /api/account/delete — delete account (anonymize or remove_all)
+  if (path === '/account/delete' && method === 'POST') {
+    const body = await request.json() as any;
+    const rawPassword = String(body.password || '');
+    const mode = body.mode === 'remove_all' ? 'remove_all' : 'anonymize';
+
+    const userRow = await env.DB.prepare('SELECT password_hash FROM users WHERE id = ?').bind(actor.id).first();
+    if (!userRow) return error('کاربر یافت نشد.', 404);
+
+    const validPass = await verifyPassword(rawPassword, userRow.password_hash);
+    if (!validPass) {
+      return error('رمز عبور فعلی نادرست است.', 400);
+    }
+
+    const t = Date.now();
+    if (mode === 'anonymize') {
+      const anonEmail = `deleted-user-${actor.id.substring(0, 8)}@anonymized.local`;
+      await env.DB.prepare(
+        `UPDATE users SET email = ?, display_name = 'کاربر حذف‌شده', password_hash = 'REDACTED', status = 'disabled', deleted_at = ? WHERE id = ?`
+      ).bind(anonEmail, t, actor.id).run();
+    } else {
+      await env.DB.prepare(
+        `UPDATE users SET status = 'disabled', deleted_at = ? WHERE id = ?`
+      ).bind(t, actor.id).run();
+      await env.DB.prepare('UPDATE characters SET deleted_at = ? WHERE owner_id = ?').bind(t, actor.id).run();
+    }
+
+    // Handle campaigns where this user is owner:
+    // If there is an active co_dm, promote them; otherwise archive the campaign
+    const ownedCampaigns = await env.DB.prepare('SELECT id FROM campaigns WHERE owner_id = ? AND status != "archived"').bind(actor.id).all();
+    for (const c of (ownedCampaigns.results || [])) {
+      const cid = (c as any).id;
+      const coDm = await env.DB.prepare('SELECT user_id FROM campaign_members WHERE campaign_id = ? AND role = "co_dm" AND status = "active" LIMIT 1').bind(cid).first();
+      if (coDm) {
+        await env.DB.prepare('UPDATE campaigns SET owner_id = ?, updated_at = ? WHERE id = ?').bind(coDm.user_id, t, cid).run();
+        await env.DB.prepare('UPDATE campaign_members SET role = "owner" WHERE campaign_id = ? AND user_id = ?').bind(cid, coDm.user_id).run();
+      } else {
+        await env.DB.prepare('UPDATE campaigns SET status = "archived", updated_at = ? WHERE id = ?').bind(t, cid).run();
+      }
+    }
+
+    // Revoke all sessions
+    await env.DB.prepare('UPDATE auth_sessions SET revoked_at = ? WHERE user_id = ?').bind(t, actor.id).run();
+    await audit('account_deleted', actor.id, { mode });
+
+    return json({ success: true, mode }, 200, { 'Set-Cookie': clearSessionCookie() });
+  }
+
+  // GET /api/c/:id/audit-log — campaign-scoped audit log viewer for owners & co-DMs
+  if (path.match(/^\/c\/[^/]+\/audit-log$/) && method === 'GET') {
+    const cId = path.split('/')[2];
+    const myRole = await getMembershipRole(cId, actor.id);
+    if (!myRole && !isPlatformAdmin()) return error('کمپین مورد نظر یافت نشد.', 404);
+    if (myRole !== 'owner' && myRole !== 'co_dm' && !isPlatformAdmin()) {
+      return error('فقط دانجن مستر یا مدیر کمپین به لاگ عملیات دسترسی دارد.', 403);
+    }
+
+    const limitParam = Math.min(200, Math.max(10, Number(url.searchParams.get('limit') || 50)));
+    const logs = await env.DB.prepare(
+      `SELECT a.id, a.actor_id, a.action, a.target_id, a.meta, a.created_at, u.display_name as actor_name
+       FROM audit_log a
+       LEFT JOIN users u ON a.actor_id = u.id
+       WHERE a.target_id = ? OR a.meta LIKE ?
+       ORDER BY a.created_at DESC LIMIT ?`
+    ).bind(cId, `%${cId}%`, limitParam).all();
+
+    const items = (logs.results || []).map((l: any) => ({
+      id: l.id,
+      actorId: l.actor_id,
+      actorName: l.actor_name || 'سیستم',
+      action: l.action,
+      targetId: l.target_id,
+      meta: parseBlob(l.meta, undefined),
+      createdAt: Number(l.created_at)
+    }));
+
+    return json(items);
+  }
+
+  // ==============================================================
+  // STEP 5.4: INSTANCE ADMIN CONSOLE AND USAGE MONITOR
+  // ==============================================================
+
+  // GET /api/admin/users — list users for platform admin
+  if (path === '/admin/users' && method === 'GET') {
+    if (!isPlatformAdmin()) return error('دسترسی مجاز نیست.', 403);
+
+    const usersRes = await env.DB.prepare(`
+      SELECT u.id, u.email, u.display_name, u.role, u.platform_role, u.status, u.must_change_password, u.created_at, u.last_login_at,
+             (SELECT COUNT(*) FROM campaign_members cm WHERE cm.user_id = u.id AND cm.status = 'active') AS campaigns_count,
+             (SELECT COALESCE(SUM(size_bytes), 0) FROM media m WHERE m.owner_id = u.id) AS storage_used_bytes
+      FROM users u
+      WHERE u.deleted_at IS NULL
+      ORDER BY u.created_at DESC
+    `).all();
+
+    const list = (usersRes.results || []).map((u: any) => ({
+      id: u.id,
+      email: u.email,
+      displayName: u.display_name,
+      role: u.role,
+      platformRole: u.platform_role || 'user',
+      status: u.status,
+      mustChangePassword: u.must_change_password === 1,
+      createdAt: Number(u.created_at),
+      lastLoginAt: u.last_login_at ? Number(u.last_login_at) : null,
+      campaignsCount: Number(u.campaigns_count || 0),
+      storageUsedBytes: Number(u.storage_used_bytes || 0)
+    }));
+
+    return json(list);
+  }
+
+  // POST /api/admin/users/:uid/toggle-status — toggle active/disabled
+  if (path.match(/^\/admin\/users\/[^/]+\/toggle-status$/) && method === 'POST') {
+    if (!isPlatformAdmin()) return error('دسترسی مجاز نیست.', 403);
+    const targetUid = path.split('/')[3];
+    if (targetUid === actor.id) return error('امکان تغییر وضعیت حساب خودتان وجود ندارد.');
+
+    const target = await env.DB.prepare('SELECT id, status FROM users WHERE id = ?').bind(targetUid).first();
+    if (!target) return error('کاربر یافت نشد.', 404);
+
+    const nextStatus = target.status === 'active' ? 'disabled' : 'active';
+    await env.DB.prepare('UPDATE users SET status = ? WHERE id = ?').bind(nextStatus, targetUid).run();
+
+    if (nextStatus === 'disabled') {
+      await env.DB.prepare('UPDATE auth_sessions SET revoked_at = ? WHERE user_id = ?').bind(now, targetUid).run();
+    }
+
+    await audit('admin_toggle_user_status', targetUid, { newStatus: nextStatus });
+    return json({ success: true, newStatus: nextStatus });
+  }
+
+  // POST /api/admin/users/:uid/reset-link — generate password reset token
+  if (path.match(/^\/admin\/users\/[^/]+\/reset-link$/) && method === 'POST') {
+    if (!isPlatformAdmin()) return error('دسترسی مجاز نیست.', 403);
+    const targetUid = path.split('/')[3];
+    const target = await env.DB.prepare('SELECT id, email, display_name FROM users WHERE id = ? AND deleted_at IS NULL').bind(targetUid).first();
+    if (!target) return error('کاربر یافت نشد.', 404);
+
+    const token = generateRandomToken(32);
+    const tokenHash = await sha256Hex(token);
+    const expiresAt = now + (24 * 3600 * 1000); // 24h
+
+    await env.DB.prepare(
+      'INSERT INTO password_resets (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)'
+    ).bind(`reset-${Date.now()}-${generateRandomToken(4)}`, targetUid, tokenHash, expiresAt, now).run();
+
+    await audit('admin_generate_reset_link', targetUid);
+    return json({ token, resetUrl: `/reset?token=${token}` });
+  }
+
+  // POST /api/admin/users/:uid/revoke-sessions — revoke all sessions of user
+  if (path.match(/^\/admin\/users\/[^/]+\/revoke-sessions$/) && method === 'POST') {
+    if (!isPlatformAdmin()) return error('دسترسی مجاز نیست.', 403);
+    const targetUid = path.split('/')[3];
+    const res = await env.DB.prepare('UPDATE auth_sessions SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL').bind(now, targetUid).run();
+    const count = res?.meta?.changes || res?.changes || 0;
+    await audit('admin_revoke_sessions', targetUid, { count });
+    return json({ success: true, revokedCount: count });
+  }
+
+  // GET /api/admin/campaigns — list campaigns for admin (NO secret narrative/lore data!)
+  if (path === '/admin/campaigns' && method === 'GET') {
+    if (!isPlatformAdmin()) return error('دسترسی مجاز نیست.', 403);
+
+    const campsRes = await env.DB.prepare(`
+      SELECT c.id, c.name, c.owner_id, c.status, c.created_at, c.updated_at,
+             u.display_name AS owner_name, u.email AS owner_email,
+             (SELECT COUNT(*) FROM campaign_members cm WHERE cm.campaign_id = c.id AND cm.status = 'active') AS member_count,
+             (SELECT COALESCE(SUM(size_bytes), 0) FROM media m WHERE m.campaign_id = c.id) AS storage_used_bytes
+      FROM campaigns c
+      LEFT JOIN users u ON c.owner_id = u.id
+      ORDER BY c.updated_at DESC
+    `).all();
+
+    const list = (campsRes.results || []).map((c: any) => ({
+      id: c.id,
+      name: c.name,
+      ownerId: c.owner_id,
+      ownerName: c.owner_name || 'نامشخص',
+      ownerEmail: c.owner_email || '',
+      status: c.status,
+      memberCount: Number(c.member_count || 0),
+      storageUsedBytes: Number(c.storage_used_bytes || 0),
+      createdAt: Number(c.created_at),
+      updatedAt: Number(c.updated_at),
+      lastActivityAt: Number(c.updated_at)
+    }));
+
+    return json(list);
+  }
+
+  // POST /api/admin/campaigns/:id/archive & /restore
+  if (path.match(/^\/admin\/campaigns\/[^/]+\/archive$/) && method === 'POST') {
+    if (!isPlatformAdmin()) return error('دسترسی مجاز نیست.', 403);
+    const cId = path.split('/')[3];
+    await env.DB.prepare("UPDATE campaigns SET status = 'archived', updated_at = ? WHERE id = ?").bind(now, cId).run();
+    await audit('admin_archive_campaign', cId);
+    return json({ success: true });
+  }
+
+  if (path.match(/^\/admin\/campaigns\/[^/]+\/restore$/) && method === 'POST') {
+    if (!isPlatformAdmin()) return error('دسترسی مجاز نیست.', 403);
+    const cId = path.split('/')[3];
+    await env.DB.prepare("UPDATE campaigns SET status = 'active', updated_at = ? WHERE id = ?").bind(now, cId).run();
+    await audit('admin_restore_campaign', cId);
+    return json({ success: true });
+  }
+
+  // GET & PUT /api/admin/settings — instance configuration
+  if (path === '/admin/settings' && method === 'GET') {
+    if (!isPlatformAdmin()) return error('دسترسی مجاز نیست.', 403);
+    const row = await env.DB.prepare('SELECT * FROM instance_settings WHERE id = "default"').first();
+    const settings = {
+      allowCampaignCreation: row ? Number(row.allow_campaign_creation) === 1 : true,
+      registrationMode: (row?.registration_mode as any) || 'invite',
+      perUserMediaQuotaBytes: row ? Number(row.per_user_media_quota_bytes) : 5 * 1024 * 1024,
+      perCampaignMediaQuotaBytes: row ? Number(row.per_campaign_media_quota_bytes) : 20 * 1024 * 1024,
+      storageWarningThresholdBytes: row ? Number(row.storage_warning_threshold_bytes) : 800 * 1024 * 1024
+    };
+    return json(settings);
+  }
+
+  if (path === '/admin/settings' && method === 'PUT') {
+    if (!isPlatformAdmin()) return error('دسترسی مجاز نیست.', 403);
+    const body = await request.json() as any;
+    const allowCamp = body.allowCampaignCreation !== false ? 1 : 0;
+    const regMode = body.registrationMode === 'open' ? 'open' : 'invite';
+    const userQuota = Number(body.perUserMediaQuotaBytes) || 5 * 1024 * 1024;
+    const campQuota = Number(body.perCampaignMediaQuotaBytes) || 20 * 1024 * 1024;
+    const warnThreshold = Number(body.storageWarningThresholdBytes) || 800 * 1024 * 1024;
+
+    await env.DB.prepare(`
+      INSERT INTO instance_settings (id, allow_campaign_creation, registration_mode, per_user_media_quota_bytes, per_campaign_media_quota_bytes, storage_warning_threshold_bytes, updated_at)
+      VALUES ('default', ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        allow_campaign_creation = excluded.allow_campaign_creation,
+        registration_mode = excluded.registration_mode,
+        per_user_media_quota_bytes = excluded.per_user_media_quota_bytes,
+        per_campaign_media_quota_bytes = excluded.per_campaign_media_quota_bytes,
+        storage_warning_threshold_bytes = excluded.storage_warning_threshold_bytes,
+        updated_at = excluded.updated_at
+    `).bind(allowCamp, regMode, userQuota, campQuota, warnThreshold, now).run();
+
+    await audit('admin_update_settings', 'default', body);
+    return json({
+      allowCampaignCreation: allowCamp === 1,
+      registrationMode: regMode,
+      perUserMediaQuotaBytes: userQuota,
+      perCampaignMediaQuotaBytes: campQuota,
+      storageWarningThresholdBytes: warnThreshold
+    });
+  }
+
+  // GET /api/admin/storage — storage monitor per table / entity type
+  if (path === '/admin/storage' && method === 'GET') {
+    if (!isPlatformAdmin()) return error('دسترسی مجاز نیست.', 403);
+
+    const tablesToCount = [
+      { table: 'media', labelFa: 'تصاویر و رسانه‌ها', estBytes: 150000 },
+      { table: 'character_participations', labelFa: 'مشارکت‌های شخصیت‌ها', estBytes: 8192 },
+      { table: 'characters', labelFa: 'هویت شخصیت‌ها', estBytes: 4096 },
+      { table: 'encounters', labelFa: 'نبردها و مبارزات', estBytes: 6144 },
+      { table: 'encounter_events', labelFa: 'رویدادهای نبرد', estBytes: 512 },
+      { table: 'campaigns', labelFa: 'کمپین‌ها', estBytes: 4096 },
+      { table: 'sessions', labelFa: 'جلسات بازی', estBytes: 2048 },
+      { table: 'handouts', labelFa: 'دست‌نوشته‌ها و نقشه‌ها', estBytes: 2048 },
+      { table: 'notes', labelFa: 'یادداشت‌ها', estBytes: 2048 },
+      { table: 'audit_log', labelFa: 'لاگ عملیات و امنیت', estBytes: 512 },
+      { table: 'dice_rolls', labelFa: 'تاریخچه تاس‌ها', estBytes: 512 },
+      { table: 'notifications', labelFa: 'اعلان‌ها', estBytes: 512 },
+      { table: 'auth_sessions', labelFa: 'نشست‌های فعال کاربران', estBytes: 512 }
+    ];
+
+    const tablesInfo: any[] = [];
+    let totalBytes = 0;
+
+    for (const t of tablesToCount) {
+      let count = 0;
+      try {
+        if (t.table === 'media') {
+          const sumRow = await env.DB.prepare('SELECT COUNT(*) as c, COALESCE(SUM(size_bytes), 0) as s FROM media').first();
+          count = Number(sumRow?.c || 0);
+          const actualBytes = Number(sumRow?.s || 0);
+          tablesInfo.push({
+            table: t.table,
+            labelFa: t.labelFa,
+            count,
+            estimatedBytes: actualBytes
+          });
+          totalBytes += actualBytes;
+          continue;
+        } else {
+          const cRow = await env.DB.prepare(`SELECT COUNT(*) as c FROM ${t.table}`).first();
+          count = Number(cRow?.c || 0);
+        }
+      } catch {}
+      const bytes = count * t.estBytes;
+      totalBytes += bytes;
+      tablesInfo.push({
+        table: t.table,
+        labelFa: t.labelFa,
+        count,
+        estimatedBytes: bytes
+      });
+    }
+
+    const setRow = await env.DB.prepare('SELECT storage_warning_threshold_bytes FROM instance_settings WHERE id = "default"').first();
+    const thresholdBytes = setRow ? Number(setRow.storage_warning_threshold_bytes) : 800 * 1024 * 1024;
+    const isOverThreshold = totalBytes >= thresholdBytes;
+    const warningPercent = Math.min(100, Math.round((totalBytes / thresholdBytes) * 100));
+
+    return json({
+      tables: tablesInfo,
+      totalBytes,
+      thresholdBytes,
+      isOverThreshold,
+      warningPercent
+    });
+  }
+
+  // POST /api/admin/cleanup — orphan media and expired records cleanup (dry-run supported)
+  if (path === '/admin/cleanup' && method === 'POST') {
+    if (!isPlatformAdmin()) return error('دسترسی مجاز نیست.', 403);
+    const body = await request.json() as any;
+    const dryRun = body.dryRun !== false;
+
+    // 1. Expired auth sessions
+    const expiredSessionsRow = await env.DB.prepare('SELECT COUNT(*) as c FROM auth_sessions WHERE expires_at < ? OR revoked_at IS NOT NULL').bind(now).first();
+    const expiredSessions = Number(expiredSessionsRow?.c || 0);
+
+    // 2. Expired password resets
+    const expiredResetsRow = await env.DB.prepare('SELECT COUNT(*) as c FROM password_resets WHERE expires_at < ? OR used_at IS NOT NULL').bind(now).first();
+    const oldPasswordResets = Number(expiredResetsRow?.c || 0);
+
+    // 3. Expired / maxed invites
+    const expiredInvitesRow = await env.DB.prepare('SELECT COUNT(*) as c FROM campaign_invites WHERE (expires_at > 0 AND expires_at < ?) OR used_count >= max_uses OR revoked_at IS NOT NULL').bind(now).first();
+    const expiredInvites = Number(expiredInvitesRow?.c || 0);
+
+    // 4. Rate limit / login attempts
+    const oldLoginAttemptsRow = await env.DB.prepare('SELECT COUNT(*) as c FROM rate_limits WHERE window_start < ?').bind(now - 24 * 3600 * 1000).first();
+    const oldLoginAttempts = Number(oldLoginAttemptsRow?.c || 0);
+
+    // 5. Orphan media: media not referenced by any handout, user avatar, character portrait or campaign cover
+    let orphanMedia = 0;
+    try {
+      const orphanRow = await env.DB.prepare(`
+        SELECT COUNT(*) as c FROM media m
+        WHERE m.id NOT IN (SELECT media_id FROM handouts WHERE media_id IS NOT NULL)
+          AND m.id NOT IN (SELECT avatar_media_id FROM users WHERE avatar_media_id IS NOT NULL)
+          AND m.id NOT IN (SELECT cover_media_id FROM campaigns WHERE cover_media_id IS NOT NULL)
+          AND m.campaign_id IS NULL
+          AND m.created_at < ?
+      `).bind(now - 3600 * 1000).first();
+      orphanMedia = Number(orphanRow?.c || 0);
+    } catch {}
+
+    const counts = {
+      orphanMedia,
+      expiredInvites,
+      expiredSessions,
+      oldLoginAttempts,
+      oldPasswordResets
+    };
+    const cleanedTotal = orphanMedia + expiredInvites + expiredSessions + oldLoginAttempts + oldPasswordResets;
+
+    if (!dryRun) {
+      await env.DB.prepare('DELETE FROM auth_sessions WHERE expires_at < ? OR revoked_at IS NOT NULL').bind(now).run();
+      await env.DB.prepare('DELETE FROM password_resets WHERE expires_at < ? OR used_at IS NOT NULL').bind(now).run();
+      await env.DB.prepare('DELETE FROM campaign_invites WHERE (expires_at > 0 AND expires_at < ?) OR used_count >= max_uses OR revoked_at IS NOT NULL').bind(now).run();
+      await env.DB.prepare('DELETE FROM rate_limits WHERE window_start < ?').bind(now - 24 * 3600 * 1000).run();
+      try {
+        await env.DB.prepare(`
+          DELETE FROM media
+          WHERE id NOT IN (SELECT media_id FROM handouts WHERE media_id IS NOT NULL)
+            AND id NOT IN (SELECT avatar_media_id FROM users WHERE avatar_media_id IS NOT NULL)
+            AND id NOT IN (SELECT cover_media_id FROM campaigns WHERE cover_media_id IS NOT NULL)
+            AND campaign_id IS NULL
+            AND created_at < ?
+        `).bind(now - 3600 * 1000).run();
+      } catch {}
+
+      await audit('admin_cleanup_run', 'system', { counts, cleanedTotal });
+    }
+
+    return json({
+      dryRun,
+      counts,
+      executedAt: Date.now(),
+      cleanedTotal
+    });
   }
 
   // 404 Fallback
