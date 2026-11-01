@@ -169,4 +169,35 @@ const STORAGE_PREFIX = 'dy_';
 
 ---
 
-*تأیید نهایی: تمام بورسی‌های `LocalApi` با اصلاح نام کانال (`dy_*`) PASSED. چک‌لیست نقش × دستگاه در `/docs/QA.md` ثبت شد. اسکریپت ۹۰ دقیقه برای Dry-Run در همان فایل موجود است.*
+---
+
+## ۸. ساخت، استقرار و به‌روزرسانی پایگاه داده (Build / Deploy / DB)
+
+| مرحله | وضعیت | جزئیات |
+|---|---|---|
+| Build (`npx vite build`) | ✅ PASS | `dist/` تولید شد؛ PWA manifest + SW ثبت شد |
+| Migration 018 (`migrations/018_final_qa_pass.sql`) | ✅ CREATED + APPENDED to `schema.sql` | ایندکس‌های QA + `instance_settings` + `live_sync_channel` |
+| Schema update (`schema.sql`) | ✅ UPDATED (018 appended) | همه جداول ۱۷+۱۷۰۰ خط up-to-date |
+| Remote DB (`wrangler d1 execute`) | ⏳ PENDING | نیاز به `wrangler d1 execute DB --file=migrations/018_final_qa_pass.sql` در محیط تولید |
+| Local DB (`LocalApi` seed) | ✅ PASS | `seedDatabase()` خودکار در `LocalApi` اجرا می‌شود؛ `STORAGE_PREFIX='dy_'` اعمال شده |
+| Deploy (`wrangler pages deploy`) | ⏳ PENDING | نیاز به `wrangler pages deploy dist --project-name=dungeon-yar` (در محیط واقعی) |
+| Test (`vitest run`) | ✅ PASS | `shared/rules/qaLiveChannel.test.ts` — ۳ تست PASS |
+
+### دستورالعمل استقرار سریع
+```bash
+# ۱. ساخت
+npx vite build
+
+# ۲. اجرای مهاجرت روی D1 تولید (در صورت دسترسی)
+wrangler d1 execute dungeon-yar-db --file=migrations/018_final_qa_pass.sql
+
+# ۳. استقرار صفحات
+wrangler pages deploy dist --project-name=dungeon-yar
+
+# ۴. به‌روزرسانی محلی (پیش‌نمایش)
+# در مرورگر: LocalApi به‌صورت خودکار seed می‌شود
+```
+
+---
+
+*تأیید نهایی: تمام بورسی‌های `LocalApi` با اصلاح نام کانال (`dy_*`) PASSED. چک‌لیست نقش × دستگاه در `/docs/QA.md` ثبت شد. اسکریپت ۹۰ دقیقه برای Dry-Run در همان فایل موجود است. Build و Migration 018 انجام شد؛ Deploy و Remote DB به‌روزرسانی در محیط واقعی نیاز به `wrangler` دارد.*
