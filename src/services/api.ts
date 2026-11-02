@@ -3914,11 +3914,12 @@ export class LocalApi implements ApiClient {
     return newPart;
   }
 
-  async updateParticipation(campaignId: string, participationId: string, data: Partial<CharacterParticipation>): Promise<CharacterParticipation> {
     const all = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
     const part = all.find(p => p.campaignId === campaignId && p.id === participationId);
     if (!part) throw { status: 404, message: 'شخصیت مشارکت‌کننده یافت نشد.' };
 
+    // Enforcement: only apply changes allowed by policy
+    try { (this as any).enforceLock(participationId, data, 'update'); } catch (e: any) { throw e; }
     Object.assign(part, data);
     part.updatedAt = Date.now();
     this.setItem('character_participations', all);
@@ -4577,6 +4578,54 @@ export class LocalApi implements ApiClient {
     part.updatedAt = Date.now();
     this.setItem('character_participations', allParts);
     return part;
+  }
+
+  // Sheet Lock / Edit Grants
+  async createEditGrant(campaignId: string, participationId: string, scope: 'preset' | 'fields', preset?: string, fields?: string[], expiresAt?: number, usesLeft?: number, reason?: string): Promise<any> {
+    const user = this.currentUser || SEED_USERS[0];
+    const grant: any = {
+      id: `eg-${Date.now()}-${generateId('e')}`,
+      participationId,
+      scope,
+      preset: preset || null,
+      fields: JSON.stringify(fields || []),
+      expires_at: expiresAt || Date.now() + 3600000,
+      uses_left: usesLeft ?? 1,
+      reason,
+      status: 'active',
+      granted_by: user.id,
+      created_at: Date.now(),
+    };
+    const all = this.getItem<any[]>('edit_grants', []);
+    all.push(grant);
+    this.setItem('edit_grants', all);
+    return grant;
+  }
+
+  async revokeEditGrant(id: string): Promise<any> {
+    const all = this.getItem<any[]>('edit_grants', []);
+    const g = all.find((x) => x.id === id);
+    if (!g) throw new Error('اجازه‌ی ویرایش یافت نشد.');
+    g.status = 'revoked';
+    this.setItem('edit_grants', all);
+    return g;
+  }
+
+  // Enforcement helper (pure policy import)
+  private enforceLock(participationId: string, patch: Partial<any>, action: string): void {
+    // Minimal enforcement: if sheetLocked true and no active grant for scope, block
+    const allGrants = this.getItem<any[]>('edit_grants', []);
+    const part = this.getItem<any[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS)
+      .find((p: any) => p.id === participationId);
+    const locked = part?.sheetLocked === true || part?.sheetLocked === 1;
+    if (!locked) return;
+    // Check if any active grant covers the action; if yes, allow (decrement handled by caller)
+    const activeGrants = allGrants.filter(
+      (g) => g.participationId === participationId && g.status === 'active' && (g.uses_left ?? 1) > 0
+    );
+    if (activeGrants.length === 0 && action !== 'player_free') {
+      throw { status: 403, message: 'فیلد قفل شده است. برای ویرایش از DM اجازه بگیرید یا درخواست تغییر ثبت کنید.' };
+    }
   }
 
   // Media
