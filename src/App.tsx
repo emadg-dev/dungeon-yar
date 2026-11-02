@@ -27,6 +27,8 @@ import {
 } from 'lucide-react';
 import { BottomSheet } from './components/mobile/BottomSheet';
 import { useOfflineSync, offlineSyncManager } from './services/offlineSync';
+import { PullToRefresh } from './components/common/PullToRefresh';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { usePWARefresh } from './hooks/usePWARefresh';
 import { APP_NAME_FA, APP_VERSION, APP_VERSION_FA } from './config/app';
 
@@ -1162,6 +1164,45 @@ export default function App() {
     g && (g.participationId === activeParticipation?.id || g.participation_id === activeParticipation?.id)
   );
 
+  // Pull-to-Refresh handlers
+  const handleRefreshHome = async () => {
+    await loadHomeData();
+    showToast('داشبورد و اطلاعات به‌روزرسانی شدند.');
+  };
+
+  const handleRefreshCampaign = async () => {
+    if (activeCampaignId) {
+      await loadCampaignWorkspace(activeCampaignId);
+      showToast('اطلاعات کمپین و وضعیت کاراکتر به‌روزرسانی شد.');
+    } else {
+      await loadHomeData();
+    }
+  };
+
+  // Subtle horizontal slide transition variants for character sheet tabs (RTL)
+  const tabSlideVariants: Variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? -24 : (direction < 0 ? 24 : 0),
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        x: { type: 'spring', stiffness: 380, damping: 32 },
+        opacity: { duration: 0.18, ease: 'easeOut' as const },
+      },
+    },
+    exit: (direction: number) => ({
+      x: direction > 0 ? 24 : (direction < 0 ? -24 : 0),
+      opacity: 0,
+      transition: {
+        x: { type: 'spring', stiffness: 380, damping: 32 },
+        opacity: { duration: 0.14, ease: 'easeIn' as const },
+      },
+    }),
+  };
+
   return (
     <div className="h-[100dvh] max-h-[100dvh] overflow-hidden text-[#EDE6D8] flex flex-col font-sans selection:bg-[#E0A030]/25 selection:text-[#E0A030]" dir="rtl">
       {/* Toast notifications */}
@@ -1239,7 +1280,8 @@ export default function App() {
         <Suspense fallback={<TabSkeleton />}>
           {/* VIEW 1: HOME DASHBOARD */}
           {viewMode === 'home' && (
-            <HomeScreen
+            <PullToRefresh onRefresh={handleRefreshHome}>
+              <HomeScreen
               currentUser={currentUser}
               myCampaigns={myCampaigns}
               myCharacters={myCharacters}
@@ -1267,6 +1309,7 @@ export default function App() {
               onOpenApprovals={() => setCampaignApprovalsOpen(true)}
               onAcceptInvite={handleAcceptInvite}
             />
+            </PullToRefresh>
           )}
 
           {/* VIEW 2: MASTER CHARACTER SCREEN */}
