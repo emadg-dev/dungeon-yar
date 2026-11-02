@@ -7,6 +7,7 @@ import {
   FileText, Pin, Eye, EyeOff, Search, Plus, 
   Trash2, Edit3, Check, Tag, PinOff 
 } from 'lucide-react';
+import { ScrollableRow } from '../ui/ScrollableRow';
 
 interface NoteCardRowProps {
   note: CharacterNote;
@@ -288,26 +289,31 @@ export const NotesTab: React.FC<NotesTabProps> = ({
         </div>
 
         {/* Category Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar" dir="rtl">
+        <ScrollableRow
+          activeKey={selectedCategory}
+          dir="rtl"
+          className="pb-1 gap-1.5"
+        >
           {categories.map(cat => (
             <button
               key={cat.id}
+              data-key={cat.id}
               type="button"
               onClick={() => {
                 startTransition(() => {
                   setSelectedCategory(cat.id);
                 });
               }}
-              className={`px-3 py-1.5 rounded-[10px] text-xs font-bold transition whitespace-nowrap touch-target min-w-[44px] ${
+              className={`px-3.5 py-2 rounded-[10px] text-xs font-bold transition whitespace-nowrap shrink-0 snap-start touch-target min-w-[44px] ${
                 selectedCategory === cat.id
-                  ? 'bg-[#E0A030] text-[#0E0D0C]'
+                  ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
                   : 'bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23]'
               }`}
             >
-              {cat.label}
+              <span className="whitespace-nowrap shrink-0">{cat.label}</span>
             </button>
           ))}
-        </div>
+        </ScrollableRow>
       </div>
 
       {/* Notes List (Pinned first) */}

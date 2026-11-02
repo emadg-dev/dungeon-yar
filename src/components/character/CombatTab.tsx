@@ -10,6 +10,7 @@ import {
 import { PipTracker } from '../common/PipTracker';
 import { HPBar } from '../common/HPBar';
 import { Chip } from '../common/Chip';
+import { ScrollableRow } from '../ui/ScrollableRow';
 
 interface CombatTabProps {
   character: Character;
@@ -359,7 +360,12 @@ export const CombatTab: React.FC<CombatTabProps> = ({
         </div>
 
         {/* Filter Chips: All / Short / Long / Session / Season */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-3 no-scrollbar" dir="rtl">
+        <ScrollableRow
+          activeKey={featureFilter}
+          dir="rtl"
+          wrapperClassName="mb-3"
+          className="pb-2 gap-1.5"
+        >
           {[
             { id: 'all', label: 'همه' },
             { id: 'short', label: 'استراحت کوتاه' },
@@ -369,22 +375,23 @@ export const CombatTab: React.FC<CombatTabProps> = ({
           ].map(chip => (
             <button
               key={chip.id}
+              data-key={chip.id}
               type="button"
               onClick={() => {
                 startTransition(() => {
                   setFeatureFilter(chip.id as any);
                 });
               }}
-              className={`px-3 py-1.5 rounded-[10px] text-xs font-bold transition whitespace-nowrap touch-target min-w-[44px] ${
+              className={`px-3.5 py-2 rounded-[10px] text-xs font-bold transition whitespace-nowrap shrink-0 snap-start touch-target min-w-[44px] ${
                 featureFilter === chip.id
-                  ? 'bg-[#E0A030] text-[#0E0D0C]'
+                  ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
                   : 'bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23]'
               }`}
             >
-              {chip.label}
+              <span className="whitespace-nowrap shrink-0">{chip.label}</span>
             </button>
           ))}
-        </div>
+        </ScrollableRow>
 
         {/* Feature Cards Grid (Collapsible, pips outside card) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

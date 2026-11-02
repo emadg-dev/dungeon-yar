@@ -6,6 +6,7 @@ import { Chip } from '../common/Chip';
 import { HandoutsTab } from './HandoutsTab';
 import { QuestsTab } from '../quest/QuestsTab';
 import { FactionReputationManager } from '../campaign/FactionReputationManager';
+import { ScrollableRow } from '../ui/ScrollableRow';
 
 interface CodexTabProps {
   revealedNpcs: NPC[];
@@ -99,111 +100,123 @@ export const CodexTab: React.FC<CodexTabProps> = ({
   return (
     <div className="space-y-4" dir="rtl">
       {/* Inner Tabs Strip: Quests / Locations / Handouts / Items / Creatures / Rules / Calendar / Factions */}
-      <div className="surface-card rounded-[14px] p-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+      <ScrollableRow
+        activeKey={subTab}
+        wrapperClassName="surface-card rounded-[14px] p-1.5"
+        className="gap-1.5"
+      >
         <button
           type="button"
+          data-key="quests"
           onClick={() => setSubTab('quests')}
-          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
+          className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'quests'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
           }`}
         >
-          <Scroll className="w-3.5 h-3.5" />
-          <span>مأموریت‌ها ({quests.length})</span>
+          <Scroll className="w-3.5 h-3.5 shrink-0" />
+          <span className="whitespace-nowrap shrink-0">مأموریت‌ها ({quests.length})</span>
         </button>
 
         <button
           type="button"
+          data-key="locations"
           onClick={() => setSubTab('locations')}
-          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
+          className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'locations'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
           }`}
         >
-          <MapPin className="w-3.5 h-3.5" />
-          <span>مکان‌ها ({revealedLocations.length})</span>
+          <MapPin className="w-3.5 h-3.5 shrink-0" />
+          <span className="whitespace-nowrap shrink-0">مکان‌ها ({revealedLocations.length})</span>
         </button>
 
         <button
           type="button"
+          data-key="handouts"
           onClick={() => setSubTab('handouts')}
-          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
+          className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'handouts'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
           }`}
         >
-          <MapIcon className="w-3.5 h-3.5" />
-          <span>اسناد و نقشه‌ها</span>
+          <MapIcon className="w-3.5 h-3.5 shrink-0" />
+          <span className="whitespace-nowrap shrink-0">اسناد و نقشه‌ها</span>
         </button>
 
         <button
           type="button"
+          data-key="items"
           onClick={() => setSubTab('items')}
-          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
+          className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'items'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
           }`}
         >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>اشیاء ({revealedItems.length})</span>
+          <Sparkles className="w-3.5 h-3.5 shrink-0" />
+          <span className="whitespace-nowrap shrink-0">اشیاء ({revealedItems.length})</span>
         </button>
 
         <button
           type="button"
+          data-key="creatures"
           onClick={() => setSubTab('creatures')}
-          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
+          className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'creatures'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
           }`}
         >
-          <Users className="w-3.5 h-3.5" />
-          <span>موجودات ({revealedNpcs.length})</span>
+          <Users className="w-3.5 h-3.5 shrink-0" />
+          <span className="whitespace-nowrap shrink-0">موجودات ({revealedNpcs.length})</span>
         </button>
 
         <button
           type="button"
+          data-key="rules"
           onClick={() => setSubTab('rules')}
-          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
+          className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'rules'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
           }`}
         >
-          <BookOpen className="w-3.5 h-3.5" />
-          <span>قوانین ({SEED_RULES.length})</span>
+          <BookOpen className="w-3.5 h-3.5 shrink-0" />
+          <span className="whitespace-nowrap shrink-0">قوانین ({SEED_RULES.length})</span>
         </button>
 
         <button
           type="button"
+          data-key="calendar"
           onClick={() => setSubTab('calendar')}
-          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
+          className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'calendar'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
           }`}
         >
-          <Calendar className="w-3.5 h-3.5" />
-          <span>گاهشمار</span>
+          <Calendar className="w-3.5 h-3.5 shrink-0" />
+          <span className="whitespace-nowrap shrink-0">گاهشمار</span>
         </button>
 
         <button
           type="button"
+          data-key="factions"
           onClick={() => setSubTab('factions')}
-          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
+          className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'factions'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
           }`}
         >
-          <Compass className="w-3.5 h-3.5" />
-          <span>جناح‌ها</span>
+          <Compass className="w-3.5 h-3.5 shrink-0" />
+          <span className="whitespace-nowrap shrink-0">جناح‌ها</span>
         </button>
-      </div>
+      </ScrollableRow>
 
       {/* Quests Inner Tab */}
       {subTab === 'quests' && (

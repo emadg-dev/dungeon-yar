@@ -89,7 +89,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 className={`liquid-dock__item mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
-                <span className="dock-label truncate max-w-[3.5rem]">{item.label}</span>
+                <span className="dock-label whitespace-nowrap">{item.label}</span>
               </button>
             );
           })}
@@ -144,7 +144,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 className={`liquid-dock__item mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
-                <span className="dock-label truncate max-w-[3.5rem]">{item.label}</span>
+                <span className="dock-label whitespace-nowrap">{item.label}</span>
               </button>
             );
           })}
@@ -199,7 +199,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               </span>
             )}
           </div>
-          <span className="dock-label truncate">شیت</span>
+          <span className="dock-label whitespace-nowrap">شیت</span>
         </button>
 
         {/* 2. Inventory */}
@@ -218,7 +218,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               </span>
             )}
           </div>
-          <span className="dock-label truncate">کوله</span>
+          <span className="dock-label whitespace-nowrap">کوله</span>
         </button>
 
         {/* 3. Center Raised Dice Button (FAB) */}
@@ -250,7 +250,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               </span>
             )}
           </div>
-          <span className="dock-label truncate">یادداشت</span>
+          <span className="dock-label whitespace-nowrap">یادداشت</span>
         </button>
 
         {/* 5. Codex */}
@@ -262,7 +262,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           className={`liquid-dock__item mx-auto ${playerTab === 'codex' ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
         >
           <Compass className={`w-5 h-5 ${playerTab === 'codex' ? 'stroke-[2.5]' : 'stroke-2'}`} />
-          <span className="dock-label truncate">دانشنامه</span>
+          <span className="dock-label whitespace-nowrap">دانشنامه</span>
         </button>
       </div>
     </nav>

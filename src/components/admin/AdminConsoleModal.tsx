@@ -7,6 +7,7 @@ import {
   CheckCircle2, AlertTriangle, RefreshCw, KeyRound, Ban,
   Archive, RotateCcw, AlertCircle, Copy, Check, FileText
 } from 'lucide-react';
+import { ScrollableRow } from '../ui/ScrollableRow';
 
 interface AdminConsoleModalProps {
   isOpen: boolean;
@@ -247,78 +248,88 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
         )}
 
         {/* Tabs Bar */}
-        <div className="flex flex-wrap items-center gap-1 p-2 border-b border-[#2F2A23] bg-[#1B1815]">
+        {/* Tabs Bar */}
+        <ScrollableRow
+          activeKey={activeTab}
+          wrapperClassName="border-b border-[#2F2A23] bg-[#1B1815]"
+          className="p-2 gap-1.5"
+        >
           <button
+            data-key="users"
             onClick={() => setActiveTab('users')}
-            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-w-[44px] min-h-[44px] ${
+            className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'users'
-                ? 'bg-[#E0A030] text-[#171513]'
+                ? 'bg-[#E0A030] text-[#171513] font-black'
                 : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
             }`}
           >
-            <Users className="w-4 h-4" />
-            <span>کاربران ({users.length})</span>
+            <Users className="w-4 h-4 shrink-0" />
+            <span className="whitespace-nowrap shrink-0">کاربران ({users.length})</span>
           </button>
 
           <button
+            data-key="campaigns"
             onClick={() => setActiveTab('campaigns')}
-            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-w-[44px] min-h-[44px] ${
+            className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'campaigns'
-                ? 'bg-[#E0A030] text-[#171513]'
+                ? 'bg-[#E0A030] text-[#171513] font-black'
                 : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
             }`}
           >
-            <Castle className="w-4 h-4" />
-            <span>کمپین‌ها ({campaigns.length})</span>
+            <Castle className="w-4 h-4 shrink-0" />
+            <span className="whitespace-nowrap shrink-0">کمپین‌ها ({campaigns.length})</span>
           </button>
 
           <button
+            data-key="settings"
             onClick={() => setActiveTab('settings')}
-            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-w-[44px] min-h-[44px] ${
+            className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'settings'
-                ? 'bg-[#E0A030] text-[#171513]'
+                ? 'bg-[#E0A030] text-[#171513] font-black'
                 : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
             }`}
           >
-            <Settings className="w-4 h-4" />
-            <span>تنظیمات سامانه</span>
+            <Settings className="w-4 h-4 shrink-0" />
+            <span className="whitespace-nowrap shrink-0">تنظیمات سامانه</span>
           </button>
 
           <button
+            data-key="storage"
             onClick={() => setActiveTab('storage')}
-            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-w-[44px] min-h-[44px] ${
+            className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'storage'
-                ? 'bg-[#E0A030] text-[#171513]'
+                ? 'bg-[#E0A030] text-[#171513] font-black'
                 : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
             }`}
           >
-            <HardDrive className="w-4 h-4" />
-            <span>پایش ذخیره‌سازی D1</span>
+            <HardDrive className="w-4 h-4 shrink-0" />
+            <span className="whitespace-nowrap shrink-0">پایش ذخیره‌سازی D1</span>
           </button>
 
           <button
+            data-key="cleanup"
             onClick={() => setActiveTab('cleanup')}
-            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-w-[44px] min-h-[44px] ${
+            className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'cleanup'
-                ? 'bg-[#E0A030] text-[#171513]'
+                ? 'bg-[#E0A030] text-[#171513] font-black'
                 : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
             }`}
           >
-            <Trash2 className="w-4 h-4" />
-            <span>پاک‌سازی داده‌های یتیم</span>
+            <Trash2 className="w-4 h-4 shrink-0" />
+            <span className="whitespace-nowrap shrink-0">پاک‌سازی داده‌های یتیم</span>
           </button>
 
-          <div className="mr-auto ps-2">
+          <div className="ms-auto pe-1 shrink-0">
             <button
               onClick={() => loadTabData(activeTab)}
               disabled={loading}
-              className="p-2 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target min-w-[44px]"
+              className="p-2 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0"
               title="بارگذاری مجدد"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? 'animate-spin text-[#E0A030]' : ''}`} />
             </button>
           </div>
-        </div>
+        </ScrollableRow>
 
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">

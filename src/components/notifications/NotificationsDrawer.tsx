@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
+import { ScrollableRow } from '../ui/ScrollableRow';
 import { NotificationItem, NotificationType } from '../../types';
 import { groupNotificationsByCampaign, GroupedNotifications } from '../../../shared/rules/notifications';
 import { NotificationPreferencesModal } from './NotificationPreferencesModal';
@@ -174,12 +175,13 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
       <BottomSheet isOpen={isOpen} onClose={onClose} title="اعلان‌ها و رویدادها">
         <div className="space-y-4 pb-6 text-sm text-[#E2D8C3]" dir="rtl">
           {/* Top action bar: Filter Pills & Action buttons */}
-          <div className="flex flex-wrap items-center justify-between gap-2 gap-2 border-b border-[#2F2A23] pb-3">
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-b border-[#2F2A23] pb-3">
+            <ScrollableRow activeKey={filterMode} className="items-center gap-1.5 py-0.5">
               <button
                 type="button"
+                data-scroll-key="all"
                 onClick={() => setFilterMode('all')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 snap-start transition-all min-h-[44px] ${
                   filterMode === 'all'
                     ? 'bg-[#E0A030] text-[#0E0D0C] shadow-sm'
                     : 'bg-[#1F1C18] text-[#9E9080] hover:text-[#E2D8C3]'
@@ -190,16 +192,17 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
 
               <button
                 type="button"
+                data-scroll-key="unread"
                 onClick={() => setFilterMode('unread')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 snap-start transition-all inline-flex items-center gap-1.5 min-h-[44px] ${
                   filterMode === 'unread'
                     ? 'bg-[#E0A030] text-[#0E0D0C] shadow-sm'
                     : 'bg-[#1F1C18] text-[#9E9080] hover:text-[#E2D8C3]'
                 }`}
               >
-                <span>خوانده‌نشده</span>
+                <span className="whitespace-nowrap shrink-0">خوانده‌نشده</span>
                 {totalUnread > 0 && (
-                  <span className="w-4 h-4 rounded-full bg-[#DC4437] text-white text-[10px] flex items-center justify-center font-bold">
+                  <span className="w-4 h-4 rounded-full bg-[#DC4437] text-white text-[10px] flex items-center justify-center font-bold shrink-0">
                     {totalUnread}
                   </span>
                 )}
@@ -208,8 +211,9 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
               {activeCampaignId && (
                 <button
                   type="button"
+                  data-scroll-key="current"
                   onClick={() => setFilterMode('current')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 snap-start transition-all min-h-[44px] ${
                     filterMode === 'current'
                       ? 'bg-[#E0A030] text-[#0E0D0C] shadow-sm'
                       : 'bg-[#1F1C18] text-[#9E9080] hover:text-[#E2D8C3]'
@@ -218,7 +222,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                   کمپین فعلی
                 </button>
               )}
-            </div>
+            </ScrollableRow>
 
             <div className="flex items-center gap-1.5 shrink-0">
               {totalUnread > 0 && (

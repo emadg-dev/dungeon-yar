@@ -57,7 +57,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         title={ariaLabel}
         disabled={isDisabled}
         style={{ touchAction: 'manipulation' }}
-        className={`inline-flex items-center justify-center transition-all duration-150 select-none outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950 disabled:opacity-40 disabled:pointer-events-none ${
+        className={`inline-flex items-center justify-center whitespace-nowrap shrink-0 transition-all duration-150 select-none outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950 disabled:opacity-40 disabled:pointer-events-none ${
           variantStyles[variant]
         } ${sizeStyles[size]} ${roundedClass} ${className}`}
         {...rest}

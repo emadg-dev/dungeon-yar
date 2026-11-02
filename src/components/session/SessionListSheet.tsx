@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Session, Campaign, WorldCalendar, User, CampaignRole } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
+import { ScrollableRow } from '../ui/ScrollableRow';
 import { 
   formatSessionDateTime, 
   displayInWorldDate, 
@@ -88,12 +89,13 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
     >
       <div className="space-y-4 pb-20 text-right" dir="rtl">
         {/* Top Control Bar: Tabs & New Session Button */}
-        <div className="flex flex-wrap items-center justify-between gap-2 gap-3">
-          <div className="flex bg-[#12100E] p-1 rounded-xl border border-white/10">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <ScrollableRow activeKey={activeTab} wrapperClassName="bg-[#12100E] p-1 rounded-xl border border-white/10 shrink-0" className="gap-1">
             <button
               type="button"
+              data-scroll-key="upcoming"
               onClick={() => setActiveTab('upcoming')}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
                 activeTab === 'upcoming'
                   ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -103,8 +105,9 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
             </button>
             <button
               type="button"
+              data-scroll-key="past"
               onClick={() => setActiveTab('past')}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
                 activeTab === 'past'
                   ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -112,9 +115,9 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
             >
               گذشته ({past.length})
             </button>
-          </div>
+          </ScrollableRow>
 
-          <div className="flex items-center gap-2">
+          <ScrollableRow className="items-center gap-2">
             {onOpenRecapArchive && (
               <button
                 type="button"
@@ -122,11 +125,11 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                   onClose();
                   onOpenRecapArchive();
                 }}
-                className="px-3 py-2 rounded-xl bg-[#2A241C] hover:bg-[#3A3227] text-[#EDE6D8] text-xs font-semibold transition-colors flex items-center gap-1.5 min-h-[40px]"
+                className="px-3 py-2 rounded-xl bg-[#2A241C] hover:bg-[#3A3227] text-[#EDE6D8] text-xs font-semibold transition-colors inline-flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
                 title="آرشیو خلاصه جلسات"
               >
-                <BookOpen className="w-3.5 h-3.5 text-[#E0A030]" />
-                <span className="hidden sm:inline">آرشیو خلاصه‌ها</span>
+                <BookOpen className="w-3.5 h-3.5 text-[#E0A030] shrink-0" />
+                <span className="whitespace-nowrap shrink-0">آرشیو خلاصه‌ها</span>
               </button>
             )}
 
@@ -137,13 +140,13 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                   onClose();
                   onOpenCreateSession();
                 }}
-                className="px-3.5 py-2 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md min-h-[40px]"
+                className="px-3.5 py-2 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] text-xs font-bold transition-colors inline-flex items-center gap-1.5 shadow-md min-h-[44px] whitespace-nowrap shrink-0 snap-start"
               >
-                <Plus className="w-4 h-4" />
-                <span>جلسه جدید</span>
+                <Plus className="w-4 h-4 shrink-0" />
+                <span className="whitespace-nowrap shrink-0">جلسه جدید</span>
               </button>
             )}
-          </div>
+          </ScrollableRow>
         </div>
 
         {/* Sessions List */}

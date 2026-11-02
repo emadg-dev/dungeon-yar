@@ -10,6 +10,7 @@ import {
   Check, Plus, Trash2, Edit, Sliders, CheckSquare, Square, 
   AlertCircle, ChevronDown, ChevronUp, Save, X, RefreshCw
 } from 'lucide-react';
+import { ScrollableRow } from '../ui/ScrollableRow';
 
 interface ClassEditorSheetProps {
   isOpen: boolean;
@@ -314,7 +315,11 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
         )}
 
         {/* 8 Tab Navigation Buttons */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none border-b border-[#2F2A23]">
+        <ScrollableRow
+          activeKey={activeTab}
+          wrapperClassName="border-b border-[#2F2A23]"
+          className="pb-1.5 gap-1.5"
+        >
           {[
             { id: 'basics', label: '1. مبانی' },
             { id: 'skills_equip', label: '2. مهارت و تجهیزات' },
@@ -327,18 +332,19 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
           ].map(tab => (
             <button
               key={tab.id}
+              data-key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id as TabType)}
-              className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition min-h-[44px] ${
+              className={`px-3.5 py-2 rounded-xl font-bold whitespace-nowrap shrink-0 snap-start transition min-h-[44px] flex items-center justify-center text-xs ${
                 activeTab === tab.id
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
                   : 'bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#3A342B]'
               }`}
             >
-              {tab.label}
+              <span className="whitespace-nowrap shrink-0">{tab.label}</span>
             </button>
           ))}
-        </div>
+        </ScrollableRow>
 
         {/* TAB 1: BASICS */}
         {activeTab === 'basics' && (

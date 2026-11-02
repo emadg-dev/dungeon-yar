@@ -1,6 +1,7 @@
 import React, { useState, useDeferredValue, startTransition, memo } from 'react';
 import { NPC, NpcType } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
+import { ScrollableRow } from '../ui/ScrollableRow';
 import { VirtualList } from '../common/VirtualList';
 import { SafeImage } from '../common/SafeImage';
 import { 
@@ -285,19 +286,22 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
           </div>
 
           <button
+            type="button"
             onClick={handleStartCreate}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-bold text-xs transition"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-bold text-xs transition whitespace-nowrap shrink-0 min-h-[44px]"
           >
-            <Plus className="w-4 h-4" />
-            ساخت NPC / هیولای تازه
+            <Plus className="w-4 h-4 shrink-0" />
+            <span>ساخت NPC / هیولای تازه</span>
           </button>
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+        <ScrollableRow activeKey={selectedType} className="items-center gap-1.5 pb-1">
           <button
+            type="button"
+            data-scroll-key="all"
             onClick={() => setSelectedType('all')}
-            className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition border ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 snap-start transition border min-h-[44px] ${
               selectedType === 'all'
                 ? 'bg-[#E0A030] text-[#0E0D0C] border-[#F2C265]'
                 : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -311,8 +315,10 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
             return (
               <button
                 key={typeKey}
+                type="button"
+                data-scroll-key={typeKey}
                 onClick={() => setSelectedType(typeKey)}
-                className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition border ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 snap-start transition border min-h-[44px] ${
                   selectedType === typeKey
                     ? 'bg-[#E0A030] text-[#0E0D0C] border-[#F2C265]'
                     : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -322,7 +328,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
               </button>
             );
           })}
-        </div>
+        </ScrollableRow>
       </div>
 
       {/* Create / Edit BottomSheet Modal */}

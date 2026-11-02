@@ -26,7 +26,10 @@ export const Chip: React.FC<ChipProps> = ({
 }) => {
   const isInteractive = Boolean(onClick);
 
-  const sizeClasses = size === 'sm' ? 'text-xs py-1 px-2.5 gap-1.5' : 'text-xs sm:text-sm py-1.5 px-3 gap-2';
+  const sizeClasses =
+    size === 'sm'
+      ? `text-xs py-1.5 px-3 gap-1.5 ${isInteractive ? 'min-h-[44px]' : 'min-h-[32px]'}`
+      : `text-xs sm:text-sm py-2 px-3.5 gap-2 ${isInteractive ? 'min-h-[44px]' : 'min-h-[36px]'}`;
 
   return (
     <span
@@ -40,9 +43,9 @@ export const Chip: React.FC<ChipProps> = ({
         }
       }}
       style={{ touchAction: 'manipulation' }}
-      className={`inline-flex items-center rounded-xl font-medium select-none transition-all duration-150 border outline-none ${
+      className={`inline-flex items-center rounded-xl font-medium select-none whitespace-nowrap shrink-0 transition-all duration-150 border outline-none ${
         selected
-          ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-[0_0_10px_rgba(224,160,48,0.2)]'
+          ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-[0_0_10px_rgba(224,160,48,0.2)] font-bold'
           : 'bg-stone-900/60 border-stone-800 text-stone-300 hover:border-stone-700 hover:text-stone-100'
       } ${
         isInteractive && !disabled
@@ -50,8 +53,8 @@ export const Chip: React.FC<ChipProps> = ({
           : ''
       } ${disabled ? 'opacity-40 pointer-events-none' : ''} ${sizeClasses} ${className}`}
     >
-      {icon && <span className="shrink-0">{icon}</span>}
-      <span>{label}</span>
+      {icon && <span className="shrink-0 inline-flex items-center">{icon}</span>}
+      <span className="whitespace-nowrap shrink-0">{label}</span>
       {badge !== undefined && (
         <span
           className={`px-1.5 py-0.2 rounded-md text-[11px] font-bold ${

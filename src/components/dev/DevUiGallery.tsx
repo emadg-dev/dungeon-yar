@@ -26,6 +26,7 @@ import {
   Avatar,
   SectionAccordion,
   Spinner,
+  ScrollableRow,
 } from '../ui';
 import {
   Sun,
@@ -177,6 +178,22 @@ export const DevUiGallery: React.FC = () => {
                 <IconButton icon={<Shield className="w-5 h-5" />} aria-label="حفاظ" shape="circle" variant="secondary" />
                 <IconButton icon={<Search className="w-5 h-5" />} aria-label="جستجو" isLoading />
               </div>
+            </Card>
+
+            <Card variant="surface" className="space-y-4">
+              <h2 className="text-sm font-bold text-amber-400">ردیف اسکرول‌پذیر دکمه‌ها و تب‌ها (ScrollableRow)</h2>
+              <p className="text-xs text-stone-400">
+                جلوگیری از شکستن خط متن در موبایل، عدم شکستن تب‌ها به دو ردیف، همراه با اسکرول افقی ملایم، فید لبه‌های راست/چپ RTL و تراز خودکار تب فعال:
+              </p>
+              <ScrollableRow activeKey="tab-3" className="gap-2">
+                <Button variant="secondary" data-scroll-key="tab-1">برگه اصلی شخصیت</Button>
+                <Button variant="secondary" data-scroll-key="tab-2">تجهیزات و کوله‌پشتی</Button>
+                <Button variant="primary" data-scroll-key="tab-3">جادوها و اسلات‌ها</Button>
+                <Button variant="secondary" data-scroll-key="tab-4">ویژگی‌های کلاسی و فیت‌ها</Button>
+                <Button variant="secondary" data-scroll-key="tab-5">پیشینه داستانی و روابط</Button>
+                <Button variant="secondary" data-scroll-key="tab-6">یادداشت‌های کمپین و کوئست‌ها</Button>
+                <Button variant="secondary" data-scroll-key="tab-7">همراهان و احضارشدگان</Button>
+              </ScrollableRow>
             </Card>
           </section>
         )}

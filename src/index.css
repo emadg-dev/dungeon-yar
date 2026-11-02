@@ -2,6 +2,8 @@
 @import "./styles/tokens.css";
 
 @theme {
+  --font-sans: 'IRANSansWeb', 'IRANSans', 'IranSans', 'IRAN Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
   --color-bg: rgb(var(--color-bg-rgb) / <alpha-value>);
   --color-surface: rgb(var(--color-surface-rgb) / <alpha-value>);
   --color-surface-2: rgb(var(--color-surface-2-rgb) / <alpha-value>);
@@ -39,24 +41,67 @@
 }
 
 /* -------------------------------------------------------------
-   Self-Hosted IranSans (woff2, 400 / 600 / 800 Arabic + Latin)
+   Self-Hosted IRANSans (woff2 & ttf: 400 Regular, 500 Medium, 700 Bold)
    ------------------------------------------------------------- */
 @font-face {
+  font-family: 'IRANSansWeb';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/iransans/IRANSansWeb.woff2') format('woff2'),
+       url('/fonts/iransans/IRANSansWeb.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'IRANSansWeb';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/iransans/IRANSansWeb_Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IRANSansWeb';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/iransans/IRANSansWeb_Bold.woff2') format('woff2'),
+       url('/fonts/iransans/IRANSansWeb_Bold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'IRANSans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/iransans/IRANSansWeb.woff2') format('woff2'),
+       url('/fonts/iransans/IRANSansWeb.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'IRANSans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/iransans/IRANSansWeb_Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IRANSans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/iransans/IRANSansWeb_Bold.woff2') format('woff2'),
+       url('/fonts/iransans/IRANSansWeb_Bold.ttf') format('truetype');
+}
+
+@font-face {
   font-family: 'IranSans';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/iransans/IranSans-Regular.ttf') format('truetype');
-  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
-}
-
-@font-face {
-  font-family: 'IranSans';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/iransans/IranSans-Regular.ttf') format('truetype');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url('/fonts/iransans/IRANSansWeb.woff2') format('woff2'),
+       url('/fonts/iransans/IRANSansWeb.ttf') format('truetype');
 }
 
 @font-face {
@@ -64,35 +109,8 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url('/fonts/iransans/IranSans-Bold.ttf') format('truetype');
-  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
-}
-
-@font-face {
-  font-family: 'IranSans';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/iransans/IranSans-Bold.ttf') format('truetype');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'IranSans';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/iransans/IranSans-Bold.ttf') format('truetype');
-  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
-}
-
-@font-face {
-  font-family: 'IranSans';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/iransans/IranSans-Bold.ttf') format('truetype');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url('/fonts/iransans/IRANSansWeb_Bold.woff2') format('woff2'),
+       url('/fonts/iransans/IRANSansWeb_Bold.ttf') format('truetype');
 }
 
 :root {
@@ -196,7 +214,7 @@
     overscroll-behavior-y: none !important;
     overscroll-behavior-x: none !important;
     position: relative;
-    font-family: 'IranSans', 'Shabnam', Tahoma, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'IRANSansWeb', 'IRANSans', 'IranSans', 'IRAN Sans', 'Shabnam', Tahoma, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 0.9375rem; /* 15px body */
     line-height: 1.5;
     background: transparent; /* gradient lives on html; orbs below sit on top of it */
@@ -249,10 +267,31 @@
     z-index: 1; /* content renders above decorative body orbs */
   }
 
-  /* All text wrapping safeguard */
-  p, span, div, h1, h2, h3, h4, h5, h6, label, button, a {
+  /* All text wrapping safeguard (exempting buttons and button labels) */
+  p, div, h1, h2, h3, h4, h5, h6, label, a {
     overflow-wrap: anywhere;
     word-break: break-word;
+  }
+  span {
+    overflow-wrap: anywhere;
+  }
+
+  /* Global Button Single-Line & No-Wrap Guarantee */
+  button,
+  [role="button"],
+  .btn-nowrap {
+    white-space: nowrap !important;
+    flex-shrink: 0;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  button span,
+  [role="button"] span,
+  .btn-nowrap span {
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
   }
 
   /* Touch controls & responsiveness */
@@ -352,6 +391,60 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Reusable Button No-Wrap class */
+.btn-nowrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  min-height: 44px;
+}
+.btn-nowrap > span {
+  white-space: nowrap !important;
+  flex-shrink: 0;
+}
+
+/* Reusable Scrollable Row / Tab Bar container */
+.scrollable-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 0.5rem;
+  max-width: 100%;
+}
+.scrollable-row::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.scrollable-row > * {
+  flex-shrink: 0 !important;
+  scroll-snap-align: start;
+  white-space: nowrap !important;
+}
+
+/* Scrollbar hide helpers */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar,
+.scrollbar-none {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 /* Large steppers & dice touch targets (>= 48x48px) */

@@ -6,6 +6,7 @@ import { BottomSheet } from './mobile/BottomSheet';
 import { VirtualList } from './common/VirtualList';
 import { Dices, Flame, Skull, Table, Lock, Eye, RefreshCw, Sparkles, User as UserIcon } from 'lucide-react';
 import { api } from '../services/api';
+import { ScrollableRow } from './ui/ScrollableRow';
 
 interface DiceRollCardRowProps {
   roll: CampaignDiceRoll;
@@ -225,35 +226,41 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
     >
       <div className="space-y-4 text-xs text-[#EDE6D8]" dir="rtl">
         {/* Tab Switcher: کیسه تاس / میز بازی */}
-        <div className="flex rounded-xl bg-[#131110] border border-[#2F2A23] p-1 gap-1">
+        <ScrollableRow
+          activeKey={activeTab}
+          wrapperClassName="rounded-xl bg-[#131110] border border-[#2F2A23] p-1"
+          className="gap-1"
+        >
           <button
             type="button"
+            data-key="bag"
             onClick={() => setActiveTab('bag')}
-            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all min-h-[40px] flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all min-h-[44px] flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 snap-start ${
               activeTab === 'bag'
-                ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
+                ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md font-black'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
             }`}
           >
-            <Dices className="w-4 h-4" />
-            <span>کیسه تاس</span>
+            <Dices className="w-4 h-4 shrink-0" />
+            <span className="whitespace-nowrap shrink-0">کیسه تاس</span>
           </button>
           <button
             type="button"
+            data-key="table"
             onClick={() => {
               setActiveTab('table');
               fetchTableRolls();
             }}
-            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all min-h-[40px] flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all min-h-[44px] flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 snap-start ${
               activeTab === 'table'
-                ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
+                ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md font-black'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
             }`}
           >
-            <Table className="w-4 h-4" />
-            <span>میز بازی ({tableRolls.length})</span>
+            <Table className="w-4 h-4 shrink-0" />
+            <span className="whitespace-nowrap shrink-0">میز بازی ({tableRolls.length})</span>
           </button>
-        </div>
+        </ScrollableRow>
 
         {activeTab === 'bag' ? (
           <>
@@ -317,13 +324,18 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
             {/* d4–d100 Row */}
             <div>
               <label className="block text-xs font-bold text-[#A39A89] mb-1.5">نوع تاس:</label>
-              <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+              <ScrollableRow
+                activeKey={selectedSides}
+                wrapperClassName="w-full"
+                className="gap-2"
+              >
                 {diceTypes.map(sides => (
                   <button
                     key={sides}
+                    data-key={sides}
                     type="button"
                     onClick={() => setSelectedSides(sides)}
-                    className={`min-h-[48px] min-w-[48px] py-2 px-1 rounded-[12px] font-mono font-extrabold text-sm transition border touch-target min-w-[44px]-lg active:scale-95 flex items-center justify-center ${
+                    className={`min-h-[48px] min-w-[48px] py-2 px-2 rounded-[12px] font-mono font-extrabold text-sm transition border touch-target-lg active:scale-95 flex items-center justify-center whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                       selectedSides === sides
                         ? 'bg-[#E0A030] text-[#0E0D0C] border-[#E0A030] shadow-[0_0_12px_rgba(224,160,48,0.4)]'
                         : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23] hover:border-[#E0A030]/50'
@@ -332,7 +344,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                     d{sides}
                   </button>
                 ))}
-              </div>
+              </ScrollableRow>
             </div>
 
             {/* Count & Modifier Steppers */}
@@ -387,7 +399,11 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
             {/* Advantage Toggle */}
             <div>
               <label className="block text-xs font-bold text-[#A39A89] mb-1">حالت پرتاب (مزیت / ضعف):</label>
-              <div className="grid grid-cols-3 gap-2">
+              <ScrollableRow
+                activeKey={advantage}
+                wrapperClassName="w-full"
+                className="gap-2"
+              >
                 {[
                   { id: 'none', label: 'عادی' },
                   { id: 'adv', label: 'با مزیت (Adv)' },
@@ -395,18 +411,19 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                 ].map(item => (
                   <button
                     key={item.id}
+                    data-key={item.id}
                     type="button"
                     onClick={() => setAdvantage(item.id as any)}
-                    className={`py-2 px-1 rounded-[10px] text-xs font-bold transition border min-h-[44px] ${
+                    className={`flex-1 py-2 px-3 rounded-[10px] text-xs font-bold transition border min-h-[44px] whitespace-nowrap shrink-0 snap-start flex items-center justify-center ${
                       advantage === item.id
                         ? 'bg-[#E0A030] text-[#0E0D0C] border-[#E0A030]'
                         : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23]'
                     }`}
                   >
-                    {item.label}
+                    <span className="whitespace-nowrap shrink-0">{item.label}</span>
                   </button>
                 ))}
-              </div>
+              </ScrollableRow>
             </div>
 
             {/* Private Roll Toggle (Section 5) */}
