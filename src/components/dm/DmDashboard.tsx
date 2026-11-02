@@ -16,6 +16,7 @@ import { EditGrantModal } from './EditGrantModal';
 import { NextSessionCard } from '../session/NextSessionCard';
 import { PreviouslyOnCard } from '../session/PreviouslyOnCard';
 import { partitionSessions } from '../../../shared/rules/sessionEngine';
+import { api } from '../../services/api';
 
 interface DmDashboardProps {
   characters: Character[];
@@ -540,7 +541,17 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           characterName={grantModalChar.characterName}
           campaignId={activeCampaign.id}
           participationId={grantModalChar.participationId}
-          onGrantCreated={() => {
+          onGrant={async (data) => {
+            await api.createEditGrant(
+              activeCampaign.id,
+              grantModalChar.participationId,
+              data.scope,
+              data.preset,
+              data.fields,
+              data.expiresAt,
+              data.usesLeft,
+              data.reason
+            );
             setGrantModalChar(null);
             if (onRefreshCampaign) onRefreshCampaign();
           }}

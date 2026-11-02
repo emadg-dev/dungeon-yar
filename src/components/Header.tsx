@@ -6,8 +6,9 @@ import {
   Menu, X,
   CheckCircle2, RefreshCw, Shield, BookOpen, 
   SunMedium, Type, LogOut, ChevronDown, MoreVertical, Sparkles, Swords, Bell,
-  WifiOff, AlertTriangle
+  WifiOff, AlertTriangle, Eye
 } from 'lucide-react';
+import { getRoleLabelFa, CampaignRole } from '../../shared/permissions';
 
 export interface HeaderProps {
   currentUser: User | null;
@@ -191,6 +192,24 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="truncate text-[#E0A030]">{activeCampaignName || 'کمپین'}</span>
                   <ChevronDown className="w-3.5 h-3.5 text-[#A39A89] shrink-0" />
                 </button>
+              )}
+
+              {/* Role Badge in campaign space */}
+              {activeCampaignRole && (
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded-[8px] text-[11px] font-black shrink-0 ${
+                    activeCampaignRole === 'owner'
+                      ? 'bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/40'
+                      : activeCampaignRole === 'co_dm'
+                      ? 'bg-[#8B5CF6]/20 text-[#C4B5FD] border border-[#8B5CF6]/40'
+                      : activeCampaignRole === 'player'
+                      ? 'bg-[#475569]/30 text-[#CBD5E1] border border-[#64748B]/40'
+                      : 'bg-[#3F3F46]/30 text-[#A1A1AA] border border-[#52525B]/40'
+                  }`}
+                  title={`نقش شما: ${getRoleLabelFa(activeCampaignRole as CampaignRole)}`}
+                >
+                  {getRoleLabelFa(activeCampaignRole as CampaignRole)}
+                </span>
               )}
 
               {/* Character Dropdown inside campaign */}
@@ -414,7 +433,14 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-          </header>
+      {/* Persistent Spectator Banner */}
+      {viewMode === 'campaign_space' && activeCampaignRole === 'spectator' && (
+        <div className="w-full bg-[#181614] border-t border-[#3F3F46]/60 px-3 py-1.5 flex items-center justify-center gap-2 text-xs font-bold text-[#A1A1AA]">
+          <Eye className="w-4 h-4 text-[#A1A1AA] shrink-0" />
+          <span>حالت تماشا — فقط‌خواندنی (مشاهده برگه و تاس‌های روی میز مجاز است)</span>
+        </div>
+      )}
+    </header>
       {mobileMenuOpen && (
         <>
           <div

@@ -47,6 +47,19 @@ import {
   resolveConflict,
   getFieldLabelFa
 } from '../../shared/rules/offlineEngine';
+import {
+  can,
+  getCampaignRole as fetchCampaignRole,
+  requirePermission as verifyPermission,
+  canChangeMemberRole,
+  canKickMember,
+  canCreateInviteForRole,
+  filterCharacterForRole,
+  filterDiceFeedForRole,
+  filterEncounterForRole,
+  type CampaignRole,
+  type Action as PermissionAction
+} from '../../shared/permissions';
 import type {
   OfflineEditItem,
   ConflictDetails
@@ -1261,7 +1274,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (path.match(/^\/c\/[^/]+\/members$/) && method === 'GET') {
     const campId = path.split('/')[2];
     const myRole = await getMembershipRole(campId, actor.id);
-    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 403);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
     const res = await env.DB.prepare(
       `SELECT m.campaign_id, m.user_id, m.role, m.status, m.joined_at, u.display_name, u.email, u.avatar_url
          FROM campaign_members m
@@ -1285,8 +1298,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (path.match(/^\/c\/[^/]+\/invites$/) && method === 'GET') {
     const campId = path.split('/')[2];
     const myRole = await getMembershipRole(campId, actor.id);
-    if (actor.role !== 'dm' && myRole !== 'owner' && myRole !== 'co_dm') {
-      return error('دسترسی مجاز نیست.', 403);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'campaign:invite_members')) {
+      return error('فقط مالک یا دستیار دانجن‌مستر مجاز به مشاهده دعوت‌نامه‌ها هستند.', 403);
     }
     const res = await env.DB.prepare(
       'SELECT * FROM campaign_invites WHERE campaign_id = ? AND revoked_at IS NULL ORDER BY created_at DESC'
@@ -1306,15 +1320,21 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     })));
   }
 
-  // POST /api/c/:id/invites — create a campaign invite (owner / co_dm only)
+  // POST /api/c/:id/invites — create a campaign invite (owner / co_dm only; role must be player or spectator)
   if (path.match(/^\/c\/[^/]+\/invites$/) && method === 'POST') {
     const campId = path.split('/')[2];
     const myRole = await getMembershipRole(campId, actor.id);
-    if (actor.role !== 'dm' && myRole !== 'owner' && myRole !== 'co_dm') {
-      return error('دسترسی مجاز نیست.', 403);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'campaign:invite_members')) {
+      return error('فقط مالک یا دستیار دانجن‌مستر مجاز به ساخت کد دعوت هستند.', 403);
     }
     const body = await request.json() as any;
-    const role = ['owner', 'co_dm', 'player', 'spectator'].includes(body.role) ? body.role : 'player';
+    const requestedRole = (body.role === 'spectator' ? 'spectator' : 'player') as CampaignRole;
+    const inviteCheck = canCreateInviteForRole(myRole, requestedRole);
+    if (!inviteCheck.allowed) {
+      return error(inviteCheck.reason || 'کد دعوت نمی‌تواند نقش مالک یا دستیار DM را اعطا کند.', 400);
+    }
+    const role = requestedRole;
     const label = String(body.label || 'دعوت جدید').trim();
     const expiresInDays = Math.max(1, Math.min(365, parseInt(String(body.expiresInDays || 30), 10)));
     const maxUses = Math.max(1, parseInt(String(body.maxUses || 1), 10));
@@ -1350,7 +1370,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const campId = parts[2];
     const inviteId = parts[4];
     const myRole = await getMembershipRole(campId, actor.id);
-    if (actor.role !== 'dm' && myRole !== 'owner' && myRole !== 'co_dm') {
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'campaign:invite_members')) {
       return error('دسترسی مجاز نیست.', 403);
     }
     const res = await env.DB.prepare(
@@ -1385,7 +1406,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       'SELECT status FROM campaign_members WHERE campaign_id = ? AND user_id = ?'
     ).bind(campId, actor.id).first();
     if (existing && existing.status === 'active') return error('شما هم‌اکنون عضو این کمپین هستید.');
-    const memberRole = ['owner', 'co_dm', 'player', 'spectator'].includes(inv.role) ? inv.role : 'player';
+    // Invites can NEVER grant owner or co_dm
+    const memberRole: CampaignRole = inv.role === 'spectator' ? 'spectator' : 'player';
     await env.DB.prepare(
       `INSERT INTO campaign_members (campaign_id, user_id, role, status, joined_at) VALUES (?, ?, ?, 'active', ?)
        ON CONFLICT(campaign_id, user_id) DO UPDATE SET role = excluded.role, status = 'active', joined_at = excluded.joined_at`
@@ -1550,7 +1572,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // ---------------------------------------------------------
   const requireCampaignDm = async (campId: string) => {
     const myRole = await getMembershipRole(campId, actor.id);
-    return actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
+    return myRole === 'owner' || myRole === 'co_dm';
   };
 
   // POST /api/campaigns — create a campaign (owner membership created atomically)
@@ -1587,10 +1609,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return json(mapCampaignRow({ ...row, my_role: 'owner', member_count: 1, character_count: 0 }), 201);
   }
 
-  // PATCH /api/c/:id — update campaign fields (owner / co_dm)
+  // PATCH /api/c/:id — update campaign fields (owner ONLY)
   if (path.match(/^\/c\/[^/]+$/) && method === 'PATCH') {
     const campId = path.split('/')[2];
-    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'campaign:edit_settings')) {
+      return error('فقط مالک کمپین مجاز به تغییر تنظیمات یا وضعیت کمپین است.', 403);
+    }
     const row = await env.DB.prepare('SELECT * FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(campId).first();
     if (!row) return error('کمپین مورد نظر یافت نشد.', 404);
     const body = await request.json() as any;
@@ -1606,7 +1632,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     ).bind(next.name, next.description, next.tone, next.status, JSON.stringify(next.settings), now, campId).run();
     await audit('campaign-update', campId, { fields: Object.keys(body) });
     const updated = await env.DB.prepare('SELECT * FROM campaigns WHERE id = ?').bind(campId).first();
-    const myRole = await getMembershipRole(campId, actor.id);
     const mc = await env.DB.prepare("SELECT COUNT(*) AS n FROM campaign_members WHERE campaign_id = ? AND status = 'active'").bind(campId).first();
     const cc = await env.DB.prepare("SELECT COUNT(*) AS n FROM character_participations WHERE campaign_id = ? AND status = 'active'").bind(campId).first();
     return json(mapCampaignRow({ ...updated, my_role: myRole || 'owner', member_count: mc?.n ?? 0, character_count: cc?.n ?? 0 }));
@@ -1617,20 +1642,30 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const parts = path.split('/');
     const campId = parts[2];
     const targetUserId = parts[4];
-    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'campaign:change_member_roles')) {
+      return error('شما دسترسی لازم برای تغییر نقش اعضا را ندارید.', 403);
+    }
     const member = await env.DB.prepare(
       'SELECT * FROM campaign_members WHERE campaign_id = ? AND user_id = ?'
     ).bind(campId, targetUserId).first();
     if (!member) return error('عضو مورد نظر یافت نشد.', 404);
     const body = await request.json() as any;
-    if (member.role === 'owner' && body.role && body.role !== 'owner') {
-      return error('نمی‌توانید نقش مالک کمپین را تغییر دهید.', 400);
-    }
     const nextRole = body.role && ['owner', 'co_dm', 'player', 'spectator'].includes(body.role) ? body.role : member.role;
     const nextStatus = body.status && ['invited', 'active', 'left', 'removed'].includes(body.status) ? body.status : member.status;
+
+    // Validate role change permission with matrix rules
+    if (body.role && body.role !== member.role) {
+      const roleCheck = canChangeMemberRole(myRole, member.role, nextRole);
+      if (!roleCheck.allowed) {
+        return error(roleCheck.reason || 'تغییر نقش مجاز نیست.', 403);
+      }
+    }
+
     await env.DB.prepare('UPDATE campaign_members SET role = ?, status = ? WHERE campaign_id = ? AND user_id = ?')
       .bind(nextRole, nextStatus, campId, targetUserId).run();
-    await audit('campaign-member-update', targetUserId, { campaignId: campId, role: nextRole, status: nextStatus });
+    await audit('campaign-member-update', targetUserId, { campaignId: campId, role: nextRole, status: nextStatus, actorRole: myRole });
     const u = await env.DB.prepare('SELECT display_name, email, avatar_url FROM users WHERE id = ?').bind(targetUserId).first();
     return json({
       campaignId: campId,
@@ -1644,20 +1679,29 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     });
   }
 
-  // DELETE /api/c/:id/members/:userId — remove a member (cannot remove owner)
+  // DELETE /api/c/:id/members/:userId — remove/kick a member
   if (path.match(/^\/c\/[^/]+\/members\/[^/]+$/) && method === 'DELETE') {
     const parts = path.split('/');
     const campId = parts[2];
     const targetUserId = parts[4];
-    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'campaign:kick_member')) {
+      return error('شما دسترسی لازم برای اخراج اعضا را ندارید.', 403);
+    }
     const member = await env.DB.prepare(
       'SELECT role FROM campaign_members WHERE campaign_id = ? AND user_id = ?'
     ).bind(campId, targetUserId).first();
     if (!member) return error('عضو مورد نظر یافت نشد.', 404);
-    if (member.role === 'owner') return error('امکان حذف مالک کمپین وجود ندارد.', 400);
+
+    const kickCheck = canKickMember(myRole, member.role);
+    if (!kickCheck.allowed) {
+      return error(kickCheck.reason || 'امکان اخراج این عضو وجود ندارد.', 403);
+    }
+
     await env.DB.prepare("UPDATE campaign_members SET status = 'removed' WHERE campaign_id = ? AND user_id = ?")
       .bind(campId, targetUserId).run();
-    await audit('campaign-member-remove', targetUserId, { campaignId: campId });
+    await audit('campaign-member-remove', targetUserId, { campaignId: campId, actorRole: myRole });
     return json({ success: true });
   }
 
@@ -1667,7 +1711,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const body = await request.json() as any;
     const newOwnerId = String(body.newOwnerId || '');
     const myRole = await getMembershipRole(campId, actor.id);
-    if (actor.role !== 'dm' && myRole !== 'owner') {
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'campaign:transfer_ownership')) {
       return error('فقط مالک کمپین می‌تواند مالکیت را منتقل کند.', 403);
     }
     const camp = await env.DB.prepare('SELECT * FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(campId).first();
@@ -1710,15 +1755,12 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (path.match(/^\/c\/[^/]+\/dice$/) && method === 'GET') {
     const campId = path.split('/')[2];
     const myRole = await getMembershipRole(campId, actor.id);
-    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 403);
-    const isCampaignDm = myRole === 'owner' || myRole === 'co_dm' || actor.role === 'dm';
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
     const res = await env.DB.prepare(
       'SELECT * FROM dice_rolls WHERE campaign_id = ? ORDER BY created_at DESC, id DESC LIMIT 500'
     ).bind(campId).all();
     let rolls = (res.results || []).map(mapDiceRoll);
-    if (!isCampaignDm) {
-      rolls = rolls.filter((r: any) => r.visibility === 'table' || r.userId === actor.id);
-    }
+    rolls = filterDiceFeedForRole(rolls, myRole, actor.id);
     const after = url.searchParams.get('after');
     if (after) {
       const idx = rolls.findIndex((r: any) => r.id === after);
@@ -1731,13 +1773,18 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   if (path.match(/^\/c\/[^/]+\/dice$/) && method === 'POST') {
     const campId = path.split('/')[2];
     const myRole = await getMembershipRole(campId, actor.id);
-    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 403);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'dice:roll_table')) {
+      return error('تماشاچیان مجاز به پرتاب تاس نیستند.', 403);
+    }
     const camp = await env.DB.prepare('SELECT settings FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(campId).first();
     if (!camp) return error('کمپین مورد نظر یافت نشد.', 404);
     const settings = parseBlob(camp.settings, {});
     const body = await request.json() as any;
     let vis = body.visibility === 'dm_only' ? 'dm_only' : 'table';
-    if (actor.role !== 'dm' && vis === 'dm_only' && !settings.allowPlayerRollPrivate) vis = 'table';
+    if (!can(myRole, 'dice:roll_secret') && !settings.allowPlayerRollPrivate) {
+      vis = 'table';
+    }
     const rollId = `roll-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const details = {
       rolls: Array.isArray(body.results) ? body.results : [Number(body.total || 0) - Number(body.modifier || 0)],
@@ -2429,9 +2476,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const camp = await env.DB.prepare('SELECT id FROM campaigns WHERE id = ? AND deleted_at IS NULL').bind(cid).first();
     if (camp) {
       const myRole = await getMembershipRole(cid, actor.id);
-      if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 403);
+      if (!myRole && actor.role !== 'dm') return error('کمپین یافت نشد.', 404);
+      const isDmUser = myRole === 'owner' || myRole === 'co_dm' || actor.role === 'dm';
       const res = await env.DB.prepare(`${PART_SELECT} WHERE p.campaign_id = ? ORDER BY p.joined_at DESC`).bind(cid).all();
-      return json((res.results || []).map(mapParticipation));
+      const mapped = (res.results || []).map(mapParticipation).map((p: any) => isDmUser ? p : { ...p, dmNotes: '' });
+      return json(mapped);
     }
     const char = await env.DB.prepare('SELECT owner_id FROM characters WHERE id = ?').bind(cid).first();
     if (!char || (char.owner_id !== actor.id && actor.role !== 'dm')) return json([]);
@@ -2604,6 +2653,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const part = await env.DB.prepare('SELECT * FROM character_participations WHERE id = ? AND campaign_id = ?').bind(partId, campId).first();
     if (!part) return error('مشارکت شخصیت یافت نشد.', 404);
     const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('کمپین یافت نشد.', 404);
+    if (myRole === 'spectator') return error('تماشاچی دسترسی ویرایش شخصیت را ندارد.', 403);
     const charRow = (await env.DB.prepare('SELECT owner_id FROM characters WHERE id = ?').bind(part.character_id).first()) as { owner_id: string } | null;
     const isCharOwner = charRow?.owner_id === actor.id;
     const isDmActor = actor.role === 'dm' || myRole === 'owner' || myRole === 'co_dm';
@@ -2611,6 +2662,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       return error('دسترسی مجاز نیست.', 403);
     }
     const body = await request.json() as any;
+    if (!isDmActor && body.dmNotes !== undefined) {
+      delete body.dmNotes;
+    }
 
     // Enforce sheet lock: player cannot edit core stats when sheet is locked
     if (!isDmActor && part.sheet_locked === 1) {
@@ -2647,7 +2701,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       await env.DB.prepare(`UPDATE character_participations SET ${sets.join(', ')} WHERE id = ? AND campaign_id = ?`).bind(...binds).run();
     }
     const updated = await env.DB.prepare(`${PART_SELECT} WHERE p.id = ?`).bind(partId).first();
-    return json(mapParticipation(updated));
+    const mapped = mapParticipation(updated);
+    if (!isDmActor) {
+      mapped.dmNotes = '';
+    }
+    return json(mapped);
   }
 
   // POST /api/c/:id/participations/:pid/{approve|reject|request_changes} — DM review

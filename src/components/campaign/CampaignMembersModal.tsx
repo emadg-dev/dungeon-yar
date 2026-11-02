@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Campaign, CampaignMember, CampaignRole, User } from '../../types';
 import { Users, Crown, Shield, UserX, ArrowRightLeft, AlertTriangle } from 'lucide-react';
+import { canChangeMemberRole, canKickMember, getRoleLabelFa } from '../../../shared/permissions';
 
 interface CampaignMembersModalProps {
   isOpen: boolean;
@@ -28,7 +29,9 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const isOwner = campaign.ownerId === currentUser?.id;
+  const actorMember = members.find(m => m.userId === currentUser?.id);
+  const actorRole: CampaignRole = (actorMember?.role as CampaignRole) || (campaign.ownerId === currentUser?.id ? 'owner' : 'spectator');
+  const isOwner = actorRole === 'owner';
 
   const handleTransfer = async () => {
     if (!transferTargetId) return;
@@ -88,6 +91,21 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
           {members.map(member => {
             const isMemberOwner = member.role === 'owner';
             const isSelf = member.userId === currentUser?.id;
+            const validRoles: CampaignRole[] = ['co_dm', 'player', 'spectator'];
+            const allowedNextRoles = validRoles.filter(
+              r => r !== member.role && canChangeMemberRole(actorRole, member.role as CampaignRole, r)
+            );
+            const canKick = !isSelf && canKickMember(actorRole, member.role as CampaignRole);
+            const canTransfer = isOwner && !isMemberOwner && !isSelf;
+
+            const badgeColorClass =
+              member.role === 'owner'
+                ? 'bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/40'
+                : member.role === 'co_dm'
+                ? 'bg-[#8B5CF6]/20 text-[#C4B5FD] border border-[#8B5CF6]/40'
+                : member.role === 'player'
+                ? 'bg-[#475569]/30 text-[#CBD5E1] border border-[#64748B]/40'
+                : 'bg-[#3F3F46]/30 text-[#A1A1AA] border border-[#52525B]/40';
 
             return (
               <div
@@ -112,26 +130,29 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {/* Role Selector (Only DM can change, and Owner cannot be demoted directly) */}
-                  {isOwner && !isMemberOwner ? (
+                  {/* Role Selector (If actor has rights to change this member's role) */}
+                  {allowedNextRoles.length > 0 ? (
                     <select
                       value={member.role}
                       onChange={e => onUpdateMemberRole(member.userId, e.target.value as CampaignRole)}
                       className="bg-[#0E0D0C] border border-[#2F2A23] rounded-xl px-2.5 py-1.5 text-xs text-[#C9C0AE] font-medium"
                     >
-                      <option value="co_dm">دستیار DM</option>
-                      <option value="player">بازیکن</option>
-                      <option value="spectator">تماشاچی</option>
+                      <option value={member.role}>{getRoleLabelFa(member.role as CampaignRole)}</option>
+                      {allowedNextRoles.map(r => (
+                        <option key={r} value={r}>
+                          {getRoleLabelFa(r)}
+                        </option>
+                      ))}
                     </select>
                   ) : (
-                    <span className="text-xs px-2.5 py-1 rounded-xl bg-[#201D19] text-[#C9C0AE]">
-                      {member.role === 'owner' ? '👑 مالک کمپین' : member.role === 'co_dm' ? 'دستیار DM' : member.role === 'spectator' ? 'تماشاچی' : 'بازیکن'}
+                    <span className={`text-xs px-2.5 py-1 rounded-xl font-bold ${badgeColorClass}`}>
+                      {getRoleLabelFa(member.role as CampaignRole)}
                     </span>
                   )}
 
-                  {/* Actions for owner */}
-                  {isOwner && !isMemberOwner && (
-                    <div className="flex items-center gap-1">
+                  {/* Actions for owner / co-dm */}
+                  <div className="flex items-center gap-1">
+                    {canTransfer && (
                       <button
                         title="انتقال مالکیت به این کاربر"
                         onClick={() => setTransferTargetId(member.userId)}
@@ -139,6 +160,8 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
                       >
                         <ArrowRightLeft className="w-4 h-4" />
                       </button>
+                    )}
+                    {canKick && (
                       <button
                         title="حذف از کمپین"
                         onClick={() => onRemoveMember(member.userId)}
@@ -146,8 +169,8 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
                       >
                         <UserX className="w-4 h-4" />
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             );

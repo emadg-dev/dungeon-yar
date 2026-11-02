@@ -196,6 +196,15 @@ import {
   resolveConflict,
   getFieldLabelFa
 } from '../../shared/rules/offlineEngine';
+import {
+  can as canPermission,
+  canChangeMemberRole,
+  canKickMember,
+  canCreateInviteForRole,
+  filterCharacterForRole,
+  filterDiceFeedForRole,
+  filterEncounterForRole
+} from '../../shared/permissions';
 import type {
   OfflineEditItem,
   ConflictDetails
@@ -3214,8 +3223,9 @@ export class LocalApi implements ApiClient {
 
   async updateCampaign(id: string, data: Partial<Campaign>): Promise<Campaign> {
     const role = await this.getCampaignRole(id);
-    if (role !== 'owner' && role !== 'co_dm') {
-      throw { status: 403, message: 'فقط مالک یا دستیار دانجن مستر مجاز به تغییر تنظیمات کمپین هستند.' };
+    if (!role) throw { status: 404, message: 'کمپین یافت نشد یا شما عضو آن نیستید.' };
+    if (!canPermission(role, 'campaign:edit_settings')) {
+      throw { status: 403, message: 'فقط مالک کمپین مجاز به تغییر تنظیمات یا وضعیت کمپین است.' };
     }
     const all = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
     const camp = all.find(c => c.id === id);
@@ -3237,7 +3247,8 @@ export class LocalApi implements ApiClient {
 
   async deleteCampaign(id: string): Promise<void> {
     const role = await this.getCampaignRole(id);
-    if (role !== 'owner') {
+    if (!role) throw { status: 404, message: 'کمپین یافت نشد یا شما عضو آن نیستید.' };
+    if (!canPermission(role, 'campaign:delete_archive')) {
       throw { status: 403, message: 'فقط مالک می‌تواند کمپین را حذف کند.' };
     }
     const all = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
@@ -3252,16 +3263,19 @@ export class LocalApi implements ApiClient {
 
   async updateCampaignMember(campaignId: string, userId: string, data: { role?: CampaignRole; status?: 'invited' | 'active' | 'left' | 'removed' }): Promise<CampaignMember> {
     const myRole = await this.getCampaignRole(campaignId);
-    if (myRole !== 'owner' && myRole !== 'co_dm') {
-      throw { status: 403, message: 'فقط دانجن مستر مجاز به مدیریت اعضاست.' };
+    if (!myRole) throw { status: 404, message: 'کمپین یافت نشد یا شما عضو آن نیستید.' };
+    if (!canPermission(myRole, 'campaign:change_member_roles')) {
+      throw { status: 403, message: 'شما دسترسی لازم برای تغییر نقش اعضا را ندارید.' };
     }
     const allMembers = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
     const mem = allMembers.find(m => m.campaignId === campaignId && m.userId === userId);
     if (!mem) throw { status: 404, message: 'عضو یافت نشد.' };
 
-    // Cannot demote or change owner role directly
-    if (mem.role === 'owner' && data.role && data.role !== 'owner') {
-      throw { status: 400, message: 'نقش مالک تنها از طریق انتقال مالکیت تغییر می‌یابد.' };
+    if (data.role && data.role !== mem.role) {
+      const roleCheck = canChangeMemberRole(myRole, mem.role, data.role);
+      if (!roleCheck.allowed) {
+        throw { status: 403, message: roleCheck.reason || 'تغییر نقش مجاز نیست.' };
+      }
     }
 
     if (data.role) mem.role = data.role;
@@ -3272,18 +3286,21 @@ export class LocalApi implements ApiClient {
 
   async removeCampaignMember(campaignId: string, userId: string): Promise<void> {
     const myRole = await this.getCampaignRole(campaignId);
-    if (myRole !== 'owner' && myRole !== 'co_dm') {
-      throw { status: 403, message: 'دسترسی غیرمجاز.' };
+    if (!myRole) throw { status: 404, message: 'کمپین یافت نشد یا شما عضو آن نیستید.' };
+    if (!canPermission(myRole, 'campaign:kick_member')) {
+      throw { status: 403, message: 'شما دسترسی لازم برای اخراج اعضا را ندارید.' };
     }
     const allMembers = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
     const mem = allMembers.find(m => m.campaignId === campaignId && m.userId === userId);
-    if (mem?.role === 'owner') {
-      throw { status: 400, message: 'نمی‌توان مالک کمپین را حذف کرد.' };
+    if (!mem) throw { status: 404, message: 'عضو یافت نشد.' };
+
+    const kickCheck = canKickMember(myRole, mem.role);
+    if (!kickCheck.allowed) {
+      throw { status: 403, message: kickCheck.reason || 'امکان اخراج این عضو وجود ندارد.' };
     }
-    if (mem) {
-      mem.status = 'removed';
-      this.setItem('campaign_members', allMembers);
-    }
+
+    mem.status = 'removed';
+    this.setItem('campaign_members', allMembers);
   }
 
   async transferCampaignOwnership(campaignId: string, newOwnerId: string): Promise<Campaign> {
@@ -3365,12 +3382,22 @@ export class LocalApi implements ApiClient {
 
   async createCampaignInvite(campaignId: string, data: { role?: CampaignRole; label?: string; expiresInDays?: number; maxUses?: number; assignParticipationId?: string }): Promise<CampaignInvite> {
     const user = this.currentUser || SEED_USERS[0];
+    const myRole = await this.getCampaignRole(campaignId);
+    if (!myRole) throw { status: 404, message: 'کمپین یافت نشد یا شما عضو آن نیستید.' };
+    if (!canPermission(myRole, 'campaign:invite_members')) {
+      throw { status: 403, message: 'فقط مالک یا دستیار دانجن‌مستر مجاز به ساخت کد دعوت هستند.' };
+    }
+    const requestedRole = (data.role === 'spectator' ? 'spectator' : 'player') as CampaignRole;
+    const inviteCheck = canCreateInviteForRole(myRole, requestedRole);
+    if (!inviteCheck.allowed) {
+      throw { status: 400, message: inviteCheck.reason || 'کد دعوت نمی‌تواند نقش مالک یا دستیار DM را اعطا کند.' };
+    }
     const code = `inv-${Math.random().toString(36).substring(2, 10)}`;
     const newInv: CampaignInvite = {
       id: `cinv-${Date.now()}`,
       campaignId,
       code,
-      role: data.role || 'player',
+      role: requestedRole,
       label: data.label || 'دعوت جدید',
       createdBy: user.id,
       createdAt: Date.now(),
@@ -4944,11 +4971,15 @@ export class LocalApi implements ApiClient {
   // Shared Dice Feed
   async postDiceRoll(campaignId: string, roll: { label: string; formula: string; mode: 'normal' | 'adv' | 'dis'; results: any; modifier: number; total: number; nat20?: boolean; nat1?: boolean; visibility?: 'table' | 'dm_only'; participationId?: string }): Promise<CampaignDiceRoll> {
     const user = this.currentUser || SEED_USERS[0];
-    const isDm = user.role === 'dm';
+    const myRole = await this.getCampaignRole(campaignId);
+    if (!myRole) throw { status: 404, message: 'کمپین یافت نشد یا شما عضو آن نیستید.' };
+    if (!canPermission(myRole, 'dice:roll_table')) {
+      throw { status: 403, message: 'تماشاچیان مجاز به پرتاب تاس نیستند.' };
+    }
     const camp = (this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS)).find(c => c.id === campaignId);
 
     let vis = roll.visibility || 'table';
-    if (!isDm && vis === 'dm_only' && !camp?.settings.allowPlayerRollPrivate) {
+    if (!canPermission(myRole, 'dice:roll_secret') && !camp?.settings.allowPlayerRollPrivate) {
       vis = 'table';
     }
 
@@ -4986,14 +5017,10 @@ export class LocalApi implements ApiClient {
   async listDiceRolls(campaignId: string, after?: string, limit = 50): Promise<CampaignDiceRoll[]> {
     const user = this.currentUser || SEED_USERS[0];
     const role = await this.getCampaignRole(campaignId);
-    const isDm = role === 'owner' || role === 'co_dm';
+    if (!role) throw { status: 404, message: 'کمپین یافت نشد یا شما عضو آن نیستید.' };
 
     const allRolls = this.getItem<CampaignDiceRoll[]>('dice_rolls', SEED_CAMPAIGN_DICE_ROLLS);
-    let filtered = allRolls.filter(r => r.campaignId === campaignId);
-
-    if (!isDm) {
-      filtered = filtered.filter(r => r.visibility === 'table' || r.userId === user.id);
-    }
+    let filtered = filterDiceFeedForRole(allRolls.filter(r => r.campaignId === campaignId), role, user.id);
 
     if (after) {
       const idx = filtered.findIndex(r => r.id === after);
