@@ -117,7 +117,7 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
             <button
               type="button"
               onClick={() => setKindFilter('all')}
-              className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold transition touch-target ${
+              className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold transition touch-target min-w-[44px] ${
                 kindFilter === 'all' ? 'bg-[#E0A030] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
@@ -126,7 +126,7 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
             <button
               type="button"
               onClick={() => setKindFilter('map')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target ${
+              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
                 kindFilter === 'map' ? 'bg-[#4ADE80] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
@@ -136,7 +136,7 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
             <button
               type="button"
               onClick={() => setKindFilter('image')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target ${
+              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
                 kindFilter === 'image' ? 'bg-[#38BDF8] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
@@ -146,7 +146,7 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
             <button
               type="button"
               onClick={() => setKindFilter('text')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target ${
+              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
                 kindFilter === 'text' ? 'bg-[#E0A030] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >

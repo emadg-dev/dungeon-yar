@@ -44,7 +44,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         <button
           type="button"
           onClick={onRetry}
-          className="mt-2 py-2.5 px-5 rounded-[12px] bg-[#201D19] hover:bg-[#2A2621] text-[#EDE6D8] border border-[#2F2A23] font-bold text-xs flex items-center gap-2 touch-target transition-all"
+          className="mt-2 py-2.5 px-5 rounded-[12px] bg-[#201D19] hover:bg-[#2A2621] text-[#EDE6D8] border border-[#2F2A23] font-bold text-xs flex items-center gap-2 touch-target min-w-[44px] transition-all"
         >
           <RefreshCw className="w-4 h-4 text-[#E0A030]" />
           <span>تلاش دوباره</span>
@@ -55,7 +55,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         <button
           type="button"
           onClick={onAction}
-          className="mt-2 py-2.5 px-5 btn-primary-amber text-xs touch-target"
+          className="mt-2 py-2.5 px-5 btn-primary-amber text-xs touch-target min-w-[44px]"
         >
           {actionLabel}
         </button>

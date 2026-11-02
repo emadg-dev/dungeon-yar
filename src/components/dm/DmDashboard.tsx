@@ -169,7 +169,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
         <button
           type="button"
           onClick={nextDay}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] btn-primary-amber text-xs font-bold transition touch-target"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] btn-primary-amber text-xs font-bold transition touch-target min-w-[44px]"
         >
           <span>روز بعد</span>
           <ChevronRight className="w-4 h-4" />
@@ -249,7 +249,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           <button
             type="button"
             onClick={() => setXpModalOpen(true)}
-            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/25 transition touch-target"
+            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/25 transition touch-target min-w-[44px]"
           >
             <Award className="w-4 h-4 text-[#F2C265]" />
             <span>اعطای امتیاز تجربه (XP)</span>
@@ -258,7 +258,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           <button
             type="button"
             onClick={rollSecretCheck}
-            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] text-xs font-bold hover:border-[#E0A030] transition touch-target"
+            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] text-xs font-bold hover:border-[#E0A030] transition touch-target min-w-[44px]"
           >
             <Dices className="w-4 h-4 text-[#E0A030]" />
             <span>چک ادراک مخفی</span>
@@ -267,7 +267,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           <button
             type="button"
             onClick={() => onApplyGroupRest('short')}
-            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] text-xs font-bold hover:border-[#E0A030] transition touch-target"
+            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] text-xs font-bold hover:border-[#E0A030] transition touch-target min-w-[44px]"
           >
             <Moon className="w-4 h-4 text-[#E0A030]" />
             <span>استراحت کوتاه گروه</span>
@@ -276,7 +276,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           <button
             type="button"
             onClick={() => onApplyGroupRest('long')}
-            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] text-xs font-bold hover:border-[#E0A030] transition touch-target"
+            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] text-xs font-bold hover:border-[#E0A030] transition touch-target min-w-[44px]"
           >
             <Sun className="w-4 h-4 text-[#E0A030]" />
             <span>استراحت بلند گروه</span>
@@ -448,7 +448,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                   <button
                     type="button"
                     onClick={() => awardInspiration(char)}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#E0A030] hover:border-[#E0A030] text-[11px] font-bold transition touch-target"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#E0A030] hover:border-[#E0A030] text-[11px] font-bold transition touch-target min-w-[44px]"
                   >
                     <Award className="w-3.5 h-3.5" />
                     <span>اعطای الهام</span>
@@ -457,7 +457,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                   <button
                     type="button"
                     onClick={() => setOverrideModalChar({ character: char, participation: part })}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:text-[#E0A030] text-[11px] font-bold transition touch-target"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:text-[#E0A030] text-[11px] font-bold transition touch-target min-w-[44px]"
                   >
                     <Edit3 className="w-3.5 h-3.5 text-[#E0A030]" />
                     <span>ویرایش مستقیم DM</span>
@@ -467,7 +467,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                     <button
                       type="button"
                       onClick={() => setGrantModalChar({ participationId: part.id, characterName: char.name })}
-                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#F2C265] hover:border-[#E0A030] text-[11px] font-bold transition touch-target"
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#F2C265] hover:border-[#E0A030] text-[11px] font-bold transition touch-target min-w-[44px]"
                       title="صدور مجوز ویرایش موقت"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-[#E0A030]" />
@@ -478,7 +478,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                   <button
                     type="button"
                     onClick={() => onInspectCharacter(char.id)}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:text-[#E0A030] text-[11px] font-bold transition touch-target ms-auto"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:text-[#E0A030] text-[11px] font-bold transition touch-target min-w-[44px] ms-auto"
                   >
                     <span>برگه</span>
                     <ChevronRight className="w-3.5 h-3.5" />

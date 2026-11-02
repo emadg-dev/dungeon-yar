@@ -167,7 +167,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                 setShowAddWeapon(true);
               }
             }}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-[#E0A030]/15 hover:bg-[#E0A030]/25 text-[#E0A030] border border-[#E0A030]/30 text-xs font-bold transition touch-target"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-[#E0A030]/15 hover:bg-[#E0A030]/25 text-[#E0A030] border border-[#E0A030]/30 text-xs font-bold transition touch-target min-w-[44px]"
           >
             {isCombatLocked ? <Lock className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
             <span>{isCombatLocked ? 'سلاح جدید (قفل DM)' : 'سلاح جدید'}</span>
@@ -213,7 +213,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                       <button
                         type="button"
                         onClick={() => setDeleteConfirm({ isOpen: true, type: 'weapon', id: w.id, name: w.name })}
-                        className="text-[#A39A89] hover:text-[#C2512B] p-2 touch-target"
+                        className="text-[#A39A89] hover:text-[#C2512B] p-2 touch-target min-w-[44px]"
                         title="حذف سلاح"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -263,7 +263,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                     <button
                       type="button"
                       onClick={() => onRollCheck(20, 1, attackBonus, `حمله‌ی ${w.name}`)}
-                      className="py-2.5 px-3 rounded-[12px] bg-[#201D19] hover:bg-[#201D19]/80 active:bg-[#0E0D0C] text-[#EDE6D8] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target border border-[#2F2A23]"
+                      className="py-2.5 px-3 rounded-[12px] bg-[#201D19] hover:bg-[#201D19]/80 active:bg-[#0E0D0C] text-[#EDE6D8] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] border border-[#2F2A23]"
                     >
                       <Dices className="w-4 h-4 text-[#E0A030]" />
                       <span>حمله</span>
@@ -272,7 +272,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                     <button
                       type="button"
                       onClick={() => rollWeaponDamage(w)}
-                      className="py-2.5 px-3 rounded-[12px] btn-primary-amber text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target shadow-md"
+                      className="py-2.5 px-3 rounded-[12px] btn-primary-amber text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] shadow-md"
                     >
                       <Flame className="w-4 h-4" />
                       <span>صدمه</span>
@@ -319,7 +319,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                     <button
                       type="button"
                       onClick={() => onRollCheck(20, 1, 4, `حمله همراه ${comp.name}`)}
-                      className="px-2 py-1 rounded-[8px] bg-[#171513] text-[#E0A030] border border-[#2F2A23] font-mono text-xs font-bold dice-ltr touch-target"
+                      className="px-2 py-1 rounded-[8px] bg-[#171513] text-[#E0A030] border border-[#2F2A23] font-mono text-xs font-bold dice-ltr touch-target min-w-[44px]"
                     >
                       {comp.attack.toHit} ({comp.attack.damage})
                     </button>
@@ -351,7 +351,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                 setShowAddFeature(true);
               }
             }}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-[#E0A030]/15 hover:bg-[#E0A030]/25 text-[#E0A030] border border-[#E0A030]/30 text-xs font-bold transition touch-target self-end sm:self-auto"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-[#E0A030]/15 hover:bg-[#E0A030]/25 text-[#E0A030] border border-[#E0A030]/30 text-xs font-bold transition touch-target min-w-[44px] self-end sm:self-auto"
           >
             {isCombatLocked ? <Lock className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
             <span>{isCombatLocked ? 'توانایی نو (قفل DM)' : 'توانایی نو'}</span>
@@ -375,7 +375,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                   setFeatureFilter(chip.id as any);
                 });
               }}
-              className={`px-3 py-1.5 rounded-[10px] text-xs font-bold transition whitespace-nowrap touch-target ${
+              className={`px-3 py-1.5 rounded-[10px] text-xs font-bold transition whitespace-nowrap touch-target min-w-[44px] ${
                 featureFilter === chip.id
                   ? 'bg-[#E0A030] text-[#0E0D0C]'
                   : 'bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23]'
@@ -401,7 +401,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                   {/* Collapsible header */}
                   <div
                     onClick={() => toggleExpandFeature(feat.id)}
-                    className="flex flex-wrap items-center justify-between gap-2 cursor-pointer select-none touch-target"
+                    className="flex flex-wrap items-center justify-between gap-2 cursor-pointer select-none touch-target min-w-[44px]"
                   >
                     <div className="flex items-center gap-2">
                       <span className="font-extrabold text-xs text-[#EDE6D8]">{feat.name}</span>
@@ -417,7 +417,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                           e.stopPropagation();
                           setDeleteConfirm({ isOpen: true, type: 'feature', id: feat.id, name: feat.name });
                         }}
-                        className="text-[#A39A89] hover:text-[#C2512B] p-1.5 touch-target"
+                        className="text-[#A39A89] hover:text-[#C2512B] p-1.5 touch-target min-w-[44px]"
                         title="حذف توانایی"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

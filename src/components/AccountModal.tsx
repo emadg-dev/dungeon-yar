@@ -213,12 +213,12 @@ export const AccountModal: React.FC<AccountModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center bg-[#0E0D0C]/95 backdrop-blur-md p-3 sm:p-6 overflow-y-auto"
       dir="rtl"
     >
-      <div className="w-full max-w-lg surface-card card-gold-top p-5 sm:p-7 space-y-5 my-auto relative shadow-2xl">
+      <div className="w-full max-w-3xl min-h-[75vh] surface-card card-gold-top min-h-[75vh] p-5 sm:p-7 space-y-5 my-auto relative shadow-2xl">
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 start-4 p-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] touch-target"
+          className="absolute top-4 start-4 p-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
           title="بستن"
         >
           <X className="w-4 h-4" />
@@ -244,7 +244,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('profile')}
-            className={`flex-1 py-1.5 px-2.5 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1 touch-target shrink-0 ${
+            className={`flex-1 py-1.5 px-2.5 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1 touch-target min-w-[44px] shrink-0 ${
               activeTab === 'profile'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -256,7 +256,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('security')}
-            className={`flex-1 py-1.5 px-2.5 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1 touch-target shrink-0 ${
+            className={`flex-1 py-1.5 px-2.5 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1 touch-target min-w-[44px] shrink-0 ${
               activeTab === 'security'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -268,7 +268,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('sessions')}
-            className={`flex-1 py-1.5 px-2.5 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1 touch-target shrink-0 ${
+            className={`flex-1 py-1.5 px-2.5 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1 touch-target min-w-[44px] shrink-0 ${
               activeTab === 'sessions'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -280,7 +280,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('data')}
-            className={`flex-1 py-1.5 px-2.5 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1 touch-target shrink-0 ${
+            className={`flex-1 py-1.5 px-2.5 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1 touch-target min-w-[44px] shrink-0 ${
               activeTab === 'data'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -326,7 +326,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               <button
                 type="submit"
                 disabled={loading}
-                className="py-2.5 px-4 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-h-[44px] flex items-center justify-center gap-1.5"
+                className="py-2.5 px-4 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[44px] flex items-center justify-center gap-1.5"
               >
                 <Check className="w-3.5 h-3.5" />
                 <span>ذخیره تغییرات نام</span>
@@ -346,7 +346,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                       key={c.id}
                       type="button"
                       onClick={() => onSelectActiveCharacter(c.id)}
-                      className={`text-start p-2.5 rounded-[10px] border flex flex-wrap items-center justify-between gap-2 transition-all touch-target ${
+                      className={`text-start p-2.5 rounded-[10px] border flex flex-wrap items-center justify-between gap-2 transition-all touch-target min-w-[44px] ${
                         activeCharacterId === c.id
                           ? 'bg-[#E0A030]/15 text-[#E0A030] border-[#E0A030]/50 font-bold'
                           : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23] hover:border-[#E0A030]/40'
@@ -409,7 +409,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               <button
                 type="submit"
                 disabled={loading}
-                className="py-2.5 px-4 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-h-[44px]"
+                className="py-2.5 px-4 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[44px]"
               >
                 به‌روزرسانی رمز عبور
               </button>
@@ -443,7 +443,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               <button
                 type="submit"
                 disabled={loading}
-                className="py-2 px-4 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] touch-target min-h-[44px]"
+                className="py-2 px-4 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] touch-target min-w-[44px] min-h-[44px]"
               >
                 ثبت ایمیل جدید
               </button>
@@ -498,7 +498,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleRevokeSession(s.id)}
-                      className="p-2 rounded-[8px] bg-[#171513] text-[#A39A89] hover:text-[#C2512B] border border-[#2F2A23] touch-target"
+                      className="p-2 rounded-[8px] bg-[#171513] text-[#A39A89] hover:text-[#C2512B] border border-[#2F2A23] touch-target min-w-[44px]"
                       title="خاتمه دادن به این نشست"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -521,7 +521,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               <button
                 type="button"
                 onClick={handleExportData}
-                className="py-2 px-3 rounded-[8px] btn-primary-amber font-bold text-xs touch-target flex items-center gap-1.5 min-h-[44px]"
+                className="py-2 px-3 rounded-[8px] btn-primary-amber font-bold text-xs touch-target min-w-[44px] flex items-center gap-1.5 min-h-[44px]"
               >
                 <Download className="w-4 h-4" />
                 <span>دانلود نسخه پشتیبان داده‌ها</span>
@@ -592,7 +592,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     }
                     setShowDeleteConfirm(true);
                   }}
-                  className="py-2 px-3 rounded-[8px] bg-[#C2512B]/20 text-[#C2512B] hover:bg-[#C2512B]/30 border border-[#C2512B]/40 text-xs font-bold touch-target min-h-[44px] flex items-center gap-1.5"
+                  className="py-2 px-3 rounded-[8px] bg-[#C2512B]/20 text-[#C2512B] hover:bg-[#C2512B]/30 border border-[#C2512B]/40 text-xs font-bold touch-target min-w-[44px] min-h-[44px] flex items-center gap-1.5"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>درخواست حذف حساب کاربری</span>
@@ -605,14 +605,14 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                       type="button"
                       disabled={deleting}
                       onClick={handleDeleteAccount}
-                      className="py-1.5 px-3 rounded-[6px] bg-[#C2512B] text-white hover:bg-[#A84322] font-bold text-xs touch-target min-h-[40px]"
+                      className="py-1.5 px-3 rounded-[6px] bg-[#C2512B] text-white hover:bg-[#A84322] font-bold text-xs touch-target min-w-[44px] min-h-[40px]"
                     >
                       {deleting ? 'در حال حذف...' : 'بله، حسابم را حذف کن'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="py-1.5 px-3 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] text-xs font-bold touch-target min-h-[40px]"
+                      className="py-1.5 px-3 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] text-xs font-bold touch-target min-w-[44px] min-h-[40px]"
                     >
                       انصراف
                     </button>
@@ -628,7 +628,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   onLogout();
                   onClose();
                 }}
-                className="w-full py-2.5 rounded-[10px] bg-[#201D19] text-[#EDE6D8] hover:text-[#C2512B] hover:bg-[#201D19]/80 border border-[#2F2A23] font-extrabold text-xs transition touch-target flex items-center justify-center gap-2 min-h-[44px]"
+                className="w-full py-2.5 rounded-[10px] bg-[#201D19] text-[#EDE6D8] hover:text-[#C2512B] hover:bg-[#201D19]/80 border border-[#2F2A23] font-extrabold text-xs transition touch-target min-w-[44px] flex items-center justify-center gap-2 min-h-[44px]"
               >
                 <LogOut className="w-4 h-4 text-[#A39A89]" />
                 <span>خروج از حساب کاربری</span>

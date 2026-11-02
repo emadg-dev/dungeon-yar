@@ -274,7 +274,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
               setEditingHandout(null);
               setIsEditorOpen(true);
             }}
-            className="px-3.5 py-2 rounded-[10px] bg-[#E0A030] hover:bg-[#F2C265] text-[#14120E] text-xs font-bold transition flex items-center gap-1.5 touch-target shadow-md"
+            className="px-3.5 py-2 rounded-[10px] bg-[#E0A030] hover:bg-[#F2C265] text-[#14120E] text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] shadow-md"
           >
             <Plus className="w-4 h-4" />
             <span>سند یا نقشه جدید</span>
@@ -311,7 +311,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
             <button
               type="button"
               onClick={() => setKindFilter('all')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition touch-target ${
+              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition touch-target min-w-[44px] ${
                 kindFilter === 'all' ? 'bg-[#E0A030] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
@@ -320,7 +320,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
             <button
               type="button"
               onClick={() => setKindFilter('map')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target ${
+              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
                 kindFilter === 'map' ? 'bg-[#4ADE80] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
@@ -330,7 +330,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
             <button
               type="button"
               onClick={() => setKindFilter('image')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target ${
+              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
                 kindFilter === 'image' ? 'bg-[#38BDF8] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
@@ -340,7 +340,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
             <button
               type="button"
               onClick={() => setKindFilter('text')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target ${
+              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
                 kindFilter === 'text' ? 'bg-[#E0A030] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
@@ -484,7 +484,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                       type="button"
                       disabled={index === 0}
                       onClick={() => handleMoveSort(index, 'up')}
-                      className="p-1.5 rounded-[6px] text-[#A39A89] hover:text-[#EDE6D8] disabled:opacity-20 touch-target"
+                      className="p-1.5 rounded-[6px] text-[#A39A89] hover:text-[#EDE6D8] disabled:opacity-20 touch-target min-w-[44px]"
                       title="انتقال به بالا"
                     >
                       <ArrowUp className="w-3.5 h-3.5" />
@@ -493,7 +493,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                       type="button"
                       disabled={index === filteredHandouts.length - 1}
                       onClick={() => handleMoveSort(index, 'down')}
-                      className="p-1.5 rounded-[6px] text-[#A39A89] hover:text-[#EDE6D8] disabled:opacity-20 touch-target"
+                      className="p-1.5 rounded-[6px] text-[#A39A89] hover:text-[#EDE6D8] disabled:opacity-20 touch-target min-w-[44px]"
                       title="انتقال به پایین"
                     >
                       <ArrowDown className="w-3.5 h-3.5" />
@@ -504,7 +504,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                   <button
                     type="button"
                     onClick={() => (isRevealed ? handleQuickHide(handout) : handleQuickReveal(handout))}
-                    className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition flex items-center gap-1 touch-target ${
+                    className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
                       isRevealed
                         ? 'bg-rose-500/15 text-rose-300 hover:bg-rose-500/25 border border-rose-500/30'
                         : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/40'
@@ -519,7 +519,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                   <button
                     type="button"
                     onClick={() => handleOpenRecipientModal(handout)}
-                    className="p-1.5 rounded-[8px] bg-[#14120E] hover:bg-[#252019] text-sky-400 border border-sky-800/40 touch-target"
+                    className="p-1.5 rounded-[8px] bg-[#14120E] hover:bg-[#252019] text-sky-400 border border-sky-800/40 touch-target min-w-[44px]"
                     title="انتخاب بازیکنان مجاز"
                   >
                     <Users className="w-3.5 h-3.5" />
@@ -529,7 +529,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                   <button
                     type="button"
                     onClick={() => setViewingHandout(handout)}
-                    className="p-1.5 rounded-[8px] bg-[#14120E] hover:bg-[#252019] text-[#E0A030] border border-[#3A3327] touch-target"
+                    className="p-1.5 rounded-[8px] bg-[#14120E] hover:bg-[#252019] text-[#E0A030] border border-[#3A3327] touch-target min-w-[44px]"
                     title="مشاهده و ویرایش نشانگرها"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -542,7 +542,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                       setEditingHandout(handout);
                       setIsEditorOpen(true);
                     }}
-                    className="p-1.5 rounded-[8px] bg-[#14120E] hover:bg-[#252019] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target"
+                    className="p-1.5 rounded-[8px] bg-[#14120E] hover:bg-[#252019] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target min-w-[44px]"
                     title="ویرایش مشخصات"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
@@ -552,7 +552,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                   <button
                     type="button"
                     onClick={() => handleDeleteHandout(handout.id)}
-                    className="p-1.5 rounded-[8px] bg-[#14120E] hover:bg-rose-500/20 text-[#A39A89] hover:text-rose-400 border border-[#2F2A23] touch-target"
+                    className="p-1.5 rounded-[8px] bg-[#14120E] hover:bg-rose-500/20 text-[#A39A89] hover:text-rose-400 border border-[#2F2A23] touch-target min-w-[44px]"
                     title="حذف سند"
                   >
                     <Trash2 className="w-3.5 h-3.5" />

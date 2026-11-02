@@ -550,7 +550,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <button
             type="button"
             onClick={() => setNewEncounterSheet(true)}
-            className="bg-[#E0A030] text-[#0E0D0C] font-extrabold px-3.5 py-2 rounded-[12px] flex items-center gap-1.5 hover:bg-[#F2C265] transition shadow-md touch-target shrink-0 text-xs sm:text-sm"
+            className="bg-[#E0A030] text-[#0E0D0C] font-extrabold px-3.5 py-2 rounded-[12px] flex items-center gap-1.5 hover:bg-[#F2C265] transition shadow-md touch-target min-w-[44px] shrink-0 text-xs sm:text-sm"
           >
             <Plus className="w-4 h-4" />
             <span>نبرد جدید</span>
@@ -562,7 +562,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <button
             type="button"
             onClick={() => setListTab('active')}
-            className={`flex-1 py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+            className={`flex-1 py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
               listTab === 'active'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -575,7 +575,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <button
             type="button"
             onClick={() => setListTab('draft')}
-            className={`flex-1 py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+            className={`flex-1 py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
               listTab === 'draft'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -588,7 +588,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <button
             type="button"
             onClick={() => setListTab('ended')}
-            className={`flex-1 py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+            className={`flex-1 py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
               listTab === 'ended'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -667,7 +667,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                         <button
                           type="button"
                           onClick={() => handleDuplicateEncounter(enc)}
-                          className="text-[#A39A89] hover:text-[#EDE6D8] flex items-center gap-1 font-bold touch-target p-1"
+                          className="text-[#A39A89] hover:text-[#EDE6D8] flex items-center gap-1 font-bold touch-target min-w-[44px] p-1"
                           title="تکثیر این نبرد به عنوان الگوی جدید"
                         >
                           <Copy className="w-3.5 h-3.5" />
@@ -677,7 +677,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                         <button
                           type="button"
                           onClick={() => setSelectedEncounterId(enc.id)}
-                          className="bg-[#E0A030]/15 hover:bg-[#E0A030]/25 text-[#E0A030] font-extrabold px-3 py-1.5 rounded-[8px] flex items-center gap-1.5 transition touch-target"
+                          className="bg-[#E0A030]/15 hover:bg-[#E0A030]/25 text-[#E0A030] font-extrabold px-3 py-1.5 rounded-[8px] flex items-center gap-1.5 transition touch-target min-w-[44px]"
                         >
                           <span>ورود به رانر</span>
                           <ChevronRight className="w-3.5 h-3.5" />
@@ -708,7 +708,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 value={newEncForm.name}
                 onChange={(e) => setNewEncForm(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="مثال: شبیخون در بیشه بلورین"
-                className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target"
+                className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target min-w-[44px]"
               />
             </div>
 
@@ -719,7 +719,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
               <select
                 value={newEncForm.locationId}
                 onChange={(e) => setNewEncForm(prev => ({ ...prev, locationId: e.target.value }))}
-                className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target"
+                className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target min-w-[44px]"
               >
                 <option value="">بدون مکان پیوندخورده</option>
                 {locations.map(loc => (
@@ -737,7 +737,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 value={newEncForm.sessionTag}
                 onChange={(e) => setNewEncForm(prev => ({ ...prev, sessionTag: e.target.value }))}
                 placeholder="مثال: جلسه 4"
-                className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target"
+                className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target min-w-[44px]"
               />
             </div>
 
@@ -748,7 +748,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 value={newEncForm.dmNotes}
                 onChange={(e) => setNewEncForm(prev => ({ ...prev, dmNotes: e.target.value }))}
                 placeholder="رویدادهای محیطی در دور 3، نقاط ضعف یا تاکتیک‌ها..."
-                className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#C2512B]/40 focus:border-[#C2512B] focus:outline-none text-sm touch-target"
+                className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#C2512B]/40 focus:border-[#C2512B] focus:outline-none text-sm touch-target min-w-[44px]"
               />
             </div>
 
@@ -811,7 +811,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
 
             <button
               type="submit"
-              className="w-full py-3 rounded-[10px] bg-[#E0A030] text-[#0E0D0C] font-extrabold text-sm hover:bg-[#F2C265] transition shadow-md touch-target"
+              className="w-full py-3 rounded-[10px] bg-[#E0A030] text-[#0E0D0C] font-extrabold text-sm hover:bg-[#F2C265] transition shadow-md touch-target min-w-[44px]"
             >
               ایجاد نبرد و ورود به رانر
             </button>
@@ -853,7 +853,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <button
             type="button"
             onClick={() => setSelectedEncounterId(null)}
-            className="p-1.5 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] transition touch-target shrink-0"
+            className="p-1.5 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] transition touch-target min-w-[44px] shrink-0"
             title="بازگشت به لیست نبردها"
           >
             <ArrowRight className="w-4 h-4" />
@@ -889,7 +889,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
               <button
                 type="button"
                 onClick={() => handleStartEncounter(false)}
-                className="bg-[#6F9E78] hover:bg-[#6F9E78]/90 text-[#0E0D0C] font-black text-xs px-3 py-1.5 rounded-[8px] flex items-center gap-1 transition shadow-sm touch-target"
+                className="bg-[#6F9E78] hover:bg-[#6F9E78]/90 text-[#0E0D0C] font-black text-xs px-3 py-1.5 rounded-[8px] flex items-center gap-1 transition shadow-sm touch-target min-w-[44px]"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
                 <span>شروع نبرد</span>
@@ -897,7 +897,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
               <button
                 type="button"
                 onClick={() => handleStartEncounter(true)}
-                className="bg-[#201D19] text-[#E0A030] hover:text-[#F2C265] text-xs px-2 py-1.5 rounded-[8px] border border-[#2F2A23] transition touch-target"
+                className="bg-[#201D19] text-[#E0A030] hover:text-[#F2C265] text-xs px-2 py-1.5 rounded-[8px] border border-[#2F2A23] transition touch-target min-w-[44px]"
                 title="شروع نبرد با دور غافلگیری (موجودات مخفی پنهان می‌مانند)"
               >
                 دور غافلگیری
@@ -908,7 +908,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
               <button
                 type="button"
                 onClick={handleTogglePause}
-                className={`text-xs px-2.5 py-1.5 rounded-[8px] font-bold transition flex items-center gap-1 touch-target ${
+                className={`text-xs px-2.5 py-1.5 rounded-[8px] font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
                   currentEncounter.status === 'paused'
                     ? 'bg-[#E0A030] text-[#0E0D0C]'
                     : 'bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8]'
@@ -930,7 +930,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
               <button
                 type="button"
                 onClick={handleOpenEndLoot}
-                className="bg-[#C2512B]/20 text-[#D66138] hover:bg-[#C2512B]/30 text-xs px-2.5 py-1.5 rounded-[8px] font-bold transition touch-target"
+                className="bg-[#C2512B]/20 text-[#D66138] hover:bg-[#C2512B]/30 text-xs px-2.5 py-1.5 rounded-[8px] font-bold transition touch-target min-w-[44px]"
               >
                 پایان نبرد
               </button>
@@ -939,7 +939,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
             <button
               type="button"
               onClick={handleOpenEndLoot}
-              className="bg-[#E0A030]/20 text-[#E0A030] text-xs px-2.5 py-1.5 rounded-[8px] font-bold transition touch-target flex items-center gap-1"
+              className="bg-[#E0A030]/20 text-[#E0A030] text-xs px-2.5 py-1.5 rounded-[8px] font-bold transition touch-target min-w-[44px] flex items-center gap-1"
             >
               <Award className="w-3.5 h-3.5" />
               <span>گزارش و لوت</span>
@@ -977,7 +977,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                       const roll = Math.floor(Math.random() * 20) + 1;
                       handleConfirmInitiative(p, roll);
                     }}
-                    className="p-1 rounded-[6px] bg-[#201D19] text-[#E0A030] hover:text-[#F2C265] text-xs flex items-center gap-1 touch-target border border-[#2F2A23]"
+                    className="p-1 rounded-[6px] bg-[#201D19] text-[#E0A030] hover:text-[#F2C265] text-xs flex items-center gap-1 touch-target min-w-[44px] border border-[#2F2A23]"
                     title="پرتاب تصادفی 1d20"
                   >
                     <Dices className="w-3.5 h-3.5" />
@@ -1085,7 +1085,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                       p.visibility === 'revealed' ? 'آشکار کامل' :
                       p.visibility === 'announced' ? 'ناشناخته (بدون آمار)' : 'مخفی'
                     }`}
-                    className={`p-1.5 rounded-[8px] transition touch-target ${
+                    className={`p-1.5 rounded-[8px] transition touch-target min-w-[44px] ${
                       p.visibility === 'revealed' ? 'bg-[#6F9E78]/20 text-[#6F9E78]' :
                       p.visibility === 'announced' ? 'bg-[#E0A030]/20 text-[#E0A030]' :
                       'bg-[#C2512B]/20 text-[#D66138]'
@@ -1099,7 +1099,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                   <button
                     type="button"
                     onClick={() => setActiveMenuParticipantId(activeMenuParticipantId === p.id ? null : p.id)}
-                    className="p-1.5 rounded-[8px] hover:bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] transition touch-target"
+                    className="p-1.5 rounded-[8px] hover:bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] transition touch-target min-w-[44px]"
                   >
                     <MoreVertical className="w-4 h-4" />
                   </button>
@@ -1124,7 +1124,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                           status: next === 0 ? 'defeated' : p.status
                         }).then(() => loadSelectedEncounter(currentEncounter.id));
                       }}
-                      className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#EDE6D8] font-black text-xs hover:bg-[#C2512B]/30 transition touch-target flex items-center justify-center border border-[#2F2A23]"
+                      className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#EDE6D8] font-black text-xs hover:bg-[#C2512B]/30 transition touch-target min-w-[44px] flex items-center justify-center border border-[#2F2A23]"
                     >
                       -1
                     </button>
@@ -1137,7 +1137,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                           status: next > 0 && p.status === 'defeated' ? 'active' : p.status
                         }).then(() => loadSelectedEncounter(currentEncounter.id));
                       }}
-                      className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#EDE6D8] font-black text-xs hover:bg-[#6F9E78]/30 transition touch-target flex items-center justify-center border border-[#2F2A23]"
+                      className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#EDE6D8] font-black text-xs hover:bg-[#6F9E78]/30 transition touch-target min-w-[44px] flex items-center justify-center border border-[#2F2A23]"
                     >
                       +1
                     </button>
@@ -1147,7 +1147,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                         setKeypadTarget(p);
                         setKeypadAmount('');
                       }}
-                      className="px-2 h-7 rounded-[6px] bg-[#E0A030]/15 hover:bg-[#E0A030]/25 text-[#E0A030] font-black text-xs transition touch-target flex items-center justify-center border border-[#E0A030]/30"
+                      className="px-2 h-7 rounded-[6px] bg-[#E0A030]/15 hover:bg-[#E0A030]/25 text-[#E0A030] font-black text-xs transition touch-target min-w-[44px] flex items-center justify-center border border-[#E0A030]/30"
                     >
                       کیپد
                     </button>
@@ -1187,7 +1187,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 <button
                   type="button"
                   onClick={() => setConditionTarget(p)}
-                  className="text-[10px] bg-[#201D19] hover:bg-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] px-2 py-0.5 rounded-full flex items-center gap-1 transition touch-target"
+                  className="text-[10px] bg-[#201D19] hover:bg-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] px-2 py-0.5 rounded-full flex items-center gap-1 transition touch-target min-w-[44px]"
                 >
                   <Plus className="w-2.5 h-2.5" />
                   <span>وضعیت / حالت</span>
@@ -1272,7 +1272,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <button
             type="button"
             onClick={handlePrevTurn}
-            className="p-2.5 rounded-[12px] bg-[#201D19] text-[#EDE6D8] border border-[#2F2A23] hover:bg-[#2F2A23] transition touch-target flex items-center justify-center shrink-0"
+            className="p-2.5 rounded-[12px] bg-[#201D19] text-[#EDE6D8] border border-[#2F2A23] hover:bg-[#2F2A23] transition touch-target min-w-[44px] flex items-center justify-center shrink-0"
             title="نوبت قبل"
           >
             <ArrowRight className="w-5 h-5" />
@@ -1281,7 +1281,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <button
             type="button"
             onClick={handleNextTurn}
-            className="flex-1 py-3 px-4 rounded-[12px] bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-black text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-97 touch-target"
+            className="flex-1 py-3 px-4 rounded-[12px] bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-black text-sm flex items-center justify-center gap-2 shadow-md transition active:scale-97 touch-target min-w-[44px]"
           >
             <span>نوبت بعد</span>
             <ArrowLeft className="w-5 h-5" />
@@ -1290,7 +1290,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <button
             type="button"
             onClick={() => setAddMonstersSheet(true)}
-            className="py-3 px-3.5 rounded-[12px] bg-[#201D19] text-[#EDE6D8] border border-[#2F2A23] hover:border-[#E0A030]/50 transition touch-target flex items-center gap-1.5 text-xs font-extrabold shrink-0"
+            className="py-3 px-3.5 rounded-[12px] bg-[#201D19] text-[#EDE6D8] border border-[#2F2A23] hover:border-[#E0A030]/50 transition touch-target min-w-[44px] flex items-center gap-1.5 text-xs font-extrabold shrink-0"
           >
             <Plus className="w-4 h-4 text-[#E0A030]" />
             <span>کمکی</span>
@@ -1299,7 +1299,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <button
             type="button"
             onClick={() => setCustomEventSheet(true)}
-            className="p-2.5 rounded-[12px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] transition touch-target shrink-0"
+            className="p-2.5 rounded-[12px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] transition touch-target min-w-[44px] shrink-0"
             title="افزودن پیام در لاگ وقایع نبرد برای بازیکنان"
           >
             <MessageSquarePlus className="w-5 h-5" />
@@ -1308,7 +1308,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <button
             type="button"
             onClick={() => setHandoutsSheet(true)}
-            className="p-2.5 rounded-[12px] bg-[#201D19] text-[#4ADE80] hover:text-white border border-[#2F2A23] hover:border-[#4ADE80]/50 transition touch-target shrink-0"
+            className="p-2.5 rounded-[12px] bg-[#201D19] text-[#4ADE80] hover:text-white border border-[#2F2A23] hover:border-[#4ADE80]/50 transition touch-target min-w-[44px] shrink-0"
             title="اسناد و نقشه‌ها (آشکارسازی سریع در حین نبرد)"
           >
             <MapIcon className="w-5 h-5" />
@@ -1559,7 +1559,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <button
             type="button"
             onClick={handleAddMonsters}
-            className="w-full py-2.5 rounded-[10px] bg-[#E0A030] text-[#0E0D0C] font-black text-sm hover:bg-[#F2C265] transition shadow-md touch-target"
+            className="w-full py-2.5 rounded-[10px] bg-[#E0A030] text-[#0E0D0C] font-black text-sm hover:bg-[#F2C265] transition shadow-md touch-target min-w-[44px]"
           >
             افزودن به مبارزه
           </button>
@@ -1594,7 +1594,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                   else if (k === '⌫') setKeypadAmount(prev => prev.slice(0, -1));
                   else setKeypadAmount(prev => (prev.length < 4 ? prev + k : prev));
                 }}
-                className={`py-3 rounded-[10px] font-black text-lg transition touch-target flex items-center justify-center ${
+                className={`py-3 rounded-[10px] font-black text-lg transition touch-target min-w-[44px] flex items-center justify-center ${
                   k === 'C' ? 'bg-[#C2512B]/20 text-[#E8836B]' :
                   k === '⌫' ? 'bg-[#201D19] text-[#A39A89]' :
                   'bg-[#201D19] text-[#EDE6D8] hover:bg-[#2F2A23]'
@@ -1610,7 +1610,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
               type="button"
               onClick={() => handleApplyKeypad(false)}
               disabled={!keypadAmount}
-              className="py-3 rounded-[10px] bg-[#C2512B] hover:bg-[#C2512B]/90 text-white font-black text-sm transition disabled:opacity-40 touch-target"
+              className="py-3 rounded-[10px] bg-[#C2512B] hover:bg-[#C2512B]/90 text-white font-black text-sm transition disabled:opacity-40 touch-target min-w-[44px]"
             >
               وارد کردن آسیب
             </button>
@@ -1618,7 +1618,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
               type="button"
               onClick={() => handleApplyKeypad(true)}
               disabled={!keypadAmount}
-              className="py-3 rounded-[10px] bg-[#6F9E78] hover:bg-[#6F9E78]/90 text-[#0E0D0C] font-black text-sm transition disabled:opacity-40 touch-target"
+              className="py-3 rounded-[10px] bg-[#6F9E78] hover:bg-[#6F9E78]/90 text-[#0E0D0C] font-black text-sm transition disabled:opacity-40 touch-target min-w-[44px]"
             >
               اعمال درمان
             </button>
@@ -1640,7 +1640,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 type="button"
                 key={cond}
                 onClick={() => conditionTarget && handleToggleCondition(conditionTarget, cond)}
-                className={`w-full p-2.5 rounded-[10px] text-xs font-bold transition flex flex-wrap items-center justify-between gap-2 touch-target ${
+                className={`w-full p-2.5 rounded-[10px] text-xs font-bold transition flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px] ${
                   isApplied
                     ? 'bg-[#C2512B]/20 text-[#E8836B] border border-[#C2512B]/40'
                     : 'bg-[#171513] text-[#EDE6D8] border border-[#2F2A23] hover:bg-[#201D19]'
@@ -1713,7 +1713,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           <button
             type="button"
             onClick={handleFinishEndAndDistribute}
-            className="w-full py-3 rounded-[10px] bg-[#C2512B] hover:bg-[#C2512B] text-white font-black text-sm transition shadow-md touch-target"
+            className="w-full py-3 rounded-[10px] bg-[#C2512B] hover:bg-[#C2512B] text-white font-black text-sm transition shadow-md touch-target min-w-[44px]"
           >
             تایید و ثبت نهایی پایان نبرد
           </button>
@@ -1749,7 +1749,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
               loadSelectedEncounter(currentEncounter.id);
             }}
             disabled={!customEventText.trim()}
-            className="w-full py-2.5 rounded-[10px] bg-[#E0A030] text-[#0E0D0C] font-bold text-sm transition disabled:opacity-50 touch-target"
+            className="w-full py-2.5 rounded-[10px] bg-[#E0A030] text-[#0E0D0C] font-bold text-sm transition disabled:opacity-50 touch-target min-w-[44px]"
           >
             ثبت در لاگ
           </button>

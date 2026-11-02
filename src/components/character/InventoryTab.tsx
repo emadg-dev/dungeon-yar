@@ -30,7 +30,7 @@ const InventoryItemRow = memo<InventoryItemRowProps>(({
     <button
       type="button"
       onClick={() => onSelectDetail(item)}
-      className="flex items-center gap-2.5 min-w-0 flex-1 text-start touch-target"
+      className="flex items-center gap-2.5 min-w-0 flex-1 text-start touch-target min-w-[44px]"
     >
       {/* Amber "New" Dot for DM-granted items */}
       {item.isNew && (
@@ -74,7 +74,7 @@ const InventoryItemRow = memo<InventoryItemRowProps>(({
         <button
           type="button"
           onClick={() => onAdjustQuantity(item.id, -1)}
-          className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target flex items-center justify-center"
+          className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
         >
           -
         </button>
@@ -84,7 +84,7 @@ const InventoryItemRow = memo<InventoryItemRowProps>(({
         <button
           type="button"
           onClick={() => onAdjustQuantity(item.id, 1)}
-          className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target flex items-center justify-center"
+          className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
         >
           +
         </button>
@@ -93,7 +93,7 @@ const InventoryItemRow = memo<InventoryItemRowProps>(({
       <button
         type="button"
         onClick={() => onOpenActionMenu(item)}
-        className="w-9 h-9 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] flex items-center justify-center touch-target"
+        className="w-9 h-9 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] flex items-center justify-center touch-target min-w-[44px]"
         title="منوی عملیات"
         aria-label={`عملیات برای ${item.name}`}
       >
@@ -317,7 +317,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             <button
               type="button"
               onClick={() => updateRations(-1)}
-              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target flex items-center justify-center"
+              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="کاهش جیره"
             >
               -
@@ -328,7 +328,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             <button
               type="button"
               onClick={() => updateRations(1)}
-              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target flex items-center justify-center"
+              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="افزایش جیره"
             >
               +
@@ -352,7 +352,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             <button
               type="button"
               onClick={() => updateLanternOil(-1)}
-              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target flex items-center justify-center"
+              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="کاهش روغن"
             >
               -
@@ -363,7 +363,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             <button
               type="button"
               onClick={() => updateLanternOil(1)}
-              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target flex items-center justify-center"
+              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="افزایش روغن"
             >
               +
@@ -387,7 +387,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             <button
               type="button"
               onClick={() => updateCurrency('gold', -1)}
-              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target flex items-center justify-center"
+              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="کاهش طلا"
             >
               -
@@ -398,7 +398,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             <button
               type="button"
               onClick={() => updateCurrency('gold', 1)}
-              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target flex items-center justify-center"
+              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="افزایش طلا"
             >
               +
@@ -425,7 +425,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
           <button
             type="button"
             onClick={() => setShowTreasuryModal(true)}
-            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] bg-[#201D19] border border-[#E0A030]/40 text-[#E0A030] hover:bg-[#2B2620] text-xs font-bold transition touch-target shrink-0"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] bg-[#201D19] border border-[#E0A030]/40 text-[#E0A030] hover:bg-[#2B2620] text-xs font-bold transition touch-target min-w-[44px] shrink-0"
           >
             <Coins className="w-3.5 h-3.5" />
             <span>خزانه گروه</span>
@@ -440,7 +440,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 setShowAddItem(true);
               }
             }}
-            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] btn-primary-amber text-xs font-bold transition touch-target shrink-0"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] btn-primary-amber text-xs font-bold transition touch-target min-w-[44px] shrink-0"
           >
             {isInventoryLocked ? <Lock className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
             <span>{isInventoryLocked ? 'افزودن شیء (قفل DM)' : 'ثبت شیء نو'}</span>
@@ -458,7 +458,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                   setSelectedCategory(cat.id);
                 });
               }}
-              className={`px-3 py-1.5 rounded-[10px] text-xs font-bold transition whitespace-nowrap touch-target ${
+              className={`px-3 py-1.5 rounded-[10px] text-xs font-bold transition whitespace-nowrap touch-target min-w-[44px] ${
                 selectedCategory === cat.id
                   ? 'bg-[#E0A030] text-[#0E0D0C]'
                   : 'bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23]'
@@ -526,14 +526,14 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                   toggleEquipped(selectedItemDetail.id);
                   setSelectedItemDetail(null);
                 }}
-                className="py-2.5 px-4 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold touch-target"
+                className="py-2.5 px-4 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold touch-target min-w-[44px]"
               >
                 {selectedItemDetail.isEquipped ? 'خارج کردن از حالت مجهز' : 'مجهز کردن'}
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedItemDetail(null)}
-                className="py-2.5 px-5 rounded-[12px] btn-primary-amber text-xs font-bold touch-target"
+                className="py-2.5 px-5 rounded-[12px] btn-primary-amber text-xs font-bold touch-target min-w-[44px]"
               >
                 بستن
               </button>
@@ -616,13 +616,13 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             <button
               type="button"
               onClick={() => setShowAddItem(false)}
-              className="py-2.5 px-4 rounded-[12px] text-xs text-[#A39A89] touch-target"
+              className="py-2.5 px-4 rounded-[12px] text-xs text-[#A39A89] touch-target min-w-[44px]"
             >
               انصراف
             </button>
             <button
               type="submit"
-              className="py-2.5 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target"
+              className="py-2.5 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target min-w-[44px]"
             >
               افزودن به کوله
             </button>

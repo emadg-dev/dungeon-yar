@@ -53,7 +53,7 @@ export const DmShanshinEncounters: React.FC<DmShanshinEncountersProps> = ({
           type="button"
           disabled={rolling}
           onClick={handleRoll}
-          className="w-full sm:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-[#C97B4A] via-[#E0A030] to-[#C97B4A] hover:from-[#E0A030] hover:to-[#F2C265] active:scale-95 text-[#0E0D0C] font-black text-xs shadow-lg shadow-[#3A2415]/40 transition flex items-center justify-center gap-2 touch-target cursor-pointer"
+          className="w-full sm:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-[#C97B4A] via-[#E0A030] to-[#C97B4A] hover:from-[#E0A030] hover:to-[#F2C265] active:scale-95 text-[#0E0D0C] font-black text-xs shadow-lg shadow-[#3A2415]/40 transition flex items-center justify-center gap-2 touch-target min-w-[44px] cursor-pointer"
         >
           <Dices className={`w-5 h-5 ${rolling ? 'animate-spin' : ''}`} />
           <span>پرتاب تاس d8 برخورد شانشین</span>
@@ -185,7 +185,7 @@ export const DmShanshinEncounters: React.FC<DmShanshinEncountersProps> = ({
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl font-bold bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] transition cursor-pointer touch-target mt-3"
+              className="w-full py-2.5 rounded-xl font-bold bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] transition cursor-pointer touch-target min-w-[44px] mt-3"
             >
               ذخیره تغییرات
             </button>

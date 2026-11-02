@@ -155,7 +155,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 rounded-xl text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A2621] transition touch-target shrink-0"
+            className="p-2 rounded-xl text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A2621] transition touch-target min-w-[44px] shrink-0"
             title="بستن"
           >
             <X className="w-5 h-5" />

@@ -61,7 +61,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
           <button
             type="button"
             onClick={onOpenArchive}
-            className="text-xs text-[#A39A89] hover:text-[#EDE6D8] flex items-center gap-1 transition px-2 py-1 rounded-lg hover:bg-white/5 touch-target"
+            className="text-xs text-[#A39A89] hover:text-[#EDE6D8] flex items-center gap-1 transition px-2 py-1 rounded-lg hover:bg-white/5 touch-target min-w-[44px]"
           >
             <Archive className="w-3.5 h-3.5" />
             <span>آرشیو</span>
@@ -77,7 +77,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
             <button
               type="button"
               onClick={onOpenCreateRecap}
-              className="py-2 px-3.5 rounded-[10px] bg-[#2A2318] hover:bg-[#342C1E] border border-[#E0A030]/30 hover:border-[#E0A030] text-[#F2C265] text-xs font-bold flex items-center gap-1.5 transition touch-target"
+              className="py-2 px-3.5 rounded-[10px] bg-[#2A2318] hover:bg-[#342C1E] border border-[#E0A030]/30 hover:border-[#E0A030] text-[#F2C265] text-xs font-bold flex items-center gap-1.5 transition touch-target min-w-[44px]"
             >
               <Feather className="w-3.5 h-3.5" />
               <span>نگارش خلاصه رویدادها</span>
@@ -138,7 +138,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
             <button
               type="button"
               onClick={() => onEditRecap(recap)}
-              className="p-1.5 rounded-lg text-[#A39A89] hover:text-[#EDE6D8] hover:bg-white/5 transition touch-target"
+              className="p-1.5 rounded-lg text-[#A39A89] hover:text-[#EDE6D8] hover:bg-white/5 transition touch-target min-w-[44px]"
               title="ویرایش خلاصه"
             >
               <Edit3 className="w-3.5 h-3.5" />
@@ -147,7 +147,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
           <button
             type="button"
             onClick={onOpenArchive}
-            className="py-1 px-2.5 rounded-[8px] bg-white/5 hover:bg-white/10 text-[#C9C0AE] hover:text-[#EDE6D8] text-xs font-semibold flex items-center gap-1 transition touch-target"
+            className="py-1 px-2.5 rounded-[8px] bg-white/5 hover:bg-white/10 text-[#C9C0AE] hover:text-[#EDE6D8] text-xs font-semibold flex items-center gap-1 transition touch-target min-w-[44px]"
           >
             <Archive className="w-3.5 h-3.5 text-[#E0A030]" />
             <span>آرشیو</span>
@@ -196,7 +196,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="mt-2 text-xs font-bold text-[#E0A030] hover:text-[#F2C265] flex items-center gap-1 transition touch-target"
+          className="mt-2 text-xs font-bold text-[#E0A030] hover:text-[#F2C265] flex items-center gap-1 transition touch-target min-w-[44px]"
         >
           <span>{isExpanded ? 'خلاصه کردن متن' : 'مطالعه کامل سرگذشت'}</span>
           {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}

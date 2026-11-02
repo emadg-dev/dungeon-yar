@@ -301,7 +301,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               </p>
             </div>
 
-            <div className="surface-card rounded-xl p-3.5 border border-[#2F2A23] space-y-2">
+            <div className="surface-card rounded min-h-[75vh]-xl p-3.5 border border-[#2F2A23] space-y-2">
               <div className="flex items-center gap-2 text-xs font-bold text-[#F2C265]">
                 <Sparkles className="w-4 h-4 text-[#F2C265]" />
                 <span>قابلیت‌های جدید سطح {nextLevel}:</span>
@@ -321,7 +321,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {/* STEP 2: HP GAIN WITH CON LINE BREAKDOWN */}
         {currentStep.id === 'hp' && (
           <div className="space-y-4">
-            <div className="surface-card rounded-xl p-4 border border-[#2F2A23] space-y-3">
+            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-[#2F2A23] space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Heart className="w-5 h-5 text-[#E8836B]" />
@@ -407,7 +407,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {/* STEP 3: ASI SCREEN (CAPPED AT 20, FEATS HIDDEN) */}
         {currentStep.id === 'asi' && (
           <div className="space-y-4">
-            <div className="surface-card rounded-xl p-4 border border-[#2F2A23] space-y-3">
+            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-[#2F2A23] space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Dumbbell className="w-5 h-5 text-[#E0A030]" />
@@ -508,7 +508,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {/* STEP 4: SUBCLASS UNLOCK */}
         {currentStep.id === 'subclass' && (
           <div className="space-y-4">
-            <div className="surface-card rounded-xl p-4 border border-[#2F2A23] space-y-3">
+            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-[#2F2A23] space-y-3">
               <div className="flex items-center gap-2">
                 <Star className="w-5 h-5 text-[#E0A030]" />
                 <span className="text-xs font-bold text-[#EDE6D8]">انتخاب زیرکلاس اختصاصی (سطح 3)</span>
@@ -544,7 +544,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {/* STEP 5: SPELLS (FOR CASTERS) */}
         {currentStep.id === 'spells' && (
           <div className="space-y-4">
-            <div className="surface-card rounded-xl p-4 border border-[#2F2A23] space-y-3">
+            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-[#2F2A23] space-y-3">
               <div className="flex items-center gap-2">
                 <Wand2 className="w-5 h-5 text-[#7FB4D6]" />
                 <span className="text-xs font-bold text-[#EDE6D8]">طلسم‌های آموخته‌شده یا آماده جدید</span>
@@ -608,7 +608,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {/* STEP 6: COMPANIONS & RESOURCES AUTO-RECALC */}
         {currentStep.id === 'resources' && (
           <div className="space-y-4">
-            <div className="surface-card rounded-xl p-4 border border-[#2F2A23] space-y-3">
+            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-[#2F2A23] space-y-3">
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-[#E0A030]" />
                 <span className="text-xs font-bold text-[#EDE6D8]">محاسبه خودکار همراهان و مخازن منابع</span>
@@ -644,7 +644,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {/* STEP 7: REVIEW & CONFIRM */}
         {currentStep.id === 'review' && (
           <div className="space-y-4">
-            <div className="surface-card rounded-xl p-4 border border-[#E0A030]/40 space-y-3">
+            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-[#E0A030]/40 space-y-3">
               <div className="flex items-center gap-2">
                 <Check className="w-5 h-5 text-[#6F9E78]" />
                 <span className="text-xs font-bold text-[#EDE6D8]">بازبینی و مقایسه تغییرات (قبل و بعد)</span>
@@ -718,7 +718,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
             <button
               type="button"
               onClick={handleBack}
-              className="px-4 py-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#EDE6D8] hover:border-[#E0A030] transition flex items-center gap-1.5 touch-target min-h-[44px]"
+              className="px-4 py-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#EDE6D8] hover:border-[#E0A030] transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
             >
               <ChevronRight className="w-4 h-4" />
               <span>مرحله قبل</span>
@@ -731,7 +731,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
             <button
               type="button"
               onClick={handleNext}
-              className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-extrabold hover:bg-[#F2C265] transition flex items-center gap-1.5 touch-target min-h-[44px] shadow-lg shadow-[#E0A030]/20"
+              className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-extrabold hover:bg-[#F2C265] transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px] shadow-lg shadow-[#E0A030]/20"
             >
               <span>مرحله بعد</span>
               <ChevronLeft className="w-4 h-4" />
@@ -741,7 +741,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               type="button"
               disabled={isSubmitting}
               onClick={handleSubmit}
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] text-xs font-black transition flex items-center gap-2 touch-target min-h-[44px] shadow-lg shadow-[#E0A030]/30 disabled:opacity-50"
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] text-xs font-black transition flex items-center gap-2 touch-target min-w-[44px] min-h-[44px] shadow-lg shadow-[#E0A030]/30 disabled:opacity-50"
             >
               <Check className="w-4 h-4" />
               <span>{isSubmitting ? 'در حال ثبت ارتقا...' : `تأیید و صعود به سطح ${nextLevel}`}</span>

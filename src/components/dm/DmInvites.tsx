@@ -139,7 +139,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
         <button
           type="button"
           onClick={() => setShowCreateForm(!showCreateForm)}
-          className="py-2 px-3.5 rounded-[10px] btn-primary-amber text-xs font-bold touch-target flex items-center gap-1.5 shrink-0"
+          className="py-2 px-3.5 rounded-[10px] btn-primary-amber text-xs font-bold touch-target min-w-[44px] flex items-center gap-1.5 shrink-0"
         >
           {showCreateForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           <span>{showCreateForm ? 'انصراف' : 'صدور کد دعوت جدید'}</span>
@@ -156,7 +156,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
           }`}
         >
           <span>{message.text}</span>
-          <button type="button" onClick={() => setMessage(null)} className="p-1 touch-target">
+          <button type="button" onClick={() => setMessage(null)} className="p-1 touch-target min-w-[44px]">
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -173,7 +173,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
             <button
               type="button"
               onClick={() => setNewlyCreatedInvite(null)}
-              className="p-1 text-[#A39A89] hover:text-[#EDE6D8] touch-target"
+              className="p-1 text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
             >
               <X className="w-4 h-4" />
             </button>
@@ -194,7 +194,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
             <button
               type="button"
               onClick={() => copyText(newlyCreatedInvite.inviteLink || `${window.location.origin}/#register?code=${newlyCreatedInvite.code}`, true)}
-              className="py-2 px-4 rounded-[8px] btn-primary-amber text-xs font-bold touch-target flex items-center justify-center gap-1.5 min-h-[44px]"
+              className="py-2 px-4 rounded-[8px] btn-primary-amber text-xs font-bold touch-target min-w-[44px] flex items-center justify-center gap-1.5 min-h-[44px]"
             >
               {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               <span>{copiedLink ? 'پیوند کپی شد' : 'کپی پیوند ثبت‌نام'}</span>
@@ -279,14 +279,14 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
             <button
               type="button"
               onClick={() => setShowCreateForm(false)}
-              className="py-2 px-4 rounded-[10px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] text-xs font-bold touch-target min-h-[44px]"
+              className="py-2 px-4 rounded-[10px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] text-xs font-bold touch-target min-w-[44px] min-h-[44px]"
             >
               انصراف
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="py-2 px-5 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-h-[44px]"
+              className="py-2 px-5 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[44px]"
             >
               تولید و دریافت لینک
             </button>
@@ -334,7 +334,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
                 <button
                   type="button"
                   onClick={() => handleRevoke(inv.id)}
-                  className="p-2 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#C2512B] touch-target"
+                  className="p-2 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#C2512B] touch-target min-w-[44px]"
                   title="ابطال این دعوت‌نامه"
                 >
                   <Trash2 className="w-4 h-4" />

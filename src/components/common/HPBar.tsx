@@ -44,7 +44,7 @@ export const HPBar: React.FC<HPBarProps> = ({
           <button
             type="button"
             onClick={() => onAdjust(-1)}
-            className="touch-target-lg rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#C2512B] hover:border-[#C2512B]/60 text-xs font-black transition active:scale-95"
+            className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#C2512B] hover:border-[#C2512B]/60 text-xs font-black transition active:scale-95"
             title="کاهش 1 جان"
           >
             <Minus className="w-3.5 h-3.5" />
@@ -52,7 +52,7 @@ export const HPBar: React.FC<HPBarProps> = ({
           <button
             type="button"
             onClick={() => onAdjust(1)}
-            className="touch-target-lg rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#6F9E78] hover:border-[#6F9E78]/60 text-xs font-black transition active:scale-95"
+            className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#6F9E78] hover:border-[#6F9E78]/60 text-xs font-black transition active:scale-95"
             title="افزایش 1 جان"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -99,7 +99,7 @@ export const HPBar: React.FC<HPBarProps> = ({
         <button
           type="button"
           onClick={() => onAdjust(-5)}
-          className="touch-target-lg rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#C2512B] hover:border-[#C2512B]/60 text-xs font-black transition active:scale-95"
+          className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#C2512B] hover:border-[#C2512B]/60 text-xs font-black transition active:scale-95"
           title="کاهش 5 جان"
         >
           -5
@@ -107,7 +107,7 @@ export const HPBar: React.FC<HPBarProps> = ({
         <button
           type="button"
           onClick={() => onAdjust(-1)}
-          className="touch-target-lg rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#C2512B] hover:border-[#C2512B]/60 text-xs font-black transition active:scale-95"
+          className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#C2512B] hover:border-[#C2512B]/60 text-xs font-black transition active:scale-95"
           title="کاهش 1 جان"
         >
           -1
@@ -115,7 +115,7 @@ export const HPBar: React.FC<HPBarProps> = ({
         <button
           type="button"
           onClick={() => onAdjust(1)}
-          className="touch-target-lg rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#6F9E78] hover:border-[#6F9E78]/60 text-xs font-black transition active:scale-95"
+          className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#6F9E78] hover:border-[#6F9E78]/60 text-xs font-black transition active:scale-95"
           title="افزایش 1 جان"
         >
           +1
@@ -123,7 +123,7 @@ export const HPBar: React.FC<HPBarProps> = ({
         <button
           type="button"
           onClick={() => onAdjust(5)}
-          className="touch-target-lg rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#6F9E78] hover:border-[#6F9E78]/60 text-xs font-black transition active:scale-95"
+          className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#6F9E78] hover:border-[#6F9E78]/60 text-xs font-black transition active:scale-95"
           title="افزایش 5 جان"
         >
           +5

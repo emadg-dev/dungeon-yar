@@ -88,7 +88,7 @@ export const DmAuditLogViewer: React.FC<DmAuditLogViewerProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="py-1.5 px-3 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] text-xs font-bold touch-target min-h-[44px]"
+            className="py-1.5 px-3 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] text-xs font-bold touch-target min-w-[44px] min-h-[44px]"
           >
             بستن
           </button>
@@ -126,7 +126,7 @@ export const DmAuditLogViewer: React.FC<DmAuditLogViewerProps> = ({
             <button
               onClick={loadLogs}
               disabled={loading}
-              className="p-2.5 rounded-[10px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target min-h-[44px]"
+              className="p-2.5 rounded-[10px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target min-w-[44px] min-h-[44px]"
               title="بارگذاری مجدد لاگ‌ها"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />

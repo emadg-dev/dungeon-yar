@@ -129,7 +129,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
           <button
             type="button"
             onClick={onOpenDice}
-            className="p-2 rounded-[10px] bg-[#201D19] text-[#E0A030] hover:text-[#F2C265] border border-[#2F2A23] transition touch-target"
+            className="p-2 rounded-[10px] bg-[#201D19] text-[#E0A030] hover:text-[#F2C265] border border-[#2F2A23] transition touch-target min-w-[44px]"
             title="پرتاب تاس"
           >
             <Dices className="w-5 h-5" />
@@ -138,7 +138,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-[10px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] transition touch-target"
+            className="p-2 rounded-[10px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] transition touch-target min-w-[44px]"
             title="بستن پنجره"
           >
             <X className="w-5 h-5" />
@@ -188,7 +188,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
             <button
               type="button"
               onClick={onOpenDice}
-              className="bg-[#E0A030] text-[#0E0D0C] font-black text-xs px-3.5 py-2 rounded-[10px] shadow-sm shrink-0 touch-target"
+              className="bg-[#E0A030] text-[#0E0D0C] font-black text-xs px-3.5 py-2 rounded-[10px] shadow-sm shrink-0 touch-target min-w-[44px]"
             >
               پرتاب تاس
             </button>
@@ -197,7 +197,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
 
         {/* Mini Player Character Vitals Bar (§3: Quick HP access without leaving) */}
         {activeCharacter && (
-          <div className="surface-card rounded-[14px] p-3 border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-3 bg-[#171513]">
+          <div className="surface-card rounded min-h-[75vh]-[14px] p-3 border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-3 bg-[#171513]">
             <div className="flex items-center gap-2 min-w-0">
               <div className="w-8 h-8 rounded-full bg-[#6F9E78]/20 flex items-center justify-center text-[#6F9E78] shrink-0">
                 <Heart className="w-4 h-4 fill-current" />
@@ -215,7 +215,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
                 <button
                   type="button"
                   onClick={() => onUpdateCharacterHp(Math.max(0, activeCharacter.hp.current - 1))}
-                  className="w-8 h-8 rounded-[8px] bg-[#201D19] hover:bg-[#C2512B]/20 text-[#E8836B] font-black text-sm transition touch-target border border-[#2F2A23] flex items-center justify-center"
+                  className="w-8 h-8 rounded-[8px] bg-[#201D19] hover:bg-[#C2512B]/20 text-[#E8836B] font-black text-sm transition touch-target min-w-[44px] border border-[#2F2A23] flex items-center justify-center"
                   title="کاهش 1 سلامت"
                 >
                   -1
@@ -223,7 +223,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
                 <button
                   type="button"
                   onClick={() => onUpdateCharacterHp(Math.min(activeCharacter.hp.max, activeCharacter.hp.current + 1))}
-                  className="w-8 h-8 rounded-[8px] bg-[#201D19] hover:bg-[#6F9E78]/20 text-[#6F9E78] font-black text-sm transition touch-target border border-[#2F2A23] flex items-center justify-center"
+                  className="w-8 h-8 rounded-[8px] bg-[#201D19] hover:bg-[#6F9E78]/20 text-[#6F9E78] font-black text-sm transition touch-target min-w-[44px] border border-[#2F2A23] flex items-center justify-center"
                   title="افزایش 1 سلامت"
                 >
                   +1
@@ -235,7 +235,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
 
         {/* Player Roll Initiative Button (§3) */}
         {needsInitiativeRoll && (
-          <div className="surface-card rounded-[14px] p-3.5 border border-[#E0A030]/50 bg-[#E0A030]/10 flex flex-wrap items-center justify-between gap-2 gap-3">
+          <div className="surface-card rounded min-h-[75vh]-[14px] p-3.5 border border-[#E0A030]/50 bg-[#E0A030]/10 flex flex-wrap items-center justify-between gap-2 gap-3">
             <div>
               <span className="font-extrabold text-xs text-[#E0A030] block">ابتکار عمل خود را بیندازید!</span>
               <span className="text-[11px] text-[#EDE6D8]/80">برای قرارگیری در ترتیب نوبت مبارزه</span>
@@ -245,7 +245,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
               type="button"
               onClick={handleRollInitiative}
               disabled={isRollingInitiative}
-              className="bg-[#E0A030] text-[#0E0D0C] font-black text-xs px-3.5 py-2.5 rounded-[10px] flex items-center gap-1.5 shadow-md hover:bg-[#F2C265] transition touch-target shrink-0"
+              className="bg-[#E0A030] text-[#0E0D0C] font-black text-xs px-3.5 py-2.5 rounded-[10px] flex items-center gap-1.5 shadow-md hover:bg-[#F2C265] transition touch-target min-w-[44px] shrink-0"
             >
               {isRollingInitiative ? (
                 <>
@@ -279,7 +279,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
               return (
                 <div
                   key={p.id}
-                  className={`surface-card rounded-[14px] p-3 border transition-all duration-150 space-y-2 ${
+                  className={`surface-card rounded min-h-[75vh]-[14px] p-3 border transition-all duration-150 space-y-2 ${
                     isTurn
                       ? 'border-[#E0A030] bg-[#201D19] shadow-[0_0_12px_rgba(224,160,48,0.2)]'
                       : isMe
@@ -382,7 +382,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
 
         {/* Live Event Log Feed (§3: visible to players only) */}
         {encounter.events && encounter.events.length > 0 && (
-          <div className="surface-card rounded-[14px] p-3 border border-[#2F2A23] space-y-2">
+          <div className="surface-card rounded min-h-[75vh]-[14px] p-3 border border-[#2F2A23] space-y-2">
             <span className="text-xs font-bold text-[#E0A030] block">گزارش وقایع نبرد</span>
 
             <div className="space-y-1.5 max-h-40 overflow-y-auto">

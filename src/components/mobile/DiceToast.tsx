@@ -101,14 +101,14 @@ export const DiceToast: React.FC<DiceToastProps> = ({
         <div className="flex items-center gap-1">
           <button
             onClick={onOpenRollerModal}
-            className="p-2 rounded-xl bg-[#201D19]/80 hover:bg-[#2A2621] text-[#F2C265] touch-target"
+            className="p-2 rounded-xl bg-[#201D19]/80 hover:bg-[#2A2621] text-[#F2C265] touch-target min-w-[44px]"
             title="مشاهده کیسه تاس"
           >
             <Dices className="w-4 h-4" />
           </button>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-[#A39A89] hover:text-[#EDE6D8] touch-target"
+            className="p-2 rounded-xl text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
             title="بستن"
           >
             <X className="w-4 h-4" />

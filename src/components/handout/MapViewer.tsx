@@ -133,7 +133,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
                 setIsAddingPin(!isAddingPin);
                 setPendingCoords(null);
               }}
-              className={`px-3 py-1.5 rounded-[8px] font-medium transition flex items-center gap-1.5 touch-target ${
+              className={`px-3 py-1.5 rounded-[8px] font-medium transition flex items-center gap-1.5 touch-target min-w-[44px] ${
                 isAddingPin
                   ? 'bg-[#E0A030] text-[#14120E] font-bold shadow-md ring-2 ring-[#E0A030]/50'
                   : 'bg-[#2A241C] text-[#EDE6D8] hover:bg-[#383126]'
@@ -270,7 +270,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
                   <button
                     type="button"
                     onClick={() => handleToggleReveal(selectedPin)}
-                    className="p-1.5 rounded-[8px] text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A241C] touch-target"
+                    className="p-1.5 rounded-[8px] text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A241C] touch-target min-w-[44px]"
                     title={selectedPin.revealed ? 'مخفی‌سازی از بازیکنان' : 'آشکارسازی برای بازیکنان'}
                   >
                     {selectedPin.revealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4 text-[#4ADE80]" />}
@@ -278,7 +278,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
                   <button
                     type="button"
                     onClick={() => handleStartEdit(selectedPin)}
-                    className="p-1.5 rounded-[8px] text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A241C] touch-target"
+                    className="p-1.5 rounded-[8px] text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A241C] touch-target min-w-[44px]"
                     title="ویرایش نشانگر"
                   >
                     <Edit2 className="w-4 h-4" />
@@ -286,7 +286,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
                   <button
                     type="button"
                     onClick={handleDeleteCurrentPin}
-                    className="p-1.5 rounded-[8px] text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 touch-target"
+                    className="p-1.5 rounded-[8px] text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 touch-target min-w-[44px]"
                     title="حذف نشانگر"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -296,7 +296,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedPin(null)}
-                className="p-1.5 rounded-[8px] text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A241C] touch-target"
+                className="p-1.5 rounded-[8px] text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A241C] touch-target min-w-[44px]"
                 title="بستن اطلاعات"
               >
                 <X className="w-4 h-4" />

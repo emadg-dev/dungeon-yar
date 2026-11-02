@@ -83,7 +83,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
                 type="button"
                 disabled={advancing}
                 onClick={() => handleAdvance(1)}
-                className="py-2.5 px-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] active:bg-[#C97B4A] active:text-[#0E0D0C] text-xs font-bold text-[#EDE6D8] transition border border-[#3A342B] flex items-center justify-center gap-1 touch-target cursor-pointer"
+                className="py-2.5 px-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] active:bg-[#C97B4A] active:text-[#0E0D0C] text-xs font-bold text-[#EDE6D8] transition border border-[#3A342B] flex items-center justify-center gap-1 touch-target min-w-[44px] cursor-pointer"
               >
                 <span>+1 روز</span>
               </button>
@@ -91,7 +91,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
                 type="button"
                 disabled={advancing}
                 onClick={() => handleAdvance(7)}
-                className="py-2.5 px-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] active:bg-[#C97B4A] active:text-[#0E0D0C] text-xs font-bold text-[#EDE6D8] transition border border-[#3A342B] flex items-center justify-center gap-1 touch-target cursor-pointer"
+                className="py-2.5 px-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] active:bg-[#C97B4A] active:text-[#0E0D0C] text-xs font-bold text-[#EDE6D8] transition border border-[#3A342B] flex items-center justify-center gap-1 touch-target min-w-[44px] cursor-pointer"
               >
                 <span>+7 روز (1 هفته)</span>
               </button>
@@ -99,7 +99,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
                 type="button"
                 disabled={advancing}
                 onClick={() => handleAdvance(30)}
-                className="py-2.5 px-2 rounded-xl bg-[#E0A030]/20 hover:bg-[#E0A030]/30 border border-[#E0A030]/40 text-xs font-bold text-[#F2C265] transition flex items-center justify-center gap-1 touch-target cursor-pointer"
+                className="py-2.5 px-2 rounded-xl bg-[#E0A030]/20 hover:bg-[#E0A030]/30 border border-[#E0A030]/40 text-xs font-bold text-[#F2C265] transition flex items-center justify-center gap-1 touch-target min-w-[44px] cursor-pointer"
               >
                 <FastForward className="w-3.5 h-3.5 shrink-0" />
                 <span>+1 ماه (30 روز)</span>

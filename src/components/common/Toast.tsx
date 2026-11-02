@@ -65,7 +65,7 @@ export const Toast: React.FC<ToastProps> = ({ toast, message, onDismiss, onClose
         <button
           type="button"
           onClick={dismiss}
-          className="p-1.5 rounded-[8px] text-[#A39A89] hover:text-[#EDE6D8] touch-target"
+          className="p-1.5 rounded-[8px] text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
           title="بستن پیام"
         >
           <X className="w-4 h-4" />

@@ -60,7 +60,7 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="py-3 px-4 rounded-xl bg-[#201D19] hover:bg-[#2A2621] text-[#C9C0AE] text-xs font-bold transition touch-target"
+            className="py-3 px-4 rounded-xl bg-[#201D19] hover:bg-[#2A2621] text-[#C9C0AE] text-xs font-bold transition touch-target min-w-[44px]"
           >
             {finalCancelLabel}
           </button>
@@ -72,7 +72,7 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
               onConfirm();
               onClose();
             }}
-            className={`py-3 px-4 rounded-xl text-xs font-black shadow-lg transition touch-target ${
+            className={`py-3 px-4 rounded-xl text-xs font-black shadow-lg transition touch-target min-w-[44px] ${
               isDanger
                 ? 'bg-gradient-to-r from-[#C2512B] to-[#E0A030] hover:from-[#C2512B] hover:to-[#C97B4A] text-white border border-[#C2512B]/50 shadow-[#0E0D0C]/50'
                 : 'bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] shadow-[#2A1A0D]/40'

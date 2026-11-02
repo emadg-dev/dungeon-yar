@@ -226,7 +226,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <button
             type="button"
             onClick={onOpenDice}
-            className="w-13 h-13 -mt-6 rounded-full bg-gradient-to-tr from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] flex flex-col items-center justify-center shadow-[0_0_20px_rgba(224,160,48,0.5),0_4px_12px_rgba(0,0,0,0.4)] hover:scale-105 active:scale-95 transition-transform duration-200 border-2 border-[#171513] touch-target z-[35]"
+            className="w-13 h-13 -mt-6 rounded-full bg-gradient-to-tr from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] flex flex-col items-center justify-center shadow-[0_0_20px_rgba(224,160,48,0.5),0_4px_12px_rgba(0,0,0,0.4)] hover:scale-105 active:scale-95 transition-transform duration-200 border-2 border-[#171513] touch-target min-w-[44px] z-[35]"
             title="پرتاب سریع تاس"
             aria-label="باز کردن پنجره پرتاب تاس"
           >

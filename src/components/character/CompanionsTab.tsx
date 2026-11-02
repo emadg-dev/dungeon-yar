@@ -124,7 +124,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
         <button
           type="button"
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#E0A030]/20 hover:bg-[#E0A030]/30 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold transition touch-target"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#E0A030]/20 hover:bg-[#E0A030]/30 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold transition touch-target min-w-[44px]"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>افزودن همراه</span>
@@ -200,28 +200,28 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
                     <button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, -5)}
-                      className="w-8 h-8 rounded-lg bg-[#C2512B]/15 active:bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs font-bold touch-target select-none"
+                      className="w-8 h-8 rounded-lg bg-[#C2512B]/15 active:bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs font-bold touch-target min-w-[44px] select-none"
                     >
                       -5
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, -1)}
-                      className="w-8 h-8 rounded-lg bg-[#C2512B]/15 active:bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs font-bold touch-target select-none"
+                      className="w-8 h-8 rounded-lg bg-[#C2512B]/15 active:bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs font-bold touch-target min-w-[44px] select-none"
                     >
                       -1
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, +1)}
-                      className="w-8 h-8 rounded-lg bg-[#6F9E78]/15 active:bg-[#6F9E78]/15 border border-[#6F9E78]/30 text-[#6F9E78] text-xs font-bold touch-target select-none"
+                      className="w-8 h-8 rounded-lg bg-[#6F9E78]/15 active:bg-[#6F9E78]/15 border border-[#6F9E78]/30 text-[#6F9E78] text-xs font-bold touch-target min-w-[44px] select-none"
                     >
                       +1
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, +5)}
-                      className="w-8 h-8 rounded-lg bg-[#6F9E78]/15 active:bg-[#6F9E78]/15 border border-[#6F9E78]/30 text-[#6F9E78] text-xs font-bold touch-target select-none"
+                      className="w-8 h-8 rounded-lg bg-[#6F9E78]/15 active:bg-[#6F9E78]/15 border border-[#6F9E78]/30 text-[#6F9E78] text-xs font-bold touch-target min-w-[44px] select-none"
                     >
                       +5
                     </button>
@@ -240,7 +240,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
                     <button
                       type="button"
                       onClick={() => onRollCheck(20, 1, 5, `حمله ${comp.name}`)}
-                      className="p-2 rounded-lg bg-[#E0A030]/20 hover:bg-[#E0A030]/30 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold flex items-center gap-1 touch-target"
+                      className="p-2 rounded-lg bg-[#E0A030]/20 hover:bg-[#E0A030]/30 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold flex items-center gap-1 touch-target min-w-[44px]"
                     >
                       <Swords className="w-3.5 h-3.5" />
                       <span>تاس حمله</span>
@@ -308,7 +308,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
 
           <button
             type="submit"
-            className="w-full py-2.5 rounded-xl font-bold bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] transition cursor-pointer touch-target mt-3"
+            className="w-full py-2.5 rounded-xl font-bold bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] transition cursor-pointer touch-target min-w-[44px] mt-3"
           >
             ذخیره و ایجاد همراه
           </button>

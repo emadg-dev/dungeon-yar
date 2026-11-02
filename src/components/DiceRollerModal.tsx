@@ -323,7 +323,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                     key={sides}
                     type="button"
                     onClick={() => setSelectedSides(sides)}
-                    className={`min-h-[48px] min-w-[48px] py-2 px-1 rounded-[12px] font-mono font-extrabold text-sm transition border touch-target-lg active:scale-95 flex items-center justify-center ${
+                    className={`min-h-[48px] min-w-[48px] py-2 px-1 rounded-[12px] font-mono font-extrabold text-sm transition border touch-target min-w-[44px]-lg active:scale-95 flex items-center justify-center ${
                       selectedSides === sides
                         ? 'bg-[#E0A030] text-[#0E0D0C] border-[#E0A030] shadow-[0_0_12px_rgba(224,160,48,0.4)]'
                         : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23] hover:border-[#E0A030]/50'

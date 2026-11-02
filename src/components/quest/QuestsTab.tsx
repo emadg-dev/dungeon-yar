@@ -139,7 +139,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
             <button
               type="button"
               onClick={handleOpenCreateModal}
-              className="py-2 px-3 rounded-[10px] bg-gradient-to-l from-[#C97B4A] to-[#E0A030] text-[#0E0D0C] font-black text-xs shadow-md hover:brightness-110 transition flex items-center gap-1.5 touch-target min-h-[40px]"
+              className="py-2 px-3 rounded-[10px] bg-gradient-to-l from-[#C97B4A] to-[#E0A030] text-[#0E0D0C] font-black text-xs shadow-md hover:brightness-110 transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[40px]"
             >
               <Plus className="w-4 h-4" />
               <span>مأموریت تازه</span>
@@ -164,7 +164,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
           <button
             type="button"
             onClick={() => setFilterTab('active')}
-            className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center gap-1.5 touch-target whitespace-nowrap ${
+            className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
               filterTab === 'active'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -179,7 +179,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
           <button
             type="button"
             onClick={() => setFilterTab('completed')}
-            className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center gap-1.5 touch-target whitespace-nowrap ${
+            className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
               filterTab === 'completed'
                 ? 'bg-[#6F9E78] text-[#0E0D0C] font-black shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -194,7 +194,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
           <button
             type="button"
             onClick={() => setFilterTab('other')}
-            className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center gap-1.5 touch-target whitespace-nowrap ${
+            className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
               filterTab === 'other'
                 ? 'bg-[#C97B4A] text-[#0E0D0C] font-black shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -210,7 +210,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
             <button
               type="button"
               onClick={() => setFilterTab('hidden')}
-              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center gap-1.5 touch-target whitespace-nowrap ${
+              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
                 filterTab === 'hidden'
                   ? 'bg-purple-600 text-white font-black shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -245,7 +245,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
               <button
                 type="button"
                 onClick={handleOpenCreateModal}
-                className="mt-2 py-2 px-4 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] transition touch-target"
+                className="mt-2 py-2 px-4 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] transition touch-target min-w-[44px]"
               >
                 ایجاد اولین مأموریت
               </button>
@@ -405,7 +405,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                               <button
                                 type="button"
                                 onClick={() => onToggleObjective(quest.id, obj.id, !obj.done)}
-                                className="touch-target p-1 -m-1 text-[#E0A030] hover:text-[#F2C265] shrink-0"
+                                className="touch-target min-w-[44px] p-1 -m-1 text-[#E0A030] hover:text-[#F2C265] shrink-0"
                                 title={obj.done ? 'علامت‌زدن به عنوان ناتمام' : 'علامت‌زدن به عنوان تمام‌شده'}
                               >
                                 {obj.done ? (
@@ -463,7 +463,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                         <button
                           type="button"
                           onClick={() => setCompletingQuest(quest)}
-                          className="py-1.5 px-3 rounded-[8px] bg-[#6F9E78] text-[#0E0D0C] font-black text-xs shadow-sm hover:brightness-110 transition flex items-center gap-1.5 touch-target min-h-[40px]"
+                          className="py-1.5 px-3 rounded-[8px] bg-[#6F9E78] text-[#0E0D0C] font-black text-xs shadow-sm hover:brightness-110 transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[40px]"
                         >
                           <Check className="w-3.5 h-3.5" />
                           <span>تکمیل مأموریت و اعطای پاداش</span>
@@ -474,7 +474,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                         <button
                           type="button"
                           onClick={() => handleOpenEditModal(quest)}
-                          className="py-1.5 px-3 rounded-[8px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-[#EDE6D8] text-xs font-bold transition flex items-center gap-1.5 touch-target min-h-[40px]"
+                          className="py-1.5 px-3 rounded-[8px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-[#EDE6D8] text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[40px]"
                         >
                           <Edit3 className="w-3.5 h-3.5 text-[#E0A030]" />
                           <span>ویرایش</span>
@@ -486,7 +486,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                           type="button"
                           onClick={() => handleDeleteQuest(quest.id)}
                           disabled={actionLoading}
-                          className="py-1.5 px-3 rounded-[8px] bg-[#201D19] border border-rose-900/40 hover:bg-rose-900/20 text-rose-300 text-xs font-bold transition flex items-center gap-1.5 touch-target min-h-[40px]"
+                          className="py-1.5 px-3 rounded-[8px] bg-[#201D19] border border-rose-900/40 hover:bg-rose-900/20 text-rose-300 text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[40px]"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>حذف</span>
@@ -533,7 +533,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
             </p>
 
             {completingQuest.rewardRef?.xp ? (
-              <label className="p-3 rounded-[10px] bg-[#1A1713] border border-[#6F9E78]/30 flex items-center gap-3 cursor-pointer touch-target">
+              <label className="p-3 rounded-[10px] bg-[#1A1713] border border-[#6F9E78]/30 flex items-center gap-3 cursor-pointer touch-target min-w-[44px]">
                 <input
                   type="checkbox"
                   checked={grantRewardsOnComplete}
@@ -556,7 +556,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                 type="button"
                 onClick={() => setCompletingQuest(null)}
                 disabled={actionLoading}
-                className="py-2.5 px-4 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] transition touch-target min-h-[44px]"
+                className="py-2.5 px-4 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] transition touch-target min-w-[44px] min-h-[44px]"
               >
                 انصراف
               </button>
@@ -564,7 +564,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                 type="button"
                 onClick={handleConfirmComplete}
                 disabled={actionLoading}
-                className="py-2.5 px-6 rounded-[12px] bg-[#6F9E78] text-[#0E0D0C] text-xs font-black shadow-lg hover:brightness-110 transition flex items-center gap-1.5 touch-target min-h-[44px]"
+                className="py-2.5 px-6 rounded-[12px] bg-[#6F9E78] text-[#0E0D0C] text-xs font-black shadow-lg hover:brightness-110 transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
               >
                 <Check className="w-4 h-4" />
                 <span>{actionLoading ? 'در حال ثبت...' : 'تأیید و پایان مأموریت'}</span>

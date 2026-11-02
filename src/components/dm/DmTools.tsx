@@ -216,7 +216,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
                 type="button"
                 key={item.id}
                 onClick={() => setActiveDmTab(item.id)}
-                className={`flex-1 py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+                className={`flex-1 py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
                   isActive
                     ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                     : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -289,7 +289,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setLibrarySubTab('library_hub')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
                 librarySubTab === 'library_hub'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -301,7 +301,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setLibrarySubTab('npcs')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
                 librarySubTab === 'npcs'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -313,7 +313,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setLibrarySubTab('items')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
                 librarySubTab === 'items'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -325,7 +325,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setLibrarySubTab('locations')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
                 librarySubTab === 'locations'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -337,7 +337,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setLibrarySubTab('handouts')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
                 librarySubTab === 'handouts'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -349,7 +349,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setLibrarySubTab('quests')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
                 librarySubTab === 'quests'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -361,7 +361,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setLibrarySubTab('reputation')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
                 librarySubTab === 'reputation'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -373,7 +373,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setLibrarySubTab('treasury')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
+              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
                 librarySubTab === 'treasury'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -492,7 +492,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setNarrativeSubTab('notes')}
-              className={`flex-1 py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+              className={`flex-1 py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
                 narrativeSubTab === 'notes'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -504,7 +504,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setNarrativeSubTab('endings')}
-              className={`flex-1 py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+              className={`flex-1 py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
                 narrativeSubTab === 'endings'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -537,7 +537,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setMoreSubTab('users')}
-              className={`flex-1 min-w-[100px] py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+              className={`flex-1 min-w-[44px] py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
                 moreSubTab === 'users'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -549,7 +549,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setMoreSubTab('invites')}
-              className={`flex-1 min-w-[100px] py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+              className={`flex-1 min-w-[44px] py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
                 moreSubTab === 'invites'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -561,7 +561,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setMoreSubTab('audit')}
-              className={`flex-1 min-w-[100px] py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+              className={`flex-1 min-w-[44px] py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
                 moreSubTab === 'audit'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -573,7 +573,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <button
               type="button"
               onClick={() => setMoreSubTab('settings')}
-              className={`flex-1 min-w-[100px] py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+              className={`flex-1 min-w-[44px] py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
                 moreSubTab === 'settings'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'

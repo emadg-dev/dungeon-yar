@@ -243,7 +243,7 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
         <button
           type="submit"
           disabled={isSaving}
-          className="w-full py-3.5 rounded-[12px] btn-primary-amber font-extrabold text-xs shadow-lg flex items-center justify-center gap-2 min-h-[48px] touch-target"
+          className="w-full py-3.5 rounded-[12px] btn-primary-amber font-extrabold text-xs shadow-lg flex items-center justify-center gap-2 min-h-[48px] touch-target min-w-[44px]"
         >
           <Save className="w-4 h-4" />
           <span>{isSaving ? 'در حال ذخیره...' : 'ذخیره خلاصه جلسه'}</span>

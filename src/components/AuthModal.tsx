@@ -134,12 +134,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center bg-[#0E0D0C]/95 backdrop-blur-md p-3 sm:p-6 overflow-y-auto"
       dir="rtl"
     >
-      <div className="w-full max-w-md surface-card card-gold-top p-5 sm:p-7 space-y-5 my-auto relative shadow-2xl">
+      <div className="w-full max-w-2xl surface-card card-gold-top min-h-[75vh] p-5 sm:p-7 space-y-5 my-auto relative shadow-2xl">
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 start-4 p-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] touch-target"
+          className="absolute top-4 start-4 p-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
           title="بستن"
         >
           <X className="w-4 h-4" />
@@ -182,7 +182,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <button
               type="button"
               onClick={() => { setMode('login'); setGeneralError(''); }}
-              className={`flex-1 py-2 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target ${
+              className={`flex-1 py-2 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
                 mode === 'login'
                   ? 'bg-[#E0A030] text-[#0E0D0C] shadow-sm font-extrabold'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -194,7 +194,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <button
               type="button"
               onClick={() => { setMode('register'); setGeneralError(''); }}
-              className={`flex-1 py-2 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target ${
+              className={`flex-1 py-2 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
                 mode === 'register'
                   ? 'bg-[#E0A030] text-[#0E0D0C] shadow-sm font-extrabold'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -227,7 +227,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <button
               type="button"
               onClick={() => setMode('login')}
-              className="w-full py-2.5 rounded-[12px] btn-primary-amber font-extrabold text-xs touch-target"
+              className="w-full py-2.5 rounded-[12px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px]"
             >
               بازگشت به صفحه ورود
             </button>
@@ -356,7 +356,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-2.5 end-2.5 p-1.5 rounded-[8px] text-[#A39A89] hover:text-[#EDE6D8] touch-target"
+                  className="absolute top-2.5 end-2.5 p-1.5 rounded-[8px] text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
                   title={showPassword ? 'مخفی کردن' : 'نمایش'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -413,7 +413,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 rounded-[12px] btn-primary-amber font-extrabold text-sm shadow-lg flex items-center justify-center gap-2 touch-target disabled:opacity-50 min-h-[48px]"
+                className="w-full py-3 px-4 rounded-[12px] btn-primary-amber font-extrabold text-sm shadow-lg flex items-center justify-center gap-2 touch-target min-w-[44px] disabled:opacity-50 min-h-[48px]"
               >
                 {loading ? (
                   <span className="w-5 h-5 border-2 border-[#0E0D0C] border-t-transparent rounded-full animate-spin" />
@@ -450,7 +450,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     onSelectPreloadedUser(u.id);
                     onClose();
                   }}
-                  className="text-start p-2 rounded-[8px] bg-[#201D19] hover:bg-[#2F2A23] border border-[#2F2A23] text-[11px] font-bold text-[#EDE6D8] truncate touch-target"
+                  className="text-start p-2 rounded-[8px] bg-[#201D19] hover:bg-[#2F2A23] border border-[#2F2A23] text-[11px] font-bold text-[#EDE6D8] truncate touch-target min-w-[44px]"
                 >
                   <span className="text-[#E0A030] text-[10px] block">
                     {u.role === 'dm' ? 'دانجن مستر' : 'بازیکن'}

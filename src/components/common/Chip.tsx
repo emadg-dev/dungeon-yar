@@ -78,7 +78,7 @@ export const Chip: React.FC<ChipProps> = ({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 border touch-target ${
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 border touch-target min-w-[44px] ${
         isActive
           ? 'bg-[#E0A030] text-[#0E0D0C] border-[#E0A030] font-bold shadow-[0_0_10px_rgba(224,160,48,0.25)]'
           : 'bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A2621] border-[#2F2A23]'

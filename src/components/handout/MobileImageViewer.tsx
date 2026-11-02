@@ -195,7 +195,7 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
         <button
           type="button"
           onClick={handleZoomIn}
-          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-[#EDE6D8] hover:bg-white/10 active:bg-white/20 transition touch-target"
+          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-[#EDE6D8] hover:bg-white/10 active:bg-white/20 transition touch-target min-w-[44px]"
           title="بزرگ‌نمایی (+)"
           aria-label="بزرگ‌نمایی"
         >
@@ -206,7 +206,7 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
           type="button"
           onClick={handleZoomOut}
           disabled={scale <= 1}
-          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-[#EDE6D8] hover:bg-white/10 active:bg-white/20 disabled:opacity-40 transition touch-target"
+          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-[#EDE6D8] hover:bg-white/10 active:bg-white/20 disabled:opacity-40 transition touch-target min-w-[44px]"
           title="کوچک‌نمایی (-)"
           aria-label="کوچک‌نمایی"
         >
@@ -216,7 +216,7 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
         <button
           type="button"
           onClick={handleResetZoom}
-          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-[#EDE6D8] hover:bg-white/10 active:bg-white/20 transition touch-target"
+          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-[#EDE6D8] hover:bg-white/10 active:bg-white/20 transition touch-target min-w-[44px]"
           title="اندازه پیش‌فرض (دو لمس سریع)"
           aria-label="اندازه پیش‌فرض"
         >
@@ -227,7 +227,7 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center rounded-[8px] text-[#A39A89] hover:text-white hover:bg-rose-500/20 active:bg-rose-500/30 transition touch-target"
+            className="w-9 h-9 flex items-center justify-center rounded-[8px] text-[#A39A89] hover:text-white hover:bg-rose-500/20 active:bg-rose-500/30 transition touch-target min-w-[44px]"
             title="بستن"
             aria-label="بستن پنجره"
           >

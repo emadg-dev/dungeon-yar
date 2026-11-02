@@ -132,14 +132,14 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="جستجو در مکان‌ها و یادداشت‌های مستر..."
-            className="w-full bg-[#171513] text-[#EDE6D8] placeholder-[#A39A89] pr-9 pl-3 py-2 rounded-[12px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target"
+            className="w-full bg-[#171513] text-[#EDE6D8] placeholder-[#A39A89] pr-9 pl-3 py-2 rounded-[12px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target min-w-[44px]"
           />
         </div>
 
         <button
           type="button"
           onClick={handleOpenCreate}
-          className="bg-[#E0A030] text-[#0E0D0C] font-extrabold px-4 py-2.5 rounded-[12px] flex items-center justify-center gap-2 hover:bg-[#F2C265] transition shadow-md touch-target shrink-0"
+          className="bg-[#E0A030] text-[#0E0D0C] font-extrabold px-4 py-2.5 rounded-[12px] flex items-center justify-center gap-2 hover:bg-[#F2C265] transition shadow-md touch-target min-w-[44px] shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>مکان جدید</span>
@@ -155,7 +155,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               setSelectedRegion('all');
             });
           }}
-          className={`py-1 px-3 rounded-full text-xs font-bold transition shrink-0 touch-target ${
+          className={`py-1 px-3 rounded-full text-xs font-bold transition shrink-0 touch-target min-w-[44px] ${
             selectedRegion === 'all'
               ? 'bg-[#E0A030] text-[#0E0D0C]'
               : 'bg-[#171513] text-[#A39A89] border border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -174,7 +174,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
                   setSelectedRegion(r);
                 });
               }}
-              className={`py-1 px-3 rounded-full text-xs font-bold transition shrink-0 touch-target ${
+              className={`py-1 px-3 rounded-full text-xs font-bold transition shrink-0 touch-target min-w-[44px] ${
                 selectedRegion === r
                   ? 'bg-[#E0A030] text-[#0E0D0C]'
                   : 'bg-[#171513] text-[#A39A89] border border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -214,7 +214,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
                   type="button"
                   onClick={() => handleToggleRevealed(loc)}
                   title={loc.revealed ? 'آشکار برای بازیکنان (کلیک جهت پنهان‌سازی)' : 'مخفی از بازیکنان (کلیک جهت آشکارسازی)'}
-                  className={`p-1.5 rounded-[8px] transition touch-target shrink-0 ${
+                  className={`p-1.5 rounded-[8px] transition touch-target min-w-[44px] shrink-0 ${
                     loc.revealed
                       ? 'bg-[#6F9E78]/15 text-[#6F9E78] hover:bg-[#6F9E78]/25'
                       : 'bg-[#171513] text-[#A39A89] hover:text-[#EDE6D8]'
@@ -245,7 +245,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
                 <button
                   type="button"
                   onClick={() => handleOpenEdit(loc)}
-                  className="p-1.5 rounded-[6px] hover:bg-[#201D19] text-[#EDE6D8] transition touch-target"
+                  className="p-1.5 rounded-[6px] hover:bg-[#201D19] text-[#EDE6D8] transition touch-target min-w-[44px]"
                   title="ویرایش مکان"
                 >
                   <Edit3 className="w-4 h-4" />
@@ -257,7 +257,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
                       onDeleteLocation(loc.id);
                     }
                   }}
-                  className="p-1.5 rounded-[6px] hover:bg-[#C2512B]/15 text-[#D66138] transition touch-target"
+                  className="p-1.5 rounded-[6px] hover:bg-[#C2512B]/15 text-[#D66138] transition touch-target min-w-[44px]"
                   title="حذف مکان"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -295,7 +295,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               value={formData.name || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               placeholder="مثال: کاروانسرای ماه سرخ"
-              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target"
+              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target min-w-[44px]"
             />
           </div>
 
@@ -306,7 +306,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
             <select
               value={formData.region || 'ورنا'}
               onChange={(e) => setFormData(prev => ({ ...prev, region: e.target.value as LocationRegion }))}
-              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target"
+              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target min-w-[44px]"
             >
               {REGION_OPTIONS.map(r => (
                 <option key={r} value={r}>{r}</option>
@@ -323,7 +323,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               value={formData.description || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               placeholder="شرح معماری، جو حاکم و حال‌وهوای این نقطه از جهان زروانیا..."
-              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target"
+              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target min-w-[44px]"
             />
           </div>
 
@@ -337,7 +337,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               value={formData.dmNotes || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, dmNotes: e.target.value }))}
               placeholder="اسرار پنهان، خطرات محیطی، تله‌ها یا NPCهای مخفی..."
-              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#C2512B]/40 focus:border-[#C2512B] focus:outline-none text-sm touch-target"
+              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#C2512B]/40 focus:border-[#C2512B] focus:outline-none text-sm touch-target min-w-[44px]"
             />
           </div>
 
@@ -350,7 +350,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               value={formData.imageUrl || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
               placeholder="https://..."
-              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target text-left dir-ltr"
+              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target min-w-[44px] text-left dir-ltr"
             />
           </div>
 
@@ -363,7 +363,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               type="checkbox"
               checked={!!formData.revealed}
               onChange={(e) => setFormData(prev => ({ ...prev, revealed: e.target.checked }))}
-              className="w-5 h-5 rounded accent-[#E0A030] cursor-pointer touch-target"
+              className="w-5 h-5 rounded accent-[#E0A030] cursor-pointer touch-target min-w-[44px]"
             />
           </div>
 
@@ -374,14 +374,14 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
                 setIsCreating(false);
                 setEditingLocation(null);
               }}
-              className="flex-1 py-2.5 rounded-[10px] border border-[#2F2A23] text-[#A39A89] font-bold text-sm hover:text-[#EDE6D8] transition touch-target"
+              className="flex-1 py-2.5 rounded-[10px] border border-[#2F2A23] text-[#A39A89] font-bold text-sm hover:text-[#EDE6D8] transition touch-target min-w-[44px]"
             >
               انصراف
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !formData.name?.trim()}
-              className="flex-1 py-2.5 rounded-[10px] bg-[#E0A030] text-[#0E0D0C] font-extrabold text-sm hover:bg-[#F2C265] transition disabled:opacity-50 touch-target"
+              className="flex-1 py-2.5 rounded-[10px] bg-[#E0A030] text-[#0E0D0C] font-extrabold text-sm hover:bg-[#F2C265] transition disabled:opacity-50 touch-target min-w-[44px]"
             >
               {isSubmitting ? 'در حال ذخیره...' : editingLocation ? 'ثبت تغییرات' : 'ایجاد مکان'}
             </button>

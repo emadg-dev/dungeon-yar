@@ -93,7 +93,7 @@ export const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = (
                   <button
                     type="button"
                     onClick={() => onResolve(c.id, 'client')}
-                    className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-[10px] bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-black text-xs transition touch-target"
+                    className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-[10px] bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-black text-xs transition touch-target min-w-[44px]"
                   >
                     <Check className="w-4 h-4 stroke-[2.5]" />
                     <span>حفظ تغییر من</span>
@@ -101,7 +101,7 @@ export const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = (
                   <button
                     type="button"
                     onClick={() => onResolve(c.id, 'server')}
-                    className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-[10px] bg-[#201D19] hover:bg-[#2A2520] border border-[#2F2A23] text-[#EDE6D8] font-bold text-xs transition touch-target"
+                    className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-[10px] bg-[#201D19] hover:bg-[#2A2520] border border-[#2F2A23] text-[#EDE6D8] font-bold text-xs transition touch-target min-w-[44px]"
                   >
                     <RotateCcw className="w-4 h-4 text-[#A39A89]" />
                     <span>پذیرش نسخه سرور</span>
@@ -116,7 +116,7 @@ export const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = (
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-2.5 rounded-[10px] bg-[#201D19] text-[#EDE6D8] text-xs font-bold hover:bg-[#2A2520] transition touch-target"
+            className="w-full py-2.5 rounded-[10px] bg-[#201D19] text-[#EDE6D8] text-xs font-bold hover:bg-[#2A2520] transition touch-target min-w-[44px]"
           >
             بستن
           </button>

@@ -1647,7 +1647,7 @@ export default function App() {
                           characterId: myCharacters[0]?.id || null
                         });
                       }}
-                      className="py-2.5 px-6 rounded-[12px] btn-primary-amber font-extrabold text-xs shadow-lg transition touch-target"
+                      className="py-2.5 px-6 rounded-[12px] btn-primary-amber font-extrabold text-xs shadow-lg transition touch-target min-w-[44px]"
                     >
                       ورود با شخصیت موجود
                     </button>
@@ -1667,7 +1667,7 @@ export default function App() {
                             await loadCampaignWorkspace(activeCampaignId);
                           }
                         }}
-                        className="py-2.5 px-6 rounded-[12px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] font-extrabold text-xs text-[#EDE6D8] transition touch-target"
+                        className="py-2.5 px-6 rounded-[12px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] font-extrabold text-xs text-[#EDE6D8] transition touch-target min-w-[44px]"
                       >
                         ساخت شخصیت تازه
                       </button>
@@ -2157,7 +2157,7 @@ export default function App() {
                   setSessionExpiredSheetOpen(false);
                   setAuthModalState({ isOpen: true, mode: 'login' });
                 }}
-                className="w-full py-3 rounded-[12px] btn-primary-amber font-extrabold text-xs touch-target min-h-[48px]"
+                className="w-full py-3 rounded-[12px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[48px]"
               >
                 ورود مجدد به حساب کاربری
               </button>

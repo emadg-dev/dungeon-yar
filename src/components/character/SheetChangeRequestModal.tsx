@@ -148,7 +148,7 @@ export const SheetChangeRequestModal: React.FC<SheetChangeRequestModalProps> = (
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] font-black text-xs transition flex items-center justify-center gap-2 touch-target min-h-[48px] shadow-lg shadow-[#E0A030]/20 disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] font-black text-xs transition flex items-center justify-center gap-2 touch-target min-w-[44px] min-h-[48px] shadow-lg shadow-[#E0A030]/20 disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
               <span>{isSubmitting ? 'در حال ارسال...' : 'ارسال درخواست به دانجن مستر'}</span>

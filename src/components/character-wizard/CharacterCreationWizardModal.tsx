@@ -522,7 +522,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
       {/* ------------------------------------------------------------- */}
       {/* 3. Main Wizard Content Viewport                               */}
       {/* ------------------------------------------------------------- */}
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6 max-w-3xl w-full mx-auto space-y-6">
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6 max-w-3xl min-h-[75vh] w-full mx-auto space-y-6">
         {/* ============================================================ */}
         {/* STEP 1: IDENTITY & LINEAGE                                   */}
         {/* ============================================================ */}
@@ -1320,7 +1320,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
       {/* 4. Sticky Bottom Action Bar                                   */}
       {/* ------------------------------------------------------------- */}
       <footer className="shrink-0 bg-[#171513] border-t border-[#2F2A23] px-4 py-3 shadow-2xl">
-        <div className="max-w-3xl mx-auto flex flex-wrap items-center justify-between gap-2 gap-2">
+        <div className="max-w-3xl min-h-[75vh] mx-auto flex flex-wrap items-center justify-between gap-2 gap-2">
           {/* Back button */}
           <button
             type="button"

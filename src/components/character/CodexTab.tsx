@@ -103,7 +103,7 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         <button
           type="button"
           onClick={() => setSubTab('quests')}
-          className={`flex-1 min-w-[105px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
             subTab === 'quests'
               ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -116,7 +116,7 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         <button
           type="button"
           onClick={() => setSubTab('locations')}
-          className={`flex-1 min-w-[95px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
             subTab === 'locations'
               ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -129,7 +129,7 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         <button
           type="button"
           onClick={() => setSubTab('handouts')}
-          className={`flex-1 min-w-[105px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
             subTab === 'handouts'
               ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -142,7 +142,7 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         <button
           type="button"
           onClick={() => setSubTab('items')}
-          className={`flex-1 min-w-[95px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
             subTab === 'items'
               ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -155,7 +155,7 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         <button
           type="button"
           onClick={() => setSubTab('creatures')}
-          className={`flex-1 min-w-[105px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
             subTab === 'creatures'
               ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -168,7 +168,7 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         <button
           type="button"
           onClick={() => setSubTab('rules')}
-          className={`flex-1 min-w-[95px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
             subTab === 'rules'
               ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -181,7 +181,7 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         <button
           type="button"
           onClick={() => setSubTab('calendar')}
-          className={`flex-1 min-w-[95px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
             subTab === 'calendar'
               ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -194,7 +194,7 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         <button
           type="button"
           onClick={() => setSubTab('factions')}
-          className={`flex-1 min-w-[95px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target ${
+          className={`flex-1 min-w-[44px] py-2 px-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
             subTab === 'factions'
               ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
               : 'text-[#A39A89] hover:text-[#EDE6D8]'

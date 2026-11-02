@@ -949,7 +949,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 text-start" dir="rtl">
-      <div className="bg-[rgba(18,16,14,0.88)] backdrop-blur-xl border border-[#E0A030]/30 rounded-t-3xl sm:rounded-3xl w-full max-w-3xl max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_24px_60px_rgba(0,0,0,0.5)]">
+      <div className="bg-[rgba(18,16,14,0.88)] backdrop-blur-xl border border-[#E0A030]/30 rounded-t-3xl sm:rounded-3xl w-full max-w-3xl min-h-[75vh] max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_24px_60px_rgba(0,0,0,0.5)]">
         {/* Header Bar */}
         <div className="p-4 border-b border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 bg-[#171513]">
           <div className="flex items-center gap-2">
@@ -988,7 +988,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
           <div className="p-5 overflow-y-auto space-y-4">
             <div className="text-center space-y-1 mb-4">
               <h3 className="text-lg font-bold text-[#F2C265]">نقطه آغاز ماجراجویی را انتخاب کنید</h3>
-              <p className="text-xs text-[#A39A89] max-w-md mx-auto">
+              <p className="text-xs text-[#A39A89] max-w-2xl mx-auto">
                 می‌توانید جهان خود را از صفر بسازید، از بسته‌های رسمی و آماده محتوا شروع کنید یا جهان کمپین‌های قبلی را بیاورید.
               </p>
             </div>

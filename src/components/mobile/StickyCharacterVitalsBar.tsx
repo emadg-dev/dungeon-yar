@@ -84,7 +84,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
             <button
               type="button"
               onClick={() => adjustHp(-1)}
-              className="w-12 h-12 flex items-center justify-center rounded-xl bg-[#C2512B]/15 active:bg-[#C2512B]/15 border border-[#C2512B]/40 text-[#E8836B] font-black text-sm touch-target-lg select-none"
+              className="w-12 h-12 flex items-center justify-center rounded-xl bg-[#C2512B]/15 active:bg-[#C2512B]/15 border border-[#C2512B]/40 text-[#E8836B] font-black text-sm touch-target min-w-[44px]-lg select-none"
               title="کاهش ۱ جان"
             >
               -۱
@@ -111,7 +111,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
             <button
               type="button"
               onClick={() => adjustHp(+1)}
-              className="w-12 h-12 flex items-center justify-center rounded-xl bg-[#6F9E78]/15 active:bg-[#6F9E78]/15 border border-[#6F9E78]/40 text-[#6F9E78] font-black text-sm touch-target-lg select-none"
+              className="w-12 h-12 flex items-center justify-center rounded-xl bg-[#6F9E78]/15 active:bg-[#6F9E78]/15 border border-[#6F9E78]/40 text-[#6F9E78] font-black text-sm touch-target min-w-[44px]-lg select-none"
               title="افزایش ۱ جان"
             >
               +۱
@@ -123,7 +123,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
             <button
               type="button"
               onClick={() => onOpenRest('short')}
-              className="p-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] text-[#C9C0AE] text-xs font-bold touch-target"
+              className="p-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] text-[#C9C0AE] text-xs font-bold touch-target min-w-[44px]"
               title="استراحت کوتاه"
             >
               <Moon className="w-4 h-4 text-[#F2C265]" />
@@ -131,7 +131,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
             <button
               type="button"
               onClick={() => onOpenRest('long')}
-              className="p-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] text-[#C9C0AE] text-xs font-bold touch-target"
+              className="p-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] text-[#C9C0AE] text-xs font-bold touch-target min-w-[44px]"
               title="استراحت بلند"
             >
               <Sun className="w-4 h-4 text-[#F2C265]" />
@@ -150,7 +150,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
                   type="button"
                   key={tab.id}
                   onClick={() => onSelectSheetTab(tab.id)}
-                  className={`flex-1 sm:flex-initial py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 touch-target whitespace-nowrap ${
+                  className={`flex-1 sm:flex-initial py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 touch-target min-w-[44px] whitespace-nowrap ${
                     isActive
                       ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
                       : 'text-[#A39A89] hover:text-[#EDE6D8]'

@@ -303,13 +303,13 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                 <button
                   type="button"
                   onClick={() => adjustChaos('brokenKeySeals', -1)}
-                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >-1</button>
                 <span className="font-mono font-bold text-[#F2C265]">{state.chaos.brokenKeySeals}</span>
                 <button
                   type="button"
                   onClick={() => adjustChaos('brokenKeySeals', +1)}
-                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >+1</button>
               </div>
             </div>
@@ -320,13 +320,13 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                 <button
                   type="button"
                   onClick={() => adjustChaos('mainAlliesDead', -1)}
-                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >-1</button>
                 <span className="font-mono font-bold text-[#F2C265]">{state.chaos.mainAlliesDead}</span>
                 <button
                   type="button"
                   onClick={() => adjustChaos('mainAlliesDead', +1)}
-                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >+1</button>
               </div>
             </div>
@@ -337,13 +337,13 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                 <button
                   type="button"
                   onClick={() => adjustChaos('ordersTurnedEnemy', -1)}
-                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >-1</button>
                 <span className="font-mono font-bold text-[#F2C265]">{state.chaos.ordersTurnedEnemy}</span>
                 <button
                   type="button"
                   onClick={() => adjustChaos('ordersTurnedEnemy', +1)}
-                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >+1</button>
               </div>
             </div>
@@ -364,13 +364,13 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                 <button
                   type="button"
                   onClick={() => adjustChaos('reconciledOrdersOrSavedAllies', -1)}
-                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >-1</button>
                 <span className="font-mono font-bold text-[#6F9E78]">{state.chaos.reconciledOrdersOrSavedAllies}</span>
                 <button
                   type="button"
                   onClick={() => adjustChaos('reconciledOrdersOrSavedAllies', +1)}
-                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >+1</button>
               </div>
             </div>

@@ -43,7 +43,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                 item.onClick();
                 onClose();
               }}
-              className={`w-full p-3.5 rounded-[12px] flex flex-wrap items-center justify-between gap-2 transition-all duration-150 touch-target ${
+              className={`w-full p-3.5 rounded-[12px] flex flex-wrap items-center justify-between gap-2 transition-all duration-150 touch-target min-w-[44px] ${
                 item.isDestructive
                   ? 'bg-[#C2512B]/15 hover:bg-[#C2512B]/25 text-[#E0A030] border border-[#C2512B]/35 active:scale-[0.98]'
                   : 'bg-[#201D19] hover:bg-[#2A2621] text-[#EDE6D8] border border-[#2F2A23] active:scale-[0.98]'
@@ -68,7 +68,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
         <button
           type="button"
           onClick={onClose}
-          className="w-full py-3 mt-2 rounded-[12px] bg-[#171513] text-[#A39A89] hover:text-[#EDE6D8] text-xs font-semibold border border-[#2F2A23] touch-target"
+          className="w-full py-3 mt-2 rounded-[12px] bg-[#171513] text-[#A39A89] hover:text-[#EDE6D8] text-xs font-semibold border border-[#2F2A23] touch-target min-w-[44px]"
         >
           بستن منو
         </button>

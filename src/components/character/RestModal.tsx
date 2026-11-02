@@ -87,7 +87,7 @@ export const RestModal: React.FC<RestModalProps> = ({
                 key={opt.id}
                 type="button"
                 onClick={() => setRestType(opt.id as any)}
-                className={`py-2.5 px-2 rounded-[12px] border transition flex flex-col items-center justify-center gap-1.5 touch-target ${
+                className={`py-2.5 px-2 rounded-[12px] border transition flex flex-col items-center justify-center gap-1.5 touch-target min-w-[44px] ${
                   isSelected
                     ? 'bg-[#E0A030]/15 border-[#E0A030] text-[#E0A030] shadow-sm'
                     : 'bg-[#201D19] border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8]'
@@ -129,7 +129,7 @@ export const RestModal: React.FC<RestModalProps> = ({
               <button
                 type="button"
                 onClick={() => setHitDiceToSpend(Math.max(0, hitDiceToSpend - 1))}
-                className="w-8 h-8 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target flex items-center justify-center"
+                className="w-8 h-8 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
               >
                 -
               </button>
@@ -139,7 +139,7 @@ export const RestModal: React.FC<RestModalProps> = ({
               <button
                 type="button"
                 onClick={() => setHitDiceToSpend(hitDiceToSpend + 1)}
-                className="w-8 h-8 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target flex items-center justify-center"
+                className="w-8 h-8 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
               >
                 +
               </button>
@@ -164,13 +164,13 @@ export const RestModal: React.FC<RestModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="py-2.5 px-4 rounded-[12px] text-xs text-[#A39A89] hover:text-[#EDE6D8] touch-target"
+            className="py-2.5 px-4 rounded-[12px] text-xs text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
           >
             انصراف
           </button>
           <button
             type="submit"
-            className="py-2.5 px-5 rounded-[12px] btn-primary-amber font-extrabold text-xs shadow-md touch-target"
+            className="py-2.5 px-5 rounded-[12px] btn-primary-amber font-extrabold text-xs shadow-md touch-target min-w-[44px]"
           >
             تأیید استراحت و بازیابی
           </button>

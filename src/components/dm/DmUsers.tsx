@@ -192,7 +192,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
           <button
             type="button"
             onClick={loadUsers}
-            className="py-1.5 px-3 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] touch-target flex items-center gap-1 self-start sm:self-auto"
+            className="py-1.5 px-3 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px] flex items-center gap-1 self-start sm:self-auto"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>تازه‌سازی</span>
@@ -238,7 +238,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
       {errorMsg && (
         <div className="p-3 rounded-[10px] bg-[#C2512B]/15 border border-[#C2512B]/40 text-[#EDE6D8] text-xs flex flex-wrap items-center justify-between gap-2">
           <span>{errorMsg}</span>
-          <button type="button" onClick={() => setErrorMsg('')} className="p-1 touch-target">
+          <button type="button" onClick={() => setErrorMsg('')} className="p-1 touch-target min-w-[44px]">
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -246,7 +246,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
       {successMsg && (
         <div className="p-3 rounded-[10px] bg-[#6F9E78]/15 border border-[#6F9E78]/40 text-[#6F9E78] text-xs flex flex-wrap items-center justify-between gap-2 font-bold">
           <span>{successMsg}</span>
-          <button type="button" onClick={() => setSuccessMsg('')} className="p-1 touch-target">
+          <button type="button" onClick={() => setSuccessMsg('')} className="p-1 touch-target min-w-[44px]">
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -263,7 +263,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
             <button
               type="button"
               onClick={() => setResetLinkData(null)}
-              className="p-1 text-[#A39A89] hover:text-[#EDE6D8] touch-target"
+              className="p-1 text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
             >
               <X className="w-4 h-4" />
             </button>
@@ -282,7 +282,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
             <button
               type="button"
               onClick={() => copyToClipboard(resetLinkData.resetLink)}
-              className="py-2 px-3.5 rounded-[8px] btn-primary-amber text-xs font-bold touch-target flex items-center gap-1 shrink-0 min-h-[44px]"
+              className="py-2 px-3.5 rounded-[8px] btn-primary-amber text-xs font-bold touch-target min-w-[44px] flex items-center gap-1 shrink-0 min-h-[44px]"
             >
               {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               <span>{copiedLink ? 'کپی شد' : 'کپی لینک'}</span>
@@ -358,7 +358,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
                   setSelectedUser(u);
                   setActionMenuOpen(true);
                 }}
-                className="p-2 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] touch-target"
+                className="p-2 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
                 title="عملیات کاربر"
               >
                 <MoreVertical className="w-4 h-4" />
@@ -394,7 +394,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
                   key={c.id}
                   type="button"
                   onClick={() => handleAssignCharacter(c.id)}
-                  className="w-full text-right p-3 rounded-[10px] bg-[#201D19] hover:bg-[#2A2621] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 touch-target"
+                  className="w-full text-right p-3 rounded-[10px] bg-[#201D19] hover:bg-[#2A2621] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
                 >
                   <div>
                     <span className="font-extrabold text-xs text-[#EDE6D8] block">{c.name}</span>

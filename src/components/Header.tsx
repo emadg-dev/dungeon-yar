@@ -149,8 +149,23 @@ export const Header: React.FC<HeaderProps> = ({
   }, []);
 
   return (
+    <>
     <header className="sticky top-0 z-20 w-full max-w-full glass-panel border-b border-[#2F2A23] shadow-md pt-[env(safe-area-inset-top,0px)] ps-[env(safe-area-inset-left,0px)] pe-[env(safe-area-inset-right,0px)]">
       <div className="max-w-7xl mx-auto px-2.5 sm:px-4 py-2 flex flex-wrap items-center justify-between gap-2 gap-2">
+        {/* Mobile hamburger — left of header, mobile only */}
+        <button
+          ref={hamburgerRef}
+          type="button"
+          onClick={() => setMobileMenuOpen(o => !o)}
+          aria-label={mobileMenuOpen ? 'بستن منو' : 'باز کردن منو'}
+          aria-expanded={mobileMenuOpen}
+          aria-controls="mobile-header-menu"
+          className="md:hidden flex items-center justify-center w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#E0A030] transition touch-target min-w-[44px] shrink-0"
+          title={mobileMenuOpen ? 'بستن منو' : 'باز کردن منو'}
+        >
+          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+
         {/* Brand & Campaign Switcher / Breadcrumb */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {/* Brand Seal Logo Mark */}
@@ -170,7 +185,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={onOpenCampaignSwitcher}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-black text-[#EDE6D8] truncate max-w-[130px] sm:max-w-[180px] touch-target transition"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-black text-[#EDE6D8] truncate max-w-[130px] sm:max-w-[180px] touch-target min-w-[44px] transition"
                   title="تغییر یا انتخاب کمپین"
                 >
                   <span className="truncate text-[#E0A030]">{activeCampaignName || 'کمپین'}</span>
@@ -184,7 +199,7 @@ export const Header: React.FC<HeaderProps> = ({
                   <select
                     value={activeCharacterId || ''}
                     onChange={(e) => onSelectCharacter(e.target.value)}
-                    className="w-full bg-[#201D19] text-xs font-bold text-[#E0A030] py-1.5 pe-6 ps-2 rounded-[10px] border border-[#2F2A23] focus:outline-none appearance-none cursor-pointer truncate touch-target"
+                    className="w-full bg-[#201D19] text-xs font-bold text-[#E0A030] py-1.5 pe-6 ps-2 rounded-[10px] border border-[#2F2A23] focus:outline-none appearance-none cursor-pointer truncate touch-target min-w-[44px]"
                     title="تغییر کاراکتر در این کمپین"
                   >
                     {characters.map(c => (
@@ -202,7 +217,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={onOpenLevelUp}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-gradient-to-r from-[#C97B4A] to-[#E0A030] text-[#0E0D0C] text-[11px] font-black animate-pulse shadow-md shadow-[#E0A030]/20 touch-target shrink-0"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-gradient-to-r from-[#C97B4A] to-[#E0A030] text-[#0E0D0C] text-[11px] font-black animate-pulse shadow-md shadow-[#E0A030]/20 touch-target min-w-[44px] shrink-0"
                   title="ارتقای سطح آماده است!"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
@@ -241,7 +256,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenCampaignApprovals}
-              className="flex items-center gap-1 px-2 py-1 rounded-[10px] text-xs font-black bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/40 hover:bg-[#E0A030]/30 transition touch-target animate-pulse"
+              className="flex items-center gap-1 px-2 py-1 rounded-[10px] text-xs font-black bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/40 hover:bg-[#E0A030]/30 transition touch-target min-w-[44px] animate-pulse"
               title={`${pendingApprovalsCount} درخواست در انتظار بررسی`}
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -254,7 +269,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenActiveEncounter}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-xs font-black bg-[#C2512B] hover:bg-[#D65D34] text-white animate-pulse border border-[#F2C265] shadow-[0_0_12px_rgba(194,81,43,0.6)] touch-target transition"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-xs font-black bg-[#C2512B] hover:bg-[#D65D34] text-white animate-pulse border border-[#F2C265] shadow-[0_0_12px_rgba(194,81,43,0.6)] touch-target min-w-[44px] transition"
               title={`مبارزه فعال: ${activeEncounter.name}`}
             >
               <Swords className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -267,7 +282,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenConflicts}
-              className="flex items-center gap-1 px-2 py-1 rounded-[8px] bg-[#C2512B]/20 text-[#C2512B] border border-[#C2512B]/50 hover:bg-[#C2512B]/30 animate-pulse text-xs font-black transition touch-target"
+              className="flex items-center gap-1 px-2 py-1 rounded-[8px] bg-[#C2512B]/20 text-[#C2512B] border border-[#C2512B]/50 hover:bg-[#C2512B]/30 animate-pulse text-xs font-black transition touch-target min-w-[44px]"
               title={`${conflictCount || 1} مغایرت در همگام‌سازی - جهت حل لمس کنید`}
             >
               <AlertTriangle className="w-3.5 h-3.5" />
@@ -299,7 +314,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onToggleDmView}
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] text-xs font-bold transition border touch-target ${
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] text-xs font-bold transition border touch-target min-w-[44px] ${
                 isDmView
                   ? 'bg-[#E0A030] text-[#0E0D0C] border-[#E0A030]'
                   : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23] hover:border-[#E0A030]'
@@ -318,7 +333,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={onToggleWakeLock}
-                className={`p-1.5 rounded-[10px] text-xs font-bold transition border touch-target ${
+                className={`p-1.5 rounded-[10px] text-xs font-bold transition border touch-target min-w-[44px] ${
                   wakeLockActive
                     ? 'bg-[#E0A030]/20 text-[#E0A030] border-[#E0A030]/50 shadow-[0_0_10px_rgba(224,160,48,0.2)]'
                     : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -333,7 +348,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onToggleFontScale}
-              className={`p-1.5 rounded-[10px] text-xs font-bold transition border touch-target ${
+              className={`p-1.5 rounded-[10px] text-xs font-bold transition border touch-target min-w-[44px] ${
                 fontScale !== 'normal'
                   ? 'bg-[#E0A030]/20 text-[#E0A030] border-[#E0A030]/40'
                   : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -349,7 +364,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenNotifications}
-              className="relative p-1.5 rounded-[10px] text-xs font-bold transition border border-[#2F2A23] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] hover:border-[#E0A030] touch-target"
+              className="relative p-1.5 rounded-[10px] text-xs font-bold transition border border-[#2F2A23] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] hover:border-[#E0A030] touch-target min-w-[44px]"
               title="اعلان‌ها و رویدادها"
             >
               <Bell className="w-4 h-4" />
@@ -368,7 +383,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={onOpenAdminConsole}
-                  className="py-1 px-2.5 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/40 text-[#E0A030] hover:bg-[#E0A030]/25 text-xs font-bold transition touch-target flex items-center gap-1 min-h-[44px]"
+                  className="py-1 px-2.5 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/40 text-[#E0A030] hover:bg-[#E0A030]/25 text-xs font-bold transition touch-target min-w-[44px] flex items-center gap-1 min-h-[44px]"
                   title="کنسول مدیریت سامانه"
                 >
                   <Shield className="w-3.5 h-3.5" />
@@ -378,7 +393,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
-                className="flex items-center gap-1.5 py-1 px-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#EDE6D8] hover:border-[#E0A030] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E0A030]/50 active:scale-95 transition touch-target"
+                className="flex items-center gap-1.5 py-1 px-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#EDE6D8] hover:border-[#E0A030] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E0A030]/50 active:scale-95 transition touch-target min-w-[44px]"
                 title={currentUser.displayName || currentUser.name}
               >
                 <span className="w-2 h-2 rounded-full bg-[#6F9E78]" />
@@ -390,30 +405,16 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenAuth}
-              className="py-1.5 px-3 rounded-[10px] btn-primary-amber font-bold text-xs shadow-md transition touch-target flex items-center gap-1"
+              className="py-1.5 px-3 rounded-[10px] btn-primary-amber font-bold text-xs shadow-md transition touch-target min-w-[44px] flex items-center gap-1"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>ورود / عضویت</span>
             </button>
           )}
-
-          {/* Mobile hamburger */}
-          <button
-            ref={hamburgerRef}
-            type="button"
-            onClick={() => setMobileMenuOpen(o => !o)}
-            aria-label={mobileMenuOpen ? 'بستن منو' : 'باز کردن منو'}
-            aria-expanded={mobileMenuOpen}
-            aria-controls="mobile-header-menu"
-            className="md:hidden flex items-center justify-center w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#E0A030] transition touch-target"
-            title={mobileMenuOpen ? 'بستن منو' : 'باز کردن منو'}
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
         </div>
       </div>
 
-      {/* Mobile side drawer (RTL: slides from inline-end/right) */}
+          </header>
       {mobileMenuOpen && (
         <>
           <div
@@ -438,7 +439,7 @@ export const Header: React.FC<HeaderProps> = ({
                 type="button"
                 onClick={closeMenu}
                 aria-label="بستن منو"
-                className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#E0A030] flex items-center justify-center transition touch-target"
+                className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#E0A030] flex items-center justify-center transition touch-target min-w-[44px]"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -468,7 +469,7 @@ export const Header: React.FC<HeaderProps> = ({
                     setMobileMenuOpen(false);
                     onGoHome();
                   }}
-                  className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex items-center gap-2 touch-target"
+                  className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex items-center gap-2 touch-target min-w-[44px]"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-[#E0A030]" />
                   <span>صفحه اصلی (کمپین‌ها و کاراکترها)</span>
@@ -482,7 +483,7 @@ export const Header: React.FC<HeaderProps> = ({
                     setMobileMenuOpen(false);
                     onOpenCampaignSwitcher();
                   }}
-                  className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] flex flex-wrap items-center justify-between gap-2 touch-target"
+                  className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
                 >
                   <span>جابجایی بین کمپین‌ها</span>
                   <ChevronDown className="w-3.5 h-3.5" />
@@ -500,7 +501,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setMobileMenuOpen(false);
                         onOpenCampaignSettings();
                       }}
-                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target"
+                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
                     >
                       <span>تنظیمات قوانین و واحدها</span>
                     </button>
@@ -512,7 +513,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setMobileMenuOpen(false);
                         onOpenCampaignMembers();
                       }}
-                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target"
+                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
                     >
                       <span>اعضا و تعیین نقش‌ها</span>
                     </button>
@@ -524,7 +525,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setMobileMenuOpen(false);
                         onOpenCampaignInvites();
                       }}
-                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target"
+                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
                     >
                       <span>ساخت و مدیریت کدهای دعوت</span>
                     </button>
@@ -536,7 +537,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setMobileMenuOpen(false);
                         onOpenCampaignApprovals();
                       }}
-                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target"
+                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
                     >
                       <span>تأیید کاراکترها و ارتقای لول</span>
                       {pendingApprovalsCount > 0 && (
@@ -558,7 +559,7 @@ export const Header: React.FC<HeaderProps> = ({
                   setMobileMenuOpen(false);
                   onOpenAccount();
                 }}
-                className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex items-center justify-center gap-2 touch-target"
+                className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex items-center justify-center gap-2 touch-target min-w-[44px]"
               >
                 <Sparkles className="w-3.5 h-3.5 text-[#E0A030]" />
                 <span>مدیریت حساب کاربری و نشست‌ها</span>
@@ -573,7 +574,7 @@ export const Header: React.FC<HeaderProps> = ({
                   setMobileMenuOpen(false);
                   onOpenAdminConsole();
                 }}
-                className="w-full py-2.5 px-3 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/40 text-xs font-extrabold text-[#E0A030] flex items-center justify-center gap-2 touch-target min-h-[44px]"
+                className="w-full py-2.5 px-3 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/40 text-xs font-extrabold text-[#E0A030] flex items-center justify-center gap-2 touch-target min-w-[44px] min-h-[44px]"
               >
                 <Shield className="w-3.5 h-3.5" />
                 <span>کنسول مدیریت سامانه (ادمین)</span>
@@ -588,7 +589,7 @@ export const Header: React.FC<HeaderProps> = ({
                   setMobileMenuOpen(false);
                   onOpenNotifications();
                 }}
-                className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target"
+                className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
               >
                 <div className="flex items-center gap-2">
                   <Bell className="w-3.5 h-3.5 text-[#E0A030]" />
@@ -615,7 +616,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onSelectCharacter(c.id);
                         setMobileMenuOpen(false);
                       }}
-                      className={`w-full text-start p-2.5 rounded-[10px] text-xs font-bold transition flex flex-wrap items-center justify-between gap-2 border touch-target ${
+                      className={`w-full text-start p-2.5 rounded-[10px] text-xs font-bold transition flex flex-wrap items-center justify-between gap-2 border touch-target min-w-[44px] ${
                         activeCharacterId === c.id
                           ? 'bg-[#E0A030]/15 text-[#E0A030] border-[#E0A030]/40'
                           : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23]'
@@ -642,7 +643,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onSwitchUser(u.id);
                         setMobileMenuOpen(false);
                       }}
-                      className={`w-full text-start p-2 rounded-[8px] text-xs font-bold transition flex flex-wrap items-center justify-between gap-2 touch-target ${
+                      className={`w-full text-start p-2 rounded-[8px] text-xs font-bold transition flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px] ${
                         currentUser?.id === u.id
                           ? 'bg-[#E0A030]/10 text-[#E0A030]'
                           : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -662,7 +663,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={onToggleWakeLock}
-                  className="w-full flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] touch-target"
+                  className="w-full flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] touch-target min-w-[44px]"
                 >
                   <span className="flex items-center gap-1.5">
                     <SunMedium className="w-4 h-4 text-[#E0A030]" />
@@ -677,7 +678,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={onToggleFontScale}
-                className="w-full flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] touch-target"
+                className="w-full flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] touch-target min-w-[44px]"
               >
                 <span className="flex items-center gap-1.5">
                   <Type className="w-4 h-4 text-[#E0A030]" />
@@ -696,7 +697,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onLogout();
                 setMobileMenuOpen(false);
               }}
-              className="w-full py-2.5 px-3 rounded-[10px] bg-[#C2512B]/15 hover:bg-[#C2512B]/25 text-[#C2512B] border border-[#C2512B]/30 text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target"
+              className="w-full py-2.5 px-3 rounded-[10px] bg-[#C2512B]/15 hover:bg-[#C2512B]/25 text-[#C2512B] border border-[#C2512B]/30 text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px]"
             >
               <LogOut className="w-4 h-4" />
               <span>خروج از حساب</span>
@@ -705,6 +706,6 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
         </>
       )}
-    </header>
+    </>
   );
 };

@@ -227,7 +227,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-[10px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target"
+            className="p-2 rounded-[10px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target min-w-[44px]"
             title="بستن"
           >
             <X className="w-5 h-5" />
@@ -247,10 +247,10 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
         )}
 
         {/* Tabs Bar */}
-        <div className="flex items-center gap-1 p-2 border-b border-[#2F2A23] bg-[#1B1815] overflow-x-auto no-scrollbar">
+        <div className="flex flex-wrap items-center gap-1 p-2 border-b border-[#2F2A23] bg-[#1B1815]">
           <button
             onClick={() => setActiveTab('users')}
-            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-h-[44px] ${
+            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'users'
                 ? 'bg-[#E0A030] text-[#171513]'
                 : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
@@ -262,7 +262,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
 
           <button
             onClick={() => setActiveTab('campaigns')}
-            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-h-[44px] ${
+            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'campaigns'
                 ? 'bg-[#E0A030] text-[#171513]'
                 : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
@@ -274,7 +274,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
 
           <button
             onClick={() => setActiveTab('settings')}
-            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-h-[44px] ${
+            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'settings'
                 ? 'bg-[#E0A030] text-[#171513]'
                 : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
@@ -286,7 +286,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
 
           <button
             onClick={() => setActiveTab('storage')}
-            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-h-[44px] ${
+            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'storage'
                 ? 'bg-[#E0A030] text-[#171513]'
                 : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
@@ -298,7 +298,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
 
           <button
             onClick={() => setActiveTab('cleanup')}
-            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-h-[44px] ${
+            className={`py-2 px-3 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'cleanup'
                 ? 'bg-[#E0A030] text-[#171513]'
                 : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
@@ -312,7 +312,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
             <button
               onClick={() => loadTabData(activeTab)}
               disabled={loading}
-              className="p-2 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target"
+              className="p-2 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target min-w-[44px]"
               title="بارگذاری مجدد"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -363,7 +363,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                     />
                     <button
                       onClick={handleCopyResetLink}
-                      className="py-1.5 px-3 rounded-[8px] btn-primary-amber text-xs font-bold flex items-center gap-1 touch-target min-h-[40px]"
+                      className="py-1.5 px-3 rounded-[8px] btn-primary-amber text-xs font-bold flex items-center gap-1 touch-target min-w-[44px] min-h-[40px]"
                     >
                       {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                       <span>{copiedLink ? 'کپی شد' : 'کپی لینک'}</span>
@@ -418,7 +418,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                     <div className="flex items-center gap-2 flex-wrap">
                       <button
                         onClick={() => handleGenerateResetLink(u.id)}
-                        className="py-1.5 px-2.5 rounded-[8px] bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030] text-[11px] font-bold text-[#EDE6D8] flex items-center gap-1 touch-target min-h-[44px]"
+                        className="py-1.5 px-2.5 rounded-[8px] bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030] text-[11px] font-bold text-[#EDE6D8] flex items-center gap-1 touch-target min-w-[44px] min-h-[44px]"
                         title="تولید لینک یکبارمصرف تغییر رمز"
                       >
                         <KeyRound className="w-3.5 h-3.5 text-[#E0A030]" />
@@ -427,7 +427,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
 
                       <button
                         onClick={() => handleRevokeSessions(u.id)}
-                        className="py-1.5 px-2.5 rounded-[8px] bg-[#171513] border border-[#2F2A23] hover:border-[#C2512B] text-[11px] font-bold text-[#EDE6D8] flex items-center gap-1 touch-target min-h-[44px]"
+                        className="py-1.5 px-2.5 rounded-[8px] bg-[#171513] border border-[#2F2A23] hover:border-[#C2512B] text-[11px] font-bold text-[#EDE6D8] flex items-center gap-1 touch-target min-w-[44px] min-h-[44px]"
                         title="لغو تمام نشست‌های فعال این کاربر"
                       >
                         <Ban className="w-3.5 h-3.5 text-[#C2512B]" />
@@ -437,7 +437,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                       {u.id !== currentUser.id && (
                         <button
                           onClick={() => handleToggleUserStatus(u.id)}
-                          className={`py-1.5 px-2.5 rounded-[8px] text-[11px] font-bold border flex items-center gap-1 touch-target min-h-[44px] ${
+                          className={`py-1.5 px-2.5 rounded-[8px] text-[11px] font-bold border flex items-center gap-1 touch-target min-w-[44px] min-h-[44px] ${
                             u.status === 'active'
                               ? 'bg-[#C2512B]/15 text-[#C2512B] border-[#C2512B]/35 hover:bg-[#C2512B]/25'
                               : 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/35 hover:bg-[#6F9E78]/25'
@@ -518,7 +518,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                       {c.status !== 'archived' ? (
                         <button
                           onClick={() => handleArchiveCampaign(c.id)}
-                          className="py-1.5 px-3 rounded-[8px] bg-[#171513] border border-[#2F2A23] hover:border-[#C2512B] text-xs font-bold text-[#C2512B] flex items-center gap-1.5 touch-target min-h-[44px]"
+                          className="py-1.5 px-3 rounded-[8px] bg-[#171513] border border-[#2F2A23] hover:border-[#C2512B] text-xs font-bold text-[#C2512B] flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
                           title="بایگانی کردن کمپین"
                         >
                           <Archive className="w-3.5 h-3.5" />
@@ -527,7 +527,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                       ) : (
                         <button
                           onClick={() => handleRestoreCampaign(c.id)}
-                          className="py-1.5 px-3 rounded-[8px] bg-[#171513] border border-[#2F2A23] hover:border-[#6F9E78] text-xs font-bold text-[#6F9E78] flex items-center gap-1.5 touch-target min-h-[44px]"
+                          className="py-1.5 px-3 rounded-[8px] bg-[#171513] border border-[#2F2A23] hover:border-[#6F9E78] text-xs font-bold text-[#6F9E78] flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
                           title="بازگردانی کمپین به حالت فعال"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
@@ -620,7 +620,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
               <button
                 type="submit"
                 disabled={settingsSaving}
-                className="py-2.5 px-5 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-h-[44px]"
+                className="py-2.5 px-5 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[44px]"
               >
                 {settingsSaving ? 'در حال ذخیره‌سازی...' : 'ذخیره تغییرات تنظیمات'}
               </button>
@@ -733,7 +733,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                   type="button"
                   onClick={() => handleRunCleanup(true)}
                   disabled={cleanupExecuting}
-                  className="py-2.5 px-4 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] touch-target min-h-[44px]"
+                  className="py-2.5 px-4 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] touch-target min-w-[44px] min-h-[44px]"
                 >
                   بررسی مجدد (پیش‌نمایش)
                 </button>
@@ -742,7 +742,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                   type="button"
                   onClick={() => handleRunCleanup(false)}
                   disabled={cleanupExecuting || cleanupReport.cleanedTotal === 0}
-                  className="py-2.5 px-4 rounded-[10px] bg-[#C2512B] text-white hover:bg-[#A84322] font-extrabold text-xs transition touch-target min-h-[44px] flex items-center gap-1.5"
+                  className="py-2.5 px-4 rounded-[10px] bg-[#C2512B] text-white hover:bg-[#A84322] font-extrabold text-xs transition touch-target min-w-[44px] min-h-[44px] flex items-center gap-1.5"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>اجرای پاک‌سازی دائمی</span>

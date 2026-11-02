@@ -100,7 +100,7 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
             <button
               type="button"
               onClick={onOpenCreateRecap}
-              className="py-2.5 px-3.5 rounded-[12px] btn-primary-amber text-xs font-bold flex items-center gap-1.5 shrink-0 touch-target"
+              className="py-2.5 px-3.5 rounded-[12px] btn-primary-amber text-xs font-bold flex items-center gap-1.5 shrink-0 touch-target min-w-[44px]"
             >
               <Feather className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">نگارش خلاصه</span>
@@ -146,7 +146,7 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
                       <button
                         type="button"
                         onClick={() => onEditRecap(activeRecap)}
-                        className="p-1.5 rounded-lg text-[#A39A89] hover:text-[#EDE6D8] hover:bg-white/5 transition touch-target"
+                        className="p-1.5 rounded-lg text-[#A39A89] hover:text-[#EDE6D8] hover:bg-white/5 transition touch-target min-w-[44px]"
                         title="ویرایش"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -157,7 +157,7 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
                         type="button"
                         onClick={() => handleDelete(activeRecap.id)}
                         disabled={deletingId === activeRecap.id}
-                        className="p-1.5 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 transition touch-target"
+                        className="p-1.5 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 transition touch-target min-w-[44px]"
                         title="حذف"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -168,7 +168,7 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
                 <button
                   type="button"
                   onClick={() => setSelectedRecapId(null)}
-                  className="p-1.5 rounded-lg text-[#A39A89] hover:text-[#EDE6D8] hover:bg-white/5 transition touch-target"
+                  className="p-1.5 rounded-lg text-[#A39A89] hover:text-[#EDE6D8] hover:bg-white/5 transition touch-target min-w-[44px]"
                   title="بستن پنجره مطالعه"
                 >
                   <X className="w-4 h-4" />

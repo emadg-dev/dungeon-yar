@@ -122,7 +122,7 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
             <button
               type="button"
               onClick={() => adjustHp(-1)}
-              className="touch-target-lg w-12 h-12 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#C2512B] hover:border-[#C2512B]/60 font-black text-sm active:scale-95"
+              className="touch-target min-w-[44px]-lg w-12 h-12 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#C2512B] hover:border-[#C2512B]/60 font-black text-sm active:scale-95"
               title="کاهش 1 جان"
             >
               -1
@@ -147,7 +147,7 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
             <button
               type="button"
               onClick={() => adjustHp(1)}
-              className="touch-target-lg w-12 h-12 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#6F9E78] hover:border-[#6F9E78]/60 font-black text-sm active:scale-95"
+              className="touch-target min-w-[44px]-lg w-12 h-12 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#6F9E78] hover:border-[#6F9E78]/60 font-black text-sm active:scale-95"
               title="افزایش 1 جان"
             >
               +1

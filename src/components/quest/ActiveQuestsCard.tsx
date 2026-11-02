@@ -44,7 +44,7 @@ export const ActiveQuestsCard: React.FC<ActiveQuestsCardProps> = ({
         <button
           type="button"
           onClick={onOpenQuests}
-          className="text-xs font-bold text-[#E0A030] hover:text-[#F2C265] flex items-center gap-1 transition touch-target py-1 px-2 rounded-[8px] hover:bg-[#E0A030]/10"
+          className="text-xs font-bold text-[#E0A030] hover:text-[#F2C265] flex items-center gap-1 transition touch-target min-w-[44px] py-1 px-2 rounded-[8px] hover:bg-[#E0A030]/10"
         >
           <span>مشاهده همه</span>
           <ChevronLeft className="w-3.5 h-3.5" />
@@ -116,7 +116,7 @@ export const ActiveQuestsCard: React.FC<ActiveQuestsCardProps> = ({
                         <button
                           type="button"
                           onClick={() => onToggleObjective(quest.id, obj.id, !obj.done)}
-                          className="shrink-0 text-[#E0A030] hover:text-[#F2C265] touch-target p-1 -m-1"
+                          className="shrink-0 text-[#E0A030] hover:text-[#F2C265] touch-target min-w-[44px] p-1 -m-1"
                           title={obj.done ? 'علامت‌زدن به عنوان ناتمام' : 'علامت‌زدن به عنوان تمام‌شده'}
                         >
                           {obj.done ? (

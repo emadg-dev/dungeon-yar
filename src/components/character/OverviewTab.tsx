@@ -291,7 +291,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={onOpenLevelUp}
-              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] font-black text-xs transition flex items-center justify-center gap-1.5 touch-target min-h-[40px] shadow-md shadow-[#E0A030]/20"
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] font-black text-xs transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] min-h-[40px] shadow-md shadow-[#E0A030]/20"
             >
               <Sparkles className="w-4 h-4" />
               <span>صعود به سطح {character.level + 1}</span>
@@ -374,7 +374,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             />
             <button
               onClick={() => setIsEditingBasics(!isEditingBasics)}
-              className="absolute -bottom-1.5 -end-1.5 p-2 rounded-[10px] bg-[#E0A030] text-[#0E0D0C] shadow-md hover:bg-[#F2C265] transition touch-target"
+              className="absolute -bottom-1.5 -end-1.5 p-2 rounded-[10px] bg-[#E0A030] text-[#0E0D0C] shadow-md hover:bg-[#F2C265] transition touch-target min-w-[44px]"
               title="ویرایش مشخصات"
               aria-label="ویرایش مشخصات"
             >
@@ -403,7 +403,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     <button
                       type="button"
                       onClick={() => onOpenLockedField?.('className')}
-                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex flex-wrap items-center justify-between gap-2 touch-target"
+                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
                     >
                       <span>{character.className}</span>
                       <span className="text-[10px] text-[#E0A030] bg-[#E0A030]/10 px-1.5 py-0.5 rounded">قفل DM</span>
@@ -426,7 +426,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     <button
                       type="button"
                       onClick={() => onOpenLockedField?.('race')}
-                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex flex-wrap items-center justify-between gap-2 touch-target"
+                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
                     >
                       <span>{character.race}</span>
                       <span className="text-[10px] text-[#E0A030] bg-[#E0A030]/10 px-1.5 py-0.5 rounded">قفل DM</span>
@@ -449,7 +449,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     <button
                       type="button"
                       onClick={() => onOpenLockedField?.('level')}
-                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex flex-wrap items-center justify-between gap-2 font-mono dice-ltr touch-target"
+                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex flex-wrap items-center justify-between gap-2 font-mono dice-ltr touch-target min-w-[44px]"
                     >
                       <span>{character.level}</span>
                       <span className="text-[10px] text-[#E0A030] bg-[#E0A030]/10 px-1.5 py-0.5 rounded font-sans">قفل DM</span>
@@ -492,7 +492,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenRestModal('short')}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-[12px] bg-[#201D19] hover:bg-[#201D19]/80 text-[#EDE6D8] text-xs font-bold border border-[#2F2A23] transition touch-target"
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-[12px] bg-[#201D19] hover:bg-[#201D19]/80 text-[#EDE6D8] text-xs font-bold border border-[#2F2A23] transition touch-target min-w-[44px]"
               >
                 <Moon className="w-4 h-4 text-[#E0A030]" />
                 استراحت کوتاه
@@ -501,7 +501,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenRestModal('long')}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-[12px] bg-[#201D19] hover:bg-[#201D19]/80 text-[#EDE6D8] text-xs font-bold border border-[#2F2A23] transition touch-target"
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-[12px] bg-[#201D19] hover:bg-[#201D19]/80 text-[#EDE6D8] text-xs font-bold border border-[#2F2A23] transition touch-target min-w-[44px]"
               >
                 <Sun className="w-4 h-4 text-[#E0A030]" />
                 استراحت بلند
@@ -510,7 +510,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenRestModal('special')}
-                className="flex items-center gap-1.5 px-3 py-2.5 rounded-[12px] bg-[#E0A030]/10 hover:bg-[#E0A030]/20 text-[#E0A030] text-xs font-bold border border-[#E0A030]/30 transition touch-target"
+                className="flex items-center gap-1.5 px-3 py-2.5 rounded-[12px] bg-[#E0A030]/10 hover:bg-[#E0A030]/20 text-[#E0A030] text-xs font-bold border border-[#E0A030]/30 transition touch-target min-w-[44px]"
               >
                 <Sparkles className="w-4 h-4 text-[#E0A030]" />
                 شهد بهار
@@ -521,13 +521,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   type="button"
                   onClick={handleExportJson}
                   title="خروجی JSON"
-                  className="p-2.5 rounded-[12px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] text-xs transition touch-target"
+                  className="p-2.5 rounded-[12px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] text-xs transition touch-target min-w-[44px]"
                 >
                   <Download className="w-4 h-4" />
                 </button>
                 <label
                   title="درون‌ریزی JSON"
-                  className="p-2.5 rounded-[12px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] text-xs transition cursor-pointer touch-target"
+                  className="p-2.5 rounded-[12px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] text-xs transition cursor-pointer touch-target min-w-[44px]"
                 >
                   <Upload className="w-4 h-4" />
                   <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
@@ -572,7 +572,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={onOpenSheetChangeRequest}
-              className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] transition flex items-center justify-center gap-1.5 touch-target min-h-[44px] shrink-0"
+              className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] min-h-[44px] shrink-0"
             >
               <Shield className="w-3.5 h-3.5" />
               <span>درخواست تغییر به DM</span>
@@ -655,7 +655,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenLockedField?.('ac')}
-                className="w-full flex items-center justify-center gap-1 my-0.5 touch-target cursor-pointer"
+                className="w-full flex items-center justify-center gap-1 my-0.5 touch-target min-w-[44px] cursor-pointer"
                 title="برای درخواست تغییر لمس کنید"
               >
                 <span className="text-2xl font-extrabold text-[#EDE6D8] font-mono dice-ltr">{character.ac}</span>
@@ -682,7 +682,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenLockedField?.('speed')}
-                className="w-full flex items-center justify-center gap-1 my-0.5 touch-target cursor-pointer"
+                className="w-full flex items-center justify-center gap-1 my-0.5 touch-target min-w-[44px] cursor-pointer"
                 title="برای درخواست تغییر لمس کنید"
               >
                 <span className="text-2xl font-extrabold text-[#EDE6D8] font-mono dice-ltr">{character.speed}</span>
@@ -713,7 +713,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={() => onRollCheck(20, 1, totalInitiative, 'ابتکار عمل (Initiative)')}
-              className="text-2xl font-extrabold text-[#E0A030] font-mono my-0.5 hover:scale-105 active:scale-95 transition cursor-pointer touch-target dice-ltr"
+              className="text-2xl font-extrabold text-[#E0A030] font-mono my-0.5 hover:scale-105 active:scale-95 transition cursor-pointer touch-target min-w-[44px] dice-ltr"
               title="لمس برای پرتاب ابتکار عمل"
             >
               {totalInitiative >= 0 ? `+${totalInitiative}` : totalInitiative}
@@ -729,7 +729,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               <button
                 type="button"
                 onClick={() => adjustHitDice(-1)}
-                className="w-7 h-7 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] touch-target flex items-center justify-center"
+                className="w-7 h-7 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px] flex items-center justify-center"
                 title="مصرف 1 تاس جان"
               >
                 -
@@ -740,7 +740,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               <button
                 type="button"
                 onClick={() => adjustHitDice(1)}
-                className="w-7 h-7 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] touch-target flex items-center justify-center"
+                className="w-7 h-7 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px] flex items-center justify-center"
                 title="بازیابی 1 تاس جان"
               >
                 +
@@ -769,7 +769,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={() => adjustSkillPoints(-1)}
-              className="w-9 h-9 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-bold text-sm touch-target flex items-center justify-center"
+              className="w-9 h-9 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-bold text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="کاهش امتیاز مهارت"
             >
               -
@@ -780,7 +780,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={() => adjustSkillPoints(1)}
-              className="w-9 h-9 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-bold text-sm touch-target flex items-center justify-center"
+              className="w-9 h-9 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-bold text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="افزایش امتیاز مهارت"
             >
               +
@@ -810,7 +810,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={() => adjustExhaustion(-1)}
-              className="w-9 h-9 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-bold text-sm touch-target flex items-center justify-center"
+              className="w-9 h-9 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-bold text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="کاهش سطح خستگی"
             >
               -
@@ -821,7 +821,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={() => adjustExhaustion(1)}
-              className="w-9 h-9 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#C2512B] font-bold text-sm touch-target flex items-center justify-center"
+              className="w-9 h-9 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#C2512B] font-bold text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="افزایش سطح خستگی"
             >
               +

@@ -187,7 +187,7 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-[#C2512B] to-[#E0A030] text-[#0E0D0C] font-black text-xs transition flex items-center justify-center gap-2 touch-target min-h-[48px] shadow-lg shadow-[#E0A030]/20 disabled:opacity-50"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-[#C2512B] to-[#E0A030] text-[#0E0D0C] font-black text-xs transition flex items-center justify-center gap-2 touch-target min-w-[44px] min-h-[48px] shadow-lg shadow-[#E0A030]/20 disabled:opacity-50"
           >
             <Check className="w-4 h-4" />
             <span>{isSubmitting ? 'در حال اعمال...' : 'اعمال تغییرات مستقیم و ثبت در تاریخچه'}</span>

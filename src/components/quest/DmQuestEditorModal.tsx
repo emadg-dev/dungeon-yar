@@ -127,7 +127,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm" dir="rtl">
       <div 
-        className="w-full sm:max-w-xl bg-[#14120E] border border-[#2F2A23] rounded-t-[20px] sm:rounded-[18px] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom duration-200"
+        className="w-full sm:max-w-3xl min-h-[75vh] bg-[#14120E] border border-[#2F2A23] rounded-t-[20px] sm:rounded-[18px] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom duration-200"
         role="dialog"
         aria-modal="true"
       >
@@ -144,7 +144,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] flex items-center justify-center transition touch-target"
+            className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] flex items-center justify-center transition touch-target min-w-[44px]"
             aria-label="بستن"
           >
             <X className="w-5 h-5" />
@@ -224,7 +224,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
               <button
                 type="button"
                 onClick={handleAddObjective}
-                className="text-xs font-bold text-[#E0A030] hover:text-[#F2C265] flex items-center gap-1 touch-target py-1 px-2 rounded-[8px] hover:bg-[#E0A030]/10 transition"
+                className="text-xs font-bold text-[#E0A030] hover:text-[#F2C265] flex items-center gap-1 touch-target min-w-[44px] py-1 px-2 rounded-[8px] hover:bg-[#E0A030]/10 transition"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>هدف جدید</span>
@@ -242,7 +242,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleUpdateObjective(obj.id, { done: !obj.done })}
-                      className="touch-target p-1 text-[#A39A89] hover:text-[#6F9E78] transition shrink-0"
+                      className="touch-target min-w-[44px] p-1 text-[#A39A89] hover:text-[#6F9E78] transition shrink-0"
                       title={obj.done ? 'تکمیل‌شده' : 'ناتمام'}
                     >
                       {obj.done ? (
@@ -265,7 +265,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleUpdateObjective(obj.id, { visible: !obj.visible })}
-                      className={`touch-target p-1 rounded-[6px] transition shrink-0 ${
+                      className={`touch-target min-w-[44px] p-1 rounded-[6px] transition shrink-0 ${
                         obj.visible ? 'text-[#7FB4D6] hover:bg-[#7FB4D6]/10' : 'text-[#6F675A] hover:bg-[#201D19]'
                       }`}
                       title={obj.visible ? 'آشکار برای بازیکنان' : 'پنهان از دید بازیکنان'}
@@ -278,7 +278,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                       <button
                         type="button"
                         onClick={() => handleRemoveObjective(obj.id)}
-                        className="touch-target p-1 text-rose-400 hover:text-rose-300 transition shrink-0"
+                        className="touch-target min-w-[44px] p-1 text-rose-400 hover:text-rose-300 transition shrink-0"
                         title="حذف هدف"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -341,7 +341,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
           <div className="space-y-2 pt-1 border-t border-[#2F2A23]">
             <label className="text-xs font-black text-[#EDE6D8] block">دامنه مأموریت</label>
             <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 cursor-pointer touch-target py-1">
+              <label className="flex items-center gap-2 cursor-pointer touch-target min-w-[44px] py-1">
                 <input
                   type="radio"
                   checked={isPartyWide}
@@ -354,7 +354,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                 <span className="text-xs text-[#EDE6D8] font-bold">مأموریت سراسری کل گروه</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer touch-target py-1">
+              <label className="flex items-center gap-2 cursor-pointer touch-target min-w-[44px] py-1">
                 <input
                   type="radio"
                   checked={!isPartyWide}
@@ -377,7 +377,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                         key={char.id}
                         type="button"
                         onClick={() => toggleParticipant(char.id)}
-                        className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center gap-1.5 touch-target ${
+                        className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] ${
                           participantIds.includes(char.id)
                             ? 'bg-[#E0A030] text-[#0E0D0C]'
                             : 'bg-[#201D19] text-[#A39A89] border border-[#2F2A23]'
@@ -449,14 +449,14 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="py-2.5 px-4 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] transition touch-target min-h-[44px]"
+              className="py-2.5 px-4 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] transition touch-target min-w-[44px] min-h-[44px]"
             >
               انصراف
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="py-2.5 px-6 rounded-[12px] bg-gradient-to-l from-[#C97B4A] to-[#E0A030] text-[#0E0D0C] text-xs font-black shadow-lg hover:brightness-110 transition flex items-center gap-1.5 touch-target min-h-[44px]"
+              className="py-2.5 px-6 rounded-[12px] bg-gradient-to-l from-[#C97B4A] to-[#E0A030] text-[#0E0D0C] text-xs font-black shadow-lg hover:brightness-110 transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
             >
               <Save className="w-4 h-4" />
               <span>{submitting ? 'در حال ذخیره‌سازی...' : (isEditing ? 'ذخیره تغییرات' : 'ثبت مأموریت')}</span>

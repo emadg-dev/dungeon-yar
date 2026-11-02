@@ -27,7 +27,7 @@ export const StatCard: React.FC<StatCardProps> = ({
       onClick={isInteractive ? onClick : undefined}
       className={`surface-card p-3 sm:p-3.5 flex flex-col justify-between relative transition-all duration-150 ${
         isInteractive
-          ? 'cursor-pointer hover:border-[#E0A030]/50 active:scale-[0.98] active-amber touch-target'
+          ? 'cursor-pointer hover:border-[#E0A030]/50 active:scale-[0.98] active-amber touch-target min-w-[44px]'
           : ''
       }`}
       style={{

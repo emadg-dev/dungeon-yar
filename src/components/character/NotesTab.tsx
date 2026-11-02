@@ -51,7 +51,7 @@ const NoteCardRow = memo<NoteCardRowProps>(({
         <button
           type="button"
           onClick={() => onTogglePin(note)}
-          className={`p-1.5 rounded-[8px] border transition touch-target ${
+          className={`p-1.5 rounded-[8px] border transition touch-target min-w-[44px] ${
             note.pinned
               ? 'bg-[#E0A030]/15 text-[#E0A030] border-[#E0A030]/30'
               : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -65,7 +65,7 @@ const NoteCardRow = memo<NoteCardRowProps>(({
         <button
           type="button"
           onClick={() => onToggleShare(note)}
-          className={`flex items-center gap-1 px-2 py-1 rounded-[8px] text-[10px] font-bold border transition touch-target ${
+          className={`flex items-center gap-1 px-2 py-1 rounded-[8px] text-[10px] font-bold border transition touch-target min-w-[44px] ${
             note.sharedWithDm
               ? 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/40'
               : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23]'
@@ -80,7 +80,7 @@ const NoteCardRow = memo<NoteCardRowProps>(({
         <button
           type="button"
           onClick={() => onStartEdit(note)}
-          className="p-1.5 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target"
+          className="p-1.5 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target min-w-[44px]"
           title="ویرایش یادداشت"
         >
           <Edit3 className="w-3.5 h-3.5" />
@@ -89,7 +89,7 @@ const NoteCardRow = memo<NoteCardRowProps>(({
         <button
           type="button"
           onClick={() => onDeleteRequest(note.id, note.title)}
-          className="p-1.5 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#C2512B] border border-[#2F2A23] touch-target"
+          className="p-1.5 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#C2512B] border border-[#2F2A23] touch-target min-w-[44px]"
           title="حذف یادداشت"
         >
           <Trash2 className="w-3.5 h-3.5" />
@@ -280,7 +280,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
           <button
             type="button"
             onClick={() => setShowAddModal(true)}
-            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] btn-primary-amber text-xs font-bold transition touch-target shrink-0"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] btn-primary-amber text-xs font-bold transition touch-target min-w-[44px] shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>یادداشت نو</span>
@@ -298,7 +298,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
                   setSelectedCategory(cat.id);
                 });
               }}
-              className={`px-3 py-1.5 rounded-[10px] text-xs font-bold transition whitespace-nowrap touch-target ${
+              className={`px-3 py-1.5 rounded-[10px] text-xs font-bold transition whitespace-nowrap touch-target min-w-[44px] ${
                 selectedCategory === cat.id
                   ? 'bg-[#E0A030] text-[#0E0D0C]'
                   : 'bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23]'
@@ -407,7 +407,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
-              <label className="flex items-center gap-2 cursor-pointer text-xs text-[#EDE6D8] touch-target">
+              <label className="flex items-center gap-2 cursor-pointer text-xs text-[#EDE6D8] touch-target min-w-[44px]">
                 <input
                   type="checkbox"
                   checked={editShared}
@@ -421,14 +421,14 @@ export const NotesTab: React.FC<NotesTabProps> = ({
                 <button
                   type="button"
                   onClick={() => setEditingNote(null)}
-                  className="py-2 px-4 rounded-[12px] text-xs text-[#A39A89] touch-target"
+                  className="py-2 px-4 rounded-[12px] text-xs text-[#A39A89] touch-target min-w-[44px]"
                 >
                   انصراف
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveEdit}
-                  className="py-2 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target"
+                  className="py-2 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target min-w-[44px]"
                 >
                   ذخیره تغییرات
                 </button>
@@ -498,7 +498,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
-            <label className="flex items-center gap-2 cursor-pointer text-xs text-[#EDE6D8] touch-target">
+            <label className="flex items-center gap-2 cursor-pointer text-xs text-[#EDE6D8] touch-target min-w-[44px]">
               <input
                 type="checkbox"
                 checked={noteShared}
@@ -512,13 +512,13 @@ export const NotesTab: React.FC<NotesTabProps> = ({
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="py-2 px-4 rounded-[12px] text-xs text-[#A39A89] touch-target"
+                className="py-2 px-4 rounded-[12px] text-xs text-[#A39A89] touch-target min-w-[44px]"
               >
                 انصراف
               </button>
               <button
                 type="submit"
-                className="py-2 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target"
+                className="py-2 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target min-w-[44px]"
               >
                 ثبت یادداشت
               </button>

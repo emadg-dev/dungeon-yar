@@ -531,7 +531,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
             type="button"
             disabled={isSubmitting}
             onClick={handleFinalSubmit}
-            className="w-full py-3.5 rounded-[12px] btn-primary-amber font-extrabold text-sm shadow-xl flex items-center justify-center gap-2 min-h-[48px] touch-target"
+            className="w-full py-3.5 rounded-[12px] btn-primary-amber font-extrabold text-sm shadow-xl flex items-center justify-center gap-2 min-h-[48px] touch-target min-w-[44px]"
           >
             <CheckCircle2 className="w-4 h-4" />
             <span>{isSubmitting ? 'در حال ثبت و بستن جلسه...' : 'ثبت خلاصه، پاداش‌ها و پایان قطعی جلسه'}</span>

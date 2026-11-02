@@ -179,7 +179,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
                 <button
                   type="button"
                   onClick={() => onRollCheck(20, 1, mod, `چک ${abilityLabels[key].fa}`)}
-                  className="my-1.5 w-full py-2 px-3 rounded-[12px] bg-[#201D19] active:bg-[#E0A030]/20 border border-[#2F2A23] active:border-[#E0A030] text-[#E0A030] font-mono text-3xl font-black transition active:scale-95 touch-target flex items-center justify-center gap-1 cursor-pointer dice-ltr"
+                  className="my-1.5 w-full py-2 px-3 rounded-[12px] bg-[#201D19] active:bg-[#E0A030]/20 border border-[#2F2A23] active:border-[#E0A030] text-[#E0A030] font-mono text-3xl font-black transition active:scale-95 touch-target min-w-[44px] flex items-center justify-center gap-1 cursor-pointer dice-ltr"
                   title="لمس برای پرتاب تاس چک ویژگی"
                 >
                   <span>{formatModifier(mod)}</span>
@@ -192,7 +192,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
                     <button
                       type="button"
                       onClick={() => onOpenLockedField?.('abilities')}
-                      className="w-full py-1 text-center font-bold text-[#EDE6D8] flex items-center justify-center gap-1 text-sm font-mono dice-ltr touch-target"
+                      className="w-full py-1 text-center font-bold text-[#EDE6D8] flex items-center justify-center gap-1 text-sm font-mono dice-ltr touch-target min-w-[44px]"
                       title="امتیازات پایه قفل شده‌اند؛ برای درخواست تغییر لمس کنید"
                     >
                       <span>{score}</span>
@@ -203,7 +203,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
                       <button
                         type="button"
                         onClick={() => handleAbilityScoreChange(key, score - 1)}
-                        className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold flex items-center justify-center touch-target active:scale-95"
+                        className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold flex items-center justify-center touch-target min-w-[44px] active:scale-95"
                         title="کاهش امتیاز"
                       >
                         -
@@ -221,7 +221,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
                       <button
                         type="button"
                         onClick={() => handleAbilityScoreChange(key, score + 1)}
-                        className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold flex items-center justify-center touch-target active:scale-95"
+                        className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold flex items-center justify-center touch-target min-w-[44px] active:scale-95"
                         title="افزایش امتیاز"
                       >
                         +
@@ -256,7 +256,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
                     : 'bg-[#201D19] border-[#2F2A23] text-[#A39A89]'
                 }`}
               >
-                <label className="flex items-center gap-1.5 cursor-pointer touch-target select-none">
+                <label className="flex items-center gap-1.5 cursor-pointer touch-target min-w-[44px] select-none">
                   <input
                     type="checkbox"
                     checked={isProf}
@@ -269,7 +269,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
                 <button
                   type="button"
                   onClick={() => onRollCheck(20, 1, saveBonus, `تست نجات ${abilityLabels[key].fa}`)}
-                  className="font-mono font-extrabold text-xs px-2 py-1 rounded-[8px] bg-[#171513] hover:bg-[#E0A030]/20 text-[#E0A030] transition cursor-pointer touch-target dice-ltr border border-[#2F2A23]"
+                  className="font-mono font-extrabold text-xs px-2 py-1 rounded-[8px] bg-[#171513] hover:bg-[#E0A030]/20 text-[#E0A030] transition cursor-pointer touch-target min-w-[44px] dice-ltr border border-[#2F2A23]"
                 >
                   {formatModifier(saveBonus)}
                 </button>
@@ -303,7 +303,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
             <button
               type="button"
               onClick={() => setShowAddCustomSkill(true)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-[#E0A030]/15 hover:bg-[#E0A030]/25 text-[#E0A030] border border-[#E0A030]/30 text-xs font-bold transition touch-target shrink-0"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-[#E0A030]/15 hover:bg-[#E0A030]/25 text-[#E0A030] border border-[#E0A030]/30 text-xs font-bold transition touch-target min-w-[44px] shrink-0"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>مهارت نو</span>
@@ -329,7 +329,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
                   <button
                     type="button"
                     onClick={() => cycleSkillProficiency(skill.id)}
-                    className="touch-target w-8 h-8 flex items-center justify-center shrink-0"
+                    className="touch-target min-w-[44px] w-8 h-8 flex items-center justify-center shrink-0"
                     title={skill.expertise ? 'تخصص دوبرابر (لمس برای بازنشانی)' : skill.proficient ? 'مسلط (لمس برای تبدیل به تخصص)' : 'غیرمسلط (لمس برای تسلط)'}
                     aria-label={`تغییر تسلط ${skill.nameFa}`}
                   >
@@ -348,7 +348,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
                   <button
                     type="button"
                     onClick={() => onRollCheck(20, 1, totalMod, `چک مهارت ${skill.nameFa} (${abilityLabels[skill.ability].shortFa})`)}
-                    className="text-start truncate flex-1 hover:text-[#E0A030] transition touch-target"
+                    className="text-start truncate flex-1 hover:text-[#E0A030] transition touch-target min-w-[44px]"
                   >
                     <div className="text-xs font-bold text-[#EDE6D8] truncate">{skill.nameFa}</div>
                     <div className="text-[10px] text-[#A39A89]">
@@ -361,7 +361,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
                 <button
                   type="button"
                   onClick={() => onRollCheck(20, 1, totalMod, `چک مهارت ${skill.nameFa} (${abilityLabels[skill.ability].shortFa})`)}
-                  className="font-mono font-extrabold text-xs px-2 py-1 rounded-[8px] bg-[#171513] text-[#E0A030] border border-[#2F2A23] hover:border-[#E0A030] transition touch-target dice-ltr"
+                  className="font-mono font-extrabold text-xs px-2 py-1 rounded-[8px] bg-[#171513] text-[#E0A030] border border-[#2F2A23] hover:border-[#E0A030] transition touch-target min-w-[44px] dice-ltr"
                 >
                   {formatModifier(totalMod)}
                 </button>
@@ -410,13 +410,13 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
             <button
               type="button"
               onClick={() => setShowAddCustomSkill(false)}
-              className="py-2.5 px-4 rounded-[12px] text-xs text-[#A39A89] touch-target"
+              className="py-2.5 px-4 rounded-[12px] text-xs text-[#A39A89] touch-target min-w-[44px]"
             >
               انصراف
             </button>
             <button
               type="submit"
-              className="py-2.5 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target"
+              className="py-2.5 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target min-w-[44px]"
             >
               افزودن مهارت
             </button>

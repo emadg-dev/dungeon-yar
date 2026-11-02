@@ -30,7 +30,7 @@ export const SectionAccordion: React.FC<SectionAccordionProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-2 text-right cursor-pointer hover:bg-[#201D19]/60 transition-colors duration-150 touch-target"
+        className="w-full p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-2 text-right cursor-pointer hover:bg-[#201D19]/60 transition-colors duration-150 touch-target min-w-[44px]"
         aria-expanded={isOpen}
       >
         <div className="flex items-center gap-2.5 min-w-0 flex-1">

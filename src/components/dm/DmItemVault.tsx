@@ -315,13 +315,13 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsCreating(false)}
-                  className="py-2.5 px-4 rounded-xl text-xs text-[#A39A89] touch-target"
+                  className="py-2.5 px-4 rounded-xl text-xs text-[#A39A89] touch-target min-w-[44px]"
                 >
                   انصراف
                 </button>
                 <button
                   type="submit"
-                  className="py-2.5 px-5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs touch-target"
+                  className="py-2.5 px-5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs touch-target min-w-[44px]"
                 >
                   ذخیره در گنجینه
                 </button>
@@ -483,14 +483,14 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                   <button
                     type="button"
                     onClick={() => setGiveModalItem(null)}
-                    className="py-2.5 px-4 rounded-xl text-xs text-[#A39A89] hover:text-[#EDE6D8] touch-target"
+                    className="py-2.5 px-4 rounded-xl text-xs text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
                   >
                     انصراف
                   </button>
                   <button
                     type="button"
                     onClick={handleConfirmGive}
-                    className="py-2.5 px-5 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-bold text-xs shadow-md transition touch-target"
+                    className="py-2.5 px-5 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-bold text-xs shadow-md transition touch-target min-w-[44px]"
                   >
                     تأیید و ارسال به ماجراجو
                   </button>

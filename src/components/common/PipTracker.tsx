@@ -57,7 +57,7 @@ export const PipTracker: React.FC<PipTrackerProps> = ({
             onClick={() => onToggle(idx)}
             className={`w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] border transition-all duration-150 flex items-center justify-center ${
               filled ? pipColor : emptyColor
-            } ${readOnly ? 'cursor-default' : 'cursor-pointer active:scale-90 hover:border-[#E0A030]/60 touch-target'}`}
+            } ${readOnly ? 'cursor-default' : 'cursor-pointer active:scale-90 hover:border-[#E0A030]/60 touch-target min-w-[44px]'}`}
             title={`اسلات ${idx + 1}: ${filled ? 'مصرف شده' : 'خالی'}`}
             aria-label={`${label}، پیپ ${idx + 1} از ${max}: ${filled ? 'فعال' : 'خالی'}`}
           >

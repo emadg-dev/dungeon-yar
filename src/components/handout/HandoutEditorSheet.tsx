@@ -171,7 +171,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               <button
                 type="button"
                 onClick={() => setKind('text')}
-                className={`py-2.5 px-3 rounded-[10px] border flex flex-col items-center gap-1.5 transition touch-target ${
+                className={`py-2.5 px-3 rounded-[10px] border flex flex-col items-center gap-1.5 transition touch-target min-w-[44px] ${
                   kind === 'text'
                     ? 'bg-[#E0A030]/15 border-[#E0A030] text-[#E0A030] font-bold'
                     : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89] hover:bg-[#252019]'
@@ -184,7 +184,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               <button
                 type="button"
                 onClick={() => setKind('image')}
-                className={`py-2.5 px-3 rounded-[10px] border flex flex-col items-center gap-1.5 transition touch-target ${
+                className={`py-2.5 px-3 rounded-[10px] border flex flex-col items-center gap-1.5 transition touch-target min-w-[44px] ${
                   kind === 'image'
                     ? 'bg-[#38BDF8]/15 border-[#38BDF8] text-[#38BDF8] font-bold'
                     : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89] hover:bg-[#252019]'
@@ -197,7 +197,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               <button
                 type="button"
                 onClick={() => setKind('map')}
-                className={`py-2.5 px-3 rounded-[10px] border flex flex-col items-center gap-1.5 transition touch-target ${
+                className={`py-2.5 px-3 rounded-[10px] border flex flex-col items-center gap-1.5 transition touch-target min-w-[44px] ${
                   kind === 'map'
                     ? 'bg-[#4ADE80]/15 border-[#4ADE80] text-[#4ADE80] font-bold'
                     : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89] hover:bg-[#252019]'
@@ -257,7 +257,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                       height={176}
                       className="max-h-44 mx-auto rounded-[8px] object-contain border border-[#2F2A23]"
                     />
-                    <label className="inline-block px-3 py-1.5 rounded-[8px] bg-[#2A241C] hover:bg-[#383126] text-xs text-[#EDE6D8] cursor-pointer touch-target transition">
+                    <label className="inline-block px-3 py-1.5 rounded-[8px] bg-[#2A241C] hover:bg-[#383126] text-xs text-[#EDE6D8] cursor-pointer touch-target min-w-[44px] transition">
                       تغییر تصویر
                       <input
                         type="file"
@@ -268,7 +268,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                     </label>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center gap-2 cursor-pointer py-4 touch-target">
+                  <label className="flex flex-col items-center justify-center gap-2 cursor-pointer py-4 touch-target min-w-[44px]">
                     <div className="w-12 h-12 rounded-full bg-[#241F18] border border-[#3A3327] flex items-center justify-center text-[#E0A030]">
                       <Upload className="w-6 h-6" />
                     </div>
@@ -310,7 +310,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               <button
                 type="button"
                 onClick={() => setVisibility('hidden')}
-                className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target ${
+                className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target min-w-[44px] ${
                   visibility === 'hidden'
                     ? 'bg-rose-500/15 border-rose-500 text-rose-300 font-bold'
                     : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89]'
@@ -323,7 +323,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               <button
                 type="button"
                 onClick={() => setVisibility('revealed')}
-                className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target ${
+                className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target min-w-[44px] ${
                   visibility === 'revealed'
                     ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 font-bold'
                     : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89]'
@@ -336,7 +336,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               <button
                 type="button"
                 onClick={() => setVisibility('selected')}
-                className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target ${
+                className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target min-w-[44px] ${
                   visibility === 'selected'
                     ? 'bg-sky-500/15 border-sky-500 text-sky-300 font-bold'
                     : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89]'
@@ -406,14 +406,14 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-[10px] bg-[#241F18] text-xs font-medium text-[#EDE6D8] hover:bg-[#322A21] transition touch-target"
+              className="px-4 py-2.5 rounded-[10px] bg-[#241F18] text-xs font-medium text-[#EDE6D8] hover:bg-[#322A21] transition touch-target min-w-[44px]"
             >
               انصراف
             </button>
             <button
               type="submit"
               disabled={isSaving || isCompressing || !title.trim()}
-              className="px-5 py-2.5 rounded-[10px] bg-[#E0A030] hover:bg-[#F2C265] text-xs font-bold text-[#14120E] transition touch-target disabled:opacity-40 shadow-lg"
+              className="px-5 py-2.5 rounded-[10px] bg-[#E0A030] hover:bg-[#F2C265] text-xs font-bold text-[#14120E] transition touch-target min-w-[44px] disabled:opacity-40 shadow-lg"
             >
               {isSaving ? 'در حال ذخیره‌سازی...' : initialHandout ? 'ذخیره تغییرات' : 'ایجاد سند'}
             </button>

@@ -463,13 +463,13 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
                 setIsCreating(false);
                 setEditingNpc(null);
               }}
-              className="py-2.5 px-4 rounded-xl text-xs text-[#A39A89] touch-target"
+              className="py-2.5 px-4 rounded-xl text-xs text-[#A39A89] touch-target min-w-[44px]"
             >
               انصراف
             </button>
             <button
               type="submit"
-              className="py-2.5 px-5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs touch-target"
+              className="py-2.5 px-5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs touch-target min-w-[44px]"
             >
               ذخیره NPC
             </button>

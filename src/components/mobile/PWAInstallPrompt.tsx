@@ -14,7 +14,7 @@ export const PWAInstallPrompt: React.FC = () => {
     return (
       <button
         onClick={install}
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#E0A030]/15 hover:bg-[#E0A030]/25 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold transition active:scale-95 touch-target"
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#E0A030]/15 hover:bg-[#E0A030]/25 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold transition active:scale-95 touch-target min-w-[44px]"
         title="نصب اپلیکیشن روی دستگاه"
       >
         <Download className="w-3.5 h-3.5" />
@@ -29,7 +29,7 @@ export const PWAInstallPrompt: React.FC = () => {
       <>
         <button
           onClick={() => setShowIOSGuide(true)}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#E0A030]/10 hover:bg-[#E0A030]/20 border border-[#E0A030]/30 text-[#F2C265] text-xs font-bold transition active:scale-95 touch-target"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#E0A030]/10 hover:bg-[#E0A030]/20 border border-[#E0A030]/30 text-[#F2C265] text-xs font-bold transition active:scale-95 touch-target min-w-[44px]"
           title="نصب در آیفون / آیپد"
         >
           <Download className="w-3.5 h-3.5" />
@@ -46,7 +46,7 @@ export const PWAInstallPrompt: React.FC = () => {
             <div className="w-full max-w-sm max-h-[90dvh] overflow-y-auto rounded-2xl bg-[#171513] border border-[#E0A030]/30 p-5 text-[#EDE6D8] shadow-2xl space-y-3" dir="rtl">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-2">
                 <h4 className="font-bold text-sm text-[#F2C265]">نصب {APP_NAME_FA} روی آیفون و آیپد</h4>
-                <button type="button" onClick={() => setShowIOSGuide(false)} className="text-[#A39A89] p-2 touch-target hover:text-[#EDE6D8]">
+                <button type="button" onClick={() => setShowIOSGuide(false)} className="text-[#A39A89] p-2 touch-target min-w-[44px] hover:text-[#EDE6D8]">
                   <X className="w-4 h-4" />
                 </button>
               </div>

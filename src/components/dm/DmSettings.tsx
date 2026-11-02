@@ -64,7 +64,7 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
         <button
           onClick={() => setShowConfirmSheet(true)}
           disabled={importLoading}
-          className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] font-bold text-xs shadow-lg transition flex items-center gap-2 cursor-pointer disabled:opacity-50 touch-target"
+          className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] font-bold text-xs shadow-lg transition flex items-center gap-2 cursor-pointer disabled:opacity-50 touch-target min-w-[44px]"
         >
           {importLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
           درون‌ریزی و همگام‌سازی اطلاعات پیش‌فرض
