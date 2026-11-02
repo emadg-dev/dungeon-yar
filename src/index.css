@@ -249,10 +249,31 @@
     z-index: 1; /* content renders above decorative body orbs */
   }
 
-  /* All text wrapping safeguard */
-  p, span, div, h1, h2, h3, h4, h5, h6, label, button, a {
+  /* All text wrapping safeguard (exempting buttons and button labels) */
+  p, div, h1, h2, h3, h4, h5, h6, label, a {
     overflow-wrap: anywhere;
     word-break: break-word;
+  }
+  span {
+    overflow-wrap: anywhere;
+  }
+
+  /* Global Button Single-Line & No-Wrap Guarantee */
+  button,
+  [role="button"],
+  .btn-nowrap {
+    white-space: nowrap !important;
+    flex-shrink: 0;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  button span,
+  [role="button"] span,
+  .btn-nowrap span {
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
   }
 
   /* Touch controls & responsiveness */
@@ -352,6 +373,60 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Reusable Button No-Wrap class */
+.btn-nowrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  min-height: 44px;
+}
+.btn-nowrap > span {
+  white-space: nowrap !important;
+  flex-shrink: 0;
+}
+
+/* Reusable Scrollable Row / Tab Bar container */
+.scrollable-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 0.5rem;
+  max-width: 100%;
+}
+.scrollable-row::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.scrollable-row > * {
+  flex-shrink: 0 !important;
+  scroll-snap-align: start;
+  white-space: nowrap !important;
+}
+
+/* Scrollbar hide helpers */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar,
+.scrollbar-none {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
 /* Large steppers & dice touch targets (>= 48x48px) */

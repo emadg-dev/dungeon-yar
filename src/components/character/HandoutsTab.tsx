@@ -7,6 +7,7 @@ import { Handout, HandoutKind, Character } from '../../types';
 import { api } from '../../services/api';
 import { HandoutViewerModal } from '../handout/HandoutViewerModal';
 import { isNewHandout } from '../../../shared/rules/handoutEngine';
+import { ScrollableRow } from '../ui/ScrollableRow';
 
 interface HandoutsTabProps {
   campaignId: string;
@@ -113,11 +114,16 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
           </div>
 
           {/* Filter Pills */}
-          <div className="flex items-center gap-1 bg-[#14120E] p-1 rounded-[10px] border border-[#2F2A23] shrink-0 overflow-x-auto">
+          <ScrollableRow
+            activeKey={kindFilter}
+            wrapperClassName="bg-[#14120E] p-1 rounded-[10px] border border-[#2F2A23] shrink-0"
+            className="gap-1"
+          >
             <button
               type="button"
+              data-scroll-key="all"
               onClick={() => setKindFilter('all')}
-              className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold transition touch-target min-w-[44px] ${
+              className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
                 kindFilter === 'all' ? 'bg-[#E0A030] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
@@ -125,47 +131,51 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
             </button>
             <button
               type="button"
+              data-scroll-key="map"
               onClick={() => setKindFilter('map')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
+              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition inline-flex items-center gap-1 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
                 kindFilter === 'map' ? 'bg-[#4ADE80] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <MapIcon className="w-3.5 h-3.5" />
-              <span>نقشه‌ها</span>
+              <MapIcon className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">نقشه‌ها</span>
             </button>
             <button
               type="button"
+              data-scroll-key="image"
               onClick={() => setKindFilter('image')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
+              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition inline-flex items-center gap-1 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
                 kindFilter === 'image' ? 'bg-[#38BDF8] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <ImageIcon className="w-3.5 h-3.5" />
-              <span>تصاویر</span>
+              <ImageIcon className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">تصاویر</span>
             </button>
             <button
               type="button"
+              data-scroll-key="text"
               onClick={() => setKindFilter('text')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
+              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition inline-flex items-center gap-1 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
                 kindFilter === 'text' ? 'bg-[#E0A030] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <FileText className="w-3.5 h-3.5" />
-              <span>نامه‌ها و متون</span>
+              <FileText className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">نامه‌ها و متون</span>
             </button>
-          </div>
+          </ScrollableRow>
         </div>
 
         {/* Tag Pills */}
         {allTags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 pt-1">
-            <span className="text-[10px] text-[#A39A89]">دسته‌بندی:</span>
+          <ScrollableRow activeKey={selectedTag || 'all'} className="gap-1.5 pt-1">
+            <span className="text-[10px] text-[#A39A89] whitespace-nowrap shrink-0 self-center">دسته‌بندی:</span>
             {allTags.map(tag => (
               <button
                 key={tag}
                 type="button"
+                data-scroll-key={tag}
                 onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition ${
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition whitespace-nowrap shrink-0 snap-start min-h-[36px] sm:min-h-[44px] inline-flex items-center ${
                   selectedTag === tag
                     ? 'bg-[#E0A030] text-[#14120E] border-[#E0A030]'
                     : 'bg-[#14120E] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -174,7 +184,7 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
                 #{tag}
               </button>
             ))}
-          </div>
+          </ScrollableRow>
         )}
       </div>
 

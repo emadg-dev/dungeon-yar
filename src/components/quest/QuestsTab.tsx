@@ -13,6 +13,7 @@ import {
   Flame, HelpCircle
 } from 'lucide-react';
 import { DmQuestEditorModal } from './DmQuestEditorModal';
+import { ScrollableRow } from '../ui/ScrollableRow';
 
 interface QuestsTabProps {
   quests: Quest[];
@@ -160,48 +161,51 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
         </div>
 
         {/* Filter Subtabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1">
+        <ScrollableRow activeKey={filterTab} className="items-center gap-1.5 pt-1">
           <button
             type="button"
+            data-scroll-key="active"
             onClick={() => setFilterTab('active')}
-            className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
+            className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
               filterTab === 'active'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
             }`}
           >
-            <span>در جریان</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold">
+            <span className="whitespace-nowrap shrink-0">در جریان</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold shrink-0">
               {activeCount}
             </span>
           </button>
 
           <button
             type="button"
+            data-scroll-key="completed"
             onClick={() => setFilterTab('completed')}
-            className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
+            className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
               filterTab === 'completed'
                 ? 'bg-[#6F9E78] text-[#0E0D0C] font-black shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
             }`}
           >
-            <span>تکمیل شده</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold">
+            <span className="whitespace-nowrap shrink-0">تکمیل شده</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold shrink-0">
               {completedCount}
             </span>
           </button>
 
           <button
             type="button"
+            data-scroll-key="other"
             onClick={() => setFilterTab('other')}
-            className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
+            className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
               filterTab === 'other'
                 ? 'bg-[#C97B4A] text-[#0E0D0C] font-black shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
             }`}
           >
-            <span>شکست / رهاشده</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold">
+            <span className="whitespace-nowrap shrink-0">شکست / رهاشده</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold shrink-0">
               {otherCount}
             </span>
           </button>
@@ -209,21 +213,22 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
           {isDm && (
             <button
               type="button"
+              data-scroll-key="hidden"
               onClick={() => setFilterTab('hidden')}
-              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
+              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
                 filterTab === 'hidden'
                   ? 'bg-purple-600 text-white font-black shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <EyeOff className="w-3.5 h-3.5" />
-              <span>پنهان</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold">
+              <EyeOff className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">پنهان</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold shrink-0">
                 {hiddenCount}
               </span>
             </button>
           )}
-        </div>
+        </ScrollableRow>
       </div>
 
       {/* Quest Cards List */}

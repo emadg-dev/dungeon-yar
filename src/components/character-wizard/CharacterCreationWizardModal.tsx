@@ -39,6 +39,7 @@ import {
   Scale, Dice5, Save, RefreshCw, Upload, Info, Award
 } from 'lucide-react';
 import { APP_NAME_FA } from '../../config/app';
+import { ScrollableRow } from '../ui/ScrollableRow';
 
 interface CharacterCreationWizardModalProps {
   isOpen: boolean;
@@ -465,7 +466,11 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         </div>
 
         {/* Stepper Dots / Labels */}
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 gap-1 overflow-x-auto pb-1 text-[11px] font-medium text-[#8A8374]">
+        <ScrollableRow
+          activeKey={currentStep}
+          wrapperClassName="mt-3"
+          className="pb-1 text-[11px] font-medium text-[#8A8374] gap-1.5"
+        >
           {[
             { step: 1, title: 'هویت' },
             { step: 2, title: 'کلاس' },
@@ -481,9 +486,10 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             return (
               <button
                 key={s.step}
+                data-key={s.step}
                 type="button"
                 onClick={() => setCurrentStep(s.step)}
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-all shrink-0 ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 snap-start whitespace-nowrap min-h-[44px] ${
                   isActive
                     ? 'bg-[#E0A030]/20 text-[#F2C265] font-bold border border-[#E0A030]/40'
                     : isDone
@@ -491,12 +497,12 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                     : 'hover:text-[#EDE6D8]'
                 }`}
               >
-                {isDone ? <Check className="w-3 h-3 text-[#6F9E78]" /> : <span>{s.step}.</span>}
-                <span>{s.title}</span>
+                {isDone ? <Check className="w-3.5 h-3.5 text-[#6F9E78] shrink-0" /> : <span className="shrink-0">{s.step}.</span>}
+                <span className="whitespace-nowrap shrink-0">{s.title}</span>
               </button>
             );
           })}
-        </div>
+        </ScrollableRow>
       </header>
 
       {/* ------------------------------------------------------------- */}

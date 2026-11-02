@@ -2,6 +2,7 @@ import React, { useState, useDeferredValue, startTransition } from 'react';
 import { LocationEntry, LocationRegion } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Chip } from '../common/Chip';
+import { ScrollableRow } from '../ui/ScrollableRow';
 import { 
   Compass, Plus, Search, Edit3, Trash2, 
   Eye, EyeOff, MapPin, FileText, Lock 
@@ -147,15 +148,16 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
       </div>
 
       {/* Region Filter Chips */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+      <ScrollableRow activeKey={selectedRegion} className="items-center gap-1.5 pb-1">
         <button
           type="button"
+          data-scroll-key="all"
           onClick={() => {
             startTransition(() => {
               setSelectedRegion('all');
             });
           }}
-          className={`py-1 px-3 rounded-full text-xs font-bold transition shrink-0 touch-target min-w-[44px] ${
+          className={`py-1.5 px-3 rounded-full text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
             selectedRegion === 'all'
               ? 'bg-[#E0A030] text-[#0E0D0C]'
               : 'bg-[#171513] text-[#A39A89] border border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -169,12 +171,13 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
             <button
               type="button"
               key={r}
+              data-scroll-key={r}
               onClick={() => {
                 startTransition(() => {
                   setSelectedRegion(r);
                 });
               }}
-              className={`py-1 px-3 rounded-full text-xs font-bold transition shrink-0 touch-target min-w-[44px] ${
+              className={`py-1.5 px-3 rounded-full text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
                 selectedRegion === r
                   ? 'bg-[#E0A030] text-[#0E0D0C]'
                   : 'bg-[#171513] text-[#A39A89] border border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -184,7 +187,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
             </button>
           );
         })}
-      </div>
+      </ScrollableRow>
 
       {/* Locations Grid / List */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

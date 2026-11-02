@@ -25,3 +25,4 @@ export * from './Avatar';
 export * from './Icon';
 export * from './Spinner';
 export * from './SectionAccordion';
+export * from './ScrollableRow';

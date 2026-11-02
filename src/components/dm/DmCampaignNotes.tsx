@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CampaignNote, CampaignNoteCategory } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
+import { ScrollableRow } from '../ui/ScrollableRow';
 import { BookOpen, Plus, Search, Tag, Trash2, Edit3, Lock } from 'lucide-react';
 
 interface DmCampaignNotesProps {
@@ -110,19 +111,22 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
           </div>
 
           <button
+            type="button"
             onClick={handleStartCreate}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-bold text-xs transition"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-bold text-xs transition whitespace-nowrap shrink-0 min-h-[44px]"
           >
-            <Plus className="w-4 h-4" />
-            یادداشت محرمانه تازه
+            <Plus className="w-4 h-4 shrink-0" />
+            <span>یادداشت محرمانه تازه</span>
           </button>
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+        <ScrollableRow activeKey={selectedCat} className="items-center gap-1.5 pb-1">
           <button
+            type="button"
+            data-scroll-key="all"
             onClick={() => setSelectedCat('all')}
-            className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition border ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 snap-start transition border min-h-[44px] ${
               selectedCat === 'all'
                 ? 'bg-[#E0A030] text-[#0E0D0C] border-[#F2C265]'
                 : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -135,8 +139,10 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
             return (
               <button
                 key={catKey}
+                type="button"
+                data-scroll-key={catKey}
                 onClick={() => setSelectedCat(catKey)}
-                className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition border ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 snap-start transition border min-h-[44px] ${
                   selectedCat === catKey
                     ? 'bg-[#E0A030] text-[#0E0D0C] border-[#F2C265]'
                     : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -146,7 +152,7 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
               </button>
             );
           })}
-        </div>
+        </ScrollableRow>
       </div>
 
       {/* Create / Edit BottomSheet Modal Form */}

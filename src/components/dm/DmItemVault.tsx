@@ -1,6 +1,7 @@
 import React, { useState, useDeferredValue, startTransition } from 'react';
 import { ItemLibraryEntry, ItemLibraryCategory, Character, RewardPackage, WeaponTemplate } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
+import { ScrollableRow } from '../ui/ScrollableRow';
 import { 
   Sparkles, Plus, Search, Edit3, Trash2, Gift, 
   Eye, EyeOff, Coins, Package, Flame, Check 
@@ -128,10 +129,12 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
   return (
     <div className="space-y-6">
       {/* Vault Subtab switcher */}
-      <div className="flex border-b border-[#2F2A23] pb-2 gap-4">
+      <ScrollableRow activeKey={subTab} className="border-b border-[#2F2A23] pb-2 gap-4">
         <button
+          type="button"
+          data-scroll-key="items"
           onClick={() => setSubTab('items')}
-          className={`pb-2 text-xs font-bold transition border-b-2 ${
+          className={`pb-2 text-xs font-bold transition border-b-2 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
             subTab === 'items'
               ? 'border-[#F2C265] text-[#F2C265]'
               : 'border-transparent text-[#A39A89] hover:text-[#EDE6D8]'
@@ -140,8 +143,10 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
           گنجینه اشیاء و آرتیفکت‌ها ({items.length})
         </button>
         <button
+          type="button"
+          data-scroll-key="rewards"
           onClick={() => setSubTab('rewards')}
-          className={`pb-2 text-xs font-bold transition border-b-2 ${
+          className={`pb-2 text-xs font-bold transition border-b-2 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
             subTab === 'rewards'
               ? 'border-[#F2C265] text-[#F2C265]'
               : 'border-transparent text-[#A39A89] hover:text-[#EDE6D8]'
@@ -149,7 +154,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
         >
           بسته‌های پاداش و غنایم ({rewards.length})
         </button>
-      </div>
+      </ScrollableRow>
 
       {subTab === 'items' ? (
         <>
@@ -163,24 +168,27 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="جستجو در آرتیفکت‌ها، سلاح‌ها و پاداش‌ها..."
-                  className="w-full py-2 pr-9 pl-3 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+                  className="w-full py-2 pr-9 pl-3 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[44px]"
                 />
               </div>
 
               <button
+                type="button"
                 onClick={handleStartCreate}
-                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-bold text-xs transition"
+                className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-bold text-xs transition whitespace-nowrap shrink-0 min-h-[44px]"
               >
-                <Plus className="w-4 h-4" />
-                افزودن شیء / آرتیفکت تازه
+                <Plus className="w-4 h-4 shrink-0" />
+                <span>افزودن شیء / آرتیفکت تازه</span>
               </button>
             </div>
 
             {/* Category Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            <ScrollableRow activeKey={selectedCat} className="items-center gap-1.5 pb-1">
               <button
+                type="button"
+                data-scroll-key="all"
                 onClick={() => setSelectedCat('all')}
-                className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition border ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 snap-start transition border min-h-[44px] ${
                   selectedCat === 'all'
                     ? 'bg-[#E0A030] text-[#0E0D0C] border-[#F2C265]'
                     : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -193,8 +201,10 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                 return (
                   <button
                     key={cat}
+                    type="button"
+                    data-scroll-key={cat}
                     onClick={() => setSelectedCat(cat)}
-                    className={`px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition border ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 snap-start transition border min-h-[44px] ${
                       selectedCat === cat
                         ? 'bg-[#E0A030] text-[#0E0D0C] border-[#F2C265]'
                         : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -204,7 +214,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                   </button>
                 );
               })}
-            </div>
+            </ScrollableRow>
           </div>
 
           {/* Create Item BottomSheet Modal */}

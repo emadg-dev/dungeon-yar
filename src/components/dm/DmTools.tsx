@@ -2,9 +2,10 @@ import React, { useState, Suspense } from 'react';
 import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate, LocationEntry, Campaign, CharacterParticipation, Session, SessionRsvpChoice, SessionRecap } from '../../types';
 import { 
   LayoutDashboard, Swords, Library, Scroll, MoreHorizontal, 
-  Users, KeyRound, ShieldAlert, Sparkles, BookOpen, Compass, Award, Database, MapPin, Map as MapIcon, Flag, Coins 
+  Users, KeyRound, ShieldAlert, Sparkles, BookOpen, Compass, Award, Database, MapPin, Map as MapIcon, Flag, Coins, Settings as SettingsIcon 
 } from 'lucide-react';
 import { Quest } from '../../types';
+import { ScrollableRow } from '../ui/ScrollableRow';
 
 // Lazy-loaded DM Sub-Views for optimal code-splitting
 const DmDashboard = React.lazy(() => import('./DmDashboard').then(m => ({ default: m.DmDashboard })));
@@ -205,30 +206,33 @@ export const DmTools: React.FC<DmToolsProps> = ({
 
   return (
     <div className="space-y-4" dir="rtl">
-      {/* Desktop / Tablet Sub-Navigation */}
-      <div className="hidden sm:block surface-card rounded-[14px] p-1.5 border border-[#2F2A23]">
-        <div className="flex flex-wrap items-center justify-between gap-2 gap-1">
-          {navItems.map(item => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                type="button"
-                key={item.id}
-                onClick={() => setActiveDmTab(item.id)}
-                className={`flex-1 py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
-                  isActive
-                    ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                    : 'text-[#A39A89] hover:text-[#EDE6D8]'
-                }`}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span className="truncate">{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* DM Navigation Tab Bar */}
+      <ScrollableRow
+        activeKey={activeTab}
+        wrapperClassName="surface-card rounded-[14px] p-1.5 border border-[#2F2A23]"
+        className="gap-1.5"
+      >
+        {navItems.map(item => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              type="button"
+              key={item.id}
+              data-key={item.id}
+              onClick={() => setActiveDmTab(item.id)}
+              className={`py-2 px-3.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
+                isActive
+                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
+                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              }`}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">{item.label}</span>
+            </button>
+          );
+        })}
+      </ScrollableRow>
 
       {/* 1. Dashboard */}
       {activeTab === 'dashboard' && (
@@ -285,104 +289,116 @@ export const DmTools: React.FC<DmToolsProps> = ({
       {/* 3. Library (DM Library Hub & Entity Managers) */}
       {activeTab === 'library' && (
         <div className="space-y-4">
-          <div className="surface-card rounded-[12px] p-1 border border-[#2F2A23] flex items-center gap-1 overflow-x-auto scrollbar-none">
+          <ScrollableRow
+            activeKey={librarySubTab}
+            wrapperClassName="surface-card rounded-[12px] p-1 border border-[#2F2A23]"
+            className="gap-1"
+          >
             <button
               type="button"
+              data-key="library_hub"
               onClick={() => setLibrarySubTab('library_hub')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
+              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'library_hub'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <Library className="w-3.5 h-3.5" />
-              <span>مخزن کلان کتابخانه</span>
+              <Library className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">مخزن کلان کتابخانه</span>
             </button>
             <button
               type="button"
+              data-key="npcs"
               onClick={() => setLibrarySubTab('npcs')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
+              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'npcs'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <Users className="w-3.5 h-3.5" />
-              <span>موجودات ({npcs.length})</span>
+              <Users className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">موجودات ({npcs.length})</span>
             </button>
             <button
               type="button"
+              data-key="items"
               onClick={() => setLibrarySubTab('items')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
+              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'items'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>اشیاء ({items.length})</span>
+              <Sparkles className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">اشیاء ({items.length})</span>
             </button>
             <button
               type="button"
+              data-key="locations"
               onClick={() => setLibrarySubTab('locations')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
+              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'locations'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <MapPin className="w-3.5 h-3.5" />
-              <span>مکان‌ها ({locations.length})</span>
+              <MapPin className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">مکان‌ها ({locations.length})</span>
             </button>
             <button
               type="button"
+              data-key="handouts"
               onClick={() => setLibrarySubTab('handouts')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
+              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'handouts'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <MapIcon className="w-3.5 h-3.5" />
-              <span>اسناد و نقشه‌ها</span>
+              <MapIcon className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">اسناد و نقشه‌ها</span>
             </button>
             <button
               type="button"
+              data-key="quests"
               onClick={() => setLibrarySubTab('quests')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
+              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'quests'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <Scroll className="w-3.5 h-3.5" />
-              <span>مأموریت‌ها ({quests.length})</span>
+              <Scroll className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">مأموریت‌ها ({quests.length})</span>
             </button>
             <button
               type="button"
+              data-key="reputation"
               onClick={() => setLibrarySubTab('reputation')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
+              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'reputation'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <Flag className="w-3.5 h-3.5" />
-              <span>شهرت جناح‌ها</span>
+              <Flag className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">شهرت جناح‌ها</span>
             </button>
             <button
               type="button"
+              data-key="treasury"
               onClick={() => setLibrarySubTab('treasury')}
-              className={`flex-1 py-1.5 px-2 sm:px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap ${
+              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'treasury'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <Coins className="w-3.5 h-3.5" />
-              <span>خزانه گروه</span>
+              <Coins className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">خزانه گروه</span>
             </button>
-          </div>
+          </ScrollableRow>
 
           {librarySubTab === 'library_hub' && (
             <DmLibrary
@@ -488,32 +504,38 @@ export const DmTools: React.FC<DmToolsProps> = ({
       {/* 4. Narrative (Notes & Endings) */}
       {activeTab === 'narrative' && (
         <div className="space-y-4">
-          <div className="surface-card rounded-[12px] p-1 border border-[#2F2A23] flex items-center gap-1">
+          <ScrollableRow
+            activeKey={narrativeSubTab}
+            wrapperClassName="surface-card rounded-[12px] p-1 border border-[#2F2A23]"
+            className="gap-1"
+          >
             <button
               type="button"
+              data-key="notes"
               onClick={() => setNarrativeSubTab('notes')}
-              className={`flex-1 py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
+              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                 narrativeSubTab === 'notes'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>یادداشت‌های کمپین ({campaignNotes.length})</span>
+              <BookOpen className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">یادداشت‌های کمپین ({campaignNotes.length})</span>
             </button>
             <button
               type="button"
+              data-key="endings"
               onClick={() => setNarrativeSubTab('endings')}
-              className={`flex-1 py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
+              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                 narrativeSubTab === 'endings'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <Compass className="w-3.5 h-3.5" />
-              <span>پایان‌بندی‌ها و سرنوشت</span>
+              <Compass className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">پایان‌بندی‌ها و سرنوشت</span>
             </button>
-          </div>
+          </ScrollableRow>
 
           {narrativeSubTab === 'notes' && (
             <DmCampaignNotes
@@ -533,56 +555,64 @@ export const DmTools: React.FC<DmToolsProps> = ({
       {/* 5. More: Users, Invites, Audit Log, Settings & Seed */}
       {activeTab === 'more' && (
         <div className="space-y-4">
-          <div className="surface-card rounded-[12px] p-1 border border-[#2F2A23] flex items-center gap-1 overflow-x-auto no-scrollbar">
+          <ScrollableRow
+            activeKey={moreSubTab}
+            wrapperClassName="surface-card rounded-[12px] p-1 border border-[#2F2A23]"
+            className="gap-1"
+          >
             <button
               type="button"
+              data-key="users"
               onClick={() => setMoreSubTab('users')}
-              className={`flex-1 min-w-[44px] py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
+              className={`py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                 moreSubTab === 'users'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <Users className="w-3.5 h-3.5" />
-              <span>کاربران</span>
+              <Users className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">کاربران</span>
             </button>
             <button
               type="button"
+              data-key="invites"
               onClick={() => setMoreSubTab('invites')}
-              className={`flex-1 min-w-[44px] py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
+              className={`py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                 moreSubTab === 'invites'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <KeyRound className="w-3.5 h-3.5" />
-              <span>کدهای دعوت</span>
+              <KeyRound className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">کدهای دعوت</span>
             </button>
             <button
               type="button"
+              data-key="audit"
               onClick={() => setMoreSubTab('audit')}
-              className={`flex-1 min-w-[44px] py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
+              className={`py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                 moreSubTab === 'audit'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <Scroll className="w-3.5 h-3.5" />
-              <span>گزارش وقایع</span>
+              <Scroll className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">گزارش وقایع</span>
             </button>
             <button
               type="button"
+              data-key="settings"
               onClick={() => setMoreSubTab('settings')}
-              className={`flex-1 min-w-[44px] py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
+              className={`py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                 moreSubTab === 'settings'
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                   : 'text-[#A39A89] hover:text-[#EDE6D8]'
               }`}
             >
-              <Database className="w-3.5 h-3.5" />
-              <span>پایگاه داده</span>
+              <SettingsIcon className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">تنظیمات</span>
             </button>
-          </div>
+          </ScrollableRow>
 
           {moreSubTab === 'users' && (
             <DmUsers characters={characters} onRefreshCharacters={onRefreshCharacters} />

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { KeyRound, Shield, Clock, Check, AlertCircle, Sparkles } from 'lucide-react';
 import { EditGrantPreset, PRESET_FIELDS_MAP, getPersianFieldLabel } from '../../../shared/rules/sheetPolicy';
+import { api } from '../../services/api';
 
 interface EditGrantModalProps {
   isOpen: boolean;
@@ -9,7 +10,7 @@ interface EditGrantModalProps {
   participationId: string;
   characterName: string;
   campaignId: string;
-  onGrant: (data: {
+  onGrant?: (data: {
     scope: 'preset' | 'fields';
     preset?: EditGrantPreset;
     fields?: string[];
@@ -17,6 +18,7 @@ interface EditGrantModalProps {
     usesLeft: number;
     reason: string;
   }) => Promise<void>;
+  onGrantCreated?: () => void;
 }
 
 export const EditGrantModal: React.FC<EditGrantModalProps> = ({
@@ -25,7 +27,8 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
   participationId,
   characterName,
   campaignId,
-  onGrant
+  onGrant,
+  onGrantCreated
 }) => {
   const [scope, setScope] = useState<'preset' | 'fields'>('preset');
   const [selectedPreset, setSelectedPreset] = useState<EditGrantPreset>('level_up');
@@ -75,14 +78,30 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
     setError(null);
     try {
       const expiresAt = Date.now() + durationHours * 3600000;
-      await onGrant({
-        scope,
-        preset: scope === 'preset' ? selectedPreset : undefined,
-        fields: scope === 'fields' ? selectedFields : PRESET_FIELDS_MAP[selectedPreset],
-        expiresAt,
-        usesLeft: usesCount,
-        reason: reason.trim() || 'اجازه ویرایش موقت توسط DM'
-      });
+      if (onGrant) {
+        await onGrant({
+          scope,
+          preset: scope === 'preset' ? selectedPreset : undefined,
+          fields: scope === 'fields' ? selectedFields : PRESET_FIELDS_MAP[selectedPreset],
+          expiresAt,
+          usesLeft: usesCount,
+          reason: reason.trim() || 'اجازه ویرایش موقت توسط DM'
+        });
+      } else {
+        await api.createEditGrant(
+          campaignId,
+          participationId,
+          scope,
+          scope === 'preset' ? selectedPreset : undefined,
+          scope === 'fields' ? selectedFields : PRESET_FIELDS_MAP[selectedPreset],
+          expiresAt,
+          usesCount,
+          reason.trim() || 'اجازه ویرایش موقت توسط DM'
+        );
+      }
+      if (onGrantCreated) {
+        onGrantCreated();
+      }
       onClose();
     } catch (err: any) {
       setError(err?.message || 'خطا در ثبت مجوز ویرایش.');

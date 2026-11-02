@@ -10,6 +10,7 @@ import {
   History, AlertCircle, Skull, ChevronLeft, CheckCircle2, UserCheck, RefreshCw
 } from 'lucide-react';
 import { BackstoryEditor } from './BackstoryEditor';
+import { ScrollableRow } from '../ui/ScrollableRow';
 import { 
   computeCharacterStats, 
   groupHistoryByCampaign, 
@@ -312,50 +313,60 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
       </div>
 
       {/* Tabs Strip */}
-      <div className="flex rounded-2xl bg-[#131110]/90 border border-[#2F2A23] p-1.5 gap-1.5">
+      <ScrollableRow
+        activeKey={activeTab}
+        wrapperClassName="rounded-2xl bg-[#131110]/90 border border-[#2F2A23] p-1.5"
+        className="gap-1.5"
+      >
         <button
+          type="button"
+          data-key="identity"
           onClick={() => {
             startTransition(() => {
               setActiveTab('identity');
             });
           }}
-          className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
+          className={`py-2.5 px-4 rounded-xl text-xs font-bold transition-all min-h-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 flex items-center justify-center ${
             activeTab === 'identity'
-              ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
+              ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md font-black'
               : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A2621]/50'
           }`}
         >
-          هویت و بک‌استوری
+          <span className="whitespace-nowrap shrink-0">هویت و بک‌استوری</span>
         </button>
         <button
+          type="button"
+          data-key="history"
           onClick={() => {
             startTransition(() => {
               setActiveTab('history');
             });
           }}
-          className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
+          className={`py-2.5 px-4 rounded-xl text-xs font-bold transition-all min-h-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 flex items-center justify-center ${
             activeTab === 'history'
-              ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
+              ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md font-black'
               : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A2621]/50'
           }`}
         >
-          خط زمانی و وقایع ({toPersianDigits(history.length)})
+          <span className="whitespace-nowrap shrink-0">خط زمانی و وقایع ({toPersianDigits(history.length)})</span>
         </button>
         <button
+          type="button"
+          data-key="campaigns"
           onClick={() => {
             startTransition(() => {
               setActiveTab('campaigns');
             });
           }}
-          className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
+          className={`py-2.5 px-4 rounded-xl text-xs font-bold transition-all min-h-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 flex items-center justify-center ${
             activeTab === 'campaigns'
-              ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
+              ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md font-black'
               : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A2621]/50'
           }`}
         >
-          کمپین‌های شخصیت ({toPersianDigits(participations.length)})
+          <span className="whitespace-nowrap shrink-0">کمپین‌های شخصیت ({toPersianDigits(participations.length)})</span>
         </button>
-      </div>
+      </ScrollableRow>
 
       {/* Tab 1: Identity & Backstory */}
       {activeTab === 'identity' && (

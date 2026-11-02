@@ -12,6 +12,7 @@ import {
   Swords, Scroll, Mail, CheckCircle2, ChevronRight, X, Plus, Trash2, 
   Upload, HelpCircle, RefreshCw, Copy, ExternalLink 
 } from 'lucide-react';
+import { ScrollableRow } from '../ui/ScrollableRow';
 
 interface CampaignWizardModalProps {
   isOpen: boolean;
@@ -1063,7 +1064,11 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
           /* 8-STEP WIZARD */
           <>
             {/* Stepper Indicator */}
-            <div className="px-4 py-2.5 bg-[#171513] border-b border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-1 overflow-x-auto scrollbar-none">
+            <ScrollableRow
+              activeKey={step}
+              wrapperClassName="bg-[#171513] border-b border-[#2F2A23]"
+              className="px-4 py-2.5 gap-1.5"
+            >
               {[
                 { s: 1, title: 'مشخصات' },
                 { s: 2, title: 'قوانین' },
@@ -1079,25 +1084,26 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                 return (
                   <button
                     key={st.s}
+                    data-key={st.s}
                     type="button"
                     onClick={() => {
                       saveCurrentDraft(st.s);
                       setStep(st.s);
                     }}
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition min-h-[44px] ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 snap-start transition min-h-[44px] ${
                       isCurrent
-                        ? 'bg-[#E0A030] text-[#0E0D0C] shadow-sm'
+                        ? 'bg-[#E0A030] text-[#0E0D0C] shadow-sm font-black'
                         : isDone
                         ? 'bg-[#2F2A23] text-[#F2C265]'
                         : 'text-[#A39A89] hover:text-[#EDE6D8]'
                     }`}
                   >
-                    <span>{st.s}.</span>
-                    <span>{st.title}</span>
+                    <span className="shrink-0">{st.s}.</span>
+                    <span className="whitespace-nowrap shrink-0">{st.title}</span>
                   </button>
                 );
               })}
-            </div>
+            </ScrollableRow>
 
             {/* Step Body */}
             <div className="p-5 overflow-y-auto flex-1">

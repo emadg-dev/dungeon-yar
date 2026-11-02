@@ -6,6 +6,7 @@ import {
   X, User as UserIcon, Mail, KeyRound, Smartphone, Download, 
   LogOut, Shield, Check, AlertCircle, Trash2, Globe, Clock, CheckCircle2 
 } from 'lucide-react';
+import { ScrollableRow } from './ui/ScrollableRow';
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -240,56 +241,64 @@ export const AccountModal: React.FC<AccountModalProps> = ({
         </div>
 
         {/* Tab strip */}
-        <div className="flex rounded-[12px] bg-[#201D19] p-1 border border-[#2F2A23] overflow-x-auto no-scrollbar gap-1">
+        <ScrollableRow
+          activeKey={activeTab}
+          wrapperClassName="rounded-[12px] bg-[#201D19] p-1 border border-[#2F2A23]"
+          className="gap-1"
+        >
           <button
             type="button"
+            data-key="profile"
             onClick={() => setActiveTab('profile')}
-            className={`flex-1 py-1.5 px-2.5 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1 touch-target min-w-[44px] shrink-0 ${
+            className={`py-1.5 px-3 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
               activeTab === 'profile'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
             }`}
           >
-            <UserIcon className="w-3.5 h-3.5" />
-            <span>پروفایل</span>
+            <UserIcon className="w-3.5 h-3.5 shrink-0" />
+            <span className="whitespace-nowrap shrink-0">پروفایل</span>
           </button>
           <button
             type="button"
+            data-key="security"
             onClick={() => setActiveTab('security')}
-            className={`flex-1 py-1.5 px-2.5 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1 touch-target min-w-[44px] shrink-0 ${
+            className={`py-1.5 px-3 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
               activeTab === 'security'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
             }`}
           >
-            <KeyRound className="w-3.5 h-3.5" />
-            <span>امنیت و رمز</span>
+            <KeyRound className="w-3.5 h-3.5 shrink-0" />
+            <span className="whitespace-nowrap shrink-0">امنیت و رمز</span>
           </button>
           <button
             type="button"
+            data-key="sessions"
             onClick={() => setActiveTab('sessions')}
-            className={`flex-1 py-1.5 px-2.5 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1 touch-target min-w-[44px] shrink-0 ${
+            className={`py-1.5 px-3 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
               activeTab === 'sessions'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
             }`}
           >
-            <Smartphone className="w-3.5 h-3.5" />
-            <span>نشست‌ها</span>
+            <Smartphone className="w-3.5 h-3.5 shrink-0" />
+            <span className="whitespace-nowrap shrink-0">نشست‌ها</span>
           </button>
           <button
             type="button"
+            data-key="data"
             onClick={() => setActiveTab('data')}
-            className={`flex-1 py-1.5 px-2.5 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1 touch-target min-w-[44px] shrink-0 ${
+            className={`py-1.5 px-3 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
               activeTab === 'data'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
             }`}
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>داده‌ها</span>
+            <Download className="w-3.5 h-3.5 shrink-0" />
+            <span className="whitespace-nowrap shrink-0">داده‌ها</span>
           </button>
-        </div>
+        </ScrollableRow>
 
         {/* Feedback message banner */}
         {statusMessage && (

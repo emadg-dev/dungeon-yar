@@ -11,6 +11,7 @@ import { VirtualList } from '../common/VirtualList';
 import { LineageEditorSheet } from './LineageEditorSheet';
 import { BackgroundEditorSheet } from './BackgroundEditorSheet';
 import { ClassEditorSheet } from './ClassEditorSheet';
+import { ScrollableRow } from '../ui/ScrollableRow';
 import { 
   Library, Search, Filter, Plus, CheckSquare, Square, Copy, Bookmark, 
   Trash2, ExternalLink, RefreshCw, Eye, EyeOff, Sparkles, FolderPlus, 
@@ -563,75 +564,76 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
           </div>
 
           {/* Action shortcuts */}
-          <div className="flex items-center gap-2">
+          <ScrollableRow className="items-center gap-2">
             <button
               type="button"
               onClick={() => setMultiSelectMode(!multiSelectMode)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 min-h-[44px] ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
                 multiSelectMode 
                   ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md' 
                   : 'bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8]'
               }`}
             >
-              <CheckSquare className="w-4 h-4" />
-              <span>{multiSelectMode ? 'خروج از انتخاب' : 'انتخاب دسته‌ای'}</span>
+              <CheckSquare className="w-4 h-4 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">{multiSelectMode ? 'خروج از انتخاب' : 'انتخاب دسته‌ای'}</span>
             </button>
 
             <button
               type="button"
               onClick={() => setPackExportImportOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] text-xs font-bold transition flex items-center gap-1.5 min-h-[44px]"
+              className="px-3 py-1.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] text-xs font-bold transition inline-flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
               title="صدور یا درون‌ریزی بسته"
             >
-              <Upload className="w-4 h-4" />
-              <span>بسته‌ها</span>
+              <Upload className="w-4 h-4 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">بسته‌ها</span>
             </button>
 
             <button
               type="button"
               onClick={() => setSaveTemplateModalOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#F2C265] hover:bg-[#E0A030]/25 text-xs font-bold transition flex items-center gap-1.5 min-h-[44px]"
+              className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#F2C265] hover:bg-[#E0A030]/25 text-xs font-bold transition inline-flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
             >
-              <Bookmark className="w-4 h-4" />
-              <span>ذخیره به عنوان قالب</span>
+              <Bookmark className="w-4 h-4 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">ذخیره به عنوان قالب</span>
             </button>
 
             <button
               type="button"
               onClick={() => setClassEditor({ isOpen: true, item: null })}
-              className="px-3 py-1.5 rounded-xl bg-[#7FB4D6]/20 border border-[#7FB4D6]/40 text-[#7FB4D6] hover:bg-[#7FB4D6]/30 text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
+              className="px-3 py-1.5 rounded-xl bg-[#7FB4D6]/20 border border-[#7FB4D6]/40 text-[#7FB4D6] hover:bg-[#7FB4D6]/30 text-xs font-bold transition inline-flex items-center gap-1 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>کلاس جدید</span>
+              <Plus className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">کلاس جدید</span>
             </button>
 
             <button
               type="button"
               onClick={() => setLineageEditor({ isOpen: true, item: null })}
-              className="px-3 py-1.5 rounded-xl bg-[#D4A373]/20 border border-[#D4A373]/40 text-[#D4A373] hover:bg-[#D4A373]/30 text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
+              className="px-3 py-1.5 rounded-xl bg-[#D4A373]/20 border border-[#D4A373]/40 text-[#D4A373] hover:bg-[#D4A373]/30 text-xs font-bold transition inline-flex items-center gap-1 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>نژاد جدید</span>
+              <Plus className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">نژاد جدید</span>
             </button>
 
             <button
               type="button"
               onClick={() => setBackgroundEditor({ isOpen: true, item: null })}
-              className="px-3 py-1.5 rounded-xl bg-[#8B9D83]/20 border border-[#8B9D83]/40 text-[#8B9D83] hover:bg-[#8B9D83]/30 text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
+              className="px-3 py-1.5 rounded-xl bg-[#8B9D83]/20 border border-[#8B9D83]/40 text-[#8B9D83] hover:bg-[#8B9D83]/30 text-xs font-bold transition inline-flex items-center gap-1 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>پیشینه جدید</span>
+              <Plus className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">پیشینه جدید</span>
             </button>
-          </div>
+          </ScrollableRow>
         </div>
 
         {/* Source Switcher Buttons */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#2F2A23]">
-          <span className="text-xs text-[#A39A89] ml-1">منبع:</span>
+        <ScrollableRow activeKey={source} className="items-center gap-1.5 pt-2 border-t border-[#2F2A23]">
+          <span className="text-xs text-[#A39A89] ml-1 whitespace-nowrap shrink-0">منبع:</span>
           <button
             type="button"
+            data-scroll-key="current_campaign"
             onClick={() => setSource('current_campaign')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
               source === 'current_campaign'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold'
                 : 'bg-[#2F2A23]/80 hover:bg-[#2F2A23] text-[#EDE6D8]'
@@ -641,8 +643,9 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
           </button>
           <button
             type="button"
+            data-scroll-key="my_library"
             onClick={() => setSource('my_library')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
               source === 'my_library'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold'
                 : 'bg-[#2F2A23]/80 hover:bg-[#2F2A23] text-[#EDE6D8]'
@@ -652,8 +655,9 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
           </button>
           <button
             type="button"
+            data-scroll-key="pack-zorvania"
             onClick={() => setSource('pack-zorvania')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
               source === 'pack-zorvania'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold'
                 : 'bg-[#2F2A23]/80 hover:bg-[#2F2A23] text-[#EDE6D8]'
@@ -663,8 +667,9 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
           </button>
           <button
             type="button"
+            data-scroll-key="pack-srd-5e"
             onClick={() => setSource('pack-srd-5e')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
               source === 'pack-srd-5e'
                 ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold'
                 : 'bg-[#2F2A23]/80 hover:bg-[#2F2A23] text-[#EDE6D8]'
@@ -678,8 +683,9 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <button
               key={p.id}
               type="button"
+              data-scroll-key={p.id}
               onClick={() => setSource(p.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
                 source === p.id
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold'
                   : 'bg-[#2F2A23]/80 hover:bg-[#2F2A23] text-[#EDE6D8]'
@@ -688,13 +694,13 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               {p.name}
             </button>
           ))}
-        </div>
+        </ScrollableRow>
       </div>
 
       {/* Filter Chips Bar */}
       <div className="surface-card rounded-2xl p-3 border border-[#2F2A23] space-y-3">
         {/* Entity Type Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+        <ScrollableRow activeKey={typeFilter} className="items-center gap-1.5 pb-1">
           {[
             { id: 'all', label: 'همه' },
             { id: 'location', label: 'مکان' },
@@ -712,12 +718,13 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <button
               key={chip.id}
               type="button"
+              data-scroll-key={chip.id}
               onClick={() => {
                 startTransition(() => {
                   setTypeFilter(chip.id as EntityTypeFilter);
                 });
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition min-h-[44px] ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 snap-start transition min-h-[44px] ${
                 typeFilter === chip.id
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
                   : 'bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#3A342B]'
@@ -726,7 +733,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               {chip.label}
             </button>
           ))}
-        </div>
+        </ScrollableRow>
 
         {/* Search, Region & Sort row */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">

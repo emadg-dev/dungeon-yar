@@ -6,6 +6,7 @@ import { BottomSheet } from './mobile/BottomSheet';
 import { VirtualList } from './common/VirtualList';
 import { Dices, Flame, Skull, Table, Lock, Eye, RefreshCw, Sparkles, User as UserIcon } from 'lucide-react';
 import { api } from '../services/api';
+import { ScrollableRow } from './ui/ScrollableRow';
 
 interface DiceRollCardRowProps {
   roll: CampaignDiceRoll;
@@ -225,35 +226,41 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
     >
       <div className="space-y-4 text-xs text-[#EDE6D8]" dir="rtl">
         {/* Tab Switcher: کیسه تاس / میز بازی */}
-        <div className="flex rounded-xl bg-[#131110] border border-[#2F2A23] p-1 gap-1">
+        <ScrollableRow
+          activeKey={activeTab}
+          wrapperClassName="rounded-xl bg-[#131110] border border-[#2F2A23] p-1"
+          className="gap-1"
+        >
           <button
             type="button"
+            data-key="bag"
             onClick={() => setActiveTab('bag')}
-            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all min-h-[40px] flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all min-h-[44px] flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 snap-start ${
               activeTab === 'bag'
-                ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
+                ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md font-black'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
             }`}
           >
-            <Dices className="w-4 h-4" />
-            <span>کیسه تاس</span>
+            <Dices className="w-4 h-4 shrink-0" />
+            <span className="whitespace-nowrap shrink-0">کیسه تاس</span>
           </button>
           <button
             type="button"
+            data-key="table"
             onClick={() => {
               setActiveTab('table');
               fetchTableRolls();
             }}
-            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all min-h-[40px] flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all min-h-[44px] flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 snap-start ${
               activeTab === 'table'
-                ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
+                ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md font-black'
                 : 'text-[#A39A89] hover:text-[#EDE6D8]'
             }`}
           >
-            <Table className="w-4 h-4" />
-            <span>میز بازی ({tableRolls.length})</span>
+            <Table className="w-4 h-4 shrink-0" />
+            <span className="whitespace-nowrap shrink-0">میز بازی ({tableRolls.length})</span>
           </button>
-        </div>
+        </ScrollableRow>
 
         {activeTab === 'bag' ? (
           <>
