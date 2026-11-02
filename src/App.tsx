@@ -27,6 +27,8 @@ import {
 } from 'lucide-react';
 import { BottomSheet } from './components/mobile/BottomSheet';
 import { useOfflineSync, offlineSyncManager } from './services/offlineSync';
+import { usePWARefresh } from './hooks/usePWARefresh';
+import { APP_NAME_FA, APP_VERSION, APP_VERSION_FA } from './config/app';
 
 // Route-level code splitting
 const OverviewTab = React.lazy(() => import('./components/character/OverviewTab').then(m => ({ default: m.OverviewTab })));
@@ -262,9 +264,24 @@ export default function App() {
     type: 'short'
   });
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'idle'>('saved');
-  const { syncStatus, queueLength, conflicts, resolveConflict } = useOfflineSync();
+  const { syncStatus, queueLength, conflicts, resolveConflict, flushQueue, isOnline } = useOfflineSync();
+  const { checkForUpdates, isChecking: isCheckingUpdates } = usePWARefresh();
   const [conflictModalOpen, setConflictModalOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  const handleCheckForUpdates = async () => {
+    showToast(`در حال بررسی نسخه جدید ${APP_NAME_FA}...`);
+    const res = await checkForUpdates();
+    if (res.status === 'updated') {
+      showToast('نسخه جدید دریافت شد! لطفاً برنامه را مجدداً باز کنید.');
+    } else if (res.status === 'latest') {
+      showToast(`شما از آخرین نسخه ${APP_NAME_FA} (${APP_VERSION_FA}) استفاده می‌کنید.`);
+    } else if (res.status === 'offline') {
+      showToast('دستگاه شما آفلاین است. برای بررسی به‌روزرسانی به اینترنت متصل شوید.');
+    } else {
+      showToast(`شما از آخرین نسخه ${APP_NAME_FA} (${APP_VERSION_FA}) استفاده می‌کنید.`);
+    }
+  };
 
   // WakeLock, Virtual Viewport & Font Scale
   const { isSupported: wakeLockSupported, isActive: wakeLockActive, toggleWakeLock } = useWakeLock();
@@ -1164,6 +1181,12 @@ export default function App() {
         saveStatus={syncStatus !== 'saved' ? syncStatus : saveStatus}
         conflictCount={conflicts.length}
         onOpenConflicts={() => setConflictModalOpen(true)}
+        queueLength={queueLength}
+        isOnline={isOnline}
+        onSyncNow={flushQueue}
+        appVersion={APP_VERSION}
+        onCheckForUpdates={handleCheckForUpdates}
+        isCheckingUpdates={isCheckingUpdates}
         isDmView={isDmView}
         onToggleDmView={() => setIsDmView(!isDmView)}
         wakeLockActive={wakeLockActive}
@@ -1715,6 +1738,8 @@ export default function App() {
         hasActiveEncounter={Boolean(activeLiveEncounter && activeLiveEncounter.status === 'active')}
         onOpenActiveEncounter={() => setLiveEncounterModalOpen(true)}
         isInCombat={Boolean(liveEncounterModalOpen)}
+        queueLength={queueLength}
+        isOnline={isOnline}
       />
 
       {/* Global & Multi-Campaign Modals */}

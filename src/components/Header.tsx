@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { User, Character } from '../types';
-import { APP_NAME_FA, APP_NAME_LATIN, APP_TAGLINE } from '../config/app';
+import { APP_NAME_FA, APP_NAME_LATIN, APP_TAGLINE, APP_VERSION } from '../config/app';
 import { BottomSheet } from './mobile/BottomSheet';
 import { 
   Menu, X,
   CheckCircle2, RefreshCw, Shield, BookOpen, 
   SunMedium, Type, LogOut, ChevronDown, MoreVertical, Sparkles, Swords, Bell,
-  WifiOff, AlertTriangle, Eye
+  WifiOff, AlertTriangle, Eye, Wifi
 } from 'lucide-react';
 import { getRoleLabelFa, CampaignRole } from '../../shared/permissions';
+import { toPersianDigits } from '../../shared/rules/historyEngine';
 
 export interface HeaderProps {
   currentUser: User | null;
@@ -48,6 +49,13 @@ export interface HeaderProps {
   unreadNotificationsCount?: number;
   onOpenNotifications?: () => void;
   onOpenAdminConsole?: () => void;
+  // Offline sync & versioning extensions
+  queueLength?: number;
+  isOnline?: boolean;
+  onSyncNow?: () => void;
+  appVersion?: string;
+  onCheckForUpdates?: () => void;
+  isCheckingUpdates?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -86,9 +94,16 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenLevelUp,
   unreadNotificationsCount = 0,
   onOpenNotifications,
-  onOpenAdminConsole
+  onOpenAdminConsole,
+  queueLength = 0,
+  isOnline = true,
+  onSyncNow,
+  appVersion = APP_VERSION,
+  onCheckForUpdates,
+  isCheckingUpdates = false,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [syncSheetOpen, setSyncSheetOpen] = useState(false);
   const isDm = activeCampaignRole === 'owner' || activeCampaignRole === 'co_dm' || currentUser?.role === 'dm';
   const menuPanelRef = useRef<HTMLDivElement>(null);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
@@ -268,6 +283,73 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
 
+        {/* Visual Offline / Queue / Conflict Indicator — visible in navigation bar on ALL viewports */}
+        {(!isOnline || saveStatus === 'offline' || queueLength > 0 || saveStatus === 'conflict') && (
+          <button
+            type="button"
+            onClick={() => {
+              if (saveStatus === 'conflict') {
+                onOpenConflicts?.();
+              } else {
+                setSyncSheetOpen(true);
+              }
+            }}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[10px] text-xs font-black transition shrink-0 touch-target min-w-[44px] min-h-[38px] ${
+              saveStatus === 'conflict'
+                ? 'bg-[#C2512B]/25 text-[#F2C265] border border-[#C2512B]/70 shadow-[0_0_8px_rgba(194,81,43,0.35)] animate-pulse'
+                : (!isOnline || saveStatus === 'offline') && queueLength > 0
+                ? 'bg-[#C2512B]/25 text-[#F2C265] border border-[#C2512B]/70 shadow-[0_0_10px_rgba(194,81,43,0.4)] animate-pulse'
+                : (!isOnline || saveStatus === 'offline')
+                ? 'bg-[#201D19] text-[#C9C0AE] border border-[#A39A89]/40 hover:border-[#E0A030]'
+                : 'bg-[#201D19] text-[#E0A030] border border-[#E0A030]/40'
+            }`}
+            aria-label={
+              saveStatus === 'conflict'
+                ? `${toPersianDigits(conflictCount || 1)} مغایرت در همگام‌سازی`
+                : (!isOnline || saveStatus === 'offline') && queueLength > 0
+                ? `آفلاین - ${toPersianDigits(queueLength)} تغییر در صف انتظار`
+                : (!isOnline || saveStatus === 'offline')
+                ? 'حالت آفلاین - اتصال اینترنت قطع است'
+                : `در حال همگام‌سازی - ${toPersianDigits(queueLength)} تغییر در صف`
+            }
+            title={
+              saveStatus === 'conflict'
+                ? `${toPersianDigits(conflictCount || 1)} مغایرت در همگام‌سازی - جهت رفع لمس کنید`
+                : (!isOnline || saveStatus === 'offline') && queueLength > 0
+                ? `آفلاین: ${toPersianDigits(queueLength)} تغییر در صف ارسال منتظر اتصال است (جهت جزئیات لمس کنید)`
+                : (!isOnline || saveStatus === 'offline')
+                ? 'اتصال اینترنت قطع است (جهت جزئیات لمس کنید)'
+                : 'در حال ارسال تغییرات به سرور...'
+            }
+          >
+            {saveStatus === 'conflict' ? (
+              <>
+                <AlertTriangle className="w-3.5 h-3.5 text-[#F2C265] shrink-0" />
+                <span className="text-[11px] font-extrabold">{toPersianDigits(conflictCount || 1)} مغایرت</span>
+              </>
+            ) : (!isOnline || saveStatus === 'offline') ? (
+              <>
+                <WifiOff className="w-3.5 h-3.5 text-[#F2C265] shrink-0" />
+                <span className="text-[11px] font-extrabold flex items-center gap-1">
+                  <span>آفلاین</span>
+                  {queueLength > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-[#C2512B] text-white text-[10px] font-black leading-none">
+                      {toPersianDigits(queueLength)} در صف
+                    </span>
+                  )}
+                </span>
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 text-[#E0A030] animate-spin shrink-0" />
+                <span className="text-[11px] text-[#E0A030] font-bold">
+                  {toPersianDigits(queueLength)} در صف
+                </span>
+              </>
+            )}
+          </button>
+        )}
+
         {/* Action Controls & Utilities — hidden on mobile; hamburger replaces below md */}
         <div className="hidden md:flex items-center gap-1.5 shrink-0">
           {/* DM Pending Approvals notification */}
@@ -296,36 +378,29 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-          {/* Autosave / Offline / Conflict Status Indicator */}
-          {saveStatus === 'conflict' ? (
+          {/* Desktop Synced Status (when all saved and online) */}
+          {isOnline && saveStatus === 'saved' && queueLength === 0 && (
+            <div
+              className="flex items-center gap-1 px-1.5 py-1 text-xs text-[#6F9E78]"
+              title="همه تغییرات ذخیره شدند"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#6F9E78]" />
+              <span className="text-[11px] font-bold hidden lg:inline">ذخیره شد</span>
+            </div>
+          )}
+
+          {/* Desktop App Version & Check for Updates Button */}
+          {onCheckForUpdates && (
             <button
               type="button"
-              onClick={onOpenConflicts}
-              className="flex items-center gap-1 px-2 py-1 rounded-[8px] bg-[#C2512B]/20 text-[#C2512B] border border-[#C2512B]/50 hover:bg-[#C2512B]/30 animate-pulse text-xs font-black transition touch-target min-w-[44px]"
-              title={`${conflictCount || 1} مغایرت در همگام‌سازی - جهت حل لمس کنید`}
+              onClick={onCheckForUpdates}
+              disabled={isCheckingUpdates}
+              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-[11px] font-bold text-[#A39A89] hover:text-[#EDE6D8] transition touch-target min-w-[44px]"
+              title={`نسخه ${toPersianDigits(appVersion || APP_VERSION)} - بررسی به‌روزرسانی`}
             >
-              <AlertTriangle className="w-3.5 h-3.5" />
-              <span>{conflictCount || '!'}</span>
+              <RefreshCw className={`w-3 h-3 ${isCheckingUpdates ? 'animate-spin text-[#E0A030]' : 'text-[#A39A89]'}`} />
+              <span>نسخه {toPersianDigits(appVersion || APP_VERSION)}</span>
             </button>
-          ) : saveStatus === 'offline' ? (
-            <div
-              className="flex items-center gap-1 px-1.5 py-1 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] text-[11px]"
-              title="حالت آفلاین - تغییرات در صف ذخیره هستند"
-            >
-              <WifiOff className="w-3.5 h-3.5 text-[#A39A89]" />
-              <span className="hidden sm:inline">آفلاین</span>
-            </div>
-          ) : (
-            <div
-              className="flex items-center px-1"
-              title={saveStatus === 'saving' ? 'در حال همگام‌سازی...' : 'همه تغییرات ذخیره شدند'}
-            >
-              {saveStatus === 'saving' ? (
-                <RefreshCw className="w-3.5 h-3.5 text-[#E0A030] animate-spin" />
-              ) : (
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#6F9E78]" />
-              )}
-            </div>
           )}
 
           {/* DM / Player View Switcher (if user is DM in this campaign) */}
@@ -716,6 +791,78 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
 
+            {/* Connection & Offline Status in Drawer */}
+            <div className={`p-3.5 rounded-[12px] border space-y-2 text-start ${
+              !isOnline || saveStatus === 'offline'
+                ? 'bg-[#C2512B]/15 border-[#C2512B]/40'
+                : 'bg-[#201D19] border-[#2F2A23]'
+            }`}>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  {!isOnline || saveStatus === 'offline' ? (
+                    <WifiOff className="w-4 h-4 text-[#F2C265]" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 text-[#6F9E78]" />
+                  )}
+                  <span className="text-xs font-bold text-[#EDE6D8]">
+                    {!isOnline || saveStatus === 'offline' ? 'حالت آفلاین (بدون اینترنت)' : 'اتصال اینترنت برقرار است'}
+                  </span>
+                </div>
+                {queueLength > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-[#E0A030]/20 text-[#F2C265] text-[10px] font-black border border-[#E0A030]/40">
+                    {toPersianDigits(queueLength)} در صف
+                  </span>
+                )}
+              </div>
+              {(!isOnline || queueLength > 0) && (
+                <p className="text-[11px] text-[#C9C0AE] leading-relaxed">
+                  {queueLength > 0
+                    ? `${toPersianDigits(queueLength)} تغییر ویرایشی در حافظه محلی دستگاه منتظر ارسال به سرور است.`
+                    : 'اطلاعات در دستگاه ذخیره شده و پس از اتصال اینترنت همگام خواهند شد.'}
+                </p>
+              )}
+              {onSyncNow && (
+                <button
+                  type="button"
+                  onClick={onSyncNow}
+                  className="w-full py-2 px-3 rounded-[8px] bg-[#2A2520] hover:bg-[#342E27] border border-[#3E3830] text-xs font-bold text-[#F2C265] flex items-center justify-center gap-1.5 transition touch-target min-h-[44px]"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-[#E0A030]" />
+                  <span>تلاش برای همگام‌سازی اکنون</span>
+                </button>
+              )}
+            </div>
+
+            {/* App Version & Check for Updates in Drawer */}
+            <div className="p-3.5 rounded-[12px] bg-[#171513] border border-[#2F2A23] space-y-2.5 text-start">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#E0A030] shadow-[0_0_8px_rgba(224,160,48,0.5)]" />
+                  <span className="text-xs font-black text-[#EDE6D8]">{APP_NAME_FA}</span>
+                </div>
+                <span className="text-[11px] font-bold text-[#E0A030] bg-[#E0A030]/15 border border-[#E0A030]/40 px-2 py-0.5 rounded-[6px]">
+                  نسخه {toPersianDigits(appVersion || APP_VERSION)}
+                </span>
+              </div>
+
+              <p className="text-[11px] text-[#A39A89] leading-relaxed">
+                پلتفرم همراه نقش‌آفرینی رومیزی — سازگار با حالت آفلاین
+              </p>
+
+              {onCheckForUpdates && (
+                <button
+                  type="button"
+                  onClick={onCheckForUpdates}
+                  disabled={isCheckingUpdates}
+                  className="w-full py-2.5 px-3 rounded-[8px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] active:scale-[0.99] disabled:opacity-50 text-xs font-black text-[#EDE6D8] hover:text-[#E0A030] flex items-center justify-center gap-2 transition touch-target min-h-[44px]"
+                  title="بررسی انتشار نسخه جدید اپلیکیشن"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isCheckingUpdates ? 'animate-spin text-[#E0A030]' : 'text-[#E0A030]'}`} />
+                  <span>{isCheckingUpdates ? 'در حال بررسی به‌روزرسانی...' : 'بررسی به‌روزرسانی'}</span>
+                </button>
+              )}
+            </div>
+
             {/* Logout Action */}
             <button
               type="button"
@@ -732,6 +879,89 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
         </>
       )}
+
+      {/* Offline Sync Details Bottom Sheet */}
+      <BottomSheet
+        isOpen={syncSheetOpen}
+        onClose={() => setSyncSheetOpen(false)}
+        title="وضعیت اتصال و همگام‌سازی"
+        subtitle="مدیریت وضعیت آفلاین و صف تغییرات محلی"
+      >
+        <div className="space-y-4 p-4 text-start" dir="rtl">
+          {/* Network connection badge */}
+          <div className={`p-4 rounded-[12px] border flex items-start gap-3 ${
+            !isOnline || saveStatus === 'offline'
+              ? 'bg-[#C2512B]/15 border-[#C2512B]/40 text-[#F2C265]'
+              : 'bg-[#6F9E78]/15 border-[#6F9E78]/40 text-[#A8D5BA]'
+          }`}>
+            {!isOnline || saveStatus === 'offline' ? (
+              <WifiOff className="w-5 h-5 text-[#F2C265] shrink-0 mt-0.5" />
+            ) : (
+              <CheckCircle2 className="w-5 h-5 text-[#6F9E78] shrink-0 mt-0.5" />
+            )}
+            <div className="space-y-1">
+              <h4 className="text-sm font-extrabold text-[#EDE6D8]">
+                {!isOnline || saveStatus === 'offline'
+                  ? 'حالت آفلاین (ارتباط با سرور قطع است)'
+                  : 'اتصال اینترنت برقرار است'}
+              </h4>
+              <p className="text-xs text-[#C9C0AE] leading-relaxed">
+                {!isOnline || saveStatus === 'offline'
+                  ? 'دستگاه شما در حال حاضر به اینترنت متصل نیست. تمام ویرایش‌های شما در حافظه محلی دستگاه محفوظ می‌ماند.'
+                  : 'ارتباط با سرور برقرار است و تغییرات بلافاصله همگام‌سازی می‌شوند.'}
+              </p>
+            </div>
+          </div>
+
+          {/* Queued changes detail */}
+          <div className="p-4 rounded-[12px] bg-[#171513] border border-[#2F2A23] space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#A39A89]">تغییرات منتظر در صف ارسال:</span>
+              <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded-[6px] ${
+                queueLength > 0
+                  ? 'bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/40'
+                  : 'bg-[#201D19] text-[#A39A89]'
+              }`}>
+                {toPersianDigits(queueLength)} تغییر
+              </span>
+            </div>
+
+            {queueLength > 0 ? (
+              <p className="text-xs text-[#EDE6D8] leading-relaxed">
+                {toPersianDigits(queueLength)} تغییر انجام‌شده (از قبیل جان، یادداشت‌ها، کوله‌پشتی یا تاس‌ها) در این دستگاه ذخیره شده‌اند. به محض برقراری اتصال اینترنت، این موارد به صورت خودکار با سرور هماهنگ می‌شوند.
+              </p>
+            ) : (
+              <p className="text-xs text-[#A39A89]">
+                هیچ تغییری در صف انتظار نیست و اطلاعات دستگاه شما با سرور یکسان است.
+              </p>
+            )}
+          </div>
+
+          {/* Manual flush / retry button */}
+          <div className="pt-2 flex flex-col sm:flex-row gap-2">
+            {onSyncNow && (
+              <button
+                type="button"
+                onClick={() => {
+                  onSyncNow();
+                  setSyncSheetOpen(false);
+                }}
+                className="flex-1 py-3 px-4 rounded-[10px] btn-primary-amber font-bold text-xs flex items-center justify-center gap-2 touch-target min-h-[44px]"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>تلاش مجدد برای همگام‌سازی</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setSyncSheetOpen(false)}
+              className="py-3 px-4 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-bold text-xs hover:border-[#E0A030] touch-target min-h-[44px]"
+            >
+              بستن
+            </button>
+          </div>
+        </div>
+      </BottomSheet>
     </>
   );
 };

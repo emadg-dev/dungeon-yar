@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { User, UserSession, Character } from '../types';
-import { APP_NAME_LATIN } from '../config/app';
+import { APP_NAME_FA, APP_NAME_LATIN, APP_VERSION, APP_VERSION_FA } from '../config/app';
 import { api } from '../services/api';
+import { toPersianDigits } from '../../shared/rules/historyEngine';
+import { usePWARefresh } from '../hooks/usePWARefresh';
 import { 
   X, User as UserIcon, Mail, KeyRound, Smartphone, Download, 
-  LogOut, Shield, Check, AlertCircle, Trash2, Globe, Clock, CheckCircle2 
+  LogOut, Shield, Check, AlertCircle, Trash2, Globe, Clock, CheckCircle2, RefreshCw 
 } from 'lucide-react';
 import { ScrollableRow } from './ui/ScrollableRow';
 
@@ -68,6 +70,22 @@ export const AccountModal: React.FC<AccountModalProps> = ({
       const list = await api.listSessions();
       setSessions(list);
     } catch {}
+  };
+
+  const { checkForUpdates, isChecking: isCheckingUpdates } = usePWARefresh();
+
+  const handleModalCheckUpdates = async () => {
+    showMsg(`در حال بررسی نسخه جدید ${APP_NAME_FA}...`);
+    const res = await checkForUpdates();
+    if (res.status === 'updated') {
+      showMsg('نسخه جدید دریافت شد! لطفاً برنامه را مجدداً باز کنید.');
+    } else if (res.status === 'latest') {
+      showMsg(`شما از آخرین نسخه ${APP_NAME_FA} (${APP_VERSION_FA}) استفاده می‌کنید.`);
+    } else if (res.status === 'offline') {
+      showMsg('دستگاه شما آفلاین است. برای بررسی به‌روزرسانی به اینترنت متصل شوید.', 'error');
+    } else {
+      showMsg(`شما از آخرین نسخه ${APP_NAME_FA} (${APP_VERSION_FA}) استفاده می‌کنید.`);
+    }
   };
 
   if (!isOpen) return null;
@@ -630,7 +648,26 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               )}
             </div>
 
-            <div className="pt-2 border-t border-[#2F2A23]">
+            {/* App Version & Check for updates row */}
+            <div className="pt-3 border-t border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#E0A030]" />
+                <span className="text-xs font-bold text-[#EDE6D8]">
+                  نسخه {toPersianDigits(APP_VERSION)}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleModalCheckUpdates}
+                disabled={isCheckingUpdates}
+                className="py-1.5 px-3 rounded-[8px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] disabled:opacity-50 transition flex items-center gap-1.5 touch-target min-h-[44px]"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isCheckingUpdates ? 'animate-spin' : ''}`} />
+                <span>{isCheckingUpdates ? 'در حال بررسی...' : 'بررسی به‌روزرسانی'}</span>
+              </button>
+            </div>
+
+            <div className="pt-2">
               <button
                 type="button"
                 onClick={() => {

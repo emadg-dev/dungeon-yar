@@ -20,6 +20,8 @@ interface BottomNavProps {
   hasActiveEncounter?: boolean;
   onOpenActiveEncounter?: () => void;
   isInCombat?: boolean;
+  queueLength?: number;
+  isOnline?: boolean;
 }
 
 /**
@@ -43,6 +45,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   hasActiveEncounter = false,
   onOpenActiveEncounter,
   isInCombat = false,
+  queueLength = 0,
+  isOnline = true,
 }) => {
   // Hide bottom nav while on-screen keyboard is open OR during encounter/combat
   const [inEncounterClass, setInEncounterClass] = React.useState(false);
@@ -86,9 +90,19 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 aria-label={item.label}
                 aria-pressed={isActive}
                 onClick={() => onSelectHomeTab?.(item.id)}
-                className={`liquid-dock__item mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
+                className={`liquid-dock__item mx-auto relative ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
               >
-                <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+                <div className="relative">
+                  <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+                  {!isOnline && item.id === 'account' && (
+                    <span
+                      className={`absolute -top-1 -end-1 w-2 h-2 rounded-full ${
+                        queueLength > 0 ? 'bg-[#C2512B] ring-1 ring-[#0E0D0C] animate-pulse' : 'bg-[#A39A89]'
+                      }`}
+                      title={queueLength > 0 ? `حالت آفلاین (${queueLength} در صف)` : 'آفلاین'}
+                    />
+                  )}
+                </div>
                 <span className="dock-label whitespace-nowrap">{item.label}</span>
               </button>
             );
@@ -141,9 +155,19 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 aria-label={item.label}
                 aria-pressed={isActive}
                 onClick={() => onSelectDmTab(item.id)}
-                className={`liquid-dock__item mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
+                className={`liquid-dock__item mx-auto relative ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
               >
-                <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+                <div className="relative">
+                  <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+                  {!isOnline && item.id === 'more' && (
+                    <span
+                      className={`absolute -top-1 -end-1 w-2 h-2 rounded-full ${
+                        queueLength > 0 ? 'bg-[#C2512B] ring-1 ring-[#0E0D0C] animate-pulse' : 'bg-[#A39A89]'
+                      }`}
+                      title={queueLength > 0 ? `حالت آفلاین (${queueLength} در صف)` : 'آفلاین'}
+                    />
+                  )}
+                </div>
                 <span className="dock-label whitespace-nowrap">{item.label}</span>
               </button>
             );

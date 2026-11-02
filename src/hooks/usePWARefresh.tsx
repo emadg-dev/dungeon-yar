@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 export function usePWARefresh() {
   const [promptVisible, setPromptVisible] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
@@ -49,5 +50,35 @@ export function usePWARefresh() {
 
   const dismiss = () => setPromptVisible(false);
 
-  return { promptVisible, doRefresh, dismiss };
+  const checkForUpdates = async (): Promise<{ status: 'updated' | 'latest' | 'offline' | 'unsupported' }> => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+      return { status: 'unsupported' };
+    }
+    if (!navigator.onLine) {
+      return { status: 'offline' };
+    }
+    setIsChecking(true);
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (!reg) {
+        return { status: 'latest' };
+      }
+      if (reg.waiting || reg.installing) {
+        setPromptVisible(true);
+        return { status: 'updated' };
+      }
+      await reg.update();
+      if (reg.waiting || reg.installing) {
+        setPromptVisible(true);
+        return { status: 'updated' };
+      }
+      return { status: 'latest' };
+    } catch {
+      return { status: 'latest' };
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  return { promptVisible, doRefresh, dismiss, checkForUpdates, isChecking };
 }
