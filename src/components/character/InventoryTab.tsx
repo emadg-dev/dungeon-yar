@@ -7,7 +7,7 @@ import { PartyTreasuryManager } from '../campaign/PartyTreasuryManager';
 import { VirtualList } from '../common/VirtualList';
 import { 
   Package, Coins, Flame, Utensils, Search, Plus, 
-  Trash2, ShieldCheck, Sparkles, MoreVertical, Check, Eye 
+  Trash2, ShieldCheck, Sparkles, MoreVertical, Check, Eye, Lock 
 } from 'lucide-react';
 
 interface InventoryItemRowProps {
@@ -110,6 +110,10 @@ interface InventoryTabProps {
   campaignId?: string;
   activeParticipationId?: string;
   campaignSettings?: CampaignSettings | null;
+  sheetLocked?: boolean | number;
+  activeGrants?: any[];
+  isDm?: boolean;
+  onOpenLockedField?: (fieldName: string) => void;
 }
 
 export const InventoryTab: React.FC<InventoryTabProps> = ({
@@ -117,7 +121,11 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
   onUpdate,
   campaignId = 'zorvania-c1',
   activeParticipationId,
-  campaignSettings
+  campaignSettings,
+  sheetLocked = true,
+  activeGrants = [],
+  isDm = false,
+  onOpenLockedField
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -126,6 +134,24 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
   const [selectedItemDetail, setSelectedItemDetail] = useState<InventoryItem | null>(null);
   const [actionMenuItem, setActionMenuItem] = useState<InventoryItem | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; id: string; name: string } | null>(null);
+
+  const now = Date.now();
+  const validGrants = (activeGrants || []).filter(g =>
+    g && g.status === 'active' &&
+    (!g.expires_at || g.expires_at > now) &&
+    (!g.expiresAt || g.expiresAt > now) &&
+    (g.uses_left == null || g.uses_left > 0)
+  );
+
+  const isInventoryLocked = Boolean(sheetLocked) && !isDm && !validGrants.some(g =>
+    g.preset === 'full' || g.preset === 'inventory_add' ||
+    (Array.isArray(g.fields) && (g.fields.includes('*') || g.fields.includes('addItem') || g.fields.includes('inventoryQuantity')))
+  );
+
+  const isCurrencyLocked = Boolean(sheetLocked) && !isDm && !validGrants.some(g =>
+    g.preset === 'full' || g.preset === 'inventory_add' ||
+    (Array.isArray(g.fields) && (g.fields.includes('*') || g.fields.includes('currencyBalance') || g.fields.includes('grantCurrency')))
+  );
 
   // New Item State
   const [itemName, setItemName] = useState('');
@@ -137,6 +163,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
 
   // Trackers update
   const updateRations = (delta: number) => {
+    if (delta > 0 && isInventoryLocked) {
+      onOpenLockedField?.('inventoryQuantity');
+      return;
+    }
     onUpdate({
       ...character,
       rations: Math.max(0, (character.rations || 0) + delta)
@@ -144,6 +174,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
   };
 
   const updateLanternOil = (delta: number) => {
+    if (delta > 0 && isInventoryLocked) {
+      onOpenLockedField?.('inventoryQuantity');
+      return;
+    }
     onUpdate({
       ...character,
       lanternOil: Math.max(0, (character.lanternOil || 0) + delta)
@@ -151,6 +185,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
   };
 
   const updateCurrency = (key: 'gold' | 'silver' | 'copper', delta: number) => {
+    if (delta > 0 && isCurrencyLocked) {
+      onOpenLockedField?.('currencyBalance');
+      return;
+    }
     onUpdate({
       ...character,
       currencies: {
@@ -171,6 +209,10 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
   };
 
   const adjustItemQuantity = (itemId: string, delta: number) => {
+    if (delta > 0 && isInventoryLocked) {
+      onOpenLockedField?.('inventoryQuantity');
+      return;
+    }
     const updated = character.inventory
       .map(item => {
         if (item.id === itemId) {
@@ -179,7 +221,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
         }
         return item;
       })
-      .filter(Boolean) as InventoryItem[];
+      .filter((i): i is InventoryItem => i !== null);
     onUpdate({ ...character, inventory: updated });
   };
 
@@ -391,11 +433,17 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
 
           <button
             type="button"
-            onClick={() => setShowAddItem(true)}
+            onClick={() => {
+              if (isInventoryLocked) {
+                onOpenLockedField?.('addItem');
+              } else {
+                setShowAddItem(true);
+              }
+            }}
             className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] btn-primary-amber text-xs font-bold transition touch-target shrink-0"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>ثبت شیء نو</span>
+            {isInventoryLocked ? <Lock className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+            <span>{isInventoryLocked ? 'افزودن شیء (قفل DM)' : 'ثبت شیء نو'}</span>
           </button>
         </div>
 

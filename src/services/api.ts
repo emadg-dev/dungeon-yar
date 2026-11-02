@@ -62,6 +62,8 @@ import {
   ParticipationSnapshot,
   XpAward,
   SheetChangeRequest,
+  EditGrant,
+  EditGrantPreset,
   LevelUpPayload,
   LevelUpDiff,
   CharacterRevision,
@@ -121,6 +123,16 @@ import {
 import { rollAbilityScores } from '../../shared/rules/engine';
 import { computeAuthoritativeParticipation, createSnapshot, pruneSnapshots } from '../../shared/rules/wizardEngine';
 import { computeLevelUpDiff, isLevelUpReady, isFieldLockedForPlayer, XP_THRESHOLDS } from '../../shared/rules/levelUpEngine';
+import {
+  SHEET_POLICY_DEFAULT,
+  isFieldLockedForPlayer as isPolicyFieldLocked,
+  getLockedFieldsInPatch,
+  getPersianLockedMessage,
+  validateResourcePipChange,
+  validateQuantityChange,
+  validateCurrencyChange,
+  isFieldCoveredByGrant
+} from '../../shared/rules/sheetPolicy';
 import { pruneCharacterRevisions } from '../../shared/rules/backstoryEngine';
 import {
   filterSessionForViewer,
@@ -659,9 +671,12 @@ export interface ApiClient {
   approveLevelUp(campaignId: string, participationId: string, comment?: string): Promise<CharacterParticipation>;
   rejectLevelUp(campaignId: string, participationId: string, comment?: string): Promise<CharacterParticipation>;
   undoLevelUp(campaignId: string, participationId: string): Promise<CharacterParticipation>;
-  createSheetChangeRequest(campaignId: string, participationId: string, requestedChanges: string, reason?: string): Promise<SheetChangeRequest>;
+  createSheetChangeRequest(campaignId: string, participationId: string, requestedChanges: string, reason?: string, fieldGroup?: string, patch?: any): Promise<SheetChangeRequest>;
   listSheetChangeRequests(campaignId: string): Promise<SheetChangeRequest[]>;
-  reviewSheetChangeRequest(campaignId: string, requestId: string, action: 'approve' | 'reject', comment?: string): Promise<SheetChangeRequest>;
+  reviewSheetChangeRequest(campaignId: string, requestId: string, action: 'approve' | 'reject', comment?: string, modifiedPatch?: any): Promise<SheetChangeRequest>;
+  listEditGrants(campaignId: string, participationId?: string): Promise<EditGrant[]>;
+  createEditGrant(campaignId: string, participationId: string, scope: 'preset' | 'fields', preset?: EditGrantPreset, fields?: string[], expiresAt?: number, usesLeft?: number, reason?: string): Promise<EditGrant>;
+  revokeEditGrant(grantId: string): Promise<EditGrant>;
   dmOverrideParticipation(campaignId: string, participationId: string, data: Partial<CharacterParticipation>, reason?: string): Promise<CharacterParticipation>;
   toggleRespecWindow(campaignId: string, participationId: string, open: boolean): Promise<CharacterParticipation>;
 
@@ -3914,12 +3929,41 @@ export class LocalApi implements ApiClient {
     return newPart;
   }
 
+  async updateParticipation(campaignId: string, participationId: string, data: Partial<CharacterParticipation>): Promise<CharacterParticipation> {
+    const allCamps = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCamps.find(c => c.id === campaignId);
+    if (!camp) throw { status: 404, message: 'کمپین یافت نشد.' };
+
     const all = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
     const part = all.find(p => p.campaignId === campaignId && p.id === participationId);
     if (!part) throw { status: 404, message: 'شخصیت مشارکت‌کننده یافت نشد.' };
 
-    // Enforcement: only apply changes allowed by policy
-    try { (this as any).enforceLock(participationId, data, 'update'); } catch (e: any) { throw e; }
+    const role = await this.getCampaignRole(campaignId);
+    const isDm = role === 'owner' || role === 'co_dm' || this.currentUser?.role === 'dm';
+
+    if (!isDm) {
+      this.enforceLock(campaignId, part, data);
+    } else {
+      const lockedFields = getLockedFieldsInPatch(data, part, []);
+      if (lockedFields.length > 0) {
+        const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+        allHist.push({
+          id: `hist-dmedit-${Date.now()}`,
+          characterId: part.characterId,
+          campaignId,
+          eventType: 'custom',
+          payload: {
+            title: 'ویرایش DM',
+            description: 'ویرایش مشخصات توسط دانجن مستر',
+            modifiedFields: lockedFields,
+            by: this.currentUser?.id
+          },
+          timestamp: Date.now()
+        });
+        this.setItem('character_history_events', allHist);
+      }
+    }
+
     Object.assign(part, data);
     part.updatedAt = Date.now();
     this.setItem('character_participations', all);
@@ -3957,6 +4001,8 @@ export class LocalApi implements ApiClient {
         this.setItem('character_history_events', allHist);
       } else {
         part.status = 'active';
+        part.sheetLocked = true;
+        part.creationFinalizedAt = Date.now();
       }
     } else if (action === 'reject') {
       if (part.pendingLevelUp) {
@@ -4488,7 +4534,14 @@ export class LocalApi implements ApiClient {
     return part;
   }
 
-  async createSheetChangeRequest(campaignId: string, participationId: string, requestedChanges: string, reason?: string): Promise<SheetChangeRequest> {
+  async createSheetChangeRequest(
+    campaignId: string,
+    participationId: string,
+    requestedChanges: string,
+    reason?: string,
+    fieldGroup?: string,
+    patch?: any
+  ): Promise<SheetChangeRequest> {
     const user = this.currentUser || SEED_USERS[0];
     const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
     const part = allParts.find(p => p.id === participationId);
@@ -4498,6 +4551,8 @@ export class LocalApi implements ApiClient {
       campaignId,
       participationId,
       userId: user.id,
+      fieldGroup: fieldGroup || 'core',
+      patch: patch || null,
       requestedChanges,
       reason,
       status: 'pending',
@@ -4518,25 +4573,80 @@ export class LocalApi implements ApiClient {
     return allReqs.filter(r => r.campaignId === campaignId);
   }
 
-  async reviewSheetChangeRequest(campaignId: string, requestId: string, action: 'approve' | 'reject', comment?: string): Promise<SheetChangeRequest> {
+  async reviewSheetChangeRequest(
+    campaignId: string,
+    requestId: string,
+    action: 'approve' | 'reject',
+    comment?: string,
+    modifiedPatch?: any
+  ): Promise<SheetChangeRequest> {
+    const user = this.currentUser || SEED_USERS[0];
     const allReqs = this.getItem<SheetChangeRequest[]>('sheet_change_requests', []);
     const req = allReqs.find(r => r.id === requestId);
     if (!req) throw { status: 404, message: 'درخواست تغییر یافت نشد.' };
 
     req.status = action === 'approve' ? 'approved' : 'rejected';
     req.reviewComment = comment;
+    req.comment = comment;
+    req.decidedBy = user.id;
+    req.decidedAt = Date.now();
     req.updatedAt = Date.now();
     this.setItem('sheet_change_requests', allReqs);
 
-    if (action === 'approve') {
-      // Temporarily unlock sheet so user can apply agreed changes
-      const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
-      const part = allParts.find(p => p.id === req.participationId);
-      if (part) {
+    const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = allParts.find(p => p.id === req.participationId);
+
+    if (action === 'approve' && part) {
+      // 1. Snapshot BEFORE applying approved change request (Atomic Snapshot)
+      const snap = createSnapshot(part, `پیش از اعمال درخواست تغییر: ${req.requestedChanges.slice(0, 30)}`, user.id);
+      const allSnaps = this.getItem<ParticipationSnapshot[]>('participation_snapshots', []);
+      allSnaps.push(snap);
+      const { kept } = pruneSnapshots(allSnaps.filter(s => s.participationId === part.id), 10);
+      const otherSnaps = allSnaps.filter(s => s.participationId !== part.id);
+      this.setItem('participation_snapshots', [...otherSnaps, ...kept]);
+
+      // 2. Apply patch atomically if present or unlock
+      const patch = modifiedPatch || req.patch;
+      if (patch && typeof patch === 'object') {
+        Object.assign(part, patch);
+      } else {
         part.sheetLocked = false;
-        part.updatedAt = Date.now();
-        this.setItem('character_participations', allParts);
       }
+      part.updatedAt = Date.now();
+      this.setItem('character_participations', allParts);
+
+      // 3. Write History Event
+      const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+      allHist.push({
+        id: `hist-reqapp-${Date.now()}`,
+        characterId: part.characterId,
+        campaignId,
+        eventType: 'custom',
+        payload: {
+          title: 'تأیید درخواست تغییر شیت',
+          description: `درخواست «${req.requestedChanges}» توسط DM تأیید شد.${comment ? ' یادداشت: ' + comment : ''}`,
+          requestId: req.id,
+          decidedBy: user.id
+        },
+        timestamp: Date.now()
+      });
+      this.setItem('character_history_events', allHist);
+    } else if (action === 'reject' && part) {
+      const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+      allHist.push({
+        id: `hist-reqrej-${Date.now()}`,
+        characterId: part.characterId,
+        campaignId,
+        eventType: 'custom',
+        payload: {
+          title: 'رد درخواست تغییر شیت',
+          description: `درخواست تغییر توسط DM رد شد.${comment ? ' علت: ' + comment : ''}`,
+          requestId: req.id,
+          decidedBy: user.id
+        },
+        timestamp: Date.now()
+      });
+      this.setItem('character_history_events', allHist);
     }
 
     return req;
@@ -4546,6 +4656,16 @@ export class LocalApi implements ApiClient {
     const allParts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
     const part = allParts.find(p => p.id === participationId && p.campaignId === campaignId);
     if (!part) throw { status: 404, message: 'مشارکت کاراکتر یافت نشد.' };
+
+    const user = this.currentUser || SEED_USERS[0];
+
+    // Snapshot before override
+    const snap = createSnapshot(part, `پیش از ویرایش DM: ${reason || 'تغییر مشخصات'}`, user.id);
+    const allSnaps = this.getItem<ParticipationSnapshot[]>('participation_snapshots', []);
+    allSnaps.push(snap);
+    const { kept } = pruneSnapshots(allSnaps.filter(s => s.participationId === part.id), 10);
+    const otherSnaps = allSnaps.filter(s => s.participationId !== part.id);
+    this.setItem('participation_snapshots', [...otherSnaps, ...kept]);
 
     Object.assign(part, data);
     part.updatedAt = Date.now();
@@ -4561,7 +4681,8 @@ export class LocalApi implements ApiClient {
       payload: {
         title: 'ویرایش DM',
         description: reason || 'ویرایش مستقیم مشخصات توسط دانجن مستر',
-        modifiedFields: Object.keys(data)
+        modifiedFields: Object.keys(data),
+        by: user.id
       },
       timestamp: Date.now()
     });
@@ -4581,50 +4702,160 @@ export class LocalApi implements ApiClient {
   }
 
   // Sheet Lock / Edit Grants
-  async createEditGrant(campaignId: string, participationId: string, scope: 'preset' | 'fields', preset?: string, fields?: string[], expiresAt?: number, usesLeft?: number, reason?: string): Promise<any> {
+  async listEditGrants(campaignId: string, participationId?: string): Promise<EditGrant[]> {
+    const all = this.getItem<EditGrant[]>('edit_grants', []);
+    const now = Date.now();
+    all.forEach(g => {
+      if (g.status === 'active' && g.expiresAt && g.expiresAt < now) {
+        g.status = 'expired';
+      }
+    });
+    this.setItem('edit_grants', all);
+
+    return all.filter(g => {
+      if (campaignId && g.campaignId && g.campaignId !== campaignId) return false;
+      if (participationId && g.participationId !== participationId) return false;
+      return true;
+    });
+  }
+
+  async createEditGrant(
+    campaignId: string,
+    participationId: string,
+    scope: 'preset' | 'fields',
+    preset?: EditGrantPreset,
+    fields?: string[],
+    expiresAt?: number,
+    usesLeft?: number,
+    reason?: string
+  ): Promise<EditGrant> {
     const user = this.currentUser || SEED_USERS[0];
-    const grant: any = {
+    const grant: EditGrant = {
       id: `eg-${Date.now()}-${generateId('e')}`,
+      campaignId,
       participationId,
       scope,
       preset: preset || null,
-      fields: JSON.stringify(fields || []),
-      expires_at: expiresAt || Date.now() + 3600000,
-      uses_left: usesLeft ?? 1,
+      fields: fields || [],
+      expiresAt: expiresAt || (Date.now() + 24 * 3600000),
+      usesLeft: usesLeft ?? 1,
       reason,
       status: 'active',
-      granted_by: user.id,
-      created_at: Date.now(),
+      grantedBy: user.id,
+      createdAt: Date.now(),
     };
-    const all = this.getItem<any[]>('edit_grants', []);
+    const all = this.getItem<EditGrant[]>('edit_grants', []);
     all.push(grant);
     this.setItem('edit_grants', all);
+
+    const parts = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
+    const part = parts.find(p => p.id === participationId);
+    if (part) {
+      const allHist = this.getItem<CharacterHistoryEvent[]>('character_history_events', SEED_HISTORY_EVENTS);
+      allHist.push({
+        id: `hist-grant-${Date.now()}`,
+        characterId: part.characterId,
+        campaignId,
+        eventType: 'custom',
+        payload: {
+          title: 'اعطای مجوز ویرایش شیت',
+          description: `مجوز ویرایش موقت (${scope === 'preset' ? preset : 'فیلدهای انتخابی'}) توسط DM تا ${new Date(grant.expiresAt).toLocaleTimeString('fa-IR')}`,
+          grantId: grant.id,
+          grantedBy: user.id
+        },
+        timestamp: Date.now()
+      });
+      this.setItem('character_history_events', allHist);
+    }
+
     return grant;
   }
 
-  async revokeEditGrant(id: string): Promise<any> {
-    const all = this.getItem<any[]>('edit_grants', []);
-    const g = all.find((x) => x.id === id);
-    if (!g) throw new Error('اجازه‌ی ویرایش یافت نشد.');
+  async revokeEditGrant(grantId: string): Promise<EditGrant> {
+    const all = this.getItem<EditGrant[]>('edit_grants', []);
+    const g = all.find(x => x.id === grantId);
+    if (!g) throw { status: 404, message: 'اجازه‌ی ویرایش یافت نشد.' };
     g.status = 'revoked';
     this.setItem('edit_grants', all);
     return g;
   }
 
   // Enforcement helper (pure policy import)
-  private enforceLock(participationId: string, patch: Partial<any>, action: string): void {
-    // Minimal enforcement: if sheetLocked true and no active grant for scope, block
-    const allGrants = this.getItem<any[]>('edit_grants', []);
-    const part = this.getItem<any[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS)
-      .find((p: any) => p.id === participationId);
-    const locked = part?.sheetLocked === true || part?.sheetLocked === 1;
-    if (!locked) return;
-    // Check if any active grant covers the action; if yes, allow (decrement handled by caller)
-    const activeGrants = allGrants.filter(
-      (g) => g.participationId === participationId && g.status === 'active' && (g.uses_left ?? 1) > 0
+  private enforceLock(campaignId: string, part: CharacterParticipation, patch: Partial<CharacterParticipation>): void {
+    if (part.status === 'draft' || part.status === 'pending_approval') {
+      return;
+    }
+    if (part.sheetLocked === false) {
+      return;
+    }
+
+    const allGrants = this.getItem<EditGrant[]>('edit_grants', []);
+    const now = Date.now();
+    const activeGrants = allGrants.filter(g =>
+      g.participationId === part.id &&
+      g.status === 'active' &&
+      (!g.expiresAt || g.expiresAt > now) &&
+      ((g.usesLeft ?? 1) > 0)
     );
-    if (activeGrants.length === 0 && action !== 'player_free') {
-      throw { status: 403, message: 'فیلد قفل شده است. برای ویرایش از DM اجازه بگیرید یا درخواست تغییر ثبت کنید.' };
+
+    const allCamps = this.getItem<Campaign[]>('campaigns', SEED_CAMPAIGNS);
+    const camp = allCamps.find(c => c.id === campaignId);
+    const overrides = camp?.settings?.sheetPolicyOverrides;
+
+    const lockedFields = getLockedFieldsInPatch(patch, part, activeGrants, overrides);
+    if (lockedFields.length > 0) {
+      throw {
+        status: 403,
+        message: getPersianLockedMessage(lockedFields),
+        lockedFields
+      };
+    }
+
+    // Check inventory quantities
+    if (patch.inventory && Array.isArray(patch.inventory)) {
+      const oldInv = part.inventory || [];
+      const oldMap = new Map(oldInv.map(i => [i.id || i.name, i.quantity ?? 1]));
+      for (const item of patch.inventory) {
+        const key = item.id || item.name;
+        const oldQty = oldMap.get(key);
+        if (oldQty === undefined) {
+          const check = validateQuantityChange(0, item.quantity ?? 1, false, activeGrants);
+          if (!check.allowed) {
+            throw { status: 403, message: check.reason || 'افزودن آیتم جدید قفل است.' };
+          }
+        } else if ((item.quantity ?? 1) > oldQty) {
+          const check = validateQuantityChange(oldQty, item.quantity ?? 1, false, activeGrants);
+          if (!check.allowed) {
+            throw { status: 403, message: check.reason || 'افزایش تعداد آیتم قفل است.' };
+          }
+        }
+      }
+    }
+
+    // Check currency balance increases
+    if (patch.currency && typeof patch.currency === 'object') {
+      const currCheck = validateCurrencyChange(part.currency || {}, patch.currency, false, activeGrants);
+      if (!currCheck.allowed) {
+        throw { status: 403, message: currCheck.reason || 'افزایش موجودی سکه‌ها قفل است.' };
+      }
+    }
+
+    // Consume grant uses if applicable
+    if (activeGrants.length > 0) {
+      let modified = false;
+      for (const key of Object.keys(patch)) {
+        const matchingGrant = activeGrants.find(g => isFieldCoveredByGrant(key, g));
+        if (matchingGrant) {
+          matchingGrant.usesLeft = Math.max(0, (matchingGrant.usesLeft ?? 1) - 1);
+          if (matchingGrant.usesLeft === 0) {
+            matchingGrant.status = 'consumed';
+          }
+          modified = true;
+        }
+      }
+      if (modified) {
+        this.setItem('edit_grants', allGrants);
+      }
     }
   }
 
@@ -8701,10 +8932,17 @@ export class HttpApi implements ApiClient {
     });
   }
 
-  async createSheetChangeRequest(campaignId: string, participationId: string, requestedChanges: string, reason?: string): Promise<SheetChangeRequest> {
+  async createSheetChangeRequest(
+    campaignId: string,
+    participationId: string,
+    requestedChanges: string,
+    reason?: string,
+    fieldGroup?: string,
+    patch?: any
+  ): Promise<SheetChangeRequest> {
     return this.fetchJson<SheetChangeRequest>(`/c/${campaignId}/participations/${participationId}/sheet-change-request`, {
       method: 'POST',
-      body: JSON.stringify({ requestedChanges, reason })
+      body: JSON.stringify({ requestedChanges, reason, fieldGroup, patch })
     });
   }
 
@@ -8712,10 +8950,43 @@ export class HttpApi implements ApiClient {
     return this.fetchJson<SheetChangeRequest[]>(`/c/${campaignId}/sheet-change-requests`);
   }
 
-  async reviewSheetChangeRequest(campaignId: string, requestId: string, action: 'approve' | 'reject', comment?: string): Promise<SheetChangeRequest> {
+  async reviewSheetChangeRequest(
+    campaignId: string,
+    requestId: string,
+    action: 'approve' | 'reject',
+    comment?: string,
+    modifiedPatch?: any
+  ): Promise<SheetChangeRequest> {
     return this.fetchJson<SheetChangeRequest>(`/c/${campaignId}/sheet-change-requests/${requestId}/review`, {
       method: 'POST',
-      body: JSON.stringify({ action, comment })
+      body: JSON.stringify({ action, comment, modifiedPatch })
+    });
+  }
+
+  async listEditGrants(campaignId: string, participationId?: string): Promise<EditGrant[]> {
+    const qs = participationId ? `?participationId=${encodeURIComponent(participationId)}` : '';
+    return this.fetchJson<EditGrant[]>(`/c/${campaignId}/edit-grants${qs}`);
+  }
+
+  async createEditGrant(
+    campaignId: string,
+    participationId: string,
+    scope: 'preset' | 'fields',
+    preset?: EditGrantPreset,
+    fields?: string[],
+    expiresAt?: number,
+    usesLeft?: number,
+    reason?: string
+  ): Promise<EditGrant> {
+    return this.fetchJson<EditGrant>(`/c/${campaignId}/edit-grants`, {
+      method: 'POST',
+      body: JSON.stringify({ participationId, scope, preset, fields, expiresAt, usesLeft, reason })
+    });
+  }
+
+  async revokeEditGrant(grantId: string): Promise<EditGrant> {
+    return this.fetchJson<EditGrant>(`/c/grants/${grantId}/revoke`, {
+      method: 'POST'
     });
   }
 

@@ -2,25 +2,51 @@ import React, { useState, useDeferredValue } from 'react';
 import { Character, AbilityName, SkillDefinition } from '../../types';
 import { getAbilityModifier, formatModifier } from '../../utils/dice';
 import { deriveSheet } from '../../../shared/rules/engine';
-import { Shield, Sparkles, Plus, Dices, Search, Check } from 'lucide-react';
+import { Shield, Sparkles, Plus, Dices, Search, Check, Lock } from 'lucide-react';
 import { BottomSheet } from '../mobile/BottomSheet';
 
 interface AbilitiesTabProps {
   character: Character;
   onUpdate: (updated: Character) => void;
   onRollCheck: (sides: number, count: number, modifier: number, label: string) => void;
+  sheetLocked?: boolean | number;
+  activeGrants?: any[];
+  isDm?: boolean;
+  onOpenLockedField?: (fieldName: string) => void;
 }
 
 export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
   character,
   onUpdate,
-  onRollCheck
+  onRollCheck,
+  sheetLocked = true,
+  activeGrants = [],
+  isDm = false,
+  onOpenLockedField
 }) => {
   const [showAddCustomSkill, setShowAddCustomSkill] = useState(false);
   const [customSkillName, setCustomSkillName] = useState('');
   const [customSkillAbility, setCustomSkillAbility] = useState<AbilityName>('int');
   const [skillsSearch, setSkillsSearch] = useState('');
   const deferredSkillsSearch = useDeferredValue(skillsSearch);
+
+  const now = Date.now();
+  const validGrants = (activeGrants || []).filter(g =>
+    g && g.status === 'active' &&
+    (!g.expires_at || g.expires_at > now) &&
+    (!g.expiresAt || g.expiresAt > now) &&
+    (g.uses_left == null || g.uses_left > 0)
+  );
+
+  const isAbilitiesLocked = Boolean(sheetLocked) && !isDm && !validGrants.some(g =>
+    g.preset === 'full' || g.preset === 'respec' || g.preset === 'ability_scores' ||
+    (Array.isArray(g.fields) && (g.fields.includes('*') || g.fields.includes('abilities')))
+  );
+
+  const isProficienciesLocked = Boolean(sheetLocked) && !isDm && !validGrants.some(g =>
+    g.preset === 'full' || g.preset === 'respec' ||
+    (Array.isArray(g.fields) && (g.fields.includes('*') || g.fields.includes('proficiencies')))
+  );
 
   const derived = deriveSheet({ character });
   const profBonus = derived.proficiencyBonus;
@@ -35,6 +61,10 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
   };
 
   const handleAbilityScoreChange = (ability: AbilityName, newScore: number) => {
+    if (isAbilitiesLocked) {
+      onOpenLockedField?.('abilities');
+      return;
+    }
     onUpdate({
       ...character,
       abilities: {
@@ -45,6 +75,10 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
   };
 
   const handleToggleSavingThrow = (ability: AbilityName) => {
+    if (isProficienciesLocked) {
+      onOpenLockedField?.('saves');
+      return;
+    }
     onUpdate({
       ...character,
       savingThrows: {
@@ -56,6 +90,10 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
 
   // Cycle proficiency: none -> proficient -> expertise -> none
   const cycleSkillProficiency = (skillId: string) => {
+    if (isProficienciesLocked) {
+      onOpenLockedField?.('proficiencies');
+      return;
+    }
     const updatedSkills = character.skills.map(s => {
       if (s.id === skillId) {
         if (!s.proficient && !s.expertise) {
@@ -108,7 +146,13 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
         <div className="flex items-center justify-between mb-2 px-1">
           <h3 className="text-xs font-bold text-[#A39A89] flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-[#E0A030]" />
-            ویژگی‌های بنیادین (شش‌گانه)
+            <span>ویژگی‌های بنیادین (شش‌گانه)</span>
+            {isAbilitiesLocked && (
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#E0A030]/15 text-[#E0A030] font-sans flex items-center gap-0.5">
+                <Lock className="w-2.5 h-2.5" />
+                قفل DM
+              </span>
+            )}
           </h3>
           <span className="text-[11px] text-[#A39A89]">
             پاداش تسلط: <strong className="text-[#E0A030] font-mono dice-ltr font-black">+{profBonus}</strong>
@@ -144,32 +188,46 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
 
                 {/* Small Score Stepper */}
                 <div className="flex items-center justify-center gap-1 text-xs text-[#A39A89] bg-[#0E0D0C] py-0.5 px-1 rounded-[10px] border border-[#2F2A23] w-full">
-                  <button
-                    type="button"
-                    onClick={() => handleAbilityScoreChange(key, score - 1)}
-                    className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold flex items-center justify-center touch-target active:scale-95"
-                    title="کاهش امتیاز"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min="1"
-                    max="30"
-                    value={score}
-                    onFocus={(e) => e.target.select()}
-                    onChange={(e) => handleAbilityScoreChange(key, parseInt(e.target.value) || 10)}
-                    className="w-8 text-center font-bold text-[#EDE6D8] bg-transparent focus:outline-none text-sm font-mono dice-ltr"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleAbilityScoreChange(key, score + 1)}
-                    className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold flex items-center justify-center touch-target active:scale-95"
-                    title="افزایش امتیاز"
-                  >
-                    +
-                  </button>
+                  {isAbilitiesLocked ? (
+                    <button
+                      type="button"
+                      onClick={() => onOpenLockedField?.('abilities')}
+                      className="w-full py-1 text-center font-bold text-[#EDE6D8] flex items-center justify-center gap-1 text-sm font-mono dice-ltr touch-target"
+                      title="امتیازات پایه قفل شده‌اند؛ برای درخواست تغییر لمس کنید"
+                    >
+                      <span>{score}</span>
+                      <Lock className="w-3 h-3 text-[#E0A030]/70" />
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleAbilityScoreChange(key, score - 1)}
+                        className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold flex items-center justify-center touch-target active:scale-95"
+                        title="کاهش امتیاز"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        min="1"
+                        max="30"
+                        value={score}
+                        onFocus={(e) => e.target.select()}
+                        onChange={(e) => handleAbilityScoreChange(key, parseInt(e.target.value) || 10)}
+                        className="w-8 text-center font-bold text-[#EDE6D8] bg-transparent focus:outline-none text-sm font-mono dice-ltr"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleAbilityScoreChange(key, score + 1)}
+                        className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold flex items-center justify-center touch-target active:scale-95"
+                        title="افزایش امتیاز"
+                      >
+                        +
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             );

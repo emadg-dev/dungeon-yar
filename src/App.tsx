@@ -57,6 +57,8 @@ const CampaignApprovalsModal = React.lazy(() => import('./components/campaign/Ca
 const CharacterCreationWizardModal = React.lazy(() => import('./components/character-wizard/CharacterCreationWizardModal').then(m => ({ default: m.CharacterCreationWizardModal })));
 const LevelUpModal = React.lazy(() => import('./components/character/LevelUpModal').then(m => ({ default: m.LevelUpModal })));
 const SheetChangeRequestModal = React.lazy(() => import('./components/character/SheetChangeRequestModal').then(m => ({ default: m.SheetChangeRequestModal })));
+const LockedFieldModal = React.lazy(() => import('./components/character/LockedFieldModal').then(m => ({ default: m.LockedFieldModal })));
+const EditGrantModal = React.lazy(() => import('./components/dm/EditGrantModal').then(m => ({ default: m.EditGrantModal })));
 
 // Step 4.1: Sessions & Scheduling Sheets
 const SessionListSheet = React.lazy(() => import('./components/session/SessionListSheet').then(m => ({ default: m.SessionListSheet })));
@@ -192,6 +194,24 @@ export default function App() {
   const [campaignParticipations, setCampaignParticipations] = useState<CharacterParticipation[]>([]);
   const [levelUpModalOpen, setLevelUpModalOpen] = useState(false);
   const [sheetChangeRequestOpen, setSheetChangeRequestOpen] = useState(false);
+  const [campaignEditGrants, setCampaignEditGrants] = useState<any[]>([]);
+  const [isDmEditMode, setIsDmEditMode] = useState<boolean>(false);
+  const [lockedFieldModal, setLockedFieldModal] = useState<{
+    isOpen: boolean;
+    fieldName: string;
+  }>({
+    isOpen: false,
+    fieldName: ''
+  });
+  const [editGrantModalState, setEditGrantModalState] = useState<{
+    isOpen: boolean;
+    participationId: string;
+    characterName: string;
+  }>({
+    isOpen: false,
+    participationId: '',
+    characterName: ''
+  });
 
   // Step 4.1: Sessions & Scheduling State
   const [campaignSessions, setCampaignSessions] = useState<Session[]>([]);
@@ -427,8 +447,12 @@ export default function App() {
       setCharacters(charsList);
       const partsList = await api.listParticipations(campaignId).catch(() => []);
       setCampaignParticipations(partsList);
+      const grantsList = await api.listEditGrants(campaignId).catch(() => []);
+      setCampaignEditGrants(grantsList);
       if (charsList.length > 0) {
         setActiveCharId(charsList[0].id);
+        const hist = await api.getMasterCharacterHistory(charsList[0].id).catch(() => []);
+        setCharHistoryEvents(hist);
       } else {
         setActiveCharId(null);
       }
@@ -694,6 +718,8 @@ export default function App() {
       } catch (err: any) {
         if (err?.status === 401) {
           setSessionExpiredSheetOpen(true);
+        } else if (err?.status === 403 || err?.message?.includes('قفل')) {
+          showToast(err.message || 'این فیلد توسط دانجن مستر قفل شده است.');
         }
         console.error('Save error:', err);
         setSaveStatus('saved');
@@ -1115,6 +1141,9 @@ export default function App() {
   // Active Character & Participation in Campaign
   const activeCharacter = characters.find(c => c.id === activeCharId) || characters[0] || null;
   const activeParticipation = activeCharacter ? (campaignParticipations.find(p => p.characterId === activeCharacter.id) || null) : null;
+  const characterGrants = campaignEditGrants.filter(g =>
+    g && (g.participationId === activeParticipation?.id || g.participation_id === activeParticipation?.id)
+  );
 
   return (
     <div className="h-[100dvh] max-h-[100dvh] overflow-hidden text-[#EDE6D8] flex flex-col font-sans selection:bg-[#E0A030]/25 selection:text-[#E0A030]" dir="rtl">
@@ -1480,6 +1509,12 @@ export default function App() {
                       xp={activeParticipation?.xp}
                       onOpenLevelUp={() => setLevelUpModalOpen(true)}
                       onOpenSheetChangeRequest={() => setSheetChangeRequestOpen(true)}
+                      activeGrants={characterGrants}
+                      isDmEditMode={isDmEditMode}
+                      onToggleDmEditMode={() => setIsDmEditMode(!isDmEditMode)}
+                      onOpenEditGrantModal={() => setEditGrantModalState({ isOpen: true, participationId: activeParticipation?.id || '', characterName: activeCharacter?.name || '' })}
+                      onOpenLockedField={(fieldName) => setLockedFieldModal({ isOpen: true, fieldName })}
+                      dmHistoryEvents={charHistoryEvents.filter(e => e.eventType === 'custom' && (e.title?.includes('DM') || e.title?.includes('مجوز') || e.title?.includes('تأیید') || e.title?.includes('تغییر')))}
                       nextSession={partitionSessions(campaignSessions).nextSession}
                       campaign={activeCampaign}
                       currentUser={currentUser}
@@ -1512,6 +1547,10 @@ export default function App() {
                       character={activeCharacter}
                       onUpdate={handleUpdateCharacter}
                       onRollCheck={handleRollCheck}
+                      sheetLocked={activeParticipation?.sheetLocked !== false}
+                      activeGrants={characterGrants}
+                      isDm={isDmView || isDmEditMode}
+                      onOpenLockedField={(fieldName) => setLockedFieldModal({ isOpen: true, fieldName })}
                     />
                   )}
 
@@ -1522,6 +1561,10 @@ export default function App() {
                       onUpdate={handleUpdateCharacter}
                       onOpenRestModal={(type) => setRestModal({ isOpen: true, type })}
                       onRollCheck={handleRollCheck}
+                      sheetLocked={activeParticipation?.sheetLocked !== false}
+                      activeGrants={characterGrants}
+                      isDm={isDmView || isDmEditMode}
+                      onOpenLockedField={(fieldName) => setLockedFieldModal({ isOpen: true, fieldName })}
                     />
                   )}
 
@@ -1540,6 +1583,10 @@ export default function App() {
                       campaignId={activeCampaign?.id || activeCampaignId || 'zorvania-c1'}
                       activeParticipationId={activeParticipation?.id}
                       campaignSettings={activeCampaign?.settings}
+                      sheetLocked={activeParticipation?.sheetLocked !== false}
+                      activeGrants={characterGrants}
+                      isDm={isDmView || isDmEditMode}
+                      onOpenLockedField={(fieldName) => setLockedFieldModal({ isOpen: true, fieldName })}
                     />
                   )}
 

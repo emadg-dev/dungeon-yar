@@ -28,6 +28,12 @@ interface OverviewTabProps {
   xp?: number;
   onOpenLevelUp?: () => void;
   onOpenSheetChangeRequest?: () => void;
+  activeGrants?: any[];
+  isDmEditMode?: boolean;
+  onToggleDmEditMode?: () => void;
+  onOpenEditGrantModal?: () => void;
+  onOpenLockedField?: (fieldName: string) => void;
+  dmHistoryEvents?: any[];
   // Step 4.1: Sessions & Scheduling
   nextSession?: Session | null;
   campaign?: Campaign | null;
@@ -68,6 +74,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   xp,
   onOpenLevelUp,
   onOpenSheetChangeRequest,
+  activeGrants = [],
+  isDmEditMode = false,
+  onToggleDmEditMode,
+  onOpenEditGrantModal,
+  onOpenLockedField,
+  dmHistoryEvents = [],
   nextSession,
   campaign,
   currentUser,
@@ -178,8 +190,89 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     'سطح 6: مرگ ناگهانی از فرسودگی!'
   ];
 
+  const now = Date.now();
+  const validGrants = (activeGrants || []).filter(g =>
+    g && g.status === 'active' &&
+    (!g.expires_at || g.expires_at > now) &&
+    (!g.expiresAt || g.expiresAt > now) &&
+    (g.uses_left === null || g.uses_left === undefined || g.uses_left > 0) &&
+    (g.usesLeft === null || g.usesLeft === undefined || g.usesLeft > 0)
+  );
+  const activeGrant = validGrants[0];
+
+  const presetLabels: Record<string, string> = {
+    respec: 'بازطراحی شخصیت (Respec)',
+    level_up: 'ارتقای سطح',
+    ability_scores: 'امتیازهای توانایی',
+    spell_swap: 'تعویض جادوها',
+    inventory_add: 'افزودن تجهیزات و سکه',
+    full: 'دسترسی کامل ویرایش'
+  };
+
+  const formatExpiryTime = (timestamp?: number) => {
+    if (!timestamp) return 'همین جلسه';
+    const diffMs = timestamp - now;
+    if (diffMs <= 0) return 'منقضی شده';
+    const hours = Math.floor(diffMs / 3600000);
+    const mins = Math.floor((diffMs % 3600000) / 60000);
+    if (hours > 0) return `${hours} ساعت و ${mins} دقیقه دیگر`;
+    return `${mins} دقیقه دیگر`;
+  };
+
+  const isBasicsLocked = Boolean(sheetLocked) && !isDmEditMode && !validGrants.some(g =>
+    g.preset === 'full' || g.preset === 'respec' ||
+    (Array.isArray(g.fields) && (g.fields.includes('*') || g.fields.includes('className')))
+  );
+
+  const isCombatStatsLocked = Boolean(sheetLocked) && !isDmEditMode && !validGrants.some(g =>
+    g.preset === 'full' || g.preset === 'respec'
+  );
+
   return (
     <div className="space-y-4" dir="rtl">
+      {/* Active Edit Grant Banner */}
+      {activeGrant && (
+        <div className="surface-card rounded-[14px] p-3.5 bg-gradient-to-r from-[#E0A030]/25 via-[#1d1912] to-[#6F9E78]/25 border-2 border-[#E0A030] shadow-lg shadow-[#E0A030]/20 flex flex-col sm:flex-row items-center justify-between gap-3 animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#E0A030] text-[#0E0D0C] flex items-center justify-center shrink-0 shadow-md">
+              <Sparkles className="w-5 h-5 font-black" />
+            </div>
+            <div>
+              <h4 className="text-xs font-black text-[#F2C265]">
+                اجازه‌ی ویرایش دارید تا {formatExpiryTime(activeGrant.expires_at || activeGrant.expiresAt)}
+              </h4>
+              <p className="text-[11px] text-[#EDE6D8]/90">
+                مجوز فعال: {presetLabels[activeGrant.preset] || activeGrant.reason || 'مجوز موقت راوی'}
+                {activeGrant.uses_left != null ? ` (${activeGrant.uses_left} بار ویرایش باقی‌مانده)` : ''}
+              </p>
+            </div>
+          </div>
+          <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/40 font-bold shrink-0">
+            ویرایش مجاز
+          </span>
+        </div>
+      )}
+
+      {/* DM Direct Edit Mode Active Banner */}
+      {isDmEditMode && (
+        <div className="surface-card rounded-[14px] p-3 bg-[#E0A030]/15 border border-[#E0A030]/50 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-[#E0A030] shrink-0" />
+            <span className="text-xs text-[#F2C265] font-bold">
+              حالت ویرایش مستقیم دانجن مستر فعال است. تمام فیلدها مستقیماً قابل تغییر هستند و در تاریخچه ثبت می‌شوند.
+            </span>
+          </div>
+          {onToggleDmEditMode && (
+            <button
+              type="button"
+              onClick={onToggleDmEditMode}
+              className="text-[10px] px-2.5 py-1 rounded-lg bg-[#E0A030] text-[#0E0D0C] font-black shrink-0 hover:bg-[#F2C265]"
+            >
+              خروج از حالت DM
+            </button>
+          )}
+        </div>
+      )}
       {/* Level-Up Ready Banner */}
       {levelUpAvailable && (
         <div className="surface-card rounded-[14px] p-3.5 bg-gradient-to-r from-[#E0A030]/20 via-[#181c26] to-[#6F9E78]/20 border-2 border-[#E0A030] shadow-lg shadow-[#E0A030]/15 flex flex-col sm:flex-row items-center justify-between gap-3 animate-pulse">
@@ -302,35 +395,77 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-[#A39A89] block mb-1">کلاس:</label>
-                  <input
-                    type="text"
-                    value={character.className}
-                    onChange={(e) => onUpdate({ ...character, className: e.target.value })}
-                    className="w-full py-2 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
-                  />
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs text-[#A39A89] block">کلاس:</label>
+                    {isBasicsLocked && <Lock className="w-3 h-3 text-[#E0A030]" />}
+                  </div>
+                  {isBasicsLocked ? (
+                    <button
+                      type="button"
+                      onClick={() => onOpenLockedField?.('className')}
+                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex items-center justify-between touch-target"
+                    >
+                      <span>{character.className}</span>
+                      <span className="text-[10px] text-[#E0A030] bg-[#E0A030]/10 px-1.5 py-0.5 rounded">قفل DM</span>
+                    </button>
+                  ) : (
+                    <input
+                      type="text"
+                      value={character.className}
+                      onChange={(e) => onUpdate({ ...character, className: e.target.value })}
+                      className="w-full py-2 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                    />
+                  )}
                 </div>
                 <div>
-                  <label className="text-xs text-[#A39A89] block mb-1">نژاد / تبار:</label>
-                  <input
-                    type="text"
-                    value={character.race}
-                    onChange={(e) => onUpdate({ ...character, race: e.target.value })}
-                    className="w-full py-2 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
-                  />
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs text-[#A39A89] block">نژاد / تبار:</label>
+                    {isBasicsLocked && <Lock className="w-3 h-3 text-[#E0A030]" />}
+                  </div>
+                  {isBasicsLocked ? (
+                    <button
+                      type="button"
+                      onClick={() => onOpenLockedField?.('race')}
+                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex items-center justify-between touch-target"
+                    >
+                      <span>{character.race}</span>
+                      <span className="text-[10px] text-[#E0A030] bg-[#E0A030]/10 px-1.5 py-0.5 rounded">قفل DM</span>
+                    </button>
+                  ) : (
+                    <input
+                      type="text"
+                      value={character.race}
+                      onChange={(e) => onUpdate({ ...character, race: e.target.value })}
+                      className="w-full py-2 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                    />
+                  )}
                 </div>
                 <div>
-                  <label className="text-xs text-[#A39A89] block mb-1">سطح (Level):</label>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min="1"
-                    max="20"
-                    value={character.level}
-                    onFocus={(e) => e.target.select()}
-                    onChange={(e) => onUpdate({ ...character, level: parseInt(e.target.value) || 1 })}
-                    className="w-full py-2 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
-                  />
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs text-[#A39A89] block">سطح (Level):</label>
+                    {isBasicsLocked && <Lock className="w-3 h-3 text-[#E0A030]" />}
+                  </div>
+                  {isBasicsLocked ? (
+                    <button
+                      type="button"
+                      onClick={() => onOpenLockedField?.('level')}
+                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex items-center justify-between font-mono dice-ltr touch-target"
+                    >
+                      <span>{character.level}</span>
+                      <span className="text-[10px] text-[#E0A030] bg-[#E0A030]/10 px-1.5 py-0.5 rounded font-sans">قفل DM</span>
+                    </button>
+                  ) : (
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min="1"
+                      max="20"
+                      value={character.level}
+                      onFocus={(e) => e.target.select()}
+                      onChange={(e) => onUpdate({ ...character, level: parseInt(e.target.value) || 1 })}
+                      className="w-full py-2 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                    />
+                  )}
                 </div>
               </div>
             ) : (
@@ -432,17 +567,81 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
         </div>
 
-        {Boolean(sheetLocked) && onOpenSheetChangeRequest && (
-          <button
-            type="button"
-            onClick={onOpenSheetChangeRequest}
-            className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] transition flex items-center justify-center gap-1.5 touch-target min-h-[36px] shrink-0"
-          >
-            <Shield className="w-3.5 h-3.5" />
-            <span>درخواست تغییر به DM</span>
-          </button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {Boolean(sheetLocked) && onOpenSheetChangeRequest && (
+            <button
+              type="button"
+              onClick={onOpenSheetChangeRequest}
+              className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] transition flex items-center justify-center gap-1.5 touch-target min-h-[36px] shrink-0"
+            >
+              <Shield className="w-3.5 h-3.5" />
+              <span>درخواست تغییر به DM</span>
+            </button>
+          )}
+
+          {(userRole === 'dm' || currentUser?.role === 'dm') && (
+            <div className="flex items-center gap-1.5">
+              {onToggleDmEditMode && (
+                <button
+                  type="button"
+                  onClick={onToggleDmEditMode}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 min-h-[36px] ${
+                    isDmEditMode
+                      ? 'bg-[#E0A030] text-[#0E0D0C]'
+                      : 'bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#E0A030]'
+                  }`}
+                  title="حالت ویرایش مستقیم DM"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>{isDmEditMode ? 'حالت DM (روشن)' : 'حالت ویرایش DM'}</span>
+                </button>
+              )}
+              {onOpenEditGrantModal && (
+                <button
+                  type="button"
+                  onClick={onOpenEditGrantModal}
+                  className="px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-[#F2C265] text-xs font-bold transition flex items-center gap-1 min-h-[36px]"
+                  title="صدور مجوز ویرایش موقت به بازیکن"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>اجازه‌ی ویرایش</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* DM Recent Changes Feed */}
+      {dmHistoryEvents && dmHistoryEvents.length > 0 && (
+        <div className="surface-card rounded-[14px] p-3.5 border border-[#2F2A23] space-y-2.5">
+          <div className="flex items-center justify-between pb-1.5 border-b border-[#2F2A23]">
+            <h3 className="text-xs font-bold text-[#EDE6D8] flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-[#E0A030]" />
+              <span>تغییرات اخیر راوی (DM)</span>
+            </h3>
+            <span className="text-[10px] text-[#A39A89]">آخرین اصلاحات و مجوزها</span>
+          </div>
+          <div className="space-y-1.5 max-h-48 overflow-y-auto no-scrollbar">
+            {dmHistoryEvents.slice(0, 5).map((ev: any, idx: number) => (
+              <div
+                key={ev.id || idx}
+                className="p-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] flex items-center justify-between text-xs gap-2"
+              >
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-[#F2C265] truncate">{ev.title || 'ویرایش DM'}</div>
+                  {ev.description && (
+                    <div className="text-[11px] text-[#A39A89] truncate">{ev.description}</div>
+                  )}
+                </div>
+                <span className="text-[10px] text-[#8A8374] shrink-0 font-mono">
+                  {ev.createdAt ? new Date(ev.createdAt).toLocaleDateString('fa-IR-u-nu-latn') : ''}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 2×2 Stat Grid on Mobile (AC, Speed, Initiative, Hit Dice) + Skill Points */}
       <div>
@@ -452,14 +651,26 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <div className="surface-card rounded-[14px] p-3 flex flex-col items-center justify-center text-center">
             <Shield className="w-4 h-4 text-[#E0A030] mb-1" />
             <span className="text-[11px] font-bold text-[#A39A89]">درجه زره (AC)</span>
-            <input
-              type="number"
-              inputMode="numeric"
-              value={character.ac}
-              onFocus={(e) => e.target.select()}
-              onChange={(e) => onUpdate({ ...character, ac: parseInt(e.target.value) || 10 })}
-              className="w-16 text-2xl font-extrabold text-[#EDE6D8] bg-transparent text-center font-mono my-0.5 focus:outline-none dice-ltr"
-            />
+            {isCombatStatsLocked ? (
+              <button
+                type="button"
+                onClick={() => onOpenLockedField?.('ac')}
+                className="w-full flex items-center justify-center gap-1 my-0.5 touch-target cursor-pointer"
+                title="برای درخواست تغییر لمس کنید"
+              >
+                <span className="text-2xl font-extrabold text-[#EDE6D8] font-mono dice-ltr">{character.ac}</span>
+                <Lock className="w-3 h-3 text-[#E0A030]/70" />
+              </button>
+            ) : (
+              <input
+                type="number"
+                inputMode="numeric"
+                value={character.ac}
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => onUpdate({ ...character, ac: parseInt(e.target.value) || 10 })}
+                className="w-16 text-2xl font-extrabold text-[#EDE6D8] bg-transparent text-center font-mono my-0.5 focus:outline-none dice-ltr"
+              />
+            )}
             <span className="text-[10px] text-[#A39A89]">پوشش دفاعی</span>
           </div>
 
@@ -467,18 +678,31 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <div className="surface-card rounded-[14px] p-3 flex flex-col items-center justify-center text-center">
             <Footprints className="w-4 h-4 text-[#7FB4D6] mb-1" />
             <span className="text-[11px] font-bold text-[#A39A89]">سرعت حرکت</span>
-            <div className="flex items-baseline gap-1 my-0.5">
-              <input
-                type="number"
-                inputMode="decimal"
-                step="0.5"
-                value={character.speed}
-                onFocus={(e) => e.target.select()}
-                onChange={(e) => onUpdate({ ...character, speed: parseFloat(e.target.value) || 9 })}
-                className="w-12 text-2xl font-extrabold text-[#EDE6D8] bg-transparent text-center font-mono focus:outline-none dice-ltr"
-              />
-              <span className="text-[11px] text-[#A39A89]">متر</span>
-            </div>
+            {isCombatStatsLocked ? (
+              <button
+                type="button"
+                onClick={() => onOpenLockedField?.('speed')}
+                className="w-full flex items-center justify-center gap-1 my-0.5 touch-target cursor-pointer"
+                title="برای درخواست تغییر لمس کنید"
+              >
+                <span className="text-2xl font-extrabold text-[#EDE6D8] font-mono dice-ltr">{character.speed}</span>
+                <span className="text-[11px] text-[#A39A89]">متر</span>
+                <Lock className="w-3 h-3 text-[#E0A030]/70" />
+              </button>
+            ) : (
+              <div className="flex items-baseline gap-1 my-0.5">
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  step="0.5"
+                  value={character.speed}
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) => onUpdate({ ...character, speed: parseFloat(e.target.value) || 9 })}
+                  className="w-12 text-2xl font-extrabold text-[#EDE6D8] bg-transparent text-center font-mono focus:outline-none dice-ltr"
+                />
+                <span className="text-[11px] text-[#A39A89]">متر</span>
+              </div>
+            )}
             <span className="text-[10px] text-[#A39A89]">30 فوت</span>
           </div>
 

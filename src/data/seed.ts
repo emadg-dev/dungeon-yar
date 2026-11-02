@@ -385,7 +385,7 @@ export const CLASSES = [
 ];
 
 const STRUCTURED_AC_MAP: Record<string, { base: number; abilityMods: ('str' | 'dex' | 'con' | 'int' | 'wis' | 'cha')[]; unarmored: boolean; note?: string }> = {
-  "فرهدار": { base: 14, abilityMods: ['dex'], unarmored: false, note: 'زره متوسط ورنا (14 + DEX mod تا سقف ۲)' },
+  "فرهدار": { base: 14, abilityMods: ['dex'], unarmored: false, note: 'زره متوسط ورنا (14 + DEX mod تا سقف 2)' },
   "موبد آذرین": { base: 10, abilityMods: ['dex', 'wis'], unarmored: true, note: 'محافظ هامون (10 + DEX mod + WIS mod بدون زره)' },
   "دیوانزاد": { base: 14, abilityMods: ['dex'], unarmored: false, note: 'زره برنز و فولاد سنگین ورنا (14 + min(DEX, 2))' },
   "پیمانبان": { base: 11, abilityMods: ['dex'], unarmored: false, note: 'زره چرمی ورنا (11 + DEX mod)' },
