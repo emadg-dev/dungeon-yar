@@ -29,8 +29,8 @@ export const HPBar: React.FC<HPBarProps> = ({
 
   if (compact) {
     return (
-      <div className="flex items-center gap-2 w-full" dir="rtl">
-        <div className="flex items-center gap-1 shrink-0 font-mono text-xs font-extrabold dice-ltr text-[#EDE6D8]">
+      <div className="flex flex-wrap items-center gap-2 w-full" dir="rtl">
+        <div className="flex items-center gap-1 shrink-0 font-mono text-xs font-extrabold dice-ltr text-[#EDE6D8] min-w-0">
           <span className={current <= max * 0.2 ? 'text-[#C2512B]' : 'text-[#EDE6D8]'}>{current}</span>
           <span className="text-[#A39A89]">/{max}</span>
         </div>
@@ -40,11 +40,11 @@ export const HPBar: React.FC<HPBarProps> = ({
             style={{ width: `${percent}%` }}
           />
         </div>
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={() => onAdjust(-1)}
-            className="w-7 h-7 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#C2512B] flex items-center justify-center text-xs active:scale-95"
+            className="touch-target-lg rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#C2512B] hover:border-[#C2512B]/60 text-xs font-black transition active:scale-95"
             title="کاهش 1 جان"
           >
             <Minus className="w-3.5 h-3.5" />
@@ -52,7 +52,7 @@ export const HPBar: React.FC<HPBarProps> = ({
           <button
             type="button"
             onClick={() => onAdjust(1)}
-            className="w-7 h-7 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#6F9E78] flex items-center justify-center text-xs active:scale-95"
+            className="touch-target-lg rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#6F9E78] hover:border-[#6F9E78]/60 text-xs font-black transition active:scale-95"
             title="افزایش 1 جان"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -65,7 +65,7 @@ export const HPBar: React.FC<HPBarProps> = ({
   return (
     <div className="w-full space-y-2" dir="rtl">
       {/* Numbers & Label */}
-      <div className="flex items-center justify-between text-xs font-semibold">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold">
         <span className="flex items-center gap-1.5 text-[#C2512B]">
           <Heart className="w-4 h-4 fill-[#C2512B]/20" />
           <span>جان (HP)</span>
@@ -95,7 +95,7 @@ export const HPBar: React.FC<HPBarProps> = ({
       </div>
 
       {/* Wide touch adjustment buttons (≥ 48px hit area) */}
-      <div className="grid grid-cols-4 gap-2 pt-1">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-1">
         <button
           type="button"
           onClick={() => onAdjust(-5)}

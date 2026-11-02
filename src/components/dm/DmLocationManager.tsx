@@ -238,7 +238,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               )}
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-[#2F2A23]/60 text-xs text-[#A39A89]">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#2F2A23]/60 text-xs text-[#A39A89]">
               <span>{loc.revealed ? 'آشکار در دانشنامه' : 'مخفی در دانشنامه'}</span>
 
               <div className="flex items-center gap-1.5">
@@ -354,7 +354,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
             />
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-[10px] bg-[#171513] border border-[#2F2A23]">
+          <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-[10px] bg-[#171513] border border-[#2F2A23]">
             <div>
               <div className="text-sm font-bold text-[#EDE6D8]">آشکار برای بازیکنان</div>
               <div className="text-xs text-[#A39A89]">در صورت فعال بودن، در بخش مکان‌های دانشنامه بازیکن نمایش داده می‌شود.</div>

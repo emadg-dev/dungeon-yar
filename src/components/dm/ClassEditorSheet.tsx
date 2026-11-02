@@ -329,7 +329,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id as TabType)}
-              className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition min-h-[36px] ${
+              className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition min-h-[44px] ${
                 activeTab === tab.id
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
                   : 'bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#3A342B]'
@@ -442,7 +442,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
         {activeTab === 'skills_equip' && (
           <div className="space-y-4">
             <div className="p-3 rounded-xl bg-[#201D19]/70 border border-[#2F2A23] space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-bold text-[#EDE6D8]">انتخاب مهارت‌ها:</span>
                 <div className="flex items-center gap-2">
                   <span className="text-[#A39A89]">تعداد انتخاب:</span>
@@ -470,7 +470,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                           from: selected ? prev.from.filter(k => k !== key) : [...prev.from, key]
                         }));
                       }}
-                      className={`text-right px-2 py-1.5 rounded-lg text-[11px] font-medium border flex items-center justify-between transition ${
+                      className={`text-right px-2 py-1.5 rounded-lg text-[11px] font-medium border flex flex-wrap items-center justify-between gap-2 transition ${
                         selected 
                           ? 'bg-[#E0A030]/20 text-[#F2C265] border-[#E0A030]' 
                           : 'bg-[#171513] text-[#A39A89] border-[#2F2A23]'
@@ -486,7 +486,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
 
             {/* Starting Equipment Choice Groups */}
             <div className="p-3 rounded-xl bg-[#201D19]/70 border border-[#2F2A23] space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-bold text-[#EDE6D8]">دسته‌های انتخاب تجهیزات آغازین:</span>
                 <button
                   type="button"
@@ -506,7 +506,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
 
               {startingEquipmentChoices.map((group, gIdx) => (
                 <div key={group.id || gIdx} className="p-2.5 rounded-xl bg-[#171513] border border-[#2F2A23] space-y-2">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
                     <input
                       type="text"
                       value={group.label}
@@ -666,7 +666,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
 
             {/* Class Resources */}
             <div className="p-3 rounded-xl bg-[#201D19]/70 border border-[#2F2A23] space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-bold text-[#EDE6D8]">منابع کلاسی (Class Resources):</span>
                 <button
                   type="button"
@@ -735,7 +735,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
         {activeTab === 'spells' && (
           <div className="space-y-4">
             <div className="p-3 rounded-xl bg-[#201D19]/70 border border-[#2F2A23] space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-bold text-[#EDE6D8]">سیستم اجرای جادو (Spellcasting):</span>
                 <button
                   type="button"
@@ -800,7 +800,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
         {/* TAB 5: FEATURES BY LEVEL 1–20 */}
         {activeTab === 'features' && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-[#EDE6D8]">مرور کلی ویژگی‌ها (سطوح 1 تا 20):</span>
               <div className="flex items-center gap-2 text-[11px] text-[#A39A89]">
                 <span>حمله مضاعف: سطح {extraAttackLevel || '—'}</span>
@@ -818,7 +818,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                   <div
                     key={lvl}
                     onClick={() => handleOpenLevelEditor(lvl)}
-                    className="p-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030]/50 transition cursor-pointer flex items-center justify-between gap-3"
+                    className="p-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030]/50 transition cursor-pointer flex flex-wrap items-center justify-between gap-2 gap-3"
                   >
                     <div className="flex items-center gap-2">
                       <span className="w-6 h-6 rounded-lg bg-[#E0A030]/20 text-[#F2C265] font-bold flex items-center justify-center text-xs shrink-0">
@@ -861,7 +861,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
         {/* TAB 6: SUBCLASSES */}
         {activeTab === 'subclasses' && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-[#EDE6D8]">زیرکلاس‌ها (Subclasses):</span>
               <button
                 type="button"
@@ -880,7 +880,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
 
             {subclasses.map((sub, sIdx) => (
               <div key={sIdx} className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] space-y-2">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
                   <input
                     type="text"
                     value={sub.name}
@@ -918,7 +918,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
         {/* TAB 7: COMPANIONS */}
         {activeTab === 'companions' && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-[#EDE6D8]">همراهان مکانیکی و جادویی (Companions):</span>
               <button
                 type="button"
@@ -937,7 +937,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
 
             {companions.map((comp, cIdx) => (
               <div key={cIdx} className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] space-y-2">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
                   <input
                     type="text"
                     value={comp.name}
@@ -997,7 +997,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
         {/* TAB 8: HP TABLE */}
         {activeTab === 'hp_table' && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-[#EDE6D8]">جدول پیشرفت جان ثابت (Fixed HP Table 1–20):</span>
               <button
                 type="button"
@@ -1043,7 +1043,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
 
         {/* VALIDATION PANEL (Levels 1, 5, 11, 20) */}
         <div className="mt-4 p-3 rounded-2xl bg-[#171513] border border-[#E0A030]/40 space-y-2.5">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#F2C265]" />
               <span className="font-extrabold text-[#F2C265]">اعتبارسنجی زنده با موتور قوانین (Rules Engine Validation):</span>
@@ -1122,7 +1122,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
           title={`ویرایش ویژگی‌های سطح ${editingLevel}`}
         >
           <div className="space-y-3 py-2 text-right text-xs" dir="rtl">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-[#EDE6D8]">ویژگی‌های آزادشده در این سطح:</span>
               <button
                 type="button"
@@ -1144,7 +1144,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
             ) : (
               editingLevelFeatures.map((feat, fIdx) => (
                 <div key={fIdx} className="p-2.5 rounded-xl bg-[#171513] border border-[#2F2A23] space-y-2">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
                     <input
                       type="text"
                       value={feat.name || ''}
@@ -1181,14 +1181,14 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
               <button
                 type="button"
                 onClick={() => setEditingLevel(null)}
-                className="px-3 py-1.5 rounded-xl bg-[#201D19] text-[#A39A89] min-h-[36px]"
+                className="px-3 py-1.5 rounded-xl bg-[#201D19] text-[#A39A89] min-h-[44px]"
               >
                 لغو
               </button>
               <button
                 type="button"
                 onClick={handleSaveLevelFeatures}
-                className="px-4 py-1.5 rounded-xl btn-primary-amber font-bold text-xs min-h-[36px]"
+                className="px-4 py-1.5 rounded-xl btn-primary-amber font-bold text-xs min-h-[44px]"
               >
                 تأیید سطح {editingLevel}
               </button>

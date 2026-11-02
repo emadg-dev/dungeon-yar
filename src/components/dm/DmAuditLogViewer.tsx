@@ -74,7 +74,7 @@ export const DmAuditLogViewer: React.FC<DmAuditLogViewerProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in" dir="rtl">
       <div className="w-full max-w-3xl bg-[#171513] border border-[#2F2A23] rounded-[16px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[#2F2A23] bg-[#201D19]/60">
+        <div className="flex flex-wrap items-center justify-between gap-2 p-4 border-b border-[#2F2A23] bg-[#201D19]/60">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-[10px] bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30">
               <FileText className="w-5 h-5" />
@@ -148,7 +148,7 @@ export const DmAuditLogViewer: React.FC<DmAuditLogViewerProps> = ({
                   key={l.id}
                   className="p-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] space-y-2"
                 >
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex flex-wrap items-center justify-between gap-2 gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
                       <span className={`text-[10px] px-2 py-0.5 rounded-[6px] font-bold border ${getActionBadgeClass(l.action)}`}>
                         {l.action}

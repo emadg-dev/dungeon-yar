@@ -83,7 +83,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({
 
       {/* Bottom Actions Bar */}
       {actions && (
-        <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#2F2A23]/80">
+        <div className="flex flex-wrap items-center justify-between gap-2 gap-2 pt-2 border-t border-[#2F2A23]/80">
           {actions}
         </div>
       )}

@@ -216,7 +216,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
   return (
     <div className="space-y-6 pb-24 text-start" dir="rtl">
       {/* Top Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <button
           onClick={onBack}
           className="flex items-center gap-1.5 text-xs font-bold text-[#A39A89] hover:text-[#F2C265] transition-colors p-2 rounded-xl bg-[#131110] border border-[#2F2A23] min-h-[44px]"
@@ -438,7 +438,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
       {/* Tab 2: History & Milestones Grouped by Campaign */}
       {activeTab === 'history' && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h3 className="text-sm font-bold text-[#EDE6D8] flex items-center gap-2">
                 <Clock className="w-4 h-4 text-[#F2C265]" />
@@ -506,7 +506,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
               {groupedTimeline.map(group => (
                 <div key={group.campaignId || 'general'} className="rounded-2xl bg-[#171513] border border-[#2F2A23] p-5 space-y-4 shadow-md">
                   {/* Campaign Group Header */}
-                  <div className="flex items-center justify-between pb-3 border-b border-[#2F2A23]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#2F2A23]">
                     <div className="flex items-center gap-2">
                       <Compass className="w-4 h-4 text-[#F2C265]" />
                       <h4 className="text-sm font-bold text-[#EDE6D8]">{group.campaignName}</h4>
@@ -536,7 +536,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                           </div>
 
                           <div className="rounded-xl bg-[#141210] border border-[#2F2A23] p-3.5 space-y-1.5 hover:border-[#E0A030]/40 transition-colors">
-                            <div className="flex items-center justify-between gap-2">
+                            <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
                               <div className="flex items-center gap-2 min-w-0">
                                 {getEventIcon(event.eventType)}
                                 <span className="font-bold text-xs text-[#EDE6D8] truncate">
@@ -628,7 +628,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                 <div
                   key={part.id}
                   onClick={() => onSelectCampaignParticipation(part.campaignId, part.id)}
-                  className="rounded-2xl bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030]/40 p-4 transition-all cursor-pointer flex items-center justify-between group shadow-sm"
+                  className="rounded-2xl bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030]/40 p-4 transition-all cursor-pointer flex flex-wrap items-center justify-between gap-2 group shadow-sm"
                 >
                   <div>
                     <div className="flex items-center gap-2">
@@ -659,7 +659,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
       {legacyJoinOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" dir="rtl">
           <div className="bg-[#171513] border border-purple-500/40 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-[#2F2A23]">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#2F2A23]">
               <div className="flex items-center gap-2 text-purple-300">
                 <RefreshCw className="w-5 h-5 text-purple-400" />
                 <h3 className="text-base font-bold text-[#EDE6D8]">ورود میراثی به کمپین جدید</h3>

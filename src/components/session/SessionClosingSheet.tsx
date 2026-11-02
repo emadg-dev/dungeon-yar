@@ -231,7 +231,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <label className="text-[11px] font-bold text-[#A39A89]">شرح وقایع و ماجراها</label>
               <div className="flex items-center gap-1.5 text-[10px] text-[#A39A89]">
                 <span>پشتیبانی از پاراگراف‌بندی و نشانه‌گذاری</span>
@@ -369,7 +369,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                       key={p.id}
                       type="button"
                       onClick={() => toggleMilestonePart(p.id)}
-                      className={`p-2.5 rounded-[10px] border flex items-center justify-between transition text-right ${
+                      className={`p-2.5 rounded-[10px] border flex flex-wrap items-center justify-between gap-2 transition text-right ${
                         isChecked 
                           ? 'bg-[#E0A030]/15 border-[#E0A030] text-[#EDE6D8]' 
                           : 'bg-[#120F0D] border-[#2F2A23] text-[#A39A89]'
@@ -399,7 +399,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
 
         {/* SECTION 3: HIGHLIGHTS PER CHARACTER */}
         <div className="p-4 rounded-[14px] bg-[#171310] border border-[#2F2A23] space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-[8px] bg-[#E0A030]/15 text-[#E0A030] flex items-center justify-center font-black text-xs">
                 ۳
@@ -416,7 +416,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
               const hl = characterHighlights[char.id] || { text: '', visible: true };
               return (
                 <div key={char.id} className="p-3 rounded-[10px] bg-[#120F0D] border border-[#2F2A23] space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-xs font-bold text-[#EDE6D8]">{char.name}</span>
                     <button
                       type="button"

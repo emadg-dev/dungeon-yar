@@ -159,7 +159,7 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
                           : 'bg-[#201D19] border-[#2F2A23] hover:border-[#2F2A23]/80'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="text-xs font-bold text-[#EDE6D8]">{p.label}</span>
                         {isSelected && <Check className="w-4 h-4 text-[#E0A030]" />}
                       </div>
@@ -181,7 +181,7 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
                       key={f.id}
                       type="button"
                       onClick={() => toggleField(f.id)}
-                      className={`p-2 rounded-xl text-xs font-bold border text-start flex items-center justify-between transition ${
+                      className={`p-2 rounded-xl text-xs font-bold border text-start flex flex-wrap items-center justify-between gap-2 transition ${
                         isChecked
                           ? 'bg-[#E0A030]/15 border-[#E0A030] text-[#F2C265]'
                           : 'bg-[#201D19] border-[#2F2A23] text-[#A39A89]'

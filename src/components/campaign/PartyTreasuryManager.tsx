@@ -395,7 +395,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
 
       {/* Currency Section Cards */}
       <div className="surface-card rounded-[14px] p-4 border border-[#2F2A23] card-gold-top space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Coins className="w-4 h-4 text-[#F2C265]" />
             <h4 className="font-extrabold text-sm text-[#EDE6D8]">موجودی سکه‌های اشتراکی</h4>
@@ -422,7 +422,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
             Object.entries(currency.balances).map(([currKey, amount]) => (
               <div
                 key={currKey}
-                className="p-3 rounded-xl bg-[#1A1815] border border-[#2F2A23] flex items-center justify-between"
+                className="p-3 rounded-xl bg-[#1A1815] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2"
               >
                 <div>
                   <span className="text-[11px] text-[#A39A89] block">{getCurrencyLabel(currKey)}</span>
@@ -439,7 +439,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
 
       {/* Shared Stash Items */}
       <div className="surface-card rounded-[14px] p-4 border border-[#2F2A23] space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Package className="w-4 h-4 text-[#E0A030]" />
             <h4 className="font-extrabold text-sm text-[#EDE6D8]">
@@ -523,7 +523,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
       {/* Deposit from Character Backpack Section (if active character has inventory) */}
       {activeCharacter && permissions.canModify && (
         <div className="surface-card rounded-[14px] p-4 border border-[#2F2A23] space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <ArrowUpRight className="w-4 h-4 text-emerald-400" />
               <h4 className="font-extrabold text-sm text-[#EDE6D8]">
@@ -537,7 +537,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
               {activeCharacter.inventory.map(ci => (
                 <div
                   key={ci.id}
-                  className="p-2.5 rounded-xl bg-[#1A1815] border border-[#2F2A23] flex items-center justify-between gap-2 text-xs"
+                  className="p-2.5 rounded-xl bg-[#1A1815] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-2 text-xs"
                 >
                   <div className="truncate">
                     <p className="font-bold text-[#EDE6D8] truncate">{ci.name}</p>
@@ -738,7 +738,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
         <form onSubmit={handleSaveCurrency} className="p-4 space-y-4" dir="rtl">
           <div className="space-y-3">
             {['gold', 'silver', 'copper', 'platinum'].map(k => (
-              <div key={k} className="flex items-center justify-between gap-3">
+              <div key={k} className="flex flex-wrap items-center justify-between gap-2 gap-3">
                 <label className="text-xs font-bold text-[#EDE6D8]">{getCurrencyLabel(k)}</label>
                 <input
                   type="number"

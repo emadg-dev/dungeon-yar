@@ -261,7 +261,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
     >
       <div className="space-y-4 text-[#EDE6D8] pb-4" dir="rtl">
         {/* Step Progress Stepper */}
-        <div className="flex items-center justify-between gap-1 overflow-x-auto pb-1 border-b border-[#2F2A23] no-scrollbar">
+        <div className="flex flex-wrap items-center justify-between gap-2 gap-1 overflow-x-auto pb-1 border-b border-[#2F2A23] no-scrollbar">
           {steps.map((st, idx) => {
             const isCompleted = idx < currentStepIndex;
             const isCurrent = idx === currentStepIndex;
@@ -322,7 +322,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {currentStep.id === 'hp' && (
           <div className="space-y-4">
             <div className="surface-card rounded-xl p-4 border border-[#2F2A23] space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Heart className="w-5 h-5 text-[#E8836B]" />
                   <span className="text-xs font-bold text-[#EDE6D8]">محاسبه افزایش جان (HP)</span>
@@ -356,7 +356,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               {/* CON Breakdown formula display */}
               <div className="p-3 rounded-xl bg-[#131110] border border-[#2F2A23] space-y-2">
                 <span className="text-[11px] text-[#A39A89] block">فرمول استاندارد 5e: تاس جان (1d{hitDie}) + اصلاحگر بنیه</span>
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <span className="text-[#A39A89]">اصلاحگر بنیه (CON {conScore}):</span>
                   <span className="font-mono font-bold text-[#F2C265]">
                     {conMod >= 0 ? `+${conMod}` : conMod}
@@ -364,7 +364,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                 </div>
 
                 {hpMode === 'fixed' ? (
-                  <div className="flex items-center justify-between text-xs pt-1 border-t border-[#2F2A23]/60">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1 border-t border-[#2F2A23]/60">
                     <span className="text-[#A39A89]">محاسبه مقدار ثابت:</span>
                     <span className="font-mono font-bold text-[#EDE6D8]">
                       پایه ({fixedHpRoll}) + بنیه ({conMod >= 0 ? `+${conMod}` : conMod}) = <strong className="text-[#6F9E78]">+{fixedHpTotal} جان</strong>
@@ -372,11 +372,11 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-2 pt-2 border-t border-[#2F2A23]/60">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-xs text-[#A39A89]">نتیجه تاس 1d{hitDie}:</span>
                       <span className="font-mono text-base font-black text-[#F2C265]">{rolledHpValue}</span>
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-xs text-[#A39A89]">جمع کل با بنیه:</span>
                       <span className="font-mono text-sm font-bold text-[#6F9E78]">
                         +{Math.max(1, rolledHpValue + conMod)} جان
@@ -394,7 +394,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                 )}
               </div>
 
-              <div className="p-2.5 rounded-lg bg-[#6F9E78]/10 border border-[#6F9E78]/30 flex items-center justify-between">
+              <div className="p-2.5 rounded-lg bg-[#6F9E78]/10 border border-[#6F9E78]/30 flex flex-wrap items-center justify-between gap-2">
                 <span className="text-xs text-[#A39A89]">حداکثر جان بعد از ارتقا:</span>
                 <span className="font-mono text-sm font-black text-[#6F9E78]">
                   {activeParticipation.maxHp} → {activeParticipation.maxHp + (hpMode === 'fixed' ? fixedHpTotal : Math.max(1, rolledHpValue + conMod))} HP
@@ -408,7 +408,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {currentStep.id === 'asi' && (
           <div className="space-y-4">
             <div className="surface-card rounded-xl p-4 border border-[#2F2A23] space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Dumbbell className="w-5 h-5 text-[#E0A030]" />
                   <span className="text-xs font-bold text-[#EDE6D8]">بهبود ویژگی‌ها (ASI)</span>
@@ -618,7 +618,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               </p>
 
               <div className="space-y-2 text-xs">
-                <div className="p-2.5 rounded-lg bg-[#141822] border border-[#2F2A23] flex items-center justify-between">
+                <div className="p-2.5 rounded-lg bg-[#141822] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
                   <span className="text-[#A39A89]">تاس‌های جان (Hit Dice):</span>
                   <span className="font-mono font-bold text-[#EDE6D8]">
                     {currentLevel}d{hitDie} → <strong className="text-[#6F9E78]">{nextLevel}d{hitDie}</strong>
@@ -629,7 +629,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   <div className="p-2.5 rounded-lg bg-[#141822] border border-[#2F2A23] space-y-1.5">
                     <span className="text-xs font-bold text-[#F2C265] block">همراهان ارتقایافته:</span>
                     {character.companions.map((comp, idx) => (
-                      <div key={idx} className="flex items-center justify-between text-[11px] text-[#C9C0AE]">
+                      <div key={idx} className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#C9C0AE]">
                         <span>{comp.name} ({comp.type})</span>
                         <span className="text-[#6F9E78] font-bold">همگام با سطح کاراکتر</span>
                       </div>
@@ -675,7 +675,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                     <div className="p-2.5 rounded-lg bg-[#141822] border border-[#2F2A23] space-y-1">
                       <span className="text-[10px] text-[#A39A89] block font-bold">تغییرات ویژگی‌های بنیادین (ASI):</span>
                       {Object.entries(diffResult.diff.abilityChanges).map(([stat, val]) => (
-                        <div key={stat} className="flex items-center justify-between text-xs">
+                        <div key={stat} className="flex flex-wrap items-center justify-between gap-2 text-xs">
                           <span className="text-[#EDE6D8]">{abilityFa[stat as AbilityName]}:</span>
                           <span className="font-mono text-[#F2C265] font-bold">{val?.before} → {val?.after}</span>
                         </div>
@@ -713,7 +713,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         )}
 
         {/* Stepper Navigation Buttons */}
-        <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#2F2A23]">
+        <div className="flex flex-wrap items-center justify-between gap-2 gap-3 pt-3 border-t border-[#2F2A23]">
           {currentStepIndex > 0 ? (
             <button
               type="button"

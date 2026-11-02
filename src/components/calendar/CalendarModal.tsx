@@ -126,7 +126,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
                       : 'bg-[#141822] border-[#2F2A23] text-[#C9C0AE]'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="font-black">{m.name}</span>
                     <span className="text-[10px] px-1 py-0.2 rounded bg-[#201D19] text-[#A39A89]">{m.season}</span>
                   </div>

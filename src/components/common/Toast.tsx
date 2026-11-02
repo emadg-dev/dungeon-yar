@@ -30,7 +30,7 @@ export const Toast: React.FC<ToastProps> = ({ toast, message, onDismiss, onClose
       dir="rtl"
     >
       <div
-        className={`p-3 rounded-[14px] border shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 ${
+        className={`p-3 rounded-[14px] border shadow-2xl backdrop-blur-md flex flex-wrap items-center justify-between gap-2 gap-3 ${
           activeToast.isCrit
             ? 'bg-[#171513]/95 border-[#E0A030] shadow-[0_0_20px_rgba(224,160,48,0.4)] text-[#F2C265]'
             : activeToast.isFumble

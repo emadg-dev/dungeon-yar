@@ -97,7 +97,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     <div className="space-y-6 pb-24 text-right" dir="rtl">
       {/* Welcome Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-l from-[#2A1A0D]/40 via-[#1C1814] to-[#12100E] border border-[#E0A030]/20 p-5 shadow-xl">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30">
@@ -123,7 +123,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {/* DM Pending Approvals Banner */}
         {pendingApprovals.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-[#E0A030]/15 flex items-center justify-between">
+          <div className="mt-4 pt-4 border-t border-[#E0A030]/15 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-[#F2C265] animate-ping" />
               <span className="text-sm font-semibold text-[#F2C265]">
@@ -182,7 +182,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     </p>
                   </div>
 
-                  <div className="mt-3 pt-3 border-t border-[#2F2A23] flex items-center justify-between">
+                  <div className="mt-3 pt-3 border-t border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
                     <span className="text-xs text-[#8A8374]">{toPersianDigits(percent)}٪ تکمیل شده</span>
                     <button
                       onClick={() => onSelectCampaign(draft.id)}
@@ -217,7 +217,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       setCampaignTab('current');
                     });
                   }}
-                  className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 min-h-[36px] ${
+                  className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 min-h-[44px] ${
                     campaignTab === 'current'
                       ? 'bg-[#E0A030] text-[#0E0D0C] shadow'
                       : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -236,7 +236,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       setCampaignTab('past');
                     });
                   }}
-                  className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 min-h-[36px] ${
+                  className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 min-h-[44px] ${
                     campaignTab === 'past'
                       ? 'bg-[#E0A030] text-[#0E0D0C] shadow'
                       : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -328,7 +328,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
                       {/* Next Session Countdown (Active campaigns) */}
                       {!isPast && camp.nextSession && (
-                        <div className={`mt-3 flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl text-xs border ${
+                        <div className={`mt-3 flex flex-wrap items-center justify-between gap-2 gap-2 px-3 py-1.5 rounded-xl text-xs border ${
                           countdown?.isImminent
                             ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
                             : 'bg-[#201D19] border-[#2F2A23] text-[#F2C265]'
@@ -350,7 +350,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       {/* Character Final State (Past / Archived campaigns) */}
                       {isPast && camp.finalCharacterState && (
                         <div className="mt-3 p-3 rounded-xl bg-[#141210] border border-[#2F2A23] text-xs space-y-1">
-                          <div className="flex items-center justify-between">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
                             <span className="font-bold text-[#EDE6D8]">
                               {camp.finalCharacterState.characterName}
                             </span>
@@ -358,7 +358,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                               سطح {toPersianDigits(camp.finalCharacterState.level)} • {camp.finalCharacterState.className}
                             </span>
                           </div>
-                          <div className="flex items-center justify-between text-[11px] text-[#8A8374] pt-1">
+                          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#8A8374] pt-1">
                             <span>وضعیت: {camp.finalCharacterState.status === 'dead' ? 'درگذشته' : camp.finalCharacterState.status === 'retired' ? 'بازنشسته' : 'فعال'}</span>
                             <span>{toPersianDigits(camp.finalCharacterState.sessionsAttended)} جلسه حضور</span>
                           </div>
@@ -366,7 +366,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       )}
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-[#2F2A23]/60 flex items-center justify-between text-xs text-[#A39A89]">
+                    <div className="mt-4 pt-3 border-t border-[#2F2A23]/60 flex flex-wrap items-center justify-between gap-2 text-xs text-[#A39A89]">
                       <div className="flex items-center gap-3">
                         <span className="flex items-center gap-1">
                           <Users className="w-3.5 h-3.5 text-[#8A8374]" />
@@ -442,12 +442,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     />
                   </div>
 
-                  <div className="mt-3 pt-2.5 border-t border-[#2F2A23] flex items-center justify-between">
+                  <div className="mt-3 pt-2.5 border-t border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
                     <span className="text-[11px] text-[#8A8374]">سطح: {toPersianDigits(draft.level || 1)}</span>
                     <button
                       type="button"
                       onClick={() => onResumeDraft && onResumeDraft(draft)}
-                      className="px-3.5 py-1.5 rounded-xl btn-primary-amber text-xs font-bold shadow-md flex items-center gap-1 min-h-[36px]"
+                      className="px-3.5 py-1.5 rounded-xl btn-primary-amber text-xs font-bold shadow-md flex items-center gap-1 min-h-[44px]"
                     >
                       <span>ادامه (Resume)</span>
                       <ChevronLeft className="w-3.5 h-3.5" />
@@ -463,7 +463,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       {/* Master Characters Section with Status, Campaigns Count, Sessions & Highest Level */}
       {!isLoading && (
         <section className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Scroll className="w-5 h-5 text-[#F2C265]" />
               <h2 className="text-lg font-bold text-[#EDE6D8]">شخصیت‌های من (شناسنامه کلان)</h2>
@@ -527,7 +527,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                         className="w-14 h-14 rounded-xl object-cover border border-[#E0A030]/30 shrink-0 group-hover:scale-105 transition-transform"
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-1">
+                        <div className="flex flex-wrap items-center justify-between gap-2 gap-1">
                           <h4 className="text-sm font-bold text-[#EDE6D8] truncate group-hover:text-[#F2C265] transition-colors">
                             {char.name}
                           </h4>

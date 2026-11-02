@@ -106,7 +106,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
       dir="rtl"
     >
       {/* Sticky Header */}
-      <div className="bg-[#171513] border-b border-[#2F2A23] px-3.5 py-3 pt-[calc(env(safe-area-inset-top,0px)+12px)] shadow-md flex items-center justify-between gap-2 shrink-0">
+      <div className="bg-[#171513] border-b border-[#2F2A23] px-3.5 py-3 pt-[calc(env(safe-area-inset-top,0px)+12px)] shadow-md flex flex-wrap items-center justify-between gap-2 gap-2 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-8 h-8 rounded-[10px] bg-gradient-to-tr from-[#C2512B] to-[#E0A030] flex items-center justify-center text-[#0E0D0C] shrink-0 shadow-sm">
             <Swords className="w-4 h-4 stroke-[2.5]" />
@@ -166,7 +166,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
 
         {/* Ended Banner (§3) */}
         {encounter.status === 'ended' && (
-          <div className="p-3 rounded-[12px] bg-[#6F9E78]/15 border border-[#6F9E78]/40 flex items-center justify-between text-xs text-[#6F9E78] font-bold">
+          <div className="p-3 rounded-[12px] bg-[#6F9E78]/15 border border-[#6F9E78]/40 flex flex-wrap items-center justify-between gap-2 text-xs text-[#6F9E78] font-bold">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>پایان نبرد — مبارزه با موفقیت خاتمه یافت.</span>
@@ -177,7 +177,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
 
         {/* Strong "Your Turn" State (§3) */}
         {isMyTurn && (
-          <div className="p-3.5 rounded-[14px] bg-gradient-to-r from-[#E0A030]/25 via-[#E0A030]/15 to-transparent border-2 border-[#E0A030] shadow-[0_0_20px_rgba(224,160,48,0.35)] animate-pulse flex items-center justify-between gap-2">
+          <div className="p-3.5 rounded-[14px] bg-gradient-to-r from-[#E0A030]/25 via-[#E0A030]/15 to-transparent border-2 border-[#E0A030] shadow-[0_0_20px_rgba(224,160,48,0.35)] animate-pulse flex flex-wrap items-center justify-between gap-2 gap-2">
             <div className="flex items-center gap-2.5">
               <Sparkles className="w-6 h-6 text-[#E0A030] shrink-0" />
               <div>
@@ -197,7 +197,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
 
         {/* Mini Player Character Vitals Bar (§3: Quick HP access without leaving) */}
         {activeCharacter && (
-          <div className="surface-card rounded-[14px] p-3 border border-[#2F2A23] flex items-center justify-between gap-3 bg-[#171513]">
+          <div className="surface-card rounded-[14px] p-3 border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-3 bg-[#171513]">
             <div className="flex items-center gap-2 min-w-0">
               <div className="w-8 h-8 rounded-full bg-[#6F9E78]/20 flex items-center justify-center text-[#6F9E78] shrink-0">
                 <Heart className="w-4 h-4 fill-current" />
@@ -235,7 +235,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
 
         {/* Player Roll Initiative Button (§3) */}
         {needsInitiativeRoll && (
-          <div className="surface-card rounded-[14px] p-3.5 border border-[#E0A030]/50 bg-[#E0A030]/10 flex items-center justify-between gap-3">
+          <div className="surface-card rounded-[14px] p-3.5 border border-[#E0A030]/50 bg-[#E0A030]/10 flex flex-wrap items-center justify-between gap-2 gap-3">
             <div>
               <span className="font-extrabold text-xs text-[#E0A030] block">ابتکار عمل خود را بیندازید!</span>
               <span className="text-[11px] text-[#EDE6D8]/80">برای قرارگیری در ترتیب نوبت مبارزه</span>
@@ -264,7 +264,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
 
         {/* Initiative Turn Order List (§3) */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold text-[#A39A89] px-1">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-[#A39A89] px-1">
             <span>ترتیب ابتکار عمل (دور {encounter.round})</span>
             <span>{encounter.participants.length} مبارز</span>
           </div>
@@ -289,7 +289,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
                       : 'border-[#2F2A23] bg-[#171513]'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       {/* Initiative Badge */}
                       <div className={`w-7 h-7 rounded-[8px] flex items-center justify-center text-xs font-black shrink-0 ${

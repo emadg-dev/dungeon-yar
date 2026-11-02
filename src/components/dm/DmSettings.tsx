@@ -109,7 +109,7 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
 
         <div className="divide-y divide-[#2F2A23]">
           {users.map(u => (
-            <div key={u.id} className="py-3 flex items-center justify-between gap-3">
+            <div key={u.id} className="py-3 flex flex-wrap items-center justify-between gap-2 gap-3">
               <div className="flex items-center gap-3">
                 <img
                   src={u.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80'}

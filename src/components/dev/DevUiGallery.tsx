@@ -84,7 +84,7 @@ export const DevUiGallery: React.FC = () => {
   return (
     <div className="min-h-screen bg-stone-950 text-stone-100 p-4 sm:p-8 space-y-8" dir="rtl">
       {/* Top Bar with Theme Switcher */}
-      <header className="flex items-center justify-between gap-4 border-b border-stone-800 pb-4 max-w-5xl mx-auto">
+      <header className="flex flex-wrap items-center justify-between gap-2 gap-4 border-b border-stone-800 pb-4 max-w-5xl mx-auto">
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-bold">
             <Sparkles className="w-5 h-5" />

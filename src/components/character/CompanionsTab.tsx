@@ -116,7 +116,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="text-sm font-black text-[#F2C265]">یاران و سازه‌های همراه</h3>
           <p className="text-[11px] text-[#A39A89]">همراهان مکانیکی دیوانزاد و پیوندهای جنگلی پیمان‌بان</p>
@@ -149,7 +149,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
                 className="p-4 rounded-2xl bg-[#171513] border border-[#E0A030]/30 space-y-3 shadow-lg relative"
               >
                 {/* Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <div className="w-9 h-9 rounded-xl bg-[#E0A030]/20 border border-[#E0A030]/40 flex items-center justify-center text-[#F2C265]">
                       {comp.type === 'construct' ? <Bot className="w-5 h-5" /> : <Trees className="w-5 h-5" />}
@@ -176,7 +176,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
 
                 {/* HP Tracker with +/- */}
                 <div className="p-2.5 rounded-xl bg-[#131110] border border-[#2F2A23] space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-[11px] font-bold text-[#C9C0AE] flex items-center gap-1">
                       <Heart className="w-3 h-3 text-[#E8836B]" /> جان (HP)
                     </span>
@@ -230,7 +230,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
 
                 {/* Attack Card */}
                 {comp.attack && (
-                  <div className="p-2.5 rounded-xl bg-[#181c28] border border-[#3A342B]/60 flex items-center justify-between">
+                  <div className="p-2.5 rounded-xl bg-[#181c28] border border-[#3A342B]/60 flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <div className="text-xs font-bold text-[#F2C265]">{comp.attack.name}</div>
                       <div className="text-[10px] text-[#A39A89]">

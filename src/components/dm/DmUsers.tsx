@@ -236,7 +236,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
 
       {/* Messages */}
       {errorMsg && (
-        <div className="p-3 rounded-[10px] bg-[#C2512B]/15 border border-[#C2512B]/40 text-[#EDE6D8] text-xs flex items-center justify-between">
+        <div className="p-3 rounded-[10px] bg-[#C2512B]/15 border border-[#C2512B]/40 text-[#EDE6D8] text-xs flex flex-wrap items-center justify-between gap-2">
           <span>{errorMsg}</span>
           <button type="button" onClick={() => setErrorMsg('')} className="p-1 touch-target">
             <X className="w-3.5 h-3.5" />
@@ -244,7 +244,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
         </div>
       )}
       {successMsg && (
-        <div className="p-3 rounded-[10px] bg-[#6F9E78]/15 border border-[#6F9E78]/40 text-[#6F9E78] text-xs flex items-center justify-between font-bold">
+        <div className="p-3 rounded-[10px] bg-[#6F9E78]/15 border border-[#6F9E78]/40 text-[#6F9E78] text-xs flex flex-wrap items-center justify-between gap-2 font-bold">
           <span>{successMsg}</span>
           <button type="button" onClick={() => setSuccessMsg('')} className="p-1 touch-target">
             <X className="w-3.5 h-3.5" />
@@ -255,7 +255,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
       {/* Reset Link Modal / Card */}
       {resetLinkData && (
         <div className="p-4 rounded-[12px] bg-[#E0A030]/15 border border-[#E0A030]/40 space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-black text-[#E0A030] flex items-center gap-1.5">
               <KeyRound className="w-4 h-4" />
               لینک یک‌بار مصرف تغییر رمز تولید شد
@@ -301,7 +301,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
           users.map((u) => (
             <div
               key={u.id}
-              className={`surface-card rounded-[12px] p-3.5 border transition-all flex items-center justify-between gap-3 ${
+              className={`surface-card rounded-[12px] p-3.5 border transition-all flex flex-wrap items-center justify-between gap-2 gap-3 ${
                 u.status === 'disabled'
                   ? 'opacity-60 border-[#C2512B]/40 bg-[#171513]'
                   : 'border-[#2F2A23] hover:border-[#E0A030]/30'
@@ -394,7 +394,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
                   key={c.id}
                   type="button"
                   onClick={() => handleAssignCharacter(c.id)}
-                  className="w-full text-right p-3 rounded-[10px] bg-[#201D19] hover:bg-[#2A2621] border border-[#2F2A23] flex items-center justify-between touch-target"
+                  className="w-full text-right p-3 rounded-[10px] bg-[#201D19] hover:bg-[#2A2621] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 touch-target"
                 >
                   <div>
                     <span className="font-extrabold text-xs text-[#EDE6D8] block">{c.name}</span>

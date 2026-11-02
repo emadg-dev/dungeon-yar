@@ -428,7 +428,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
       {/* 1. Header & Stepper Bar                                       */}
       {/* ------------------------------------------------------------- */}
       <header className="shrink-0 bg-[#171513] border-b border-[#2F2A23] px-4 py-3 shadow-md">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-[#E0A030]/20 text-[#F2C265] flex items-center justify-center font-bold">
               {currentStep}
@@ -448,7 +448,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
               type="button"
               onClick={handleSaveDraft}
               disabled={isSavingDraft}
-              className="px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030]/50 text-xs font-bold text-[#C9C0AE] hover:text-[#F2C265] transition-all flex items-center gap-1.5 min-h-[36px]"
+              className="px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030]/50 text-xs font-bold text-[#C9C0AE] hover:text-[#F2C265] transition-all flex items-center gap-1.5 min-h-[44px]"
               title="ذخیره و خروج جهت ادامه در آینده"
             >
               <Save className="w-3.5 h-3.5 text-[#E0A030]" />
@@ -465,7 +465,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         </div>
 
         {/* Stepper Dots / Labels */}
-        <div className="mt-3 flex items-center justify-between gap-1 overflow-x-auto pb-1 text-[11px] font-medium text-[#8A8374]">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 gap-1 overflow-x-auto pb-1 text-[11px] font-medium text-[#8A8374]">
           {[
             { step: 1, title: 'هویت' },
             { step: 2, title: 'کلاس' },
@@ -510,7 +510,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
       )}
 
       {toastNotice && (
-        <div className="shrink-0 bg-[#6F9E78]/20 border-b border-[#6F9E78]/40 px-4 py-2 flex items-center justify-between text-xs text-[#95C29E]">
+        <div className="shrink-0 bg-[#6F9E78]/20 border-b border-[#6F9E78]/40 px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[#95C29E]">
           <div className="flex items-center gap-2">
             <Check className="w-4 h-4" />
             <span>{toastNotice}</span>
@@ -614,7 +614,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             {/* Lineage Selection */}
             {availableLineages.length > 0 ? (
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <label className="block text-xs font-bold text-[#C9C0AE]">
                     انتخاب تبار و نژاد (Lineage)
                   </label>
@@ -636,7 +636,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                             : 'bg-[#171513] border-[#2F2A23] hover:border-[#3A342B]'
                         }`}
                       >
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
                           <h4 className="text-sm font-bold text-[#EDE6D8]">{lin.name}</h4>
                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#201D19] text-[#A39A89]">
                             سرعت: {lin.speed} فوت
@@ -685,7 +685,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         {/* ============================================================ */}
         {currentStep === 2 && (
           <section className="space-y-5 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between border-b border-[#2F2A23] pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-3">
               <div>
                 <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
                   <Swords className="w-5 h-5 text-[#E0A030]" />
@@ -698,7 +698,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
               <button
                 type="button"
                 onClick={() => setShowClassCompare(true)}
-                className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/25 transition-all flex items-center gap-1.5 min-h-[36px]"
+                className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/25 transition-all flex items-center gap-1.5 min-h-[44px]"
               >
                 <Scale className="w-3.5 h-3.5" />
                 <span>مقایسه کلاس‌ها</span>
@@ -733,7 +733,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                       </p>
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-[#2F2A23] flex items-center justify-between text-[11px] text-[#8A8374]">
+                    <div className="mt-3 pt-2.5 border-t border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#8A8374]">
                       <span>پرتاب نجات: {(cls.saves || []).join('، ')}</span>
                       <span className="text-[#E0A030] font-semibold">
                         {cls.spellcasting ? 'جادوگر' : 'رزمی/تکنیکی'}
@@ -777,7 +777,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                     key={m}
                     type="button"
                     onClick={() => setAbilityMethod(m)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 min-h-[36px] ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 min-h-[44px] ${
                       isSelected
                         ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
                         : 'bg-[#171513] text-[#A39A89] border border-[#2F2A23] hover:text-[#EDE6D8]'
@@ -791,7 +791,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
 
             {/* Point Buy Budget Live Display */}
             {abilityMethod === 'point_buy' && (
-              <div className="p-3.5 rounded-2xl bg-[#171513] border border-[#E0A030]/30 flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-[#171513] border border-[#E0A030]/30 flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <span className="text-xs text-[#A39A89]">بودجه مصرف‌شده:</span>
                   <div className="flex items-baseline gap-1 mt-0.5">
@@ -810,7 +810,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             {/* Roll Server-Side 4d6 Drop Lowest */}
             {abilityMethod === 'roll' && (
               <div className="p-4 rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-xs font-bold text-[#EDE6D8]">تاس‌های ریخته‌شده سرور:</span>
                   <button
                     type="button"
@@ -851,7 +851,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                 return (
                   <div
                     key={key}
-                    className="p-3.5 rounded-2xl bg-[#171513] border border-[#2F2A23] flex items-center justify-between"
+                    className="p-3.5 rounded-2xl bg-[#171513] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2"
                   >
                     <div>
                       <h4 className="text-xs font-bold text-[#EDE6D8]">{ABILITY_LABELS_FA[key]}</h4>
@@ -984,7 +984,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
 
             {/* Class Skill Choices */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <label className="block text-xs font-bold text-[#C9C0AE]">
                   انتخاب مهارت‌های کلاس ({selectedClassSkills.length} از {activeClass?.skillChoices?.count || 2} مورد)
                 </label>
@@ -1010,7 +1010,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                           }
                         }
                       }}
-                      className={`p-2.5 rounded-xl border text-xs font-medium text-start transition-all flex items-center justify-between ${
+                      className={`p-2.5 rounded-xl border text-xs font-medium text-start transition-all flex flex-wrap items-center justify-between gap-2 ${
                         isChecked
                           ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
                           : 'bg-[#171513] border-[#2F2A23] text-[#C9C0AE] hover:border-[#3A342B]'
@@ -1071,7 +1071,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
 
             {/* Live Stats Preview Bar */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3.5 rounded-2xl bg-[#171513] border border-[#2F2A23] flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-[#171513] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Shield className="w-5 h-5 text-[#E0A030]" />
                   <span className="text-xs text-[#A39A89]">درجه زره (AC پیش‌نمایش):</span>
@@ -1079,7 +1079,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                 <span className="text-lg font-bold text-[#F2C265] font-mono">{liveAc}</span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#171513] border border-[#2F2A23] flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-[#171513] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Heart className="w-5 h-5 text-[#D66138]" />
                   <span className="text-xs text-[#A39A89]">جان اولیه (Max HP):</span>
@@ -1108,7 +1108,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                       }`}
                     >
                       <div>
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
                           <h4 className="text-sm font-bold text-[#EDE6D8]">{w.name}</h4>
                           <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
                             w.kind === 'special' ? 'bg-[#9B72CF]/20 text-[#9B72CF]' : 'bg-[#E0A030]/20 text-[#F2C265]'
@@ -1188,7 +1188,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         {/* ============================================================ */}
         {currentStep === 7 && (
           <section className="space-y-5 animate-in fade-in duration-200">
-            <div className="border-b border-[#2F2A23] pb-3 flex items-center justify-between">
+            <div className="border-b border-[#2F2A23] pb-3 flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
                   <Award className="w-5 h-5 text-[#E0A030]" />
@@ -1320,7 +1320,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
       {/* 4. Sticky Bottom Action Bar                                   */}
       {/* ------------------------------------------------------------- */}
       <footer className="shrink-0 bg-[#171513] border-t border-[#2F2A23] px-4 py-3 shadow-2xl">
-        <div className="max-w-3xl mx-auto flex items-center justify-between gap-2">
+        <div className="max-w-3xl mx-auto flex flex-wrap items-center justify-between gap-2 gap-2">
           {/* Back button */}
           <button
             type="button"
@@ -1373,7 +1373,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
       {showClassCompare && (
         <div className="fixed inset-0 z-60 bg-black/80 flex items-center justify-center p-4">
           <div className="bg-[#171513] border border-[#2F2A23] rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden text-start shadow-2xl" dir="rtl">
-            <div className="p-4 border-b border-[#2F2A23] flex items-center justify-between">
+            <div className="p-4 border-b border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-sm font-bold text-[#F2C265] flex items-center gap-2">
                 <Scale className="w-4 h-4" />
                 <span>مقایسه کلاس‌های مجاز کمپین</span>
@@ -1390,7 +1390,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {allowedClasses.map(cls => (
                 <div key={cls.id || cls.name} className="p-3.5 rounded-2xl bg-[#141210] border border-[#2F2A23]">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <h4 className="text-sm font-bold text-[#EDE6D8]">{cls.name}</h4>
                     <span className="text-xs text-[#F2C265] font-mono">تاس جان: {cls.hitDie}</span>
                   </div>

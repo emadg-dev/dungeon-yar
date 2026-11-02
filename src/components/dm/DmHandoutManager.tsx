@@ -283,7 +283,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
       </div>
 
       {actionError && (
-        <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-[10px] text-xs text-rose-300 flex items-center justify-between">
+        <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-[10px] text-xs text-rose-300 flex flex-wrap items-center justify-between gap-2">
           <span>{actionError}</span>
           <button type="button" onClick={() => setActionError(null)} className="text-rose-300 hover:text-white">
             ×
@@ -600,7 +600,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
       {recipientModalHandout && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" dir="rtl">
           <div className="w-full max-w-md bg-[#14120E] border border-[#2F2A23] rounded-[18px] p-4 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-2 border-b border-[#2F2A23]">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#2F2A23]">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-sky-400" />
                 <h3 className="font-bold text-sm text-[#EDE6D8]">انتخاب بازیکنان برای «{recipientModalHandout.title}»</h3>
@@ -627,7 +627,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                   return (
                     <label
                       key={char.id}
-                      className={`flex items-center justify-between p-2.5 rounded-[10px] border cursor-pointer transition ${
+                      className={`flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] border cursor-pointer transition ${
                         isChecked
                           ? 'bg-sky-950/40 border-sky-600/50 text-white'
                           : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89]'

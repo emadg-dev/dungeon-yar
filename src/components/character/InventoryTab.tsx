@@ -24,7 +24,7 @@ const InventoryItemRow = memo<InventoryItemRowProps>(({
   onOpenActionMenu
 }) => (
   <div
-    className="surface-2-card rounded-[12px] p-2.5 border border-[#2F2A23] flex items-center justify-between gap-2 transition hover:border-[#2F2A23]/80 content-visibility-card"
+    className="surface-2-card rounded-[12px] p-2.5 border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-2 transition hover:border-[#2F2A23]/80 content-visibility-card"
   >
     {/* Left: Item Info (Tap = Detail Sheet) */}
     <button
@@ -302,7 +302,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
       {/* Three Big Counter Bars (Rations, Lanterns, Currency) with -/+ */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
         {/* 1. Rations Bar */}
-        <div className="surface-card rounded-[14px] p-3 flex items-center justify-between">
+        <div className="surface-card rounded-[14px] p-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-[10px] bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30 flex items-center justify-center shrink-0">
               <Utensils className="w-5 h-5" />
@@ -337,7 +337,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
         </div>
 
         {/* 2. Lanterns Bar */}
-        <div className="surface-card rounded-[14px] p-3 flex items-center justify-between">
+        <div className="surface-card rounded-[14px] p-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-[10px] bg-[#C2512B]/15 text-[#C2512B] border border-[#C2512B]/30 flex items-center justify-center shrink-0">
               <Flame className="w-5 h-5" />
@@ -372,7 +372,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
         </div>
 
         {/* 3. Currency Bar */}
-        <div className="surface-card rounded-[14px] p-3 flex items-center justify-between">
+        <div className="surface-card rounded-[14px] p-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-[10px] bg-[#D6B25E]/15 text-[#D6B25E] border border-[#D6B25E]/30 flex items-center justify-center shrink-0">
               <Coins className="w-5 h-5" />

@@ -255,7 +255,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
       {/* DM Direct Edit Mode Active Banner */}
       {isDmEditMode && (
-        <div className="surface-card rounded-[14px] p-3 bg-[#E0A030]/15 border border-[#E0A030]/50 flex items-center justify-between gap-2">
+        <div className="surface-card rounded-[14px] p-3 bg-[#E0A030]/15 border border-[#E0A030]/50 flex flex-wrap items-center justify-between gap-2 gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-[#E0A030] shrink-0" />
             <span className="text-xs text-[#F2C265] font-bold">
@@ -302,7 +302,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
       {/* Pending Change Warning */}
       {pendingChange && (
-        <div className="surface-card rounded-[14px] p-3 bg-[#7FB4D6]/10 border border-[#7FB4D6]/40 flex items-center justify-between gap-2">
+        <div className="surface-card rounded-[14px] p-3 bg-[#7FB4D6]/10 border border-[#7FB4D6]/40 flex flex-wrap items-center justify-between gap-2 gap-2">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-[#7FB4D6] shrink-0" />
             <span className="text-xs text-[#7FB4D6] font-bold">
@@ -395,7 +395,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   />
                 </div>
                 <div>
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
                     <label className="text-xs text-[#A39A89] block">کلاس:</label>
                     {isBasicsLocked && <Lock className="w-3 h-3 text-[#E0A030]" />}
                   </div>
@@ -403,7 +403,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     <button
                       type="button"
                       onClick={() => onOpenLockedField?.('className')}
-                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex items-center justify-between touch-target"
+                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex flex-wrap items-center justify-between gap-2 touch-target"
                     >
                       <span>{character.className}</span>
                       <span className="text-[10px] text-[#E0A030] bg-[#E0A030]/10 px-1.5 py-0.5 rounded">قفل DM</span>
@@ -418,7 +418,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   )}
                 </div>
                 <div>
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
                     <label className="text-xs text-[#A39A89] block">نژاد / تبار:</label>
                     {isBasicsLocked && <Lock className="w-3 h-3 text-[#E0A030]" />}
                   </div>
@@ -426,7 +426,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     <button
                       type="button"
                       onClick={() => onOpenLockedField?.('race')}
-                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex items-center justify-between touch-target"
+                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex flex-wrap items-center justify-between gap-2 touch-target"
                     >
                       <span>{character.race}</span>
                       <span className="text-[10px] text-[#E0A030] bg-[#E0A030]/10 px-1.5 py-0.5 rounded">قفل DM</span>
@@ -441,7 +441,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   )}
                 </div>
                 <div>
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
                     <label className="text-xs text-[#A39A89] block">سطح (Level):</label>
                     {isBasicsLocked && <Lock className="w-3 h-3 text-[#E0A030]" />}
                   </div>
@@ -449,7 +449,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     <button
                       type="button"
                       onClick={() => onOpenLockedField?.('level')}
-                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex items-center justify-between font-mono dice-ltr touch-target"
+                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex flex-wrap items-center justify-between gap-2 font-mono dice-ltr touch-target"
                     >
                       <span>{character.level}</span>
                       <span className="text-[10px] text-[#E0A030] bg-[#E0A030]/10 px-1.5 py-0.5 rounded font-sans">قفل DM</span>
@@ -572,7 +572,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={onOpenSheetChangeRequest}
-              className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] transition flex items-center justify-center gap-1.5 touch-target min-h-[36px] shrink-0"
+              className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] transition flex items-center justify-center gap-1.5 touch-target min-h-[44px] shrink-0"
             >
               <Shield className="w-3.5 h-3.5" />
               <span>درخواست تغییر به DM</span>
@@ -585,7 +585,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 <button
                   type="button"
                   onClick={onToggleDmEditMode}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 min-h-[36px] ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 min-h-[44px] ${
                     isDmEditMode
                       ? 'bg-[#E0A030] text-[#0E0D0C]'
                       : 'bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#E0A030]'
@@ -600,7 +600,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 <button
                   type="button"
                   onClick={onOpenEditGrantModal}
-                  className="px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-[#F2C265] text-xs font-bold transition flex items-center gap-1 min-h-[36px]"
+                  className="px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-[#F2C265] text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
                   title="صدور مجوز ویرایش موقت به بازیکن"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
@@ -615,7 +615,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       {/* DM Recent Changes Feed */}
       {dmHistoryEvents && dmHistoryEvents.length > 0 && (
         <div className="surface-card rounded-[14px] p-3.5 border border-[#2F2A23] space-y-2.5">
-          <div className="flex items-center justify-between pb-1.5 border-b border-[#2F2A23]">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-[#2F2A23]">
             <h3 className="text-xs font-bold text-[#EDE6D8] flex items-center gap-1.5">
               <Shield className="w-3.5 h-3.5 text-[#E0A030]" />
               <span>تغییرات اخیر راوی (DM)</span>
@@ -626,7 +626,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             {dmHistoryEvents.slice(0, 5).map((ev: any, idx: number) => (
               <div
                 key={ev.id || idx}
-                className="p-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] flex items-center justify-between text-xs gap-2"
+                className="p-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 text-xs gap-2"
               >
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-[#F2C265] truncate">{ev.title || 'ویرایش DM'}</div>
@@ -754,7 +754,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       {/* Skill Points & Exhaustion Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         {/* Skill Points (امتیاز مهارت زروانیا) */}
-        <div className="surface-card rounded-[14px] p-3.5 flex items-center justify-between">
+        <div className="surface-card rounded-[14px] p-3.5 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-[10px] bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30 flex items-center justify-center shrink-0">
               <Flame className="w-5 h-5" />
@@ -789,7 +789,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         </div>
 
         {/* Exhaustion Stepper */}
-        <div className="surface-card rounded-[14px] p-3.5 flex items-center justify-between">
+        <div className="surface-card rounded-[14px] p-3.5 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
             <div className={`w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0 border ${
               character.exhaustion > 0
@@ -832,7 +832,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
       {/* Class Resources as Rows of Pips (Divine Smite, Reality Fatigue, Moment Points) */}
       <div className="surface-card rounded-[14px] p-4 space-y-3">
-        <div className="flex items-center justify-between border-b border-[#2F2A23] pb-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-2">
           <h3 className="text-xs font-bold text-[#EDE6D8] flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-[#E0A030]" />
             منابع کلاسی و پیپ‌های جادویی

@@ -31,7 +31,7 @@ export const CampaignSwitcherModal: React.FC<CampaignSwitcherModalProps> = ({
             onGoHome();
             onClose();
           }}
-          className="w-full p-3.5 rounded-2xl bg-[#E0A030]/10 border border-[#E0A030]/30 hover:bg-[#E0A030]/20 text-[#F2C265] font-bold text-sm flex items-center justify-between transition-colors min-h-[48px]"
+          className="w-full p-3.5 rounded-2xl bg-[#E0A030]/10 border border-[#E0A030]/30 hover:bg-[#E0A030]/20 text-[#F2C265] font-bold text-sm flex flex-wrap items-center justify-between gap-2 transition-colors min-h-[48px]"
         >
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-[#E0A030]/20 flex items-center justify-center text-[#F2C265]">
@@ -43,7 +43,7 @@ export const CampaignSwitcherModal: React.FC<CampaignSwitcherModalProps> = ({
         </button>
 
         <div className="border-t border-[#2F2A23] pt-3">
-          <div className="flex items-center justify-between mb-2 px-1">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2 px-1">
             <span className="text-xs font-bold text-[#A39A89]">کمپین‌های من ({campaigns.length})</span>
             <button
               onClick={() => {
@@ -67,7 +67,7 @@ export const CampaignSwitcherModal: React.FC<CampaignSwitcherModalProps> = ({
                     onSelectCampaign(camp.id);
                     onClose();
                   }}
-                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between min-h-[48px] ${
+                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-wrap items-center justify-between gap-2 min-h-[48px] ${
                     isActive
                       ? 'bg-[#E0A030]/20 border-[#E0A030]/50 text-[#F2C265]'
                       : 'bg-[#131110]/60 border-[#2F2A23] hover:border-[#3A342B] text-[#C9C0AE]'

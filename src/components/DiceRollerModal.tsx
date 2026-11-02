@@ -26,7 +26,7 @@ const DiceRollCardRow = memo<DiceRollCardRowProps>(({ roll }) => {
           : 'bg-[#171513] border-[#2F2A23]'
       }`}
     >
-      <div className="flex items-center justify-between text-xs mb-1">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs mb-1">
         <div className="flex items-center gap-1.5">
           <UserIcon className="w-3.5 h-3.5 text-[#F2C265]" />
           <span className="font-bold text-[#EDE6D8]">{roll.userName}</span>
@@ -42,7 +42,7 @@ const DiceRollCardRow = memo<DiceRollCardRowProps>(({ roll }) => {
         <span className="text-[10px] text-[#8A8374] font-mono">{dateStr}</span>
       </div>
 
-      <div className="flex items-center justify-between mt-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
         <div>
           <span className="text-xs text-[#F2C265] font-semibold block">{roll.rollType}</span>
           <span className="text-[10px] text-[#A39A89] font-mono">{roll.diceExpression}</span>
@@ -268,7 +268,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                     : 'bg-[#171513] border-[#2F2A23]'
                 }`}
               >
-                <div className="flex items-center justify-between text-[11px] text-[#A39A89] mb-1">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#A39A89] mb-1">
                   <span>{latestRoll.label}</span>
                   <span className="font-mono">{latestRoll.timestamp}</span>
                 </div>
@@ -411,7 +411,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
 
             {/* Private Roll Toggle (Section 5) */}
             {(isDm || allowPlayerRollPrivate) && (
-              <div className="p-3 rounded-xl bg-[#131110] border border-[#2F2A23] flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-[#131110] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Lock className={`w-4 h-4 ${isPrivateToDm ? 'text-[#F2C265]' : 'text-[#8A8374]'}`} />
                   <div>
@@ -445,7 +445,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
         ) : (
           /* Table Tab: Shared Dice Feed (Last 50 rolls) */
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-bold text-[#C9C0AE]">
                 پرتاب‌های زنده میز بازی (50 پرتاب اخیر)
               </span>

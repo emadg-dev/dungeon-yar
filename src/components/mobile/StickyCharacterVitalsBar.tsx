@@ -141,7 +141,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
 
         {/* Sub-Tabs: Never wraps to two lines, scrolls horizontally, smooth and clean */}
         {onSelectSheetTab && (
-          <div className="bg-[#171513] border border-[#2F2A23]/80 rounded-xl p-1 flex items-center gap-1 overflow-x-auto flex-nowrap scrollbar-none w-full sm:w-auto shrink-0">
+          <div className="bg-[#171513] border border-[#2F2A23]/80 rounded-xl p-1.5 flex items-center gap-2 overflow-x-auto flex-nowrap scrollbar-none w-full sm:w-auto shrink-0">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeSheetTab === tab.id;
@@ -150,7 +150,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
                   type="button"
                   key={tab.id}
                   onClick={() => onSelectSheetTab(tab.id)}
-                  className={`flex-1 sm:flex-initial py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target whitespace-nowrap ${
+                  className={`flex-1 sm:flex-initial py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 touch-target whitespace-nowrap ${
                     isActive
                       ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
                       : 'text-[#A39A89] hover:text-[#EDE6D8]'

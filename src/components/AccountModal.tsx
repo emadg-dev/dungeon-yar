@@ -346,7 +346,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                       key={c.id}
                       type="button"
                       onClick={() => onSelectActiveCharacter(c.id)}
-                      className={`text-start p-2.5 rounded-[10px] border flex items-center justify-between transition-all touch-target ${
+                      className={`text-start p-2.5 rounded-[10px] border flex flex-wrap items-center justify-between gap-2 transition-all touch-target ${
                         activeCharacterId === c.id
                           ? 'bg-[#E0A030]/15 text-[#E0A030] border-[#E0A030]/50 font-bold'
                           : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23] hover:border-[#E0A030]/40'
@@ -454,7 +454,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
         {/* Tab 3: Active Sessions List */}
         {activeTab === 'sessions' && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-[#2F2A23]">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#2F2A23]">
               <div>
                 <h4 className="text-xs font-bold text-[#EDE6D8]">نشست‌های فعال دستگاه‌ها</h4>
                 <p className="text-[10px] text-[#A39A89]">مدیریت دسترسی‌های فعال به حساب کاربری</p>
@@ -472,7 +472,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               {sessions.map(s => (
                 <div
                   key={s.id}
-                  className="p-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] flex items-center justify-between gap-2"
+                  className="p-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-2"
                 >
                   <div className="space-y-0.5 min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">

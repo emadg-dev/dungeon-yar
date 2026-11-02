@@ -100,7 +100,7 @@ export const SnapshotRestoreModal: React.FC<SnapshotRestoreModalProps> = ({
               return (
                 <div
                   key={snap.id}
-                  className="p-3 rounded-xl bg-[#131110] border border-[#2F2A23] flex items-center justify-between gap-3"
+                  className="p-3 rounded-xl bg-[#131110] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-3"
                 >
                   <div className="space-y-0.5 min-w-0">
                     <div className="flex items-center gap-2">
@@ -118,7 +118,7 @@ export const SnapshotRestoreModal: React.FC<SnapshotRestoreModalProps> = ({
                     type="button"
                     disabled={isRestoring}
                     onClick={() => handleRestore(snap.id)}
-                    className="px-3 py-1.5 rounded-lg bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#F2C265] transition flex items-center gap-1.5 shrink-0 min-h-[36px]"
+                    className="px-3 py-1.5 rounded-lg bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#F2C265] transition flex items-center gap-1.5 shrink-0 min-h-[44px]"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>{isRestoring ? 'در حال بازگردانی...' : 'بازگردانی این وضعیت'}</span>

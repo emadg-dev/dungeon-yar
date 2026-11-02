@@ -44,7 +44,7 @@ export const PWAInstallPrompt: React.FC = () => {
             }}
           >
             <div className="w-full max-w-sm max-h-[90dvh] overflow-y-auto rounded-2xl bg-[#171513] border border-[#E0A030]/30 p-5 text-[#EDE6D8] shadow-2xl space-y-3" dir="rtl">
-              <div className="flex items-center justify-between border-b border-[#2F2A23] pb-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-2">
                 <h4 className="font-bold text-sm text-[#F2C265]">نصب {APP_NAME_FA} روی آیفون و آیپد</h4>
                 <button type="button" onClick={() => setShowIOSGuide(false)} className="text-[#A39A89] p-2 touch-target hover:text-[#EDE6D8]">
                   <X className="w-4 h-4" />

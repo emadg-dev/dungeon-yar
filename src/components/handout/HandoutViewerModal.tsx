@@ -72,7 +72,7 @@ export const HandoutViewerModal: React.FC<HandoutViewerModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in" dir="rtl">
       <div className="relative w-full max-w-3xl max-h-[92vh] flex flex-col bg-[#14120E] border border-[#2F2A23] rounded-[20px] shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-[#2F2A23] bg-[#1A1612]">
+        <div className="flex flex-wrap items-center justify-between gap-2 p-3.5 sm:p-4 border-b border-[#2F2A23] bg-[#1A1612]">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-9 h-9 rounded-[10px] bg-[#241F18] border border-[#3A3327] flex items-center justify-center shrink-0">
               {kindIcon}

@@ -166,7 +166,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 1. Truth Sources (0 to 6) */}
         <div className="p-4 rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-3">
-          <div className="flex items-center justify-between border-b border-[#2F2A23] pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-2">
             <span className="text-xs font-black text-[#F2C265] flex items-center gap-1.5">
               <Eye className="w-4 h-4 text-[#F2C265]" />
               حقیقت ({truthCount} از 6 منبع)
@@ -195,7 +195,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
 
         {/* 2. Aryaman Triggers (0 to 5) */}
         <div className="p-4 rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-3">
-          <div className="flex items-center justify-between border-b border-[#2F2A23] pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-2">
             <span className="text-xs font-black text-[#F2C265] flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-[#F2C265]" />
               راه‌اندازهای آریامن ({aryaman.count} از 5)
@@ -230,7 +230,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
 
         {/* 3. Embers & Mother Ember (0 to 100%) */}
         <div className="p-4 rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-3">
-          <div className="flex items-center justify-between border-b border-[#2F2A23] pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-2">
             <span className="text-xs font-black text-[#F2C265] flex items-center gap-1.5">
               <Flame className="w-4 h-4 text-[#F2C265]" />
               اخگرها ({state.embersPercentage}٪ از 100٪)
@@ -265,7 +265,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
             {state.emberSources.map((src, i) => (
               <label
                 key={i}
-                className="flex items-center justify-between p-2 rounded-xl bg-[#181c28] border border-[#2F2A23] text-xs cursor-pointer select-none"
+                className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-[#181c28] border border-[#2F2A23] text-xs cursor-pointer select-none"
               >
                 <div className="flex items-center gap-2">
                   <input
@@ -286,7 +286,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
 
         {/* 4. Chaos Tracker (0 to 10) */}
         <div className="p-4 rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-3">
-          <div className="flex items-center justify-between border-b border-[#2F2A23] pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-2">
             <span className="text-xs font-black text-[#E8836B] flex items-center gap-1.5">
               <AlertTriangle className="w-4 h-4 text-[#E8836B]" />
               آشفتگی ({chaosScore} از 10)
@@ -297,58 +297,58 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
           </div>
 
           <div className="space-y-2 text-xs">
-            <div className="flex items-center justify-between p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
-              <span className="text-[#C9C0AE]">مهر کلید شکسته (+1 هر کدام، حداکثر 3):</span>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
+              <span className="text-[#C9C0AE] min-w-0 truncate">مهر کلید شکسته (+1 هر کدام، حداکثر 3):</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => adjustChaos('brokenKeySeals', -1)}
-                  className="w-6 h-6 rounded bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >-1</button>
                 <span className="font-mono font-bold text-[#F2C265]">{state.chaos.brokenKeySeals}</span>
                 <button
                   type="button"
                   onClick={() => adjustChaos('brokenKeySeals', +1)}
-                  className="w-6 h-6 rounded bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >+1</button>
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
               <span className="text-[#C9C0AE]">متحد اصلی کشته‌شده (+1 هر کدام، حداکثر 3):</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => adjustChaos('mainAlliesDead', -1)}
-                  className="w-6 h-6 rounded bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >-1</button>
                 <span className="font-mono font-bold text-[#F2C265]">{state.chaos.mainAlliesDead}</span>
                 <button
                   type="button"
                   onClick={() => adjustChaos('mainAlliesDead', +1)}
-                  className="w-6 h-6 rounded bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >+1</button>
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
               <span className="text-[#C9C0AE]">فرقه/جناح دشمن‌شده (+1 هر کدام، حداکثر 3):</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => adjustChaos('ordersTurnedEnemy', -1)}
-                  className="w-6 h-6 rounded bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >-1</button>
                 <span className="font-mono font-bold text-[#F2C265]">{state.chaos.ordersTurnedEnemy}</span>
                 <button
                   type="button"
                   onClick={() => adjustChaos('ordersTurnedEnemy', +1)}
-                  className="w-6 h-6 rounded bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >+1</button>
               </div>
             </div>
 
-            <label className="flex items-center justify-between p-2 rounded-xl bg-[#181c28] border border-[#2F2A23] cursor-pointer select-none">
+            <label className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-[#181c28] border border-[#2F2A23] cursor-pointer select-none">
               <span className="text-[#C9C0AE]">آستانه مهارنشده سنگ‌خواب یا وردان (+1):</span>
               <input
                 type="checkbox"
@@ -358,19 +358,19 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
               />
             </label>
 
-            <div className="flex items-center justify-between p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
               <span className="text-[#6F9E78]">آشتی دادن جناح یا نجات متحد (-1 کاهش):</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => adjustChaos('reconciledOrdersOrSavedAllies', -1)}
-                  className="w-6 h-6 rounded bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >-1</button>
                 <span className="font-mono font-bold text-[#6F9E78]">{state.chaos.reconciledOrdersOrSavedAllies}</span>
                 <button
                   type="button"
                   onClick={() => adjustChaos('reconciledOrdersOrSavedAllies', +1)}
-                  className="w-6 h-6 rounded bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
                 >+1</button>
               </div>
             </div>

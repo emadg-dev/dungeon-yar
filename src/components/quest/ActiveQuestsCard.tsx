@@ -25,7 +25,7 @@ export const ActiveQuestsCard: React.FC<ActiveQuestsCardProps> = ({
   return (
     <div className="surface-card rounded-[14px] p-4 border border-[#2F2A23] bg-[#14120E] space-y-3.5 shadow-md" dir="rtl">
       {/* Header */}
-      <div className="flex items-center justify-between gap-2 border-b border-[#2F2A23]/80 pb-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 gap-2 border-b border-[#2F2A23]/80 pb-2.5">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#E0A030] flex items-center justify-center">
             <Scroll className="w-4 h-4" />

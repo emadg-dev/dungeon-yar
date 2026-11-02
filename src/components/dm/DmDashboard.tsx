@@ -211,7 +211,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
       )}
 
       {/* Campaign Setup Checklist (Progress Ring / Shortcut) */}
-      <div className="surface-card rounded-[14px] p-3.5 flex items-center justify-between gap-3 border border-[#2F2A23] hover:border-[#E0A030]/40 transition">
+      <div className="surface-card rounded-[14px] p-3.5 flex flex-wrap items-center justify-between gap-2 gap-3 border border-[#2F2A23] hover:border-[#E0A030]/40 transition">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-[#E0A030]/15 text-[#F2C265] border border-[#E0A030]/30 flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-5 h-5" />
@@ -233,7 +233,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           <button
             type="button"
             onClick={onOpenSetupChecklist}
-            className="px-3 py-1.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#F2C265] text-xs font-bold transition flex items-center gap-1 min-h-[36px]"
+            className="px-3 py-1.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#F2C265] text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
           >
             <span>بازبینی چک‌لیست</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -292,7 +292,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
 
       {/* Player Cards in a Strip with Big HP Controls & Level Up / Sheet Lock tools */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between px-1">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1">
           <div className="flex items-center gap-2">
             <h3 className="text-xs font-bold text-[#A39A89] flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-[#E0A030]" />
@@ -304,7 +304,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
             <button
               type="button"
               onClick={onCreateForPlayer}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/40 hover:bg-[#E0A030]/30 text-xs font-bold transition min-h-[36px]"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/40 hover:bg-[#E0A030]/30 text-xs font-bold transition min-h-[44px]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>ساخت برای بازیکن (ویزارد)</span>
@@ -325,7 +325,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                 className="surface-card rounded-[14px] p-3.5 border border-[#2F2A23] transition hover:border-[#2F2A23]/80 space-y-3 content-visibility-card"
               >
                 {/* Header: Portrait, Name, Class & "Needs Attention" Badge */}
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <img
                       src={char.portraitUrl || 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=120&q=80'}
@@ -373,7 +373,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
 
                 {/* Step 3.4 Level-Up, Lock & Snapshot Controls for DM */}
                 <div className="p-2.5 rounded-xl bg-[#141822] border border-[#2F2A23] space-y-2">
-                  <div className="flex items-center justify-between text-[11px]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
                     <span className="text-[#A39A89] font-bold">ابزارهای دانجن مستر:</span>
                     <span className="text-[10px] text-[#EDE6D8] font-mono">
                       XP: {part?.xp ?? 0}
@@ -444,7 +444,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                 </div>
 
                 {/* Bottom Actions: Award Inspiration / DM Override / Inspect */}
-                <div className="flex items-center justify-between pt-2 border-t border-[#2F2A23] text-xs gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#2F2A23] text-xs gap-2">
                   <button
                     type="button"
                     onClick={() => awardInspiration(char)}

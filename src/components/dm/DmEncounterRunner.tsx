@@ -541,7 +541,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
     return (
       <div className="space-y-4" dir="rtl">
         {/* Header Bar */}
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 className="text-base font-extrabold text-[#EDE6D8]">مدیریت مبارزات کمپین</h2>
             <p className="text-xs text-[#A39A89]">کنترل نبردهای زنده، ترتیب ابتکار عمل و اشتراک با بازیکنان</p>
@@ -663,7 +663,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                       </div>
 
                       {/* Action buttons */}
-                      <div className="flex items-center justify-between pt-2 border-t border-[#2F2A23] text-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#2F2A23] text-xs">
                         <button
                           type="button"
                           onClick={() => handleDuplicateEncounter(enc)}
@@ -756,7 +756,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
             <div className="space-y-2 p-3 rounded-[12px] bg-[#171513] border border-[#2F2A23]">
               <span className="text-xs font-extrabold text-[#E0A030] block mb-1">تنظیمات مشاهده بازیکنان</span>
 
-              <label className="flex items-center justify-between text-xs text-[#EDE6D8] cursor-pointer">
+              <label className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#EDE6D8] cursor-pointer">
                 <span>نمایش عدد دقیق HP هیولاها به بازیکنان</span>
                 <input
                   type="checkbox"
@@ -769,7 +769,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 />
               </label>
 
-              <label className="flex items-center justify-between text-xs text-[#EDE6D8] cursor-pointer">
+              <label className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#EDE6D8] cursor-pointer">
                 <span>نمایش عدد دقیق زره (AC) هیولاها</span>
                 <input
                   type="checkbox"
@@ -782,7 +782,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 />
               </label>
 
-              <label className="flex items-center justify-between text-xs text-[#EDE6D8] cursor-pointer">
+              <label className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#EDE6D8] cursor-pointer">
                 <span>اجازه به بازیکن برای پرتاب تاس ابتکار عمل خود</span>
                 <input
                   type="checkbox"
@@ -795,7 +795,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 />
               </label>
 
-              <label className="flex items-center justify-between text-xs text-[#EDE6D8] cursor-pointer">
+              <label className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#EDE6D8] cursor-pointer">
                 <span>نمایش وضعیت‌ها و حالات منفی به بازیکنان</span>
                 <input
                   type="checkbox"
@@ -848,7 +848,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
   return (
     <div className="space-y-4 pb-24" dir="rtl">
       {/* Sticky Top Status Bar (§2.4) */}
-      <div className="sticky top-[52px] z-10 surface-card rounded-[14px] p-3 border border-[#2F2A23] shadow-lg backdrop-blur-md bg-[#171513]/95 flex items-center justify-between gap-2 flex-wrap">
+      <div className="sticky top-[52px] z-10 surface-card rounded-[14px] p-3 border border-[#2F2A23] shadow-lg backdrop-blur-md bg-[#171513]/95 flex flex-wrap items-center justify-between gap-2 gap-2 flex-wrap">
         <div className="flex items-center gap-2 min-w-0">
           <button
             type="button"
@@ -951,7 +951,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
       {/* Unplaced Strip (§2.4: Added without initiative) */}
       {unplacedParticipants.length > 0 && (
         <div className="surface-card rounded-[14px] p-3 border border-[#E0A030]/40 bg-[#E0A030]/5 space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold text-[#E0A030]">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-[#E0A030]">
             <span className="flex items-center gap-1.5">
               <AlertTriangle className="w-4 h-4" />
               <span>موجودات نیازمند تعیین ابتکار عمل ({unplacedParticipants.length})</span>
@@ -963,7 +963,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
             {unplacedParticipants.map(p => (
               <div
                 key={p.id}
-                className="surface-2-card rounded-[10px] p-2 border border-[#2F2A23] flex items-center justify-between gap-2"
+                className="surface-2-card rounded-[10px] p-2 border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-2"
               >
                 <div className="min-w-0">
                   <span className="text-xs font-bold text-[#EDE6D8] block truncate">{p.instanceName}</span>
@@ -1021,7 +1021,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
               }`}
             >
               {/* Row Header */}
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   {/* Initiative Value Badge */}
                   <div className={`w-8 h-8 rounded-[8px] flex items-center justify-center text-xs font-black shrink-0 ${
@@ -1108,7 +1108,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
 
               {/* HP Bar and Direct Controls */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-1.5">
                     <span className="font-bold text-[#EDE6D8]">{p.hp} / {p.maxHp} HP</span>
                     <span className="text-[10px] text-[#A39A89]">({Math.round((p.hp / (p.maxHp || 1)) * 100)}%)</span>
@@ -1197,7 +1197,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
               {/* Action Dropdown Menu if Active */}
               {activeMenuParticipantId === p.id && (
                 <div className="p-2.5 rounded-[10px] bg-[#171513] border border-[#2F2A23] space-y-1.5 text-xs animate-in fade-in duration-150">
-                  <div className="flex items-center justify-between pb-1 border-b border-[#2F2A23]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-[#2F2A23]">
                     <span className="font-bold text-[#E0A030]">عملیات پیشرفته برای {p.instanceName}</span>
                     <button onClick={() => setActiveMenuParticipantId(null)}>
                       <X className="w-3.5 h-3.5 text-[#A39A89]" />
@@ -1375,7 +1375,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                       type="button"
                       key={n.id}
                       onClick={() => setSelectedNpcId(n.id)}
-                      className={`w-full text-right p-2 rounded-[6px] text-xs transition flex items-center justify-between ${
+                      className={`w-full text-right p-2 rounded-[6px] text-xs transition flex flex-wrap items-center justify-between gap-2 ${
                         selectedNpcId === n.id ? 'bg-[#E0A030] text-[#0E0D0C] font-black' : 'text-[#EDE6D8] hover:bg-[#201D19]'
                       }`}
                     >
@@ -1386,7 +1386,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
               </div>
 
               {/* Quantity Counter (§2.2) */}
-              <div className="flex items-center justify-between p-2 rounded-[8px] bg-[#171513] border border-[#2F2A23]">
+              <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-[8px] bg-[#171513] border border-[#2F2A23]">
                 <span className="text-xs text-[#EDE6D8] font-bold">تعداد (شماره‌گذاری خودکار 1…4):</span>
                 <div className="flex items-center gap-2">
                   <button
@@ -1435,7 +1435,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-2 rounded-[8px] bg-[#171513] border border-[#2F2A23]">
+              <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-[8px] bg-[#171513] border border-[#2F2A23]">
                 <label className="text-xs text-[#EDE6D8] font-bold cursor-pointer">گروه‌بندی سربازان (تقسیم آسیب یکجا)</label>
                 <input
                   type="checkbox"
@@ -1447,7 +1447,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
 
               {/* Reinforcements announcement (§2.4) */}
               <div className="space-y-1.5 p-2 rounded-[8px] bg-[#171513] border border-[#2F2A23]">
-                <label className="flex items-center justify-between text-xs text-[#E0A030] font-bold cursor-pointer">
+                <label className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#E0A030] font-bold cursor-pointer">
                   <span>ارسال پیام ورود نیروی کمکی به بازیکنان</span>
                   <input
                     type="checkbox"
@@ -1517,7 +1517,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
           {/* Subtab 3: Party Characters */}
           {addMonsterSubTab === 'party' && (
             <div className="space-y-2">
-              <div className="flex items-center justify-between pb-1 border-b border-[#2F2A23]">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-[#2F2A23]">
                 <span className="text-xs font-bold text-[#A39A89]">انتخاب کاراکترها:</span>
                 <button
                   type="button"
@@ -1534,7 +1534,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                   return (
                     <label
                       key={c.id}
-                      className="flex items-center justify-between p-2 rounded-[8px] bg-[#171513] border border-[#2F2A23] cursor-pointer"
+                      className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-[8px] bg-[#171513] border border-[#2F2A23] cursor-pointer"
                     >
                       <div>
                         <span className="text-xs font-bold text-[#EDE6D8] block">{c.name}</span>
@@ -1575,7 +1575,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
         <div className="space-y-3 pb-3 max-w-xs mx-auto" dir="rtl">
           <div className="p-3 rounded-[12px] bg-[#171513] border border-[#2F2A23] text-center">
             <span className="text-xs text-[#A39A89] block mb-1">مقدار تغییر:</span>
-            <span className="text-2xl font-black text-[#E0A030] tracking-wider min-h-[36px] block">
+            <span className="text-2xl font-black text-[#E0A030] tracking-wider min-h-[44px] block">
               {keypadAmount || '0'}
             </span>
             <span className="text-[11px] text-[#A39A89] mt-1 block">
@@ -1640,7 +1640,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                 type="button"
                 key={cond}
                 onClick={() => conditionTarget && handleToggleCondition(conditionTarget, cond)}
-                className={`w-full p-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-between touch-target ${
+                className={`w-full p-2.5 rounded-[10px] text-xs font-bold transition flex flex-wrap items-center justify-between gap-2 touch-target ${
                   isApplied
                     ? 'bg-[#C2512B]/20 text-[#E8836B] border border-[#C2512B]/40'
                     : 'bg-[#171513] text-[#EDE6D8] border border-[#2F2A23] hover:bg-[#201D19]'
@@ -1679,12 +1679,12 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                     key={loot.id}
                     className="p-2.5 rounded-[10px] bg-[#171513] border border-[#2F2A23] space-y-2"
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-xs font-black text-[#E0A030]">{loot.name}</span>
                       <span className="text-[10px] text-[#A39A89]">از {loot.sourceNpc}</span>
                     </div>
 
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-[11px] text-[#A39A89]">اهدای آیتم به:</span>
                       <select
                         value={selectedLootRecipients[loot.id] || ''}

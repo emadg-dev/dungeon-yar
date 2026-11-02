@@ -33,7 +33,7 @@ const NoteCardRow = memo<NoteCardRowProps>(({
     }`}
   >
     {/* Card Header */}
-    <div className="flex items-center justify-between mb-2 gap-2">
+    <div className="flex flex-wrap items-center justify-between gap-2 mb-2 gap-2">
       <div className="flex items-center gap-2 min-w-0 flex-1">
         {note.pinned && (
           <Pin className="w-3.5 h-3.5 text-[#E0A030] fill-[#E0A030] shrink-0" />
@@ -103,7 +103,7 @@ const NoteCardRow = memo<NoteCardRowProps>(({
     </p>
 
     {note.sessionTag && (
-      <div className="mt-2 pt-2 border-t border-[#2F2A23] flex items-center justify-between text-[10px] text-[#A39A89]">
+      <div className="mt-2 pt-2 border-t border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 text-[10px] text-[#A39A89]">
         <span>برچسب جلسه: {note.sessionTag}</span>
         {note.sharedWithDm && (
           <span className="text-[#6F9E78] font-bold">دیده‌شده توسط DM</span>
@@ -406,7 +406,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
               />
             </div>
 
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
               <label className="flex items-center gap-2 cursor-pointer text-xs text-[#EDE6D8] touch-target">
                 <input
                   type="checkbox"
@@ -497,7 +497,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
             />
           </div>
 
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
             <label className="flex items-center gap-2 cursor-pointer text-xs text-[#EDE6D8] touch-target">
               <input
                 type="checkbox"

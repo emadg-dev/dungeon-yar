@@ -285,7 +285,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {/* Invite Code (Register only) */}
             {mode === 'register' && (
               <div className="space-y-1">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <label className="text-xs font-bold text-[#EDE6D8]">کد دعوت کمپین</label>
                   <span className="text-[10px] text-[#A39A89]">برای ایمیل‌های DM الزامی نیست</span>
                 </div>
@@ -327,7 +327,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             {/* Password */}
             <div className="space-y-1">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <label className="text-xs font-bold text-[#EDE6D8]">
                   {mode === 'reset' ? 'رمز عبور جدید' : 'رمز عبور'}
                 </label>
@@ -437,7 +437,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Quick Demo Switcher (Only in preview / test mode) */}
         {onSelectPreloadedUser && (
           <div className="pt-3 border-t border-[#2F2A23] space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-[11px] font-bold text-[#A39A89]">تست سریع (حالت پیش‌نمایش):</span>
               <span className="text-[10px] text-[#E0A030] font-mono">Preview only</span>
             </div>

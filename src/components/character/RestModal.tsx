@@ -116,7 +116,7 @@ export const RestModal: React.FC<RestModalProps> = ({
 
         {/* Hit Dice Spend Stepper for Short Rest */}
         {restType === 'short' && (
-          <div className="surface-2-card rounded-[12px] p-3 border border-[#2F2A23] flex items-center justify-between">
+          <div className="surface-2-card rounded-[12px] p-3 border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Heart className="w-4 h-4 text-[#6F9E78]" />
               <div>

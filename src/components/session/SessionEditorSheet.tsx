@@ -316,7 +316,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
         {/* Poll Mode (2 to 5 date options) */}
         {mode === 'poll' && (
           <div className="space-y-3 p-3.5 rounded-2xl bg-[#171310] border border-white/5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 className="text-xs font-bold text-[#F2C265] flex items-center gap-1.5">
                 <Hourglass className="w-3.5 h-3.5" />
                 <span>گزینه‌های نظرسنجی تاریخ (۲ تا ۵ گزینه)</span>

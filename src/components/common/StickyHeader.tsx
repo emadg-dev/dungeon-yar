@@ -76,7 +76,7 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
     >
       <div className="max-w-7xl mx-auto flex flex-col gap-1.5">
         {/* Top: Character Info & Wide HP Controls */}
-        <div className="flex items-center justify-between gap-2 min-w-0">
+        <div className="flex flex-wrap items-center justify-between gap-2 gap-2 min-w-0">
           {/* Identity Info */}
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <img

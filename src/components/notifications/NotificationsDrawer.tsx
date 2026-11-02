@@ -174,7 +174,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
       <BottomSheet isOpen={isOpen} onClose={onClose} title="اعلان‌ها و رویدادها">
         <div className="space-y-4 pb-6 text-sm text-[#E2D8C3]" dir="rtl">
           {/* Top action bar: Filter Pills & Action buttons */}
-          <div className="flex items-center justify-between gap-2 border-b border-[#2F2A23] pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 gap-2 border-b border-[#2F2A23] pb-3">
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
               <button
                 type="button"
@@ -267,7 +267,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
               {grouped.map((group) => (
                 <div key={group.campaignId || 'global'} className="space-y-2">
                   {/* Campaign Group Header */}
-                  <div className="flex items-center justify-between text-xs font-bold text-[#A89885] px-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-[#A89885] px-1">
                     <span className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#E0A030]" />
                       {group.campaignTitle}
@@ -329,7 +329,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                             </p>
 
                             {/* Deep link action button & Delete */}
-                            <div className="flex items-center justify-between pt-1 text-xs">
+                            <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
                               <button
                                 type="button"
                                 onClick={() => handleItemClick(item)}

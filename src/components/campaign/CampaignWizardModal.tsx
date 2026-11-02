@@ -571,7 +571,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {factionsList.map((f, idx) => (
-                  <div key={idx} className="p-2 rounded-lg bg-[#0E0D0C] border border-[#2F2A23] flex items-center justify-between text-xs">
+                  <div key={idx} className="p-2 rounded-lg bg-[#0E0D0C] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div>
                       <span className="font-bold text-[#F2C265]">{f.name}</span>
                       <span className="text-[#A39A89] text-[10px] me-2">({f.region})</span>
@@ -634,7 +634,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
             <div className="space-y-2 max-h-56 overflow-y-auto">
               {castNpcs.map((n, idx) => (
-                <div key={idx} className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] flex items-center justify-between">
+                <div key={idx} className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <h4 className="text-xs font-bold text-[#EDE6D8]">{n.name}</h4>
                     <span className="text-[11px] text-[#F2C265]">{n.title || 'شخصیت'}</span>
@@ -696,7 +696,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
             <div className="space-y-2 max-h-56 overflow-y-auto">
               {lootItems.map((item, idx) => (
-                <div key={idx} className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] flex items-center justify-between">
+                <div key={idx} className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <h4 className="text-xs font-bold text-[#F2C265]">{item.name}</h4>
                     <span className="text-[10px] text-[#A39A89]">دسته‌بندی: {item.category}</span>
@@ -819,7 +819,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {invites.map((inv, idx) => (
-                <div key={idx} className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] flex items-center justify-between">
+                <div key={idx} className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <h4 className="text-xs font-bold text-[#EDE6D8]">{inv.label}</h4>
                     <span className="text-[10px] text-[#F2C265]">
@@ -951,7 +951,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 text-start" dir="rtl">
       <div className="bg-[rgba(18,16,14,0.88)] backdrop-blur-xl border border-[#E0A030]/30 rounded-t-3xl sm:rounded-3xl w-full max-w-3xl max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_24px_60px_rgba(0,0,0,0.5)]">
         {/* Header Bar */}
-        <div className="p-4 border-b border-[#2F2A23] flex items-center justify-between bg-[#171513]">
+        <div className="p-4 border-b border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 bg-[#171513]">
           <div className="flex items-center gap-2">
             <Compass className="w-5 h-5 text-[#F2C265]" />
             <div>
@@ -977,7 +977,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
         {/* Status notification banner if any */}
         {statusMessage && (
-          <div className="bg-[#E0A030]/15 border-b border-[#E0A030]/30 px-4 py-2 text-xs text-[#F2C265] flex items-center justify-between">
+          <div className="bg-[#E0A030]/15 border-b border-[#E0A030]/30 px-4 py-2 text-xs text-[#F2C265] flex flex-wrap items-center justify-between gap-2">
             <span>{statusMessage}</span>
             <button onClick={() => setStatusMessage(null)} className="text-[#A39A89] hover:text-white">✕</button>
           </div>
@@ -1063,7 +1063,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
           /* 8-STEP WIZARD */
           <>
             {/* Stepper Indicator */}
-            <div className="px-4 py-2.5 bg-[#171513] border-b border-[#2F2A23] flex items-center justify-between gap-1 overflow-x-auto scrollbar-none">
+            <div className="px-4 py-2.5 bg-[#171513] border-b border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-1 overflow-x-auto scrollbar-none">
               {[
                 { s: 1, title: 'مشخصات' },
                 { s: 2, title: 'قوانین' },
@@ -1084,7 +1084,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                       saveCurrentDraft(st.s);
                       setStep(st.s);
                     }}
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition min-h-[36px] ${
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition min-h-[44px] ${
                       isCurrent
                         ? 'bg-[#E0A030] text-[#0E0D0C] shadow-sm'
                         : isDone
@@ -1105,7 +1105,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
             </div>
 
             {/* Sticky Bottom Actions Bar */}
-            <div className="p-4 bg-[#171513] border-t border-[#2F2A23] flex items-center justify-between gap-2">
+            <div className="p-4 bg-[#171513] border-t border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-2">
               <button
                 type="button"
                 disabled={step <= 1}

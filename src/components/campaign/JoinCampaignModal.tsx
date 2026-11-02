@@ -71,7 +71,7 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
 
         {/* Character Selection */}
         <div>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
             <label className="text-xs font-bold text-[#C9C0AE]">انتخاب شخصیت کلان</label>
             {onOpenWizard && (
               <button
@@ -80,7 +80,7 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
                   onClose();
                   onOpenWizard();
                 }}
-                className="text-xs font-bold text-[#F2C265] hover:underline flex items-center gap-1 min-h-[36px]"
+                className="text-xs font-bold text-[#F2C265] hover:underline flex items-center gap-1 min-h-[44px]"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>یا ساخت شخصیت با ویزارد</span>
@@ -112,7 +112,7 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
                   <div
                     key={char.id}
                     onClick={() => setSelectedCharId(char.id)}
-                    className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between min-h-[44px] ${
+                    className={`p-3 rounded-xl border cursor-pointer transition-all flex flex-wrap items-center justify-between gap-2 min-h-[44px] ${
                       isSelected
                         ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
                         : 'bg-[#131110]/60 border-[#2F2A23] text-[#C9C0AE] hover:border-[#3A342B]'
@@ -186,7 +186,7 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
 
         {/* Level Stepper (if new_level or same_level) */}
         {entryMode !== 'campaign_start' && (
-          <div className="p-3.5 rounded-xl bg-[#131110] border border-[#2F2A23] flex items-center justify-between">
+          <div className="p-3.5 rounded-xl bg-[#131110] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
             <div>
               <span className="text-xs font-bold text-[#EDE6D8] block">سطح ورود شخصیت</span>
               <span className="text-[10px] text-[#A39A89]">حداکثر سطح مجاز کمپین: {maxLevel}</span>

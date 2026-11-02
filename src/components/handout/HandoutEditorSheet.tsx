@@ -142,7 +142,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in" dir="rtl">
       <div className="w-full max-w-2xl max-h-[90vh] flex flex-col bg-[#14120E] border border-[#2F2A23] rounded-t-[20px] sm:rounded-[20px] shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[#2F2A23] bg-[#1A1612]">
+        <div className="flex flex-wrap items-center justify-between gap-2 p-4 border-b border-[#2F2A23] bg-[#1A1612]">
           <h2 className="text-base font-bold text-[#EDE6D8]">
             {initialHandout ? 'ویرایش سند یا نقشه' : 'افزودن سند یا نقشه جدید'}
           </h2>

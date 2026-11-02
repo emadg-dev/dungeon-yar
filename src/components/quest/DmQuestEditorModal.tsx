@@ -132,7 +132,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
         aria-modal="true"
       >
         {/* Header */}
-        <div className="p-4 border-b border-[#2F2A23] flex items-center justify-between bg-[#1A1713]">
+        <div className="p-4 border-b border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 bg-[#1A1713]">
           <div>
             <h2 className="text-sm font-black text-[#EDE6D8]">
               {isEditing ? 'ویرایش مأموریت' : 'ثبت مأموریت تازه'}
@@ -216,7 +216,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
 
           {/* Objectives List */}
           <div className="space-y-2 pt-1 border-t border-[#2F2A23]">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <label className="text-xs font-black text-[#EDE6D8] flex items-center gap-1.5">
                 <span>اهداف مأموریت</span>
                 <span className="text-[10px] text-[#A39A89]">({objectives.length})</span>
@@ -285,7 +285,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                       </button>
                     )}
                   </div>
-                  <div className="flex items-center justify-between text-[10px] text-[#A39A89] px-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-[#A39A89] px-1">
                     <span>
                       {obj.visible ? '👁 برای بازیکنان نمایش داده می‌شود' : '🔒 تا زمان کشف مخفی است'}
                     </span>

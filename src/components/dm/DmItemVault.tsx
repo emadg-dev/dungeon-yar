@@ -337,7 +337,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                 className="bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030]/30 rounded-2xl p-4 shadow-lg flex flex-col justify-between content-visibility-card"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2">
                       <h4 className="font-bold text-sm text-[#F2C265]">{item.name}</h4>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#E0A030]/15 text-[#F2C265] border border-[#E0A030]/30 font-bold">
@@ -406,7 +406,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
             {rewards.map(rew => (
               <div key={rew.id} className="p-4 rounded-2xl bg-[#171513] border border-[#E0A030]/25 shadow-lg flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <h4 className="font-bold text-sm text-[#F2C265]">{rew.title}</h4>
                     <span className="text-[10px] text-[#8A8374] font-mono">
                       {new Date(rew.createdAt).toLocaleDateString('fa-IR-u-nu-latn')}

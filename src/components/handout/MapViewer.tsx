@@ -244,7 +244,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
           className="p-3.5 bg-[#1F1B15] border-t border-[#2F2A23] rounded-b-[16px] space-y-2.5 animate-in fade-in slide-in-from-bottom-2"
           dir="rtl"
         >
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
             <div className="flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-[#E0A030]/20 text-[#E0A030] flex items-center justify-center">
                 <MapPinIcon className="w-3.5 h-3.5" />
@@ -317,7 +317,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
       {/* Edit Selected Pin Form */}
       {selectedPin && isEditingSelectedPin && isDm && (
         <div className="p-3.5 bg-[#1F1B15] border-t border-[#2F2A23] rounded-b-[16px] space-y-3" dir="rtl">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h4 className="font-bold text-xs text-[#EDE6D8]">ویرایش نشانگر</h4>
             <button
               type="button"
@@ -377,7 +377,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
       {/* Add New Pin Form (triggered by click on map) */}
       {pendingCoords && isDm && (
         <div className="p-3.5 bg-[#1F1B15] border-t border-[#2F2A23] rounded-b-[16px] space-y-3" dir="rtl">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="w-5 h-5 rounded-full bg-[#E0A030] text-[#14120E] flex items-center justify-center font-bold text-xs">
                 +

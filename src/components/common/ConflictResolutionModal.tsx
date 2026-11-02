@@ -57,7 +57,7 @@ export const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = (
                 key={c.id}
                 className="p-3.5 rounded-[12px] bg-[#171513] border border-[#2F2A23] space-y-3"
               >
-                <div className="flex items-center justify-between text-xs border-b border-[#2F2A23] pb-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs border-b border-[#2F2A23] pb-2">
                   <span className="font-black text-[#EDE6D8]">
                     {getFieldLabelFa(c.field)}
                   </span>
@@ -69,7 +69,7 @@ export const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   {/* Client offline edit */}
                   <div className="p-2.5 rounded-[8px] bg-[#201D19] border border-[#E0A030]/30 space-y-1">
-                    <div className="flex items-center justify-between text-[11px] text-[#E0A030] font-bold">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#E0A030] font-bold">
                       <span>تغییر شما (آفلاین)</span>
                     </div>
                     <pre className="text-[#EDE6D8] font-mono text-[11px] whitespace-pre-wrap break-all max-h-24 overflow-y-auto">
@@ -79,7 +79,7 @@ export const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = (
 
                   {/* Server current value */}
                   <div className="p-2.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] space-y-1">
-                    <div className="flex items-center justify-between text-[11px] text-[#A39A89] font-bold">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#A39A89] font-bold">
                       <span>نسخه روی سرور</span>
                     </div>
                     <pre className="text-[#EDE6D8] font-mono text-[11px] whitespace-pre-wrap break-all max-h-24 overflow-y-auto">

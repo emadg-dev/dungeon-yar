@@ -58,7 +58,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
   if (!session) {
     return (
       <div className="rounded-2xl bg-[#1C1814] border border-[#2A241C] p-4 sm:p-5 shadow-lg text-right" dir="rtl">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#E0A030]/10 border border-[#E0A030]/20 flex items-center justify-center text-[#F2C265]">
               <CalendarIcon className="w-5 h-5" />
@@ -164,7 +164,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
   return (
     <div className="rounded-2xl bg-gradient-to-b from-[#221C16] to-[#181411] border border-[#3A3024] p-4 sm:p-5 shadow-xl text-right transition-all" dir="rtl">
       {/* Header bar: Session # and Status */}
-      <div className="flex items-center justify-between pb-3 border-b border-white/5">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-white/5">
         <div className="flex items-center gap-2">
           <span className="px-2.5 py-0.5 rounded-lg bg-[#E0A030]/15 text-[#F2C265] border border-[#E0A030]/25 text-xs font-extrabold tracking-wide">
             جلسه {session.number}
@@ -246,7 +246,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
               href={session.onlineUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#9B72CF]/15 hover:bg-[#9B72CF]/25 text-[#C4A5EB] border border-[#9B72CF]/30 font-semibold transition-colors min-h-[36px]"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#9B72CF]/15 hover:bg-[#9B72CF]/25 text-[#C4A5EB] border border-[#9B72CF]/30 font-semibold transition-colors min-h-[44px]"
             >
               <Video className="w-3.5 h-3.5" />
               <span>لینک اتاق صوتی/تصویری</span>
@@ -269,7 +269,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
       {/* Date Poll Section (if active) */}
       {poll && poll.status === 'open' && (
         <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-[#E0A030] animate-ping" />
               <h4 className="text-xs sm:text-sm font-bold text-[#F2C265]">نظرسنجی انتخاب زمان جلسه</h4>
@@ -382,7 +382,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
       {/* RSVP Section (When session has scheduledAt) */}
       {session.scheduledAt && session.status !== 'done' && session.status !== 'cancelled' && (
         <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-[#EDE6D8]">وضعیت حضور شما:</span>
               {currentRsvp === 'yes' && (

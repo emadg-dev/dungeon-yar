@@ -143,7 +143,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
         {/* Header */}
         <div 
-          className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-[#2F2A23] shrink-0 bg-[#131110]/90 touch-none select-none"
+          className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-5 py-3 border-b border-[#2F2A23] shrink-0 bg-[#131110]/90 touch-none select-none"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}

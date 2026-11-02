@@ -88,7 +88,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
     >
       <div className="space-y-4 pb-20 text-right" dir="rtl">
         {/* Top Control Bar: Tabs & New Session Button */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 gap-3">
           <div className="flex bg-[#12100E] p-1 rounded-xl border border-white/10">
             <button
               type="button"
@@ -278,7 +278,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                   )}
 
                   {/* Footer Stats: RSVP / Attendance */}
-                  <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs">
+                  <div className="pt-2 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
                     {s.status === 'done' ? (
                       <div className="flex items-center gap-1.5 text-[#6F9E78] font-bold">
                         <CheckCircle2 className="w-3.5 h-3.5" />

@@ -228,7 +228,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
 
         {/* Ability Score Bonuses */}
         <div className="space-y-3 p-3.5 rounded-2xl bg-[#1A1815] border border-[#2F2A23]">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h4 className="text-xs font-extrabold text-[#F2C265] flex items-center gap-1.5">
               <Sparkles className="w-4 h-4" />
               <span>پاداش ویژگی‌ها (Ability Score Bonuses)</span>
@@ -304,7 +304,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
 
         {/* Traits */}
         <div className="space-y-3 p-3.5 rounded-2xl bg-[#1A1815] border border-[#2F2A23]">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h4 className="text-xs font-extrabold text-[#F2C265] flex items-center gap-1.5">
               <Shield className="w-4 h-4" />
               <span>قابلیت‌ها و خصلت‌های نژادی (Traits)</span>
@@ -312,7 +312,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
             <button
               type="button"
               onClick={handleAddTrait}
-              className="px-2.5 py-1 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#F2C265] text-xs font-bold transition flex items-center gap-1 min-h-[36px]"
+              className="px-2.5 py-1 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#F2C265] text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>افزودن خصلت</span>
@@ -322,7 +322,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
           <div className="space-y-2">
             {traits.map((tr, idx) => (
               <div key={idx} className="p-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] space-y-2">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
                   <input
                     type="text"
                     value={tr.name}
@@ -429,7 +429,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
 
         {/* Sublineages */}
         <div className="space-y-3 p-3.5 rounded-2xl bg-[#1A1815] border border-[#2F2A23]">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h4 className="text-xs font-extrabold text-[#F2C265] flex items-center gap-1.5">
               <BookOpen className="w-4 h-4" />
               <span>زیرنژادها / تیره‌ها (Sublineages)</span>
@@ -437,7 +437,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
             <button
               type="button"
               onClick={handleAddSublineage}
-              className="px-2.5 py-1 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#F2C265] text-xs font-bold transition flex items-center gap-1 min-h-[36px]"
+              className="px-2.5 py-1 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#F2C265] text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>افزودن تیره</span>
@@ -446,7 +446,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
 
           {sublineages.map((sub, idx) => (
             <div key={idx} className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] space-y-2">
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
                 <input
                   type="text"
                   value={sub.name}

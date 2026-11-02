@@ -35,7 +35,7 @@ export const StatCard: React.FC<StatCardProps> = ({
         borderTopWidth: accentColor ? '2px' : undefined,
       }}
     >
-      <div className="flex items-center justify-between text-xs text-[#A39A89] font-medium mb-1.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#A39A89] font-medium mb-1.5">
         <span className="truncate">{label}</span>
         {Icon && <Icon className={`w-4 h-4 shrink-0 ${iconColor}`} />}
       </div>

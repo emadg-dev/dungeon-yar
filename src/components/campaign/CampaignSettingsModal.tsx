@@ -64,7 +64,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
             سیستم نظارت و تأیید دانجن مستر
           </h4>
 
-          <div className="flex items-center justify-between p-2 rounded-xl bg-[#0E0D0C]/40">
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-[#0E0D0C]/40">
             <div>
               <span className="text-xs font-semibold text-[#EDE6D8] block">تأیید ورود شخصیت نو (onCreate)</span>
               <span className="text-[10px] text-[#A39A89]">کاراکترهای جدید تا زمان تأیید DM در حالت معلق می‌مانند</span>
@@ -80,7 +80,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
             />
           </div>
 
-          <div className="flex items-center justify-between p-2 rounded-xl bg-[#0E0D0C]/40">
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-[#0E0D0C]/40">
             <div>
               <span className="text-xs font-semibold text-[#EDE6D8] block">تأیید ارتقای سطح (onLevelUp)</span>
               <span className="text-[10px] text-[#A39A89]">تغییرات لول‌آپ بازیکن پس از تأیید دانجن مستر اعمال می‌شود</span>
@@ -96,7 +96,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
             />
           </div>
 
-          <div className="flex items-center justify-between p-2 rounded-xl bg-[#0E0D0C]/40">
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-[#0E0D0C]/40">
             <div>
               <span className="text-xs font-semibold text-[#EDE6D8] block">الزام تکمیل پیشینه برای تأیید ورود</span>
               <span className="text-[10px] text-[#A39A89]">ورود شخصیت تنها پس از نگارش پیشینه و بازبینی ممکن باشد</span>
@@ -113,7 +113,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
             />
           </div>
 
-          <div className="flex items-center justify-between p-2 rounded-xl bg-[#0E0D0C]/40">
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-[#0E0D0C]/40">
             <div>
               <span className="text-xs font-semibold text-[#EDE6D8] block">مجوز ساخت شخصیت توسط بازیکن</span>
               <span className="text-[10px] text-[#A39A89]">بازیکنان می‌توانند مستقیماً شخصیت اضافه کنند</span>
@@ -126,7 +126,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
             />
           </div>
 
-          <div className="flex items-center justify-between p-2 rounded-xl bg-[#0E0D0C]/40">
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-[#0E0D0C]/40">
             <div>
               <span className="text-xs font-semibold text-[#EDE6D8] block">علامت‌زدن اهداف مأموریت توسط بازیکن</span>
               <span className="text-[10px] text-[#A39A89]">امکان تیک زدن اهداف مأموریت در طومار توسط خود بازیکنان</span>
@@ -172,7 +172,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-2 rounded-xl bg-[#0E0D0C]/40">
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-[#0E0D0C]/40">
             <div>
               <span className="text-xs font-semibold text-[#EDE6D8] block">واحد فواصل بازی</span>
               <span className="text-[10px] text-[#A39A89]">نمایش حرکات و بردهای اسلحه و جادوها</span>
@@ -195,7 +195,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
             تاس‌ها و دیداری‌سازی پیشینه
           </h4>
 
-          <div className="flex items-center justify-between p-2 rounded-xl bg-[#0E0D0C]/40">
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-[#0E0D0C]/40">
             <div>
               <span className="text-xs font-semibold text-[#EDE6D8] block">حالت پیش‌فرض پرتاب تاس</span>
               <span className="text-[10px] text-[#A39A89]">نمایش پرتاب‌ها در فید مشترک میز بازی</span>
@@ -210,7 +210,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
             </select>
           </div>
 
-          <div className="flex items-center justify-between p-2 rounded-xl bg-[#0E0D0C]/40">
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-[#0E0D0C]/40">
             <div>
               <span className="text-xs font-semibold text-[#EDE6D8] block">اجازه پرتاب مخفی به بازیکن</span>
               <span className="text-[10px] text-[#A39A89]">امکان علامت‌گذاری پرتاب به‌عنوان محرمانه به DM</span>
@@ -223,7 +223,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
             />
           </div>
 
-          <div className="flex items-center justify-between p-2 rounded-xl bg-[#0E0D0C]/40">
+          <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-[#0E0D0C]/40">
             <div>
               <span className="text-xs font-semibold text-[#EDE6D8] block">دیداری‌سازی پیشینه (Backstory)</span>
               <span className="text-[10px] text-[#A39A89]">پیشینه و بخش‌های عمومی برای هم‌تیمی‌ها نمایش داده شود؟</span>

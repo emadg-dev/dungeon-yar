@@ -63,7 +63,7 @@ export const DmShanshinEncounters: React.FC<DmShanshinEncountersProps> = ({
       {/* Active Rolled Encounter Card */}
       {activeRoll && (
         <div className="p-4 rounded-2xl bg-gradient-to-br from-[#2A1A0D]/40 via-[#201D19] to-[#171513] border border-[#E0A030]/60 shadow-xl space-y-2 animate-in fade-in duration-300">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="w-8 h-8 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-black flex items-center justify-center text-sm font-mono">
                 d8: {activeRoll.roll}
@@ -102,7 +102,7 @@ export const DmShanshinEncounters: React.FC<DmShanshinEncountersProps> = ({
               key={enc.id}
               className="p-3.5 rounded-2xl bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030]/30 transition space-y-2 relative"
             >
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 rounded-lg bg-[#201D19] border border-[#3A342B] text-[#F2C265] font-mono font-bold flex items-center justify-center text-xs">
                     {enc.id}

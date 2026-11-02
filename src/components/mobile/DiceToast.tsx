@@ -46,7 +46,7 @@ export const DiceToast: React.FC<DiceToastProps> = ({
       dir="rtl"
     >
       <div 
-        className={`p-3.5 rounded-2xl border shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 ${
+        className={`p-3.5 rounded-2xl border shadow-2xl backdrop-blur-md flex flex-wrap items-center justify-between gap-2 gap-3 ${
           latestRoll.isCritical
             ? 'bg-[#E0A030]/15 border-[#F2C265] text-[#F2C265] shadow-[0_0_25px_rgba(245,158,11,0.4)]'
             : latestRoll.isFumble

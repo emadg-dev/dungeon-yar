@@ -567,7 +567,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <button
               type="button"
               onClick={() => setMultiSelectMode(!multiSelectMode)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 min-h-[36px] ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 min-h-[44px] ${
                 multiSelectMode 
                   ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md' 
                   : 'bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8]'
@@ -580,7 +580,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <button
               type="button"
               onClick={() => setPackExportImportOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] text-xs font-bold transition flex items-center gap-1.5 min-h-[36px]"
+              className="px-3 py-1.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] text-xs font-bold transition flex items-center gap-1.5 min-h-[44px]"
               title="صدور یا درون‌ریزی بسته"
             >
               <Upload className="w-4 h-4" />
@@ -590,7 +590,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <button
               type="button"
               onClick={() => setSaveTemplateModalOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#F2C265] hover:bg-[#E0A030]/25 text-xs font-bold transition flex items-center gap-1.5 min-h-[36px]"
+              className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#F2C265] hover:bg-[#E0A030]/25 text-xs font-bold transition flex items-center gap-1.5 min-h-[44px]"
             >
               <Bookmark className="w-4 h-4" />
               <span>ذخیره به عنوان قالب</span>
@@ -599,7 +599,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <button
               type="button"
               onClick={() => setClassEditor({ isOpen: true, item: null })}
-              className="px-3 py-1.5 rounded-xl bg-[#7FB4D6]/20 border border-[#7FB4D6]/40 text-[#7FB4D6] hover:bg-[#7FB4D6]/30 text-xs font-bold transition flex items-center gap-1 min-h-[36px]"
+              className="px-3 py-1.5 rounded-xl bg-[#7FB4D6]/20 border border-[#7FB4D6]/40 text-[#7FB4D6] hover:bg-[#7FB4D6]/30 text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>کلاس جدید</span>
@@ -608,7 +608,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <button
               type="button"
               onClick={() => setLineageEditor({ isOpen: true, item: null })}
-              className="px-3 py-1.5 rounded-xl bg-[#D4A373]/20 border border-[#D4A373]/40 text-[#D4A373] hover:bg-[#D4A373]/30 text-xs font-bold transition flex items-center gap-1 min-h-[36px]"
+              className="px-3 py-1.5 rounded-xl bg-[#D4A373]/20 border border-[#D4A373]/40 text-[#D4A373] hover:bg-[#D4A373]/30 text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>نژاد جدید</span>
@@ -617,7 +617,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <button
               type="button"
               onClick={() => setBackgroundEditor({ isOpen: true, item: null })}
-              className="px-3 py-1.5 rounded-xl bg-[#8B9D83]/20 border border-[#8B9D83]/40 text-[#8B9D83] hover:bg-[#8B9D83]/30 text-xs font-bold transition flex items-center gap-1 min-h-[36px]"
+              className="px-3 py-1.5 rounded-xl bg-[#8B9D83]/20 border border-[#8B9D83]/40 text-[#8B9D83] hover:bg-[#8B9D83]/30 text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>پیشینه جدید</span>
@@ -717,7 +717,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   setTypeFilter(chip.id as EntityTypeFilter);
                 });
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition min-h-[36px] ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition min-h-[44px] ${
                 typeFilter === chip.id
                   ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
                   : 'bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#3A342B]'
@@ -844,7 +844,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                     </p>
                   </div>
 
-                  <div className="mt-3 pt-2.5 border-t border-[#2F2A23]/60 flex items-center justify-between text-[11px] text-[#A39A89]">
+                  <div className="mt-3 pt-2.5 border-t border-[#2F2A23]/60 flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#A39A89]">
                     <div className="flex items-center gap-2">
                       {item.region && (
                         <span className="px-2 py-0.5 rounded-md bg-[#2F2A23] text-[#EDE6D8]">
@@ -917,7 +917,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   </p>
                 </div>
 
-                <div className="mt-3 pt-2.5 border-t border-[#2F2A23]/60 flex items-center justify-between text-[11px] text-[#A39A89]">
+                <div className="mt-3 pt-2.5 border-t border-[#2F2A23]/60 flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#A39A89]">
                   <div className="flex items-center gap-2">
                     {item.region && (
                       <span className="px-2 py-0.5 rounded-md bg-[#2F2A23] text-[#EDE6D8]">
@@ -940,7 +940,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
       {/* Sticky Action Bar in Multi-Select Mode */}
       {multiSelectMode && selectedRefs.length > 0 && (
-        <div className="fixed bottom-16 sm:bottom-6 left-3 right-3 sm:left-auto sm:right-1/2 sm:translate-x-1/2 z-40 bg-[#1A1815] border border-[#E0A030]/50 rounded-2xl p-3 shadow-2xl flex items-center justify-between gap-3 max-w-xl">
+        <div className="fixed bottom-16 sm:bottom-6 left-3 right-3 sm:left-auto sm:right-1/2 sm:translate-x-1/2 z-40 bg-[#1A1815] border border-[#E0A030]/50 rounded-2xl p-3 shadow-2xl flex flex-wrap items-center justify-between gap-2 gap-3 max-w-xl">
           <div className="text-xs font-bold text-[#F2C265]">
             {selectedRefs.length} مورد انتخاب شده
           </div>
@@ -949,7 +949,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <button
               type="button"
               onClick={handleBatchCopyToCurrentCampaign}
-              className="px-3 py-1.5 rounded-xl btn-primary-amber text-xs font-bold shadow-md flex items-center gap-1 min-h-[36px]"
+              className="px-3 py-1.5 rounded-xl btn-primary-amber text-xs font-bold shadow-md flex items-center gap-1 min-h-[44px]"
             >
               <Copy className="w-3.5 h-3.5" />
               <span>کپی به این کمپین</span>
@@ -958,7 +958,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <button
               type="button"
               onClick={handleBatchSaveToMyLibrary}
-              className="px-3 py-1.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] text-xs font-bold flex items-center gap-1 min-h-[36px]"
+              className="px-3 py-1.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] text-xs font-bold flex items-center gap-1 min-h-[44px]"
             >
               <Bookmark className="w-3.5 h-3.5" />
               <span>ذخیره در کتابخانه‌ام</span>
@@ -975,7 +975,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
           title={detailItem.name || detailItem.title || 'جزئیات موجودیت'}
         >
           <div className="space-y-4 py-2 text-right" dir="rtl">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 {renderTypeBadge(detailItem.itemType)}
                 {detailItem.region && (
@@ -1115,7 +1115,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
         >
           <div className="space-y-4 py-2 text-right" dir="rtl">
             {/* Step Indicators */}
-            <div className="flex items-center justify-between text-xs font-bold text-[#A39A89] border-b border-[#2F2A23] pb-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-[#A39A89] border-b border-[#2F2A23] pb-2">
               <span className={importSheet.step === 1 ? 'text-[#F2C265] font-black' : ''}>1. انتخاب</span>
               <span className={importSheet.step === 2 ? 'text-[#F2C265] font-black' : ''}>2. تنظیمات تبدیل</span>
               <span className={importSheet.step === 3 ? 'text-[#F2C265] font-black' : ''}>3. پیش‌نمایش</span>
@@ -1296,7 +1296,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 ) : (
                   <>
                     <div className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] space-y-2">
-                      <div className="flex items-center justify-between text-xs font-bold text-[#EDE6D8]">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-[#EDE6D8]">
                         <span>کل موجودیت‌های تولیدی:</span>
                         <span className="text-[#F2C265] text-sm">{importSheet.manifest?.totalCount || 0} مورد</span>
                       </div>
@@ -1446,7 +1446,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                     key={p.id}
                     type="button"
                     onClick={() => handleExportPack(p.id)}
-                    className="px-3 py-1.5 rounded-lg bg-[#2F2A23] hover:bg-[#3A342B] text-[#F2C265] text-xs font-bold flex items-center gap-1 min-h-[36px]"
+                    className="px-3 py-1.5 rounded-lg bg-[#2F2A23] hover:bg-[#3A342B] text-[#F2C265] text-xs font-bold flex items-center gap-1 min-h-[44px]"
                   >
                     <span>{p.name}</span>
                     <Download className="w-3.5 h-3.5" />

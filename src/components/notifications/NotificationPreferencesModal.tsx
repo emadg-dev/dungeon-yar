@@ -163,7 +163,7 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
       <div className="space-y-6 pb-6 text-sm text-[#E2D8C3]" dir="rtl">
         {/* Web Push Notification Header & Status */}
         <div className="p-4 rounded-xl bg-[#1A1815] border border-[#2F2A23] shadow-inner space-y-3">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 gap-3">
             <div className="flex items-center gap-2.5">
               <div className="w-10 h-10 rounded-lg bg-[#27221C] border border-[#3D352B] flex items-center justify-center text-[#E0A030]">
                 <Smartphone className="w-5 h-5" />
@@ -213,7 +213,7 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
 
         {/* Per-type mute toggles grouped by category */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h4 className="font-bold text-xs uppercase tracking-wider text-[#A09382]">
               انواع اعلان‌ها و فیلتر بی‌صدا سازی
             </h4>
@@ -246,7 +246,7 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
                         return (
                           <div
                             key={item.type}
-                            className="p-3 flex items-center justify-between gap-3 hover:bg-[#1C1915] transition-colors"
+                            className="p-3 flex flex-wrap items-center justify-between gap-2 gap-3 hover:bg-[#1C1915] transition-colors"
                           >
                             <div className="min-w-0 flex-1">
                               <div className="font-medium text-[#F4EDE0] text-xs sm:text-sm">{item.labelFa}</div>

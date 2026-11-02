@@ -149,7 +149,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
     <div className="space-y-4" dir="rtl">
       {/* Weapons Section */}
       <div className="surface-card rounded-[14px] p-4">
-        <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#2F2A23]">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-[#2F2A23]">
           <div className="flex items-center gap-2">
             <Swords className="w-5 h-5 text-[#E0A030]" />
             <div>
@@ -197,7 +197,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                 >
                   <div>
                     {/* Header: Name + Badge */}
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2">
                         <span className="font-extrabold text-sm text-[#EDE6D8]">{w.name}</span>
                         {isSpecial ? (
@@ -236,7 +236,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                     {/* Special Ability with PipTracker */}
                     {isSpecial && abilityTitle && (
                       <div className="p-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] mb-3">
-                        <div className="flex items-center justify-between mb-1">
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
                           <span className="text-xs font-bold text-[#E0A030] flex items-center gap-1">
                             <Sparkles className="w-3.5 h-3.5" />
                             {abilityTitle}
@@ -297,7 +297,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {character.companions.map(comp => (
               <div key={comp.id} className="surface-2-card rounded-[12px] p-3 border border-[#2F2A23]">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                   <span className="font-extrabold text-xs text-[#EDE6D8]">{comp.name}</span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded-[6px] bg-[#6F9E78]/15 text-[#6F9E78] border border-[#6F9E78]/30 font-bold">
                     AC {comp.ac}
@@ -314,7 +314,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                 </div>
 
                 {comp.attack && (
-                  <div className="flex items-center justify-between pt-2 border-t border-[#2F2A23] text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#2F2A23] text-xs">
                     <span className="text-[#A39A89] text-[11px] truncate">{comp.attack.name}</span>
                     <button
                       type="button"
@@ -401,7 +401,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                   {/* Collapsible header */}
                   <div
                     onClick={() => toggleExpandFeature(feat.id)}
-                    className="flex items-center justify-between cursor-pointer select-none touch-target"
+                    className="flex flex-wrap items-center justify-between gap-2 cursor-pointer select-none touch-target"
                   >
                     <div className="flex items-center gap-2">
                       <span className="font-extrabold text-xs text-[#EDE6D8]">{feat.name}</span>

@@ -62,7 +62,7 @@ export const CampaignInvitesModal: React.FC<CampaignInvitesModalProps> = ({
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title="مدیریت دعوت‌نامه‌های کمپین">
       <div className="space-y-4 py-2 text-start" dir="rtl">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs text-[#A39A89]">
             لینک‌های دعوت جهت پیوستن بازیکنان یا تماشاچیان جدید به کمپین «{campaign.name}»
           </p>
@@ -162,7 +162,7 @@ export const CampaignInvitesModal: React.FC<CampaignInvitesModalProps> = ({
                   key={inv.id}
                   className="p-3.5 rounded-2xl bg-[#131110]/80 border border-[#2F2A23] space-y-2"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <h4 className="text-xs font-bold text-[#F2C265]">{inv.label || 'دعوت‌نامه'}</h4>
                       <div className="flex items-center gap-2 mt-0.5 text-[10px] text-[#A39A89]">
@@ -175,7 +175,7 @@ export const CampaignInvitesModal: React.FC<CampaignInvitesModalProps> = ({
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleCopyLink(inv.code, inv.id)}
-                        className="px-3 py-1.5 rounded-xl bg-[#201D19] hover:bg-[#2A2621] text-[#F2C265] text-xs font-medium flex items-center gap-1 min-h-[36px]"
+                        className="px-3 py-1.5 rounded-xl bg-[#201D19] hover:bg-[#2A2621] text-[#F2C265] text-xs font-medium flex items-center gap-1 min-h-[44px]"
                       >
                         {isCopied ? <Check className="w-3.5 h-3.5 text-[#6F9E78]" /> : <Copy className="w-3.5 h-3.5" />}
                         <span>{isCopied ? 'کپی شد' : 'کپی لینک'}</span>
@@ -190,7 +190,7 @@ export const CampaignInvitesModal: React.FC<CampaignInvitesModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-[#2F2A23]/80 flex items-center justify-between text-[10px] text-[#8A8374] font-mono">
+                  <div className="pt-2 border-t border-[#2F2A23]/80 flex flex-wrap items-center justify-between gap-2 text-[10px] text-[#8A8374] font-mono">
                     <span>کد: {inv.code || inv.id}</span>
                     {isExpired && <span className="text-[#D66138]">منقضی شده</span>}
                     {isMaxed && !isExpired && <span className="text-[#F2C265]">تکمیل ظرفیت</span>}

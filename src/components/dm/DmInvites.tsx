@@ -125,7 +125,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
   return (
     <div className="space-y-4" dir="rtl">
       {/* Top Header & Actions */}
-      <div className="surface-card rounded-[14px] p-4 border border-[#2F2A23] flex items-center justify-between gap-3">
+      <div className="surface-card rounded-[14px] p-4 border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-3">
         <div>
           <h3 className="text-sm font-extrabold text-[#EDE6D8] flex items-center gap-1.5">
             <KeyRound className="w-4 h-4 text-[#E0A030]" />
@@ -149,7 +149,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
       {/* Alerts */}
       {message && (
         <div
-          className={`p-3 rounded-[10px] text-xs flex items-center justify-between ${
+          className={`p-3 rounded-[10px] text-xs flex flex-wrap items-center justify-between gap-2 ${
             message.type === 'success'
               ? 'bg-[#6F9E78]/15 text-[#6F9E78] border border-[#6F9E78]/30 font-bold'
               : 'bg-[#C2512B]/15 text-[#EDE6D8] border border-[#C2512B]/35'
@@ -165,7 +165,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
       {/* Newly Created Invite Card with Copy Warning */}
       {newlyCreatedInvite && (
         <div className="surface-card rounded-[14px] p-4 border-2 border-[#E0A030] bg-[#E0A030]/10 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-black text-[#E0A030] flex items-center gap-1.5">
               <Sparkles className="w-4 h-4" />
               کد دعوت با موفقیت تولید شد
@@ -304,7 +304,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
           invites.map((inv) => (
             <div
               key={inv.id}
-              className="surface-card rounded-[12px] p-3.5 border border-[#2F2A23] flex items-center justify-between gap-3"
+              className="surface-card rounded-[12px] p-3.5 border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-3"
             >
               <div className="space-y-1 min-w-0 flex-1">
                 <div className="flex items-center gap-2">

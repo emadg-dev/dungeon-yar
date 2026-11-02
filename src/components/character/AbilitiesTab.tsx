@@ -143,7 +143,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
     <div className="space-y-4" dir="rtl">
       {/* 2×3 Grid of Ability Cards */}
       <div>
-        <div className="flex items-center justify-between mb-2 px-1">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2 px-1">
           <h3 className="text-xs font-bold text-[#A39A89] flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-[#E0A030]" />
             <span>ویژگی‌های بنیادین (شش‌گانه)</span>
@@ -170,7 +170,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
                 key={key}
                 className="surface-card rounded-[14px] p-3 flex flex-col items-center justify-between text-center transition"
               >
-                <div className="w-full flex items-center justify-between text-xs text-[#A39A89] font-bold px-0.5">
+                <div className="w-full flex flex-wrap items-center justify-between gap-2 text-xs text-[#A39A89] font-bold px-0.5">
                   <span className="text-xs text-[#EDE6D8]">{abilityLabels[key].shortFa}</span>
                   <span className="text-[10px] text-[#A39A89] font-mono">{abilityLabels[key].en}</span>
                 </div>
@@ -250,7 +250,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
             return (
               <div
                 key={key}
-                className={`flex items-center justify-between p-2 rounded-[10px] border transition ${
+                className={`flex flex-wrap items-center justify-between gap-2 p-2 rounded-[10px] border transition ${
                   isProf
                     ? 'bg-[#E0A030]/10 border-[#E0A030]/40 text-[#EDE6D8]'
                     : 'bg-[#201D19] border-[#2F2A23] text-[#A39A89]'
@@ -322,7 +322,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
             return (
               <div
                 key={skill.id}
-                className="flex items-center justify-between p-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#2F2A23]/80 transition"
+                className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#2F2A23]/80 transition"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   {/* Proficiency Dot Button: Cycles empty -> filled -> gold (expertise) */}

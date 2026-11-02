@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { User, Character } from '../types';
 import { APP_NAME_FA, APP_NAME_LATIN, APP_TAGLINE } from '../config/app';
 import { BottomSheet } from './mobile/BottomSheet';
 import { 
+  Menu, X,
   CheckCircle2, RefreshCw, Shield, BookOpen, 
   SunMedium, Type, LogOut, ChevronDown, MoreVertical, Sparkles, Swords, Bell,
   WifiOff, AlertTriangle
@@ -88,10 +89,68 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isDm = activeCampaignRole === 'owner' || activeCampaignRole === 'co_dm' || currentUser?.role === 'dm';
+  const menuPanelRef = useRef<HTMLDivElement>(null);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
+
+  // Close menu on viewport grow past mobile (md = 768px)
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 768) setMobileMenuOpen(false);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // Lock scroll while menu open (reuse existing body class)
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.classList.add('sheet-open');
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.classList.remove('sheet-open');
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.classList.remove('sheet-open');
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
+  // Focus trap inside drawer + return focus to hamburger on close
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const panel = menuPanelRef.current;
+    if (!panel) return;
+    const focusable = panel.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    if (first) setTimeout(() => first.focus(), 50);
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const all = Array.from(focusable);
+      if (all.length === 0) return;
+      const firstEl = all[0];
+      const lastEl = all[all.length - 1];
+      if (e.shiftKey && document.activeElement === firstEl) {
+        e.preventDefault();
+        lastEl.focus();
+      } else if (!e.shiftKey && document.activeElement === lastEl) {
+        e.preventDefault();
+        firstEl.focus();
+      }
+    };
+    panel.addEventListener('keydown', handleTab);
+    return () => panel.removeEventListener('keydown', handleTab);
+  }, [mobileMenuOpen]);
+
+  // Close menu when clicking outside backdrop or pressing Escape (backed by BottomSheet already, keep extra here)
+  const closeMenu = useCallback(() => {
+    setMobileMenuOpen(false);
+    setTimeout(() => hamburgerRef.current?.focus(), 100);
+  }, []);
 
   return (
     <header className="sticky top-0 z-20 w-full max-w-full glass-panel border-b border-[#2F2A23] shadow-md pt-[env(safe-area-inset-top,0px)] ps-[env(safe-area-inset-left,0px)] pe-[env(safe-area-inset-right,0px)]">
-      <div className="max-w-7xl mx-auto px-2.5 sm:px-4 py-2 flex items-center justify-between gap-2">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-4 py-2 flex flex-wrap items-center justify-between gap-2 gap-2">
         {/* Brand & Campaign Switcher / Breadcrumb */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {/* Brand Seal Logo Mark */}
@@ -175,8 +234,8 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
 
-        {/* Action Controls & Utilities */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        {/* Action Controls & Utilities — hidden on mobile; hamburger replaces below md */}
+        <div className="hidden md:flex items-center gap-1.5 shrink-0">
           {/* DM Pending Approvals notification */}
           {pendingApprovalsCount > 0 && onOpenCampaignApprovals && (
             <button
@@ -309,7 +368,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={onOpenAdminConsole}
-                  className="py-1 px-2.5 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/40 text-[#E0A030] hover:bg-[#E0A030]/25 text-xs font-bold transition touch-target flex items-center gap-1 min-h-[36px]"
+                  className="py-1 px-2.5 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/40 text-[#E0A030] hover:bg-[#E0A030]/25 text-xs font-bold transition touch-target flex items-center gap-1 min-h-[44px]"
                   title="کنسول مدیریت سامانه"
                 >
                   <Shield className="w-3.5 h-3.5" />
@@ -337,19 +396,55 @@ export const Header: React.FC<HeaderProps> = ({
               <span>ورود / عضویت</span>
             </button>
           )}
+
+          {/* Mobile hamburger */}
+          <button
+            ref={hamburgerRef}
+            type="button"
+            onClick={() => setMobileMenuOpen(o => !o)}
+            aria-label={mobileMenuOpen ? 'بستن منو' : 'باز کردن منو'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-header-menu"
+            className="md:hidden flex items-center justify-center w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#E0A030] transition touch-target"
+            title={mobileMenuOpen ? 'بستن منو' : 'باز کردن منو'}
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </div>
 
-      {/* Quick Menu Modal (centered modal, rendered via portal to be top-most) */}
+      {/* Mobile side drawer (RTL: slides from inline-end/right) */}
       {mobileMenuOpen && (
-        <BottomSheet
-          isOpen={mobileMenuOpen}
-          onClose={() => setMobileMenuOpen(false)}
-          title={currentUser?.displayName || currentUser?.name || 'منوی سریع'}
-          subtitle={currentUser ? `نقش: ${currentUser.role === 'dm' ? 'دانجن مستر' : 'بازیکن'}` : undefined}
-          centered
-        >
-          <div className="space-y-4">
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-200"
+            onClick={closeMenu}
+            aria-hidden="true"
+          />
+          <div
+            id="mobile-header-menu"
+            ref={menuPanelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="منوی اصلی"
+            className="fixed top-0 inset-inline-end-0 z-50 w-[min(22rem,92vw)] h-full bg-[#171513]/98 backdrop-blur-xl border-s border-[#2F2A23] shadow-2xl overflow-y-auto overscroll-contain transition-transform duration-200 ease-out"
+          >
+            <div className="flex items-center justify-between p-3 border-b border-[#2F2A23] sticky top-0 bg-[#171513]/98 z-10">
+              <div>
+                <h2 className="text-xs font-black text-[#EDE6D8]">{APP_NAME_FA}</h2>
+                <span className="text-[10px] text-[#A39A89]">منوی اصلی</span>
+              </div>
+              <button
+                type="button"
+                onClick={closeMenu}
+                aria-label="بستن منو"
+                className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#E0A030] flex items-center justify-center transition touch-target"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3 space-y-1.5">
             {/* User identity summary */}
             {currentUser && (
               <div className="flex items-center gap-2.5 p-3 rounded-[12px] bg-[#201D19]/60 border border-[#2F2A23]">
@@ -387,7 +482,7 @@ export const Header: React.FC<HeaderProps> = ({
                     setMobileMenuOpen(false);
                     onOpenCampaignSwitcher();
                   }}
-                  className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] flex items-center justify-between touch-target"
+                  className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] flex flex-wrap items-center justify-between gap-2 touch-target"
                 >
                   <span>جابجایی بین کمپین‌ها</span>
                   <ChevronDown className="w-3.5 h-3.5" />
@@ -405,7 +500,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setMobileMenuOpen(false);
                         onOpenCampaignSettings();
                       }}
-                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
+                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target"
                     >
                       <span>تنظیمات قوانین و واحدها</span>
                     </button>
@@ -417,7 +512,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setMobileMenuOpen(false);
                         onOpenCampaignMembers();
                       }}
-                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
+                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target"
                     >
                       <span>اعضا و تعیین نقش‌ها</span>
                     </button>
@@ -429,7 +524,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setMobileMenuOpen(false);
                         onOpenCampaignInvites();
                       }}
-                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
+                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target"
                     >
                       <span>ساخت و مدیریت کدهای دعوت</span>
                     </button>
@@ -441,7 +536,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setMobileMenuOpen(false);
                         onOpenCampaignApprovals();
                       }}
-                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex items-center justify-between touch-target"
+                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-[#201D19]/60 hover:bg-[#201D19] text-xs text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target"
                     >
                       <span>تأیید کاراکترها و ارتقای لول</span>
                       {pendingApprovalsCount > 0 && (
@@ -493,7 +588,7 @@ export const Header: React.FC<HeaderProps> = ({
                   setMobileMenuOpen(false);
                   onOpenNotifications();
                 }}
-                className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex items-center justify-between touch-target"
+                className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2 touch-target"
               >
                 <div className="flex items-center gap-2">
                   <Bell className="w-3.5 h-3.5 text-[#E0A030]" />
@@ -520,7 +615,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onSelectCharacter(c.id);
                         setMobileMenuOpen(false);
                       }}
-                      className={`w-full text-start p-2.5 rounded-[10px] text-xs font-bold transition flex items-center justify-between border touch-target ${
+                      className={`w-full text-start p-2.5 rounded-[10px] text-xs font-bold transition flex flex-wrap items-center justify-between gap-2 border touch-target ${
                         activeCharacterId === c.id
                           ? 'bg-[#E0A030]/15 text-[#E0A030] border-[#E0A030]/40'
                           : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23]'
@@ -547,7 +642,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onSwitchUser(u.id);
                         setMobileMenuOpen(false);
                       }}
-                      className={`w-full text-start p-2 rounded-[8px] text-xs font-bold transition flex items-center justify-between touch-target ${
+                      className={`w-full text-start p-2 rounded-[8px] text-xs font-bold transition flex flex-wrap items-center justify-between gap-2 touch-target ${
                         currentUser?.id === u.id
                           ? 'bg-[#E0A030]/10 text-[#E0A030]'
                           : 'text-[#A39A89] hover:text-[#EDE6D8]'
@@ -567,7 +662,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={onToggleWakeLock}
-                  className="w-full flex items-center justify-between p-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] touch-target"
+                  className="w-full flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] touch-target"
                 >
                   <span className="flex items-center gap-1.5">
                     <SunMedium className="w-4 h-4 text-[#E0A030]" />
@@ -582,7 +677,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={onToggleFontScale}
-                className="w-full flex items-center justify-between p-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] touch-target"
+                className="w-full flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] touch-target"
               >
                 <span className="flex items-center gap-1.5">
                   <Type className="w-4 h-4 text-[#E0A030]" />
@@ -607,7 +702,8 @@ export const Header: React.FC<HeaderProps> = ({
               <span>خروج از حساب</span>
             </button>
           </div>
-        </BottomSheet>
+        </div>
+        </>
       )}
     </header>
   );

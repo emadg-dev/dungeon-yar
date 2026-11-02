@@ -115,7 +115,7 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
         </div>
 
         {/* Quick select buttons */}
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="font-bold text-[#EDE6D8]">
             شخصیت‌های حاضر: <span className="text-[#F2C265]">{attendedCount} از {participations.length}</span>
           </div>
@@ -148,7 +148,7 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
               <div
                 key={p.id}
                 onClick={() => toggleAttendance(p.id)}
-                className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 min-h-[52px] ${
+                className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-wrap items-center justify-between gap-2 gap-3 min-h-[52px] ${
                   isAttended
                     ? 'bg-[#6F9E78]/10 border-[#6F9E78]/40 text-[#EDE6D8]'
                     : 'bg-[#171310] border-white/5 text-[#A39A89] opacity-70'

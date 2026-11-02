@@ -33,7 +33,7 @@ export const PipTracker: React.FC<PipTrackerProps> = ({
 
   return (
     <div className="flex flex-col gap-1.5 w-full" dir="rtl">
-      <div className="flex items-center justify-between text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
         <span className="font-bold text-[#EDE6D8]">{label}</span>
         <div className="flex items-center gap-2">
           {resetType && (

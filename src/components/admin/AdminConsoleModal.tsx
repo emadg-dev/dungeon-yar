@@ -208,7 +208,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in" dir="rtl">
       <div className="w-full max-w-4xl bg-[#171513] border border-[#2F2A23] rounded-[16px] shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[#2F2A23] bg-[#201D19]/60">
+        <div className="flex flex-wrap items-center justify-between gap-2 p-4 border-b border-[#2F2A23] bg-[#201D19]/60">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-[10px] bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30">
               <Shield className="w-5 h-5" />
@@ -341,7 +341,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
               {/* Reset Link Card if active */}
               {generatedReset && (
                 <div className="p-3.5 rounded-[12px] bg-[#201D19] border border-[#E0A030]/40 space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-xs font-bold text-[#E0A030] flex items-center gap-1.5">
                       <KeyRound className="w-4 h-4" />
                       <span>لینک تغییر رمز یک‌بارمصرف (معتبر تا 24 ساعت)</span>
@@ -548,7 +548,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                 <h4 className="text-xs font-extrabold text-[#EDE6D8]">پیکربندی سهمیه‌ها و دسترسی‌های سامانه</h4>
 
                 {/* Allow Campaign Creation */}
-                <div className="flex items-center justify-between p-3 rounded-[10px] bg-[#171513] border border-[#2F2A23]">
+                <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-[10px] bg-[#171513] border border-[#2F2A23]">
                   <div>
                     <span className="text-xs font-bold text-[#EDE6D8] block">مجوز ایجاد کمپین جدید توسط دی‌ام‌ها</span>
                     <span className="text-[11px] text-[#A39A89]">در صورت غیرفعال بودن، فقط مدیر می‌تواند کمپین جدید بسازد</span>
@@ -632,7 +632,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
             <div className="space-y-4">
               {/* Overall Progress Card */}
               <div className="p-4 rounded-[12px] bg-[#201D19] border border-[#2F2A23] space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <HardDrive className="w-5 h-5 text-[#E0A030]" />
                     <span className="text-xs font-extrabold text-[#EDE6D8]">وضعیت مصرف پایگاه داده Cloudflare D1</span>
@@ -656,7 +656,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-[#A39A89]">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#A39A89]">
                   <span>مصرف تخمینی: {formatBytes(storageStats.totalBytes)}</span>
                   <span>آستانه هشدار: {formatBytes(storageStats.thresholdBytes)}</span>
                 </div>
@@ -669,7 +669,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                   {storageStats.tables.map(t => (
                     <div
                       key={t.table}
-                      className="p-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] flex items-center justify-between"
+                      className="p-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2"
                     >
                       <div>
                         <span className="text-xs font-bold text-[#EDE6D8] block">{t.labelFa}</span>
@@ -722,7 +722,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                   </div>
                 </div>
 
-                <div className="pt-2 flex items-center justify-between text-xs text-[#A39A89]">
+                <div className="pt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[#A39A89]">
                   <span>مجموع رکوردهای قابل پاک‌سازی: <strong className="text-[#E0A030]">{cleanupReport.cleanedTotal}</strong></span>
                   <span>آخرین بررسی: {new Date(cleanupReport.executedAt).toLocaleTimeString('fa-IR-u-nu-latn')}</span>
                 </div>

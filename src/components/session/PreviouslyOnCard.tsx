@@ -44,7 +44,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
         className="surface-card rounded-[16px] p-4 border border-[#2F2A23] bg-gradient-to-br from-[#1C1814] via-[#171410] to-[#120F0C] relative overflow-hidden shadow-lg transition"
         dir="rtl"
       >
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-[10px] bg-[#E0A030]/10 border border-[#E0A030]/25 text-[#E0A030] flex items-center justify-center">
               <BookOpen className="w-4 h-4" />
@@ -114,7 +114,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
       dir="rtl"
     >
       {/* Header Accent Pill */}
-      <div className="flex items-center justify-between gap-2 mb-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 gap-2 mb-2.5">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#E0A030] flex items-center justify-center shadow-inner">
             <BookOpen className="w-4 h-4" />

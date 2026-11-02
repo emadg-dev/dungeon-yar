@@ -207,7 +207,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
     <div className="space-y-4" dir="rtl">
       {/* Desktop / Tablet Sub-Navigation */}
       <div className="hidden sm:block surface-card rounded-[14px] p-1.5 border border-[#2F2A23]">
-        <div className="flex items-center justify-between gap-1">
+        <div className="flex flex-wrap items-center justify-between gap-2 gap-1">
           {navItems.map(item => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;

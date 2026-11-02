@@ -424,7 +424,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                 </div>
 
                 {/* Footer action buttons */}
-                <div className="flex items-center justify-between pt-2 border-t border-[#2F2A23]/60 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#2F2A23]/60 text-xs">
                   <button
                     type="button"
                     onClick={() => handleOpenLogs(rep)}

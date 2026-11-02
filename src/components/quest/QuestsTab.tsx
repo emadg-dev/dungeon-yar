@@ -124,7 +124,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
     <div className="space-y-4" dir="rtl">
       {/* Header bar with Search and DM action */}
       <div className="surface-card rounded-[14px] p-3.5 border border-[#2F2A23] bg-[#14120E] space-y-3 shadow-md">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#E0A030] flex items-center justify-center shrink-0">
               <Scroll className="w-5 h-5" />
@@ -383,7 +383,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
 
                   {/* Objectives Checklist */}
                   <div className="space-y-2 pt-2 border-t border-[#2F2A23]/80">
-                    <h4 className="text-[11px] font-black text-[#EDE6D8] flex items-center justify-between">
+                    <h4 className="text-[11px] font-black text-[#EDE6D8] flex flex-wrap items-center justify-between gap-2">
                       <span>فهرست اهداف مأموریت:</span>
                       {!canToggle && !isDm && (
                         <span className="text-[10px] text-[#A39A89] font-normal">
@@ -396,7 +396,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                       {visibleObjectives.map((obj) => (
                         <div
                           key={obj.id}
-                          className={`p-2 rounded-[8px] flex items-center justify-between gap-2 text-xs transition ${
+                          className={`p-2 rounded-[8px] flex flex-wrap items-center justify-between gap-2 gap-2 text-xs transition ${
                             obj.done ? 'bg-[#181C18]/60 border border-[#6F9E78]/20' : 'bg-[#1A1713] border border-[#2F2A23]'
                           }`}
                         >
