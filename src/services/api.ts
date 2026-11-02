@@ -3914,6 +3914,7 @@ export class LocalApi implements ApiClient {
     return newPart;
   }
 
+  async updateParticipation(campaignId: string, participationId: string, data: Partial<CharacterParticipation>): Promise<CharacterParticipation> {
     const all = this.getItem<CharacterParticipation[]>('character_participations', SEED_CHARACTER_PARTICIPATIONS);
     const part = all.find(p => p.campaignId === campaignId && p.id === participationId);
     if (!part) throw { status: 404, message: 'شخصیت مشارکت‌کننده یافت نشد.' };
