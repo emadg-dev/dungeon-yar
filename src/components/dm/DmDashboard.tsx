@@ -12,6 +12,7 @@ import { HPBar } from '../common/HPBar';
 import { XpAwardModal } from './XpAwardModal';
 import { SnapshotRestoreModal } from './SnapshotRestoreModal';
 import { DmOverrideModal } from './DmOverrideModal';
+import { EditGrantModal } from './EditGrantModal';
 import { NextSessionCard } from '../session/NextSessionCard';
 import { PreviouslyOnCard } from '../session/PreviouslyOnCard';
 import { partitionSessions } from '../../../shared/rules/sessionEngine';
@@ -110,6 +111,10 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
   const [overrideModalChar, setOverrideModalChar] = useState<{
     character: Character;
     participation?: CharacterParticipation | null;
+  } | null>(null);
+  const [grantModalChar, setGrantModalChar] = useState<{
+    participationId: string;
+    characterName: string;
   } | null>(null);
 
   const nextDay = () => {
@@ -458,6 +463,18 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                     <span>ویرایش مستقیم DM</span>
                   </button>
 
+                  {part && (
+                    <button
+                      type="button"
+                      onClick={() => setGrantModalChar({ participationId: part.id, characterName: char.name })}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#F2C265] hover:border-[#E0A030] text-[11px] font-bold transition touch-target"
+                      title="صدور مجوز ویرایش موقت"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-[#E0A030]" />
+                      <span>اجازه‌ی ویرایش</span>
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => onInspectCharacter(char.id)}
@@ -510,6 +527,21 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           onOverride={async (updates, reason) => {
             const partId = overrideModalChar.participation?.id || `part-${overrideModalChar.character.id}`;
             await onDmOverride(partId, updates, reason);
+            if (onRefreshCampaign) onRefreshCampaign();
+          }}
+        />
+      )}
+
+      {/* Edit Grant Modal */}
+      {grantModalChar && activeCampaign && (
+        <EditGrantModal
+          isOpen={Boolean(grantModalChar)}
+          onClose={() => setGrantModalChar(null)}
+          characterName={grantModalChar.characterName}
+          campaignId={activeCampaign.id}
+          participationId={grantModalChar.participationId}
+          onGrantCreated={() => {
+            setGrantModalChar(null);
             if (onRefreshCampaign) onRefreshCampaign();
           }}
         />

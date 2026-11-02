@@ -5,7 +5,7 @@ import { BottomSheet } from '../mobile/BottomSheet';
 import { ConfirmSheet } from '../mobile/ConfirmSheet';
 import { 
   Swords, Shield, Zap, Sparkles, Plus, Trash2, 
-  ChevronDown, ChevronUp, Flame, Dices, Bot, Heart
+  ChevronDown, ChevronUp, Flame, Dices, Bot, Heart, Lock
 } from 'lucide-react';
 import { PipTracker } from '../common/PipTracker';
 import { HPBar } from '../common/HPBar';
@@ -17,6 +17,10 @@ interface CombatTabProps {
   onUpdate: (updated: Character) => void;
   onOpenRestModal: (type: 'short' | 'long' | 'special') => void;
   onRollCheck: (sides: number, count: number, modifier: number, label: string) => void;
+  sheetLocked?: boolean | number;
+  activeGrants?: any[];
+  isDm?: boolean;
+  onOpenLockedField?: (fieldName: string) => void;
 }
 
 export const CombatTab: React.FC<CombatTabProps> = ({
@@ -24,7 +28,11 @@ export const CombatTab: React.FC<CombatTabProps> = ({
   weaponTemplates,
   onUpdate,
   onOpenRestModal,
-  onRollCheck
+  onRollCheck,
+  sheetLocked = true,
+  activeGrants = [],
+  isDm = false,
+  onOpenLockedField
 }) => {
   const [showAddWeapon, setShowAddWeapon] = useState(false);
   const [showAddFeature, setShowAddFeature] = useState(false);
@@ -49,6 +57,19 @@ export const CombatTab: React.FC<CombatTabProps> = ({
   const [featureSource, setFeatureSource] = useState('کلاس');
   const [featureUsage, setFeatureUsage] = useState<'none' | 'short' | 'long'>('short');
   const [featureMaxUses, setFeatureMaxUses] = useState(1);
+
+  const now = Date.now();
+  const validGrants = (activeGrants || []).filter(g =>
+    g && g.status === 'active' &&
+    (!g.expires_at || g.expires_at > now) &&
+    (!g.expiresAt || g.expiresAt > now) &&
+    (g.uses_left == null || g.uses_left > 0)
+  );
+
+  const isCombatLocked = Boolean(sheetLocked) && !isDm && !validGrants.some(g =>
+    g.preset === 'full' || g.preset === 'respec' ||
+    (Array.isArray(g.fields) && (g.fields.includes('*') || g.fields.includes('features') || g.fields.includes('addItem')))
+  );
 
   const derived = deriveSheet({ character });
   const profBonus = derived.proficiencyBonus;
@@ -139,11 +160,17 @@ export const CombatTab: React.FC<CombatTabProps> = ({
 
           <button
             type="button"
-            onClick={() => setShowAddWeapon(true)}
+            onClick={() => {
+              if (isCombatLocked) {
+                onOpenLockedField?.('addItem');
+              } else {
+                setShowAddWeapon(true);
+              }
+            }}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-[#E0A030]/15 hover:bg-[#E0A030]/25 text-[#E0A030] border border-[#E0A030]/30 text-xs font-bold transition touch-target"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>سلاح جدید</span>
+            {isCombatLocked ? <Lock className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+            <span>{isCombatLocked ? 'سلاح جدید (قفل DM)' : 'سلاح جدید'}</span>
           </button>
         </div>
 
@@ -317,11 +344,17 @@ export const CombatTab: React.FC<CombatTabProps> = ({
 
           <button
             type="button"
-            onClick={() => setShowAddFeature(true)}
+            onClick={() => {
+              if (isCombatLocked) {
+                onOpenLockedField?.('features');
+              } else {
+                setShowAddFeature(true);
+              }
+            }}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-[#E0A030]/15 hover:bg-[#E0A030]/25 text-[#E0A030] border border-[#E0A030]/30 text-xs font-bold transition touch-target self-end sm:self-auto"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>توانایی نو</span>
+            {isCombatLocked ? <Lock className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+            <span>{isCombatLocked ? 'توانایی نو (قفل DM)' : 'توانایی نو'}</span>
           </button>
         </div>
 

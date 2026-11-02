@@ -3309,14 +3309,164 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       .bind(action, comment, now, reqId).run();
 
     if (action === 'approved') {
-      // Temporarily unlock sheet so user can apply the agreed changes
-      await env.DB.prepare('UPDATE character_participations SET sheet_locked = 0, updated_at = ? WHERE id = ?')
-        .bind(now, reqRow.participation_id).run();
+      const partRow = await env.DB.prepare('SELECT * FROM character_participations WHERE id = ?').bind(reqRow.participation_id).first();
+      if (partRow) {
+        const snap = createSnapshot(mapParticipation(partRow), `پیش از اعمال درخواست تغییر: ${(reqRow.requested_changes || '').slice(0, 30)}`, actor.id);
+        await env.DB.prepare(
+          `INSERT INTO participation_snapshots (id, participation_id, label, state, build, level, created_by, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(snap.id, reqRow.participation_id, snap.label, JSON.stringify(snap.state), JSON.stringify(snap.build), snap.level, actor.id, now).run();
+
+        const patch = body.modifiedPatch || parseBlob(reqRow.patch, null);
+        if (patch && typeof patch === 'object' && Object.keys(patch).length > 0) {
+          const colMap: Record<string, string> = {
+            level: 'level', xp: 'xp', className: 'class_name', subclassName: 'subclass_name',
+            currentHp: 'current_hp', maxHp: 'max_hp', tempHp: 'temp_hp',
+            abilityScores: 'ability_scores', hitDice: 'hit_dice', sheetLocked: 'sheet_locked',
+            notes: 'notes'
+          };
+          const sets: string[] = [];
+          const binds: any[] = [];
+          for (const [k, c] of Object.entries(colMap)) {
+            if (patch[k] !== undefined) {
+              sets.push(`${c} = ?`);
+              const val = k === 'sheetLocked' ? (patch[k] ? 1 : 0) : patch[k];
+              binds.push(val !== null && typeof val === 'object' ? JSON.stringify(val) : val);
+            }
+          }
+          if (sets.length > 0) {
+            sets.push('updated_at = ?');
+            binds.push(now, reqRow.participation_id);
+            await env.DB.prepare(`UPDATE character_participations SET ${sets.join(', ')} WHERE id = ?`).bind(...binds).run();
+          }
+        } else {
+          // Temporarily unlock sheet so user can apply the agreed changes
+          await env.DB.prepare('UPDATE character_participations SET sheet_locked = 0, updated_at = ? WHERE id = ?')
+            .bind(now, reqRow.participation_id).run();
+        }
+
+        await env.DB.prepare(
+          'INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp) VALUES (?, ?, ?, ?, ?, ?)'
+        ).bind(
+          `hist-scr-${Date.now()}-${generateRandomToken(3)}`,
+          partRow.character_id,
+          campId,
+          'custom',
+          JSON.stringify({
+            title: 'تأیید درخواست تغییر شیت',
+            description: `درخواست «${reqRow.requested_changes}» توسط DM تأیید شد.${comment ? ' یادداشت: ' + comment : ''}`,
+            decidedBy: actor.id
+          }),
+          now
+        ).run();
+      }
     }
 
     await audit('sheet-change-review', reqId, { action, comment });
     const updated = await env.DB.prepare('SELECT * FROM sheet_change_requests WHERE id = ?').bind(reqId).first();
     return json(updated);
+  }
+
+  // GET /api/c/:id/edit-grants (List edit grants for campaign/character)
+  if (path.match(/^\/c\/[^/]+\/edit-grants$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm') return error('دسترسی مجاز نیست.', 404);
+
+    const partId = url.searchParams.get('participationId');
+    let q = 'SELECT * FROM edit_grants WHERE 1=1';
+    const binds: any[] = [];
+    if (partId) {
+      q += ' AND participation_id = ?';
+      binds.push(partId);
+    }
+    q += ' ORDER BY created_at DESC';
+
+    const rows = await env.DB.prepare(q).bind(...binds).all();
+    const list = (rows.results || []).map((r: any) => ({
+      id: r.id,
+      campaignId: campId,
+      participationId: r.participation_id,
+      scope: r.scope,
+      preset: r.preset,
+      fields: parseBlob(r.fields, []),
+      expiresAt: r.expires_at,
+      usesLeft: r.uses_left,
+      reason: r.reason,
+      status: r.status,
+      grantedBy: r.granted_by,
+      createdAt: r.created_at
+    }));
+    return json(list);
+  }
+
+  // POST /api/c/:id/edit-grants (DM creates edit grant)
+  if (path.match(/^\/c\/[^/]+\/edit-grants$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    if (!(await requireCampaignDm(campId))) return error('دسترسی مجاز نیست.', 403);
+
+    const body = await request.json() as any;
+    const partId = body.participationId;
+    if (!partId) return error('شناسه مشارکت کاراکتر الزامی است.');
+
+    const grantId = `eg-${Date.now()}-${generateRandomToken(4)}`;
+    const scope = body.scope === 'fields' ? 'fields' : 'preset';
+    const preset = body.preset || null;
+    const fields = JSON.stringify(body.fields || []);
+    const expiresAt = Number(body.expiresAt) || (now + 24 * 3600000);
+    const usesLeft = body.usesLeft !== undefined ? Number(body.usesLeft) : 1;
+    const reason = String(body.reason || 'مجوز ویرایش DM').trim();
+
+    await env.DB.prepare(
+      `INSERT INTO edit_grants (id, participation_id, scope, preset, fields, expires_at, uses_left, reason, status, granted_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`
+    ).bind(grantId, partId, scope, preset, fields, expiresAt, usesLeft, reason, actor.id, now).run();
+
+    const partRow = await env.DB.prepare('SELECT character_id FROM character_participations WHERE id = ?').bind(partId).first();
+    if (partRow) {
+      await env.DB.prepare(
+        'INSERT INTO character_history_events (id, character_id, campaign_id, event_type, payload, timestamp) VALUES (?, ?, ?, ?, ?, ?)'
+      ).bind(
+        `hist-grant-${Date.now()}-${generateRandomToken(3)}`,
+        partRow.character_id,
+        campId,
+        'custom',
+        JSON.stringify({
+          title: 'اعطای مجوز ویرایش شیت',
+          description: `مجوز ویرایش موقت توسط DM: ${reason}`,
+          grantId,
+          grantedBy: actor.id
+        }),
+        now
+      ).run();
+    }
+
+    await audit('create-edit-grant', grantId, { campaignId: campId, partId, scope, preset, usesLeft });
+    return json({
+      id: grantId,
+      campaignId: campId,
+      participationId: partId,
+      scope,
+      preset,
+      fields: body.fields || [],
+      expiresAt,
+      usesLeft,
+      reason,
+      status: 'active',
+      grantedBy: actor.id,
+      createdAt: now
+    }, 201);
+  }
+
+  // POST /api/c/grants/:id/revoke (DM revokes edit grant)
+  if (path.match(/^\/c\/grants\/[^/]+\/revoke$/) && method === 'POST') {
+    const grantId = path.split('/')[3];
+    const grantRow = await env.DB.prepare('SELECT * FROM edit_grants WHERE id = ?').bind(grantId).first();
+    if (!grantRow) return error('مجوز ویرایش یافت نشد.', 404);
+
+    await env.DB.prepare('UPDATE edit_grants SET status = "revoked" WHERE id = ?').bind(grantId).run();
+    await audit('revoke-edit-grant', grantId, {});
+    return json({ ...grantRow, status: 'revoked' });
   }
 
   // POST /api/c/:id/participations/:pid/status — set participation status

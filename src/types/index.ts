@@ -32,6 +32,7 @@ export interface CampaignSettings {
   conAdjustFixedTable?: boolean;
   allowCustomLineage?: boolean;
   sheetLock?: 'locked_core' | 'free';
+  sheetPolicyOverrides?: Partial<Record<string, 'dm_only' | 'request' | 'player'>>;
   timezone?: string;
   approval: {
     onCreate: boolean;
@@ -381,6 +382,7 @@ export interface CharacterParticipation {
   dmNotes?: string;
   build?: CharacterBuild | null;
   sheetLocked?: boolean;
+  creationFinalizedAt?: number;
   sessionsAttended?: number;
   levelUpAvailable?: boolean;
   revision?: number;
@@ -419,15 +421,37 @@ export interface XpAward {
   createdAt: number;
 }
 
+export type EditGrantPreset = 'respec' | 'level_up' | 'ability_scores' | 'spell_swap' | 'inventory_add' | 'full';
+
+export interface EditGrant {
+  id: string;
+  campaignId?: string;
+  participationId: string;
+  scope: 'preset' | 'fields';
+  preset?: EditGrantPreset | null;
+  fields: string[];
+  expiresAt: number;
+  usesLeft: number;
+  reason?: string;
+  status: 'active' | 'consumed' | 'expired' | 'revoked';
+  grantedBy: string;
+  createdAt: number;
+}
+
 export interface SheetChangeRequest {
   id: string;
   campaignId: string;
   participationId: string;
   userId: string;
+  fieldGroup?: string;
+  patch?: any;
   requestedChanges: string;
   reason?: string;
   status: 'pending' | 'approved' | 'rejected';
   reviewComment?: string;
+  comment?: string;
+  decidedBy?: string;
+  decidedAt?: number;
   createdAt: number;
   updatedAt: number;
   characterName?: string;
