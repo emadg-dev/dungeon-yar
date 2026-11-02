@@ -7,6 +7,7 @@ import {
   Archive, AlertCircle, Eye
 } from 'lucide-react';
 import { toPersianDigits, partitionCampaigns, calculateCountdown } from '../../../shared/rules/historyEngine';
+import { ScrollableRow } from '../ui/ScrollableRow';
 
 interface HomeScreenProps {
   currentUser: User | null;
@@ -207,57 +208,60 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <h2 className="text-lg font-bold text-[#EDE6D8]">کمپین‌های من</h2>
             </div>
 
-            <div className="flex items-center gap-2">
+            <ScrollableRow activeKey={campaignTab} className="gap-2 shrink-0">
               {/* Current vs Past Tabs */}
-              <div className="flex items-center p-1 bg-[#141210] border border-[#2F2A23] rounded-xl text-xs">
+              <div className="flex items-center p-1 bg-[#141210] border border-[#2F2A23] rounded-xl text-xs shrink-0">
                 <button
                   type="button"
+                  data-key="current"
                   onClick={() => {
                     startTransition(() => {
                       setCampaignTab('current');
                     });
                   }}
-                  className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 min-h-[44px] ${
+                  className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start ${
                     campaignTab === 'current'
                       ? 'bg-[#E0A030] text-[#0E0D0C] shadow'
                       : 'text-[#A39A89] hover:text-[#EDE6D8]'
                   }`}
                 >
-                  <Compass className="w-3.5 h-3.5" />
-                  <span>جاری</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${campaignTab === 'current' ? 'bg-[#0E0D0C]/20 text-[#0E0D0C]' : 'bg-[#201D19] text-[#A39A89]'}`}>
+                  <Compass className="w-3.5 h-3.5 shrink-0" />
+                  <span className="whitespace-nowrap shrink-0">جاری</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full shrink-0 ${campaignTab === 'current' ? 'bg-[#0E0D0C]/20 text-[#0E0D0C]' : 'bg-[#201D19] text-[#A39A89]'}`}>
                     {toPersianDigits(activeCampaigns.length)}
                   </span>
                 </button>
                 <button
                   type="button"
+                  data-key="past"
                   onClick={() => {
                     startTransition(() => {
                       setCampaignTab('past');
                     });
                   }}
-                  className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 min-h-[44px] ${
+                  className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start ${
                     campaignTab === 'past'
                       ? 'bg-[#E0A030] text-[#0E0D0C] shadow'
                       : 'text-[#A39A89] hover:text-[#EDE6D8]'
                   }`}
                 >
-                  <Archive className="w-3.5 h-3.5" />
-                  <span>گذشته / بایگانی</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${campaignTab === 'past' ? 'bg-[#0E0D0C]/20 text-[#0E0D0C]' : 'bg-[#201D19] text-[#A39A89]'}`}>
+                  <Archive className="w-3.5 h-3.5 shrink-0" />
+                  <span className="whitespace-nowrap shrink-0">گذشته / بایگانی</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full shrink-0 ${campaignTab === 'past' ? 'bg-[#0E0D0C]/20 text-[#0E0D0C]' : 'bg-[#201D19] text-[#A39A89]'}`}>
                     {toPersianDigits(pastCampaigns.length)}
                   </span>
                 </button>
               </div>
 
               <button
+                type="button"
                 onClick={onOpenCreateCampaign}
-                className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/25 transition-colors flex items-center gap-1.5 min-h-[44px]"
+                className="px-3.5 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/25 transition-colors flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
               >
-                <Plus className="w-4 h-4" />
-                کمپین جدید
+                <Plus className="w-4 h-4 shrink-0" />
+                <span className="whitespace-nowrap shrink-0">کمپین جدید</span>
               </button>
-            </div>
+            </ScrollableRow>
           </div>
 
           {displayedCampaigns.length === 0 ? (
@@ -471,24 +475,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 {toPersianDigits(myCharacters.length)}
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            <ScrollableRow className="gap-2 shrink-0">
               {onOpenCharacterWizard && (
                 <button
+                  type="button"
                   onClick={() => onOpenCharacterWizard()}
-                  className="px-3 py-1.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-bold hover:bg-[#F2C265] transition-colors flex items-center gap-1.5 min-h-[44px] shadow-sm"
+                  className="px-3 py-1.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-bold hover:bg-[#F2C265] transition-colors flex items-center gap-1.5 min-h-[44px] shadow-sm whitespace-nowrap shrink-0 snap-start"
                 >
-                  <Sparkles className="w-4 h-4" />
-                  ساخت کاراکتر با ویزارد
+                  <Sparkles className="w-4 h-4 shrink-0" />
+                  <span className="whitespace-nowrap shrink-0">ساخت کاراکتر با ویزارد</span>
                 </button>
               )}
               <button
+                type="button"
                 onClick={onOpenCreateCharacter}
-                className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/25 transition-colors flex items-center gap-1.5 min-h-[44px]"
+                className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/25 transition-colors flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
               >
-                <Plus className="w-4 h-4" />
-                شناسنامه ساده
+                <Plus className="w-4 h-4 shrink-0" />
+                <span className="whitespace-nowrap shrink-0">شناسنامه ساده</span>
               </button>
-            </div>
+            </ScrollableRow>
           </div>
 
           {myCharacters.length === 0 ? (

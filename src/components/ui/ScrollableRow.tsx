@@ -121,8 +121,10 @@ export const ScrollableRow = forwardRef<HTMLDivElement, ScrollableRowProps>(
       if (activeKey !== undefined && activeKey !== null) {
         target =
           el.querySelector(`[data-key="${activeKey}"]`) ||
+          el.querySelector(`[data-scroll-key="${activeKey}"]`) ||
+          el.querySelector(`[data-tab="${activeKey}"]`) ||
           el.querySelector(`[data-id="${activeKey}"]`) ||
-          el.querySelector(`[data-tab="${activeKey}"]`);
+          el.querySelector(`[data-value="${activeKey}"]`);
       }
 
       if (!target) {

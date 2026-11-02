@@ -3,6 +3,7 @@ import { BottomSheet } from '../mobile/BottomSheet';
 import { KeyRound, Shield, Clock, Check, AlertCircle, Sparkles } from 'lucide-react';
 import { EditGrantPreset, PRESET_FIELDS_MAP, getPersianFieldLabel } from '../../../shared/rules/sheetPolicy';
 import { api } from '../../services/api';
+import { ScrollableRow } from '../ui/ScrollableRow';
 
 interface EditGrantModalProps {
   isOpen: boolean;
@@ -135,30 +136,32 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
           {/* Scope Selection */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-[#EDE6D8]">نوع مجوز:</label>
-            <div className="grid grid-cols-2 gap-2">
+            <ScrollableRow activeKey={scope} className="gap-2">
               <button
                 type="button"
+                data-key="preset"
                 onClick={() => setScope('preset')}
-                className={`py-2 px-3 rounded-xl text-xs font-bold border transition ${
+                className={`py-2 px-3 rounded-xl text-xs font-bold border transition min-h-[44px] whitespace-nowrap shrink-0 snap-start flex-1 flex items-center justify-center ${
                   scope === 'preset'
                     ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
                     : 'bg-[#201D19] border-[#2F2A23] text-[#A39A89]'
                 }`}
               >
-                پکیج از پیش‌تعریف‌شده (Preset)
+                <span className="whitespace-nowrap shrink-0">پکیج از پیش‌تعریف‌شده (Preset)</span>
               </button>
               <button
                 type="button"
+                data-key="fields"
                 onClick={() => setScope('fields')}
-                className={`py-2 px-3 rounded-xl text-xs font-bold border transition ${
+                className={`py-2 px-3 rounded-xl text-xs font-bold border transition min-h-[44px] whitespace-nowrap shrink-0 snap-start flex-1 flex items-center justify-center ${
                   scope === 'fields'
                     ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
                     : 'bg-[#201D19] border-[#2F2A23] text-[#A39A89]'
                 }`}
               >
-                انتخاب دستی فیلدها (Custom)
+                <span className="whitespace-nowrap shrink-0">انتخاب دستی فیلدها (Custom)</span>
               </button>
-            </div>
+            </ScrollableRow>
           </div>
 
           {/* Preset Options */}
