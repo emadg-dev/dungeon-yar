@@ -95,7 +95,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   };
 
   return (
-    <div className="space-y-6 pb-24 text-right" dir="rtl">
+    <div className="space-y-6 pb-4 text-right" dir="rtl">
       {/* Welcome Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-l from-[#2A1A0D]/40 via-[#1C1814] to-[#12100E] border border-[#E0A030]/20 p-5 shadow-xl">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -221,13 +221,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   }}
                   className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start ${
                     campaignTab === 'current'
-                      ? 'bg-[#E0A030] text-[#0E0D0C] shadow'
-                      : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                      ? 'bg-[#E0A030]/15 text-[#F2C265] border border-[#E0A030]/40 shadow-sm'
+                      : 'text-[#A39A89] hover:text-[#EDE6D8] border border-transparent'
                   }`}
                 >
                   <Compass className="w-3.5 h-3.5 shrink-0" />
                   <span className="whitespace-nowrap shrink-0">جاری</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full shrink-0 ${campaignTab === 'current' ? 'bg-[#0E0D0C]/20 text-[#0E0D0C]' : 'bg-[#201D19] text-[#A39A89]'}`}>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full shrink-0 ${campaignTab === 'current' ? 'bg-[#E0A030]/25 text-[#F2C265]' : 'bg-[#201D19] text-[#A39A89]'}`}>
                     {toPersianDigits(activeCampaigns.length)}
                   </span>
                 </button>
@@ -241,13 +241,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   }}
                   className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start ${
                     campaignTab === 'past'
-                      ? 'bg-[#E0A030] text-[#0E0D0C] shadow'
-                      : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                      ? 'bg-[#E0A030]/15 text-[#F2C265] border border-[#E0A030]/40 shadow-sm'
+                      : 'text-[#A39A89] hover:text-[#EDE6D8] border border-transparent'
                   }`}
                 >
                   <Archive className="w-3.5 h-3.5 shrink-0" />
                   <span className="whitespace-nowrap shrink-0">گذشته / بایگانی</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full shrink-0 ${campaignTab === 'past' ? 'bg-[#0E0D0C]/20 text-[#0E0D0C]' : 'bg-[#201D19] text-[#A39A89]'}`}>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full shrink-0 ${campaignTab === 'past' ? 'bg-[#E0A030]/25 text-[#F2C265]' : 'bg-[#201D19] text-[#A39A89]'}`}>
                     {toPersianDigits(pastCampaigns.length)}
                   </span>
                 </button>
@@ -302,28 +302,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   >
                     <div>
                       <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-2 min-w-0">
-                          {getStatusBadge(camp.status)}
-                          <h3 className="text-base font-bold text-[#EDE6D8] group-hover:text-[#F2C265] transition-colors truncate">
+                        <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                          <span className="mt-1 shrink-0">{getStatusBadge(camp.status)}</span>
+                          <h3 className="text-base font-bold text-[#EDE6D8] group-hover:text-[#F2C265] transition-colors line-clamp-2 leading-snug">
                             {camp.name}
                           </h3>
                         </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          {/* Unread Notifications Badge */}
-                          {typeof camp.unreadCount === 'number' && camp.unreadCount > 0 && (
+                        {typeof camp.unreadCount === 'number' && camp.unreadCount > 0 && (
+                          <div className="shrink-0">
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
                               {toPersianDigits(camp.unreadCount)} تازه
                             </span>
-                          )}
-                          {isPast ? (
-                            <span className="px-2 py-0.5 text-xs rounded-full bg-[#201D19] text-[#8A8374] border border-[#2F2A23]">
-                              فقط خواندنی
-                            </span>
-                          ) : (
-                            getRoleBadge(camp.myRole)
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
 
                       <p className="text-xs text-[#A39A89] mt-2 line-clamp-2 leading-relaxed">
@@ -371,7 +363,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     </div>
 
                     <div className="mt-4 pt-3 border-t border-[#2F2A23]/60 flex flex-wrap items-center justify-between gap-2 text-xs text-[#A39A89]">
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        {isPast ? (
+                          <span className="px-2 py-0.5 text-xs rounded-full bg-[#201D19] text-[#8A8374] border border-[#2F2A23]">
+                            فقط خواندنی
+                          </span>
+                        ) : (
+                          getRoleBadge(camp.myRole)
+                        )}
                         <span className="flex items-center gap-1">
                           <Users className="w-3.5 h-3.5 text-[#8A8374]" />
                           {toPersianDigits(camp.memberCount || 1)} عضو

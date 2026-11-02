@@ -1212,7 +1212,7 @@ export default function App() {
       )}
 
       {/* Main Body - Only <main> scrolls in the mobile app shell */}
-      <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-4 pt-3 sm:pt-6 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:pb-24 overflow-y-auto overscroll-y-contain overflow-x-hidden">
+      <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-4 pt-3 sm:pt-6 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] sm:pb-24 overflow-y-auto overscroll-y-contain overflow-x-hidden">
         <Suspense fallback={<TabSkeleton />}>
           {/* VIEW 1: HOME DASHBOARD */}
           {viewMode === 'home' && (
