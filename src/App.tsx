@@ -17,6 +17,7 @@ import { pageTitle } from './config/app';
 import { partitionSessions } from '../shared/rules/sessionEngine';
 import { Header } from './components/Header';
 import { BottomNav } from './components/mobile/BottomNav';
+import { CampaignMoreSheet } from './components/mobile/CampaignMoreSheet';
 import { StickyHeader } from './components/common/StickyHeader';
 import { Toast } from './components/common/Toast';
 import { useWakeLock } from './hooks/useWakeLock';
@@ -40,6 +41,7 @@ const CompanionsTab = React.lazy(() => import('./components/character/Companions
 const InventoryTab = React.lazy(() => import('./components/character/InventoryTab').then(m => ({ default: m.InventoryTab })));
 const NotesTab = React.lazy(() => import('./components/character/NotesTab').then(m => ({ default: m.NotesTab })));
 const CodexTab = React.lazy(() => import('./components/character/CodexTab').then(m => ({ default: m.CodexTab })));
+const ResourcesTab = React.lazy(() => import('./components/character/ResourcesTab').then(m => ({ default: m.ResourcesTab })));
 const DmTools = React.lazy(() => import('./components/dm/DmTools').then(m => ({ default: m.DmTools })));
 const AuthModal = React.lazy(() => import('./components/AuthModal').then(m => ({ default: m.AuthModal })));
 const AccountModal = React.lazy(() => import('./components/AccountModal').then(m => ({ default: m.AccountModal })));
@@ -130,7 +132,7 @@ export default function App() {
   // In-Campaign Play State
   const [characters, setCharacters] = useState<Character[]>([]);
   const [activeCharId, setActiveCharId] = useState<string | null>(null);
-  const [activePlayerTab, setActivePlayerTab] = useState<'overview' | 'abilities' | 'combat' | 'companions' | 'inventory' | 'notes' | 'codex'>('overview');
+  const [activePlayerTab, setActivePlayerTab] = useState<'overview' | 'abilities' | 'combat' | 'companions' | 'inventory' | 'notes' | 'codex' | 'features' | 'resources'>('overview');
   const [isDmView, setIsDmView] = useState<boolean>(false);
   const [activeDmTab, setActiveDmTab] = useState<'dashboard' | 'encounters' | 'library' | 'narrative' | 'more'>('dashboard');
 
@@ -270,6 +272,7 @@ export default function App() {
   const { checkForUpdates, isChecking: isCheckingUpdates } = usePWARefresh();
   const [conflictModalOpen, setConflictModalOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [campaignMoreOpen, setCampaignMoreOpen] = useState(false);
 
   const handleCheckForUpdates = async () => {
     showToast(`در حال بررسی نسخه جدید ${APP_NAME_FA}...`);
@@ -1259,18 +1262,14 @@ export default function App() {
       />
 
       {/* Sticky Character Header & Sub-Tabs (In Campaign Space, Player View) */}
-      {viewMode === 'campaign_space' && activeCharacter && !isDmView && (activePlayerTab === 'overview' || activePlayerTab === 'abilities' || activePlayerTab === 'combat' || activePlayerTab === 'companions') && (
+      {viewMode === 'campaign_space' && activeCharacter && !isDmView && (activePlayerTab === 'overview' || activePlayerTab === 'abilities' || activePlayerTab === 'combat' || activePlayerTab === 'companions' || activePlayerTab === 'features' || activePlayerTab === 'resources') && (
         <StickyHeader
           character={activeCharacter}
           onUpdate={handleUpdateCharacter}
           onOpenRest={(type) => setRestModal({ isOpen: true, type })}
           activeSheetTab={activePlayerTab as any}
           onSelectSheetTab={(tab) => {
-            if (tab === 'features' || tab === 'resources') {
-              handleSelectPlayerTab('abilities');
-            } else {
-              handleSelectPlayerTab(tab as any);
-            }
+            handleSelectPlayerTab(tab as any);
           }}
         />
       )}
@@ -1498,6 +1497,7 @@ export default function App() {
                   onRollDice={handleRollCheck}
                   isHttpMode={import.meta.env.VITE_API_MODE === 'http' && !(api as any).isLocalMode}
                   activeDmTab={activeDmTab}
+                  onSelectDmTab={handleSelectDmTab}
                   onRefreshCharacters={() => activeCampaignId && loadCampaignWorkspace(activeCampaignId)}
                   onCreateCharacterForPlayer={() => handleOpenCharacterWizard(activeCampaign?.id)}
                   participations={campaignParticipations}
@@ -1692,6 +1692,25 @@ export default function App() {
                       onCompleteQuest={handleCompleteQuest}
                     />
                   )}
+
+                  {activePlayerTab === 'features' && (
+                    <AbilitiesTab
+                      character={activeCharacter}
+                      onUpdate={handleUpdateCharacter}
+                      onRollCheck={handleRollCheck}
+                      sheetLocked={activeParticipation?.sheetLocked !== false}
+                      activeGrants={characterGrants}
+                      isDm={isDmView || isDmEditMode}
+                      onOpenLockedField={(fieldName) => setLockedFieldModal({ isOpen: true, fieldName })}
+                    />
+                  )}
+
+                  {activePlayerTab === 'resources' && (
+                    <ResourcesTab
+                      character={activeCharacter}
+                      onUpdate={handleUpdateCharacter}
+                    />
+                  )}
                 </div>
               ) : characters.length === 0 ? (
                 /* Empty state when user has no active character in this campaign */
@@ -1747,30 +1766,44 @@ export default function App() {
       </main>
 
       {/* Fixed Mobile Bottom Navigation Bar */}
+      <CampaignMoreSheet
+        isOpen={campaignMoreOpen}
+        onClose={() => setCampaignMoreOpen(false)}
+        onJump={tab => {
+          setCampaignMoreOpen(false);
+          if (tab === 'inventory') handleSelectPlayerTab('inventory');
+          else if (tab === 'companions') handleSelectPlayerTab('companions');
+          else if (tab === 'rest') setRestModal({ isOpen: true, type: 'short' });
+          else if (tab === 'sessions') setSessionListOpen(true);
+          else if (tab === 'recaps') setRecapArchiveOpen(true);
+          else if (tab === 'members') setCampaignMembersOpen(true);
+          else if (tab === 'settings') setCampaignSettingsOpen(true);
+          else if (tab === 'logout') handleLogout();
+        }}
+      />
       <BottomNav
         isHomeView={viewMode === 'home'}
-        homeTab="home"
+        homeTab="campaigns"
         onSelectHomeTab={(tab) => {
-          if (tab === 'home') {
-            setViewMode('home');
-            window.location.hash = '#/';
+          if (tab === 'campaigns') {
+            setCampaignSwitcherOpen(true);
           } else if (tab === 'characters') {
             if (myCharacters.length > 0) {
               window.location.hash = `#/characters/${myCharacters[0].id}`;
             } else {
               setViewMode('home');
             }
-          } else if (tab === 'campaigns') {
-            setCampaignSwitcherOpen(true);
+          } else if (tab === 'invites') {
+            window.location.hash = '#/join';
           } else if (tab === 'account') {
             setAccountModalOpen(true);
           }
         }}
         isDmView={isDmView}
         playerTab={activePlayerTab}
-        onSelectPlayerTab={handleSelectPlayerTab}
+        onSelectPlayerTab={handleSelectPlayerTab as (tab: string) => void}
         dmTab={activeDmTab as any}
-        onSelectDmTab={handleSelectDmTab}
+        onSelectDmTab={handleSelectDmTab as (tab: string) => void}
         onOpenDice={() => {
           setPresetRoll(null);
           setDiceModalOpen(true);
@@ -1783,6 +1816,7 @@ export default function App() {
         isInCombat={Boolean(liveEncounterModalOpen)}
         queueLength={queueLength}
         isOnline={isOnline}
+        onOpenCampaignMore={() => setCampaignMoreOpen(true)}
       />
 
       {/* Global & Multi-Campaign Modals */}

@@ -1,19 +1,20 @@
 import React from 'react';
-import { 
-  Heart, Package, FileText, Compass, Dices, 
-  LayoutDashboard, Swords, Library, Scroll, MoreHorizontal, Shield 
+import {
+  Heart, Dices, FileText, Compass, MoreHorizontal,
+  Shield, UserCheck, LayoutDashboard, LogIn
 } from 'lucide-react';
 
 interface BottomNavProps {
   isHomeView?: boolean;
-  homeTab?: 'home' | 'characters' | 'campaigns' | 'account';
-  onSelectHomeTab?: (tab: any) => void;
+  homeTab?: string;
+  onSelectHomeTab?: (tab: string) => void;
   isDmView: boolean;
   playerTab: string;
-  onSelectPlayerTab: (tab: any) => void;
+  onSelectPlayerTab: (tab: string) => void;
   dmTab: string;
-  onSelectDmTab: (tab: any) => void;
+  onSelectDmTab: (tab: string) => void;
   onOpenDice: () => void;
+  onOpenCampaignMore?: () => void;
   inventoryBadge?: number;
   notesBadge?: number;
   isKeyboardOpen?: boolean;
@@ -24,14 +25,9 @@ interface BottomNavProps {
   isOnline?: boolean;
 }
 
-/**
- * Liquid Dock bottom navigation (Jib-be-jib §5 pattern):
- * floating glass track with backdrop-blur, inner top glow,
- * and an amber gradient pill on the active item.
- */
 export const BottomNav: React.FC<BottomNavProps> = ({
   isHomeView = false,
-  homeTab = 'home',
+  homeTab = 'campaigns',
   onSelectHomeTab,
   isDmView,
   playerTab,
@@ -39,70 +35,37 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   dmTab,
   onSelectDmTab,
   onOpenDice,
+  onOpenCampaignMore,
   inventoryBadge = 0,
   notesBadge = 0,
   isKeyboardOpen = false,
-  hasActiveEncounter = false,
-  onOpenActiveEncounter,
-  isInCombat = false,
-  queueLength = 0,
-  isOnline = true,
 }) => {
-  // Hide bottom nav while on-screen keyboard is open OR during encounter/combat
-  const [inEncounterClass, setInEncounterClass] = React.useState(false);
+  if (isKeyboardOpen) return null;
 
-  React.useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const checkClass = () => {
-      setInEncounterClass(document.body.classList.contains('in-encounter'));
-    };
-    checkClass();
-    const observer = new MutationObserver(checkClass);
-    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
-
-  if (isKeyboardOpen || isInCombat || inEncounterClass) return null;
-
-  // Home Navigation (Section 5: خانه / شخصیت‌ها / کمپین‌ها / حساب)
   if (isHomeView) {
     const homeItems = [
-      { id: 'home', label: 'خانه', icon: Compass },
-      { id: 'characters', label: 'شخصیت‌ها', icon: Heart },
       { id: 'campaigns', label: 'کمپین‌ها', icon: Shield },
-      { id: 'account', label: 'حساب', icon: MoreHorizontal },
-    ] as const;
-
+      { id: 'characters', label: 'شخصیت‌ها', icon: Heart },
+      { id: 'invites', label: 'دعوت‌ها', icon: UserCheck },
+      { id: 'account', label: 'حساب', icon: LogIn },
+    ];
     return (
-      <nav 
-        aria-label="منوی ناوبری اصلی"
-        className="liquid-dock"
-        dir="rtl"
-      >
-        <div className="liquid-dock__track grid grid-cols-4">
+      <nav aria-label="منوی ناوبری اصلی" className="liquid-dock" dir="rtl">
+        <div className="liquid-dock__track flex justify-around">
           {homeItems.map(item => {
             const Icon = item.icon;
             const isActive = homeTab === item.id;
             return (
               <button
-                type="button"
                 key={item.id}
+                type="button"
                 aria-label={item.label}
                 aria-pressed={isActive}
                 onClick={() => onSelectHomeTab?.(item.id)}
-                className={`liquid-dock__item mx-auto relative ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
+                className={`liquid-dock__item mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
+                style={{ minWidth: 44, minHeight: 44 }}
               >
-                <div className="relative">
-                  <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
-                  {!isOnline && item.id === 'account' && (
-                    <span
-                      className={`absolute -top-1 -end-1 w-2 h-2 rounded-full ${
-                        queueLength > 0 ? 'bg-[#C2512B] ring-1 ring-[#0E0D0C] animate-pulse' : 'bg-[#A39A89]'
-                      }`}
-                      title={queueLength > 0 ? `حالت آفلاین (${queueLength} در صف)` : 'آفلاین'}
-                    />
-                  )}
-                </div>
+                <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
                 <span className="dock-label whitespace-nowrap">{item.label}</span>
               </button>
             );
@@ -114,60 +77,36 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
   if (isDmView) {
     const dmItems = [
-      { id: 'dashboard', label: 'داشبورد', icon: LayoutDashboard },
-      { id: 'encounters', label: 'مبارزات', icon: Swords },
-      { id: 'library', label: 'کتابخانه', icon: Library },
-      { id: 'narrative', label: 'روایت', icon: Scroll },
-      { id: 'more', label: 'بیشتر', icon: MoreHorizontal },
-    ] as const;
-
+      { id: 'dm', label: 'میز دی‌ام', icon: LayoutDashboard },
+      { id: 'sheet', label: 'برگه', icon: Heart },
+      { id: 'dice', label: 'تاس', icon: Dices },
+      { id: 'notes', label: 'یادداشت', icon: FileText },
+      { id: 'world', label: 'جهان', icon: Compass },
+    ];
     return (
-      <nav 
-        aria-label="منوی ناوبری دانجن مستر"
-        className="liquid-dock"
-        dir="rtl"
-      >
-        {/* Active Encounter Quick Join Bar on BottomNav */}
-        {hasActiveEncounter && onOpenActiveEncounter && (
-          <button
-            type="button"
-            onClick={onOpenActiveEncounter}
-            className="liquid-dock__banner w-full flex items-center justify-center gap-2 mb-2 py-1.5 rounded-2xl bg-gradient-to-r from-[#C2512B] via-[#E0A030] to-[#C2512B] text-[11px] font-black text-[#0E0D0C] shadow-[0_4px_16px_rgba(194,81,43,0.35)] hover:opacity-95 transition pointer-events-auto"
-          >
-            <Swords className="w-3.5 h-3.5 animate-bounce shrink-0" />
-            <span>مبارزه زنده در جریان است — لمس جهت مشاهده</span>
-          </button>
-        )}
-        <div className="liquid-dock__track grid grid-cols-5">
+      <nav aria-label="منوی ناوبری دانجن مستر" className="liquid-dock" dir="rtl">
+        <div className="liquid-dock__track flex justify-around">
           {dmItems.map(item => {
             const Icon = item.icon;
-            // Map sub-tabs to 5 primary DM items
-            const isActive =
-              dmTab === item.id ||
-              (item.id === 'library' && (dmTab === 'npcs' || dmTab === 'items' || dmTab === 'rewards')) ||
-              (item.id === 'narrative' && (dmTab === 'calendar' || dmTab === 'endings' || dmTab === 'notes')) ||
-              (item.id === 'more' && (dmTab === 'settings' || dmTab === 'users'));
-
+            const isActive = dmTab === item.id || (item.id === 'sheet' && (dmTab === 'overview' || dmTab === 'abilities' || dmTab === 'combat'));
             return (
               <button
-                type="button"
                 key={item.id}
+                type="button"
                 aria-label={item.label}
                 aria-pressed={isActive}
-                onClick={() => onSelectDmTab(item.id)}
-                className={`liquid-dock__item mx-auto relative ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
+                onClick={() => {
+                  if (item.id === 'dm') onSelectDmTab('dashboard');
+                  else if (item.id === 'sheet') onSelectDmTab('dashboard');
+                  else if (item.id === 'dice' && onOpenDice) { onOpenDice(); }
+                  else if (item.id === 'notes') onSelectDmTab('narrative');
+                  else if (item.id === 'world') onSelectDmTab('library');
+                  else onSelectDmTab(item.id);
+                }}
+                className={`liquid-dock__item mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
+                style={{ minWidth: 44, minHeight: 44 }}
               >
-                <div className="relative">
-                  <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
-                  {!isOnline && item.id === 'more' && (
-                    <span
-                      className={`absolute -top-1 -end-1 w-2 h-2 rounded-full ${
-                        queueLength > 0 ? 'bg-[#C2512B] ring-1 ring-[#0E0D0C] animate-pulse' : 'bg-[#A39A89]'
-                      }`}
-                      title={queueLength > 0 ? `حالت آفلاین (${queueLength} در صف)` : 'آفلاین'}
-                    />
-                  )}
-                </div>
+                <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
                 <span className="dock-label whitespace-nowrap">{item.label}</span>
               </button>
             );
@@ -177,117 +116,55 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     );
   }
 
-  // Player Navigation (5): Sheet / Inventory / Dice (center raised) / Notes / Codex
-  const isSheetTab = ['overview', 'abilities', 'combat', 'features', 'companions', 'resources'].includes(playerTab);
+  const playerItems = [
+    { id: 'sheet', label: 'برگه', icon: Heart },
+    { id: 'notes', label: 'یادداشت', icon: FileText },
+    { id: 'dice', label: 'تاس', icon: Dices },
+    { id: 'world', label: 'جهان', icon: Compass },
+    { id: 'more', label: 'بیشتر', icon: MoreHorizontal },
+  ];
 
   return (
-    <nav 
-      aria-label="منوی ناوبری بازیکن"
-      className="liquid-dock"
-      dir="rtl"
-    >
-      {/* Active Encounter Quick Join Bar on BottomNav */}
-      {hasActiveEncounter && onOpenActiveEncounter && (
-        <button
-          type="button"
-          onClick={onOpenActiveEncounter}
-          className="liquid-dock__banner w-full flex items-center justify-center gap-2 mb-2 py-1.5 rounded-2xl bg-gradient-to-r from-[#C2512B] via-[#E0A030] to-[#C2512B] text-[11px] font-black text-[#0E0D0C] shadow-[0_4px_16px_rgba(194,81,43,0.35)] hover:opacity-95 transition pointer-events-auto"
-        >
-          <Swords className="w-3.5 h-3.5 animate-bounce shrink-0" />
-          <span>مبارزه زنده در جریان است — لمس جهت مشاهده</span>
-        </button>
-      )}
-      <div className="liquid-dock__track grid grid-cols-5 items-center">
-        {/* 1. Sheet */}
-        <button
-          type="button"
-          aria-label="شیت شخصیت"
-          aria-pressed={isSheetTab}
-          onClick={() => onSelectPlayerTab('overview')}
-          className={`liquid-dock__item mx-auto relative ${isSheetTab ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
-        >
-          <div className="relative">
-            <Heart className={`w-5 h-5 ${isSheetTab ? 'stroke-[2.5]' : 'stroke-2'}`} />
-            {hasActiveEncounter && (
-              <span 
-                onClick={(e) => {
-                  if (onOpenActiveEncounter) {
-                    e.stopPropagation();
-                    onOpenActiveEncounter();
-                  }
-                }}
-                className="absolute -top-1.5 -end-2 w-4 h-4 rounded-full bg-[#C2512B] text-white flex items-center justify-center animate-pulse border border-[#F2C265] shadow-[0_0_8px_rgba(194,81,43,0.8)]"
-                title="مبارزه زنده"
+    <nav aria-label="منوی ناوبری بازیکن" className="liquid-dock" dir="rtl">
+      <div className="liquid-dock__track flex justify-around items-center">
+        {playerItems.map((item, i) => {
+          const Icon = item.icon;
+          const isActive = playerTab === item.id || (item.id === 'sheet' && (playerTab === 'overview' || playerTab === 'abilities' || playerTab === 'combat' || playerTab === 'companions' || playerTab === 'inventory')) || (item.id === 'world' && (playerTab === 'codex'));
+          const isCenter = i === 2; // Dice in center
+          if (isCenter) {
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={onOpenDice}
+                className="w-13 h-13 -mt-6 rounded-full bg-gradient-to-tr from-[#C97B4A] to-[#E0A030] text-[#0E0D0C] flex items-center justify-center shadow-[0_0_20px_rgba(224,160,48,0.5)] hover:scale-105 active:scale-95 transition touch-target z-[35]"
+                aria-label="پرتاب تاس"
+                style={{ minWidth: 44, minHeight: 44 }}
               >
-                <Swords className="w-2.5 h-2.5" />
-              </span>
-            )}
-          </div>
-          <span className="dock-label whitespace-nowrap">شیت</span>
-        </button>
-
-        {/* 2. Inventory */}
-        <button
-          type="button"
-          aria-label="کوله‌پشتی"
-          aria-pressed={playerTab === 'inventory'}
-          onClick={() => onSelectPlayerTab('inventory')}
-          className={`liquid-dock__item mx-auto relative ${playerTab === 'inventory' ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
-        >
-          <div className="relative">
-            <Package className={`w-5 h-5 ${playerTab === 'inventory' ? 'stroke-[2.5]' : 'stroke-2'}`} />
-            {inventoryBadge > 0 && (
-              <span className="absolute -top-1 -end-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-[#E0A030] text-[#0E0D0C] text-[9px] font-black px-0.5 border border-[#171513]">
-                {inventoryBadge > 99 ? '99+' : inventoryBadge}
-              </span>
-            )}
-          </div>
-          <span className="dock-label whitespace-nowrap">کوله</span>
-        </button>
-
-        {/* 3. Center Raised Dice Button (FAB) */}
-        <div className="flex justify-center items-center">
-          <button
-            type="button"
-            onClick={onOpenDice}
-            className="w-13 h-13 -mt-6 rounded-full bg-gradient-to-tr from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] flex flex-col items-center justify-center shadow-[0_0_20px_rgba(224,160,48,0.5),0_4px_12px_rgba(0,0,0,0.4)] hover:scale-105 active:scale-95 transition-transform duration-200 border-2 border-[#171513] touch-target min-w-[44px] z-[35]"
-            title="پرتاب سریع تاس"
-            aria-label="باز کردن پنجره پرتاب تاس"
-          >
-            <Dices className="w-6 h-6 stroke-[2.5]" />
-          </button>
-        </div>
-
-        {/* 4. Notes */}
-        <button
-          type="button"
-          aria-label="یادداشت‌ها"
-          aria-pressed={playerTab === 'notes'}
-          onClick={() => onSelectPlayerTab('notes')}
-          className={`liquid-dock__item mx-auto relative ${playerTab === 'notes' ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
-        >
-          <div className="relative">
-            <FileText className={`w-5 h-5 ${playerTab === 'notes' ? 'stroke-[2.5]' : 'stroke-2'}`} />
-            {notesBadge > 0 && (
-              <span className="absolute -top-1 -end-1.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-[#E0A030] text-[#0E0D0C] text-[9px] font-black px-0.5 border border-[#171513]">
-                {notesBadge > 99 ? '99+' : notesBadge}
-              </span>
-            )}
-          </div>
-          <span className="dock-label whitespace-nowrap">یادداشت</span>
-        </button>
-
-        {/* 5. Codex */}
-        <button
-          type="button"
-          aria-label="دانشنامه"
-          aria-pressed={playerTab === 'codex'}
-          onClick={() => onSelectPlayerTab('codex')}
-          className={`liquid-dock__item mx-auto ${playerTab === 'codex' ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
-        >
-          <Compass className={`w-5 h-5 ${playerTab === 'codex' ? 'stroke-[2.5]' : 'stroke-2'}`} />
-          <span className="dock-label whitespace-nowrap">دانشنامه</span>
-        </button>
+                <Dices className="w-6 h-6 stroke-[2.5]" />
+              </button>
+            );
+          }
+          return (
+            <button
+              key={item.id}
+              type="button"
+              aria-label={item.label}
+              aria-pressed={isActive}
+              onClick={() => {
+                if (item.id === 'more') onOpenCampaignMore?.();
+                else if (item.id === 'sheet') onSelectPlayerTab('overview');
+                else if (item.id === 'world') onSelectPlayerTab('codex');
+                else onSelectPlayerTab(item.id);
+              }}
+              className={`liquid-dock__item mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
+              style={{ minWidth: 44, minHeight: 44 }}
+            >
+              <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+              <span className="dock-label whitespace-nowrap">{item.label}</span>
+            </button>
+          );
+        })}
       </div>
     </nav>
   );
