@@ -8,6 +8,7 @@ import { Handout, HandoutKind, HandoutVisibility, MapPin as MapPinType } from '.
 import { api } from '../../services/api';
 import { HandoutEditorSheet } from '../handout/HandoutEditorSheet';
 import { HandoutViewerModal } from '../handout/HandoutViewerModal';
+import { BottomSheet } from '../mobile/BottomSheet';
 
 interface DmHandoutManagerProps {
   campaignId: string;
@@ -598,26 +599,19 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
 
       {/* Quick Recipient Selection Modal */}
       {recipientModalHandout && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" dir="rtl">
-          <div className="w-full max-w-md bg-[#14120E] border border-[#2F2A23] rounded-[18px] p-4 space-y-4 shadow-2xl">
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#2F2A23]">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-sky-400" />
-                <h3 className="font-bold text-sm text-[#EDE6D8]">انتخاب بازیکنان برای «{recipientModalHandout.title}»</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setRecipientModalHandout(null)}
-                className="text-[#A39A89] hover:text-white"
-              >
-                ×
-              </button>
+        <BottomSheet
+          isOpen={true}
+          onClose={() => setRecipientModalHandout(null)}
+          title={
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-sky-400" />
+              <span>انتخاب بازیکنان برای «{recipientModalHandout.title}»</span>
             </div>
-
-            <p className="text-xs text-[#A39A89]">
-              شخصیت‌های انتخاب‌شده می‌توانند این سند را در بخش اسناد خود مشاهده کنند:
-            </p>
-
+          }
+          subtitle="شخصیت‌های انتخاب‌شده می‌توانند این سند را در بخش اسناد خود مشاهده کنند"
+          maxWidth="max-w-md"
+        >
+          <div className="space-y-4 text-start">
             <div className="space-y-1.5 max-h-60 overflow-y-auto">
               {campaignCharacters.length === 0 ? (
                 <p className="text-xs text-[#A39A89] italic">شخصیتی در کمپین یافت نشد.</p>
@@ -627,7 +621,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                   return (
                     <label
                       key={char.id}
-                      className={`flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] border cursor-pointer transition ${
+                      className={`flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl border cursor-pointer transition ${
                         isChecked
                           ? 'bg-sky-950/40 border-sky-600/50 text-white'
                           : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89]'
@@ -659,20 +653,20 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
               <button
                 type="button"
                 onClick={() => setRecipientModalHandout(null)}
-                className="px-3.5 py-2 rounded-[8px] bg-[#241F18] text-xs text-[#EDE6D8]"
+                className="px-4 py-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] transition touch-target min-w-[44px] min-h-[44px]"
               >
                 انصراف
               </button>
               <button
                 type="button"
                 onClick={handleSaveRecipients}
-                className="px-4 py-2 rounded-[8px] bg-sky-500 hover:bg-sky-400 text-xs font-bold text-black shadow-md"
+                className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-xs font-black text-black shadow-md transition touch-target min-w-[44px] min-h-[44px]"
               >
                 ثبت و اشتراک‌گذاری
               </button>
             </div>
           </div>
-        </div>
+        </BottomSheet>
       )}
     </div>
   );

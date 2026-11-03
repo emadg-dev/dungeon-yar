@@ -4,6 +4,7 @@ import {
   X, Plus, Trash2, Eye, EyeOff, CheckCircle2, Circle, 
   Sparkles, Award, MapPin, Users, HelpCircle, Save 
 } from 'lucide-react';
+import { BottomSheet } from '../mobile/BottomSheet';
 
 interface DmQuestEditorModalProps {
   isOpen: boolean;
@@ -124,35 +125,17 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm" dir="rtl">
-      <div 
-        className="w-full sm:max-w-3xl min-h-[75vh] bg-[#14120E] border border-[#2F2A23] rounded-t-[20px] sm:rounded-[18px] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom duration-200"
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* Header */}
-        <div className="p-4 border-b border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 bg-[#1A1713]">
-          <div>
-            <h2 className="text-sm font-black text-[#EDE6D8]">
-              {isEditing ? 'ویرایش مأموریت' : 'ثبت مأموریت تازه'}
-            </h2>
-            <p className="text-[11px] text-[#A39A89]">
-              ثبت اهداف، اعطاکننده، پاداش‌ها و یادداشت‌های محرمانه دانجن مستر
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] flex items-center justify-center transition touch-target min-w-[44px]"
-            aria-label="بستن"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+  if (!isOpen) return null;
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 space-y-4">
+  return (
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isEditing ? 'ویرایش مأموریت' : 'ثبت مأموریت تازه'}
+      subtitle="ثبت اهداف، اعطاکننده، پاداش‌ها و یادداشت‌های محرمانه دانجن مستر"
+      maxWidth="max-w-3xl"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 text-start">
           {errorMessage && (
             <div className="p-3 rounded-[10px] bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-bold">
               {errorMessage}
@@ -463,7 +446,6 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </BottomSheet>
   );
 };
