@@ -127,20 +127,20 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
       {/* Search & Actions Header */}
       <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-[#A39A89] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-text-muted absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="جستجو در مکان‌ها و یادداشت‌های مستر..."
-            className="w-full bg-[#171513] text-[#EDE6D8] placeholder-[#A39A89] pr-9 pl-3 py-2 rounded-[12px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target min-w-[44px]"
+            className="w-full bg-surface text-text-primary placeholder-text-muted pe-9 ps-3 py-2 rounded-[12px] border border-border focus:border-accent focus:outline-none text-sm touch-target min-w-[44px]"
           />
         </div>
 
         <button
           type="button"
           onClick={handleOpenCreate}
-          className="bg-[#E0A030] text-[#0E0D0C] font-extrabold px-4 py-2.5 rounded-[12px] flex items-center justify-center gap-2 hover:bg-[#F2C265] transition shadow-md touch-target min-w-[44px] shrink-0"
+          className="bg-accent text-on-accent font-extrabold px-4 py-2.5 rounded-[12px] flex items-center justify-center gap-2 hover:bg-accent-hover transition shadow-md touch-target min-w-[44px] shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>مکان جدید</span>
@@ -159,8 +159,8 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
           }}
           className={`py-1.5 px-3 rounded-full text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
             selectedRegion === 'all'
-              ? 'bg-[#E0A030] text-[#0E0D0C]'
-              : 'bg-[#171513] text-[#A39A89] border border-[#2F2A23] hover:text-[#EDE6D8]'
+              ? 'bg-accent text-on-accent'
+              : 'bg-surface text-text-muted border border-border hover:text-text-primary'
           }`}
         >
           همه ({locations.length})
@@ -179,8 +179,8 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               }}
               className={`py-1.5 px-3 rounded-full text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
                 selectedRegion === r
-                  ? 'bg-[#E0A030] text-[#0E0D0C]'
-                  : 'bg-[#171513] text-[#A39A89] border border-[#2F2A23] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent'
+                  : 'bg-surface text-text-muted border border-border hover:text-text-primary'
               }`}
             >
               {r} ({count})
@@ -196,15 +196,15 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
             key={loc.id}
             className={`surface-card rounded-[14px] p-3.5 border transition-all duration-150 flex flex-col justify-between gap-3 ${
               loc.revealed 
-                ? 'border-[#2F2A23] hover:border-[#E0A030]/40' 
-                : 'border-dashed border-[#2F2A23] bg-[#171513]/60'
+                ? 'border-border hover:border-accent/40' 
+                : 'border-dashed border-border bg-surface/60'
             }`}
           >
             <div className="space-y-2">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-bold text-base text-[#EDE6D8] truncate">{loc.name}</h3>
+                    <h3 className="font-bold text-base text-text-primary truncate">{loc.name}</h3>
                     <Chip 
                       variant="region" 
                       region={loc.region}
@@ -219,8 +219,8 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
                   title={loc.revealed ? 'آشکار برای بازیکنان (کلیک جهت پنهان‌سازی)' : 'مخفی از بازیکنان (کلیک جهت آشکارسازی)'}
                   className={`p-1.5 rounded-[8px] transition touch-target min-w-[44px] shrink-0 ${
                     loc.revealed
-                      ? 'bg-[#6F9E78]/15 text-[#6F9E78] hover:bg-[#6F9E78]/25'
-                      : 'bg-[#171513] text-[#A39A89] hover:text-[#EDE6D8]'
+                      ? 'bg-success/15 text-success hover:bg-success/25'
+                      : 'bg-surface text-text-muted hover:text-text-primary'
                   }`}
                 >
                   {loc.revealed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
@@ -228,27 +228,27 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               </div>
 
               {loc.description && (
-                <p className="text-xs text-[#A39A89] line-clamp-2 leading-relaxed">
+                <p className="text-xs text-text-muted line-clamp-2 leading-relaxed">
                   {loc.description}
                 </p>
               )}
 
               {loc.dmNotes && (
-                <div className="bg-[#0E0D0C]/80 rounded-[8px] p-2 border border-[#C2512B]/30 flex items-start gap-1.5 text-xs text-[#EDE6D8]/90">
-                  <Lock className="w-3.5 h-3.5 text-[#C2512B] shrink-0 mt-0.5" />
+                <div className="bg-bg/80 rounded-[8px] p-2 border border-danger/30 flex items-start gap-1.5 text-xs text-text-primary/90">
+                  <Lock className="w-3.5 h-3.5 text-danger shrink-0 mt-0.5" />
                   <span className="leading-snug">{loc.dmNotes}</span>
                 </div>
               )}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#2F2A23]/60 text-xs text-[#A39A89]">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/60 text-xs text-text-muted">
               <span>{loc.revealed ? 'آشکار در دانشنامه' : 'مخفی در دانشنامه'}</span>
 
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => handleOpenEdit(loc)}
-                  className="p-1.5 rounded-[6px] hover:bg-[#201D19] text-[#EDE6D8] transition touch-target min-w-[44px]"
+                  className="p-1.5 rounded-[6px] hover:bg-surface-2 text-text-primary transition touch-target min-w-[44px]"
                   title="ویرایش مکان"
                 >
                   <Edit3 className="w-4 h-4" />
@@ -260,7 +260,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
                       onDeleteLocation(loc.id);
                     }
                   }}
-                  className="p-1.5 rounded-[6px] hover:bg-[#C2512B]/15 text-[#D66138] transition touch-target min-w-[44px]"
+                  className="p-1.5 rounded-[6px] hover:bg-danger/15 text-danger-hover transition touch-target min-w-[44px]"
                   title="حذف مکان"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -271,9 +271,9 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
         ))}
 
         {filteredLocations.length === 0 && (
-          <div className="col-span-full p-8 text-center surface-card rounded-[14px] border border-[#2F2A23]">
-            <Compass className="w-10 h-10 text-[#A39A89] mx-auto mb-2 opacity-50" />
-            <p className="text-sm text-[#A39A89]">مکانی یافت نشد.</p>
+          <div className="col-span-full p-8 text-center surface-card rounded-[14px] border border-border">
+            <Compass className="w-10 h-10 text-text-muted mx-auto mb-2 opacity-50" />
+            <p className="text-sm text-text-muted">مکانی یافت نشد.</p>
           </div>
         )}
       </div>
@@ -289,8 +289,8 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
       >
         <form onSubmit={handleSave} className="space-y-4 pb-2" dir="rtl">
           <div>
-            <label className="block text-xs font-bold text-[#A39A89] mb-1">
-              نام مکان <span className="text-[#C2512B]">*</span>
+            <label className="block text-xs font-bold text-text-muted mb-1">
+              نام مکان <span className="text-danger">*</span>
             </label>
             <input
               type="text"
@@ -298,18 +298,18 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               value={formData.name || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               placeholder="مثال: کاروانسرای ماه سرخ"
-              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target min-w-[44px]"
+              className="w-full bg-surface text-text-primary p-2.5 rounded-[10px] border border-border focus:border-accent focus:outline-none text-sm touch-target min-w-[44px]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#A39A89] mb-1">
+            <label className="block text-xs font-bold text-text-muted mb-1">
               اقلیم و منطقه
             </label>
             <select
               value={formData.region || 'ورنا'}
               onChange={(e) => setFormData(prev => ({ ...prev, region: e.target.value as LocationRegion }))}
-              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target min-w-[44px]"
+              className="w-full bg-surface text-text-primary p-2.5 rounded-[10px] border border-border focus:border-accent focus:outline-none text-sm touch-target min-w-[44px]"
             >
               {REGION_OPTIONS.map(r => (
                 <option key={r} value={r}>{r}</option>
@@ -318,7 +318,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#A39A89] mb-1">
+            <label className="block text-xs font-bold text-text-muted mb-1">
               توضیحات عمومی (قابل مشاهده برای بازیکنان پس از آشکارسازی)
             </label>
             <textarea
@@ -326,12 +326,12 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               value={formData.description || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               placeholder="شرح معماری، جو حاکم و حال‌وهوای این نقطه از جهان زروانیا..."
-              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target min-w-[44px]"
+              className="w-full bg-surface text-text-primary p-2.5 rounded-[10px] border border-border focus:border-accent focus:outline-none text-sm touch-target min-w-[44px]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#C2512B] mb-1 flex items-center gap-1.5">
+            <label className="block text-xs font-bold text-danger mb-1 flex items-center gap-1.5">
               <Lock className="w-3.5 h-3.5" />
               <span>یادداشت‌های محرمانه دانجن مستر (هرگز به بازیکنان نمایش داده نمی‌شود)</span>
             </label>
@@ -340,12 +340,12 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               value={formData.dmNotes || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, dmNotes: e.target.value }))}
               placeholder="اسرار پنهان، خطرات محیطی، تله‌ها یا NPCهای مخفی..."
-              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#C2512B]/40 focus:border-[#C2512B] focus:outline-none text-sm touch-target min-w-[44px]"
+              className="w-full bg-surface text-text-primary p-2.5 rounded-[10px] border border-danger/40 focus:border-danger focus:outline-none text-sm touch-target min-w-[44px]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#A39A89] mb-1">
+            <label className="block text-xs font-bold text-text-muted mb-1">
               نشانی تصویر یا نقشه (اختیاری)
             </label>
             <input
@@ -353,20 +353,20 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               value={formData.imageUrl || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
               placeholder="https://..."
-              className="w-full bg-[#171513] text-[#EDE6D8] p-2.5 rounded-[10px] border border-[#2F2A23] focus:border-[#E0A030] focus:outline-none text-sm touch-target min-w-[44px] text-left dir-ltr"
+              className="w-full bg-surface text-text-primary p-2.5 rounded-[10px] border border-border focus:border-accent focus:outline-none text-sm touch-target min-w-[44px] text-end dir-ltr"
             />
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-[10px] bg-[#171513] border border-[#2F2A23]">
+          <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-[10px] bg-surface border border-border">
             <div>
-              <div className="text-sm font-bold text-[#EDE6D8]">آشکار برای بازیکنان</div>
-              <div className="text-xs text-[#A39A89]">در صورت فعال بودن، در بخش مکان‌های دانشنامه بازیکن نمایش داده می‌شود.</div>
+              <div className="text-sm font-bold text-text-primary">آشکار برای بازیکنان</div>
+              <div className="text-xs text-text-muted">در صورت فعال بودن، در بخش مکان‌های دانشنامه بازیکن نمایش داده می‌شود.</div>
             </div>
             <input
               type="checkbox"
               checked={!!formData.revealed}
               onChange={(e) => setFormData(prev => ({ ...prev, revealed: e.target.checked }))}
-              className="w-5 h-5 rounded accent-[#E0A030] cursor-pointer touch-target min-w-[44px]"
+              className="w-5 h-5 rounded accent-accent cursor-pointer touch-target min-w-[44px]"
             />
           </div>
 
@@ -377,14 +377,14 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
                 setIsCreating(false);
                 setEditingLocation(null);
               }}
-              className="flex-1 py-2.5 rounded-[10px] border border-[#2F2A23] text-[#A39A89] font-bold text-sm hover:text-[#EDE6D8] transition touch-target min-w-[44px]"
+              className="flex-1 py-2.5 rounded-[10px] border border-border text-text-muted font-bold text-sm hover:text-text-primary transition touch-target min-w-[44px]"
             >
               انصراف
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !formData.name?.trim()}
-              className="flex-1 py-2.5 rounded-[10px] bg-[#E0A030] text-[#0E0D0C] font-extrabold text-sm hover:bg-[#F2C265] transition disabled:opacity-50 touch-target min-w-[44px]"
+              className="flex-1 py-2.5 rounded-[10px] bg-accent text-on-accent font-extrabold text-sm hover:bg-accent-hover transition disabled:opacity-50 touch-target min-w-[44px]"
             >
               {isSubmitting ? 'در حال ذخیره...' : editingLocation ? 'ثبت تغییرات' : 'ایجاد مکان'}
             </button>

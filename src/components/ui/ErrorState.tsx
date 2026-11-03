@@ -20,16 +20,16 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
   return (
     <div
       role="alert"
-      className={`py-10 px-4 rounded-2xl bg-red-950/20 border border-red-900/40 flex flex-col items-center justify-center text-center space-y-3 ${className}`}
+      className={`error-state py-10 px-4 rounded-2xl bg-danger/10 border border-danger/30 flex flex-col items-center justify-center text-center space-y-3 ${className}`}
       dir="rtl"
     >
-      <div className="w-12 h-12 rounded-full bg-red-900/30 border border-red-800/50 flex items-center justify-center text-red-400">
+      <div className="w-12 h-12 rounded-full bg-danger/20 border border-danger/40 flex items-center justify-center text-danger">
         <AlertCircle className="w-6 h-6" />
       </div>
 
       <div className="max-w-sm space-y-1">
-        <h4 className="font-bold text-sm text-red-300">{title}</h4>
-        <p className="text-xs text-stone-400 leading-relaxed">{message}</p>
+        <h4 className="font-bold text-sm text-danger">{title}</h4>
+        <p className="text-xs text-text-muted leading-relaxed">{message}</p>
       </div>
 
       {onRetry && (

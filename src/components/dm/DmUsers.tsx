@@ -180,19 +180,19 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
   return (
     <div className="space-y-4" dir="rtl">
       {/* Header & Filter Controls */}
-      <div className="surface-card rounded-[14px] p-4 border border-[#2F2A23] space-y-3">
+      <div className="surface-card rounded-[14px] p-4 border border-border space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-[#E0A030]" />
+            <Users className="w-5 h-5 text-accent" />
             <div>
-              <h3 className="text-sm font-extrabold text-[#EDE6D8]">مدیریت کاربران و ماجراجویان</h3>
-              <p className="text-[11px] text-[#A39A89]">کنترل نقش‌ها، کاراکترهای واگذارشده و پیوندهای ورود</p>
+              <h3 className="text-sm font-extrabold text-text-primary">مدیریت کاربران و ماجراجویان</h3>
+              <p className="text-xs text-text-muted">کنترل نقش‌ها، کاراکترهای واگذارشده و پیوندهای ورود</p>
             </div>
           </div>
           <button
             type="button"
             onClick={loadUsers}
-            className="py-1.5 px-3 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px] flex items-center gap-1 self-start sm:self-auto"
+            className="py-1.5 px-3 rounded-[8px] bg-surface-2 border border-border text-xs font-bold text-text-muted hover:text-text-primary touch-target min-w-[44px] flex items-center gap-1 self-start sm:self-auto"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>تازه‌سازی</span>
@@ -207,15 +207,15 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="جستجوی نام یا ایمیل..."
-              className="w-full py-2 ps-8 pe-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
+              className="w-full py-2 ps-8 pe-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
             />
-            <Search className="w-4 h-4 text-[#A39A89] absolute top-3.5 start-2.5 pointer-events-none" />
+            <Search className="w-4 h-4 text-text-muted absolute top-3.5 start-2.5 pointer-events-none" />
           </div>
 
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
+            className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
           >
             <option value="">همه نقش‌ها</option>
             <option value="player">فقط بازیکنان</option>
@@ -225,7 +225,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
+            className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
           >
             <option value="">همه وضعیت‌ها</option>
             <option value="active">فعال</option>
@@ -236,7 +236,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
 
       {/* Messages */}
       {errorMsg && (
-        <div className="p-3 rounded-[10px] bg-[#C2512B]/15 border border-[#C2512B]/40 text-[#EDE6D8] text-xs flex flex-wrap items-center justify-between gap-2">
+        <div className="p-3 rounded-[10px] bg-danger/15 border border-danger/40 text-text-primary text-xs flex flex-wrap items-center justify-between gap-2">
           <span>{errorMsg}</span>
           <button type="button" onClick={() => setErrorMsg('')} className="p-1 touch-target min-w-[44px]">
             <X className="w-3.5 h-3.5" />
@@ -244,7 +244,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
         </div>
       )}
       {successMsg && (
-        <div className="p-3 rounded-[10px] bg-[#6F9E78]/15 border border-[#6F9E78]/40 text-[#6F9E78] text-xs flex flex-wrap items-center justify-between gap-2 font-bold">
+        <div className="p-3 rounded-[10px] bg-success/15 border border-success/40 text-success text-xs flex flex-wrap items-center justify-between gap-2 font-bold">
           <span>{successMsg}</span>
           <button type="button" onClick={() => setSuccessMsg('')} className="p-1 touch-target min-w-[44px]">
             <X className="w-3.5 h-3.5" />
@@ -254,21 +254,21 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
 
       {/* Reset Link Modal / Card */}
       {resetLinkData && (
-        <div className="p-4 rounded-[12px] bg-[#E0A030]/15 border border-[#E0A030]/40 space-y-2">
+        <div className="p-4 rounded-[12px] bg-accent/15 border border-accent/40 space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-black text-[#E0A030] flex items-center gap-1.5">
+            <span className="text-xs font-black text-accent flex items-center gap-1.5">
               <KeyRound className="w-4 h-4" />
               لینک یک‌بار مصرف تغییر رمز تولید شد
             </span>
             <button
               type="button"
               onClick={() => setResetLinkData(null)}
-              className="p-1 text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
+              className="p-1 text-text-muted hover:text-text-primary touch-target min-w-[44px]"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
-          <p className="text-[11px] text-[#EDE6D8]/90 leading-relaxed">
+          <p className="text-xs text-text-primary/90 leading-relaxed">
             هشدار امنیتی: این پیوند تنها یک‌بار مصرف است و 24 ساعت اعتبار دارد. آن را کپی کرده و برای بازیکن ارسال فرمایید:
           </p>
           <div className="flex items-center gap-2">
@@ -277,7 +277,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
               readOnly
               value={resetLinkData.resetLink}
               dir="ltr"
-              className="flex-1 py-2 px-3 rounded-[8px] bg-[#171513] border border-[#2F2A23] text-xs text-[#EDE6D8] font-mono select-all min-h-[44px]"
+              className="flex-1 py-2 px-3 rounded-[8px] bg-surface border border-border text-xs text-text-primary font-mono select-all min-h-[44px]"
             />
             <button
               type="button"
@@ -294,7 +294,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
       {/* Users List */}
       <div className="space-y-2">
         {users.length === 0 ? (
-          <div className="surface-card rounded-[14px] p-8 text-center text-xs text-[#A39A89]">
+          <div className="surface-card rounded-[14px] p-8 text-center text-xs text-text-muted">
             {loading ? 'در حال بارگذاری اطلاعات...' : 'کاربری با این مشخصات یافت نشد.'}
           </div>
         ) : (
@@ -303,22 +303,22 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
               key={u.id}
               className={`surface-card rounded-[12px] p-3.5 border transition-all flex flex-wrap items-center justify-between gap-2 gap-3 ${
                 u.status === 'disabled'
-                  ? 'opacity-60 border-[#C2512B]/40 bg-[#171513]'
-                  : 'border-[#2F2A23] hover:border-[#E0A030]/30'
+                  ? 'opacity-60 border-danger/40 bg-surface'
+                  : 'border-border hover:border-accent/30'
               }`}
             >
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-extrabold text-xs text-[#EDE6D8] truncate">
+                  <span className="font-extrabold text-xs text-text-primary truncate">
                     {u.displayName || u.name}
                   </span>
 
                   {/* Role badge */}
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-[6px] font-bold border ${
+                    className={`text-xs px-1.5 py-0.2 rounded-[6px] font-bold border ${
                       u.role === 'dm'
-                        ? 'bg-[#E0A030]/20 text-[#E0A030] border-[#E0A030]/40'
-                        : 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/30'
+                        ? 'bg-accent/20 text-accent border-accent/40'
+                        : 'bg-success/15 text-success border-success/30'
                     }`}
                   >
                     {u.role === 'dm' ? 'دانجن مستر' : 'بازیکن'}
@@ -326,13 +326,13 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
 
                   {/* Status badge */}
                   {u.status === 'disabled' && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#C2512B]/20 text-[#C2512B] border border-[#C2512B]/40 font-bold">
+                    <span className="text-xs px-1.5 py-0.2 rounded-[6px] bg-danger/20 text-danger border border-danger/40 font-bold">
                       مسدود / غیرفعال
                     </span>
                   )}
                 </div>
 
-                <div className="text-[11px] text-[#A39A89] truncate flex items-center gap-2">
+                <div className="text-xs text-text-muted truncate flex items-center gap-2">
                   <span dir="ltr">{u.email}</span>
                   <span>•</span>
                   <span>
@@ -342,7 +342,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
                   </span>
                 </div>
 
-                <div className="text-[10px] text-[#A39A89]/80 flex items-center gap-2 pt-0.5">
+                <div className="text-xs text-text-muted/80 flex items-center gap-2 pt-0.5">
                   <span>
                     آخرین ورود: {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString('fa-IR-u-nu-latn') : 'هرگز'}
                   </span>
@@ -358,7 +358,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
                   setSelectedUser(u);
                   setActionMenuOpen(true);
                 }}
-                className="p-2 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
+                className="p-2 rounded-[8px] bg-surface-2 border border-border text-text-muted hover:text-text-primary touch-target min-w-[44px]"
                 title="عملیات کاربر"
               >
                 <MoreVertical className="w-4 h-4" />
@@ -387,20 +387,20 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
         >
           <div className="space-y-2 py-2" dir="rtl">
             {characters.length === 0 ? (
-              <p className="text-xs text-[#A39A89] text-center py-4">هیچ شخصیتی در کمپین ثبت نشده است.</p>
+              <p className="text-xs text-text-muted text-center py-4">هیچ شخصیتی در کمپین ثبت نشده است.</p>
             ) : (
               characters.map((c) => (
                 <button
                   key={c.id}
                   type="button"
                   onClick={() => handleAssignCharacter(c.id)}
-                  className="w-full text-right p-3 rounded-[10px] bg-[#201D19] hover:bg-[#2A2621] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
+                  className="w-full text-start p-3 rounded-[10px] bg-surface-2 hover:bg-surface-2 border border-border flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
                 >
                   <div>
-                    <span className="font-extrabold text-xs text-[#EDE6D8] block">{c.name}</span>
-                    <span className="text-[10px] text-[#A39A89]">{c.className} • سطح {c.level}</span>
+                    <span className="font-extrabold text-xs text-text-primary block">{c.name}</span>
+                    <span className="text-xs text-text-muted">{c.className} • سطح {c.level}</span>
                   </div>
-                  <span className="text-[10px] px-2 py-1 rounded-[6px] bg-[#E0A030]/15 text-[#E0A030] font-bold">
+                  <span className="text-xs px-2 py-1 rounded-[6px] bg-accent/15 text-accent font-bold">
                     واگذاری
                   </span>
                 </button>

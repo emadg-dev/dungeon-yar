@@ -21,47 +21,47 @@ const DiceRollCardRow = memo<DiceRollCardRowProps>(({ roll }) => {
     <div
       className={`p-3 rounded-2xl border transition-all content-visibility-card ${
         isCrit
-          ? 'bg-[#E0A030]/15 border-[#E0A030]/50 shadow-md shadow-[#E0A030]/20'
+          ? 'bg-accent/15 border-accent/50 shadow-md shadow-accent/20'
           : isFumble
-          ? 'bg-[#C2512B]/15 border-[#C2512B]/50 shadow-md shadow-[#C2512B]/20'
-          : 'bg-[#171513] border-[#2F2A23]'
+          ? 'bg-danger/15 border-danger/50 shadow-md shadow-danger/20'
+          : 'bg-surface border-border'
       }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs mb-1">
         <div className="flex items-center gap-1.5">
-          <UserIcon className="w-3.5 h-3.5 text-[#F2C265]" />
-          <span className="font-bold text-[#EDE6D8]">{roll.userName}</span>
+          <UserIcon className="w-3.5 h-3.5 text-accent-hover" />
+          <span className="font-bold text-text-primary">{roll.userName}</span>
           {roll.characterName && (
-            <span className="text-[10px] text-[#A39A89]">({roll.characterName})</span>
+            <span className="text-xs text-text-muted">({roll.characterName})</span>
           )}
           {roll.visibility === 'dm_only' && (
-            <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#C2512B]/20 text-[#E8836B] border border-[#C2512B]/30 flex items-center gap-0.5">
+            <span className="text-[9px] px-1.5 py-0.2 rounded bg-danger/20 text-danger border border-danger/30 flex items-center gap-0.5">
               <Lock className="w-2.5 h-2.5" /> مخفی
             </span>
           )}
         </div>
-        <span className="text-[10px] text-[#8A8374] font-mono">{dateStr}</span>
+        <span className="text-xs text-text-muted font-mono">{dateStr}</span>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
         <div>
-          <span className="text-xs text-[#F2C265] font-semibold block">{roll.rollType}</span>
-          <span className="text-[10px] text-[#A39A89] font-mono">{roll.diceExpression}</span>
+          <span className="text-xs text-accent-hover font-semibold block">{roll.rollType}</span>
+          <span className="text-xs text-text-muted font-mono">{roll.diceExpression}</span>
         </div>
 
         <div className="flex items-center gap-2">
           {isCrit && (
-            <span className="text-[10px] font-black text-[#F2C265] px-2 py-0.5 rounded-full bg-[#E0A030]/20 border border-[#E0A030]/40">
+            <span className="text-xs font-black text-accent-hover px-2 py-0.5 rounded-full bg-accent/20 border border-accent/40">
               20 طبیعی!
             </span>
           )}
           {isFumble && (
-            <span className="text-[10px] font-black text-[#D66138] px-2 py-0.5 rounded-full bg-[#C2512B]/20 border border-[#C2512B]/40">
+            <span className="text-xs font-black text-danger-hover px-2 py-0.5 rounded-full bg-danger/20 border border-danger/40">
               1 طبیعی!
             </span>
           )}
           <span className={`text-2xl font-black font-mono ${
-            isCrit ? 'text-[#F2C265]' : isFumble ? 'text-[#D66138]' : 'text-[#EDE6D8]'
+            isCrit ? 'text-accent-hover' : isFumble ? 'text-danger-hover' : 'text-text-primary'
           }`}>
             {roll.total}
           </span>
@@ -224,11 +224,11 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
       title="کیسه تاس و میز بازی"
       subtitle="پرتاب تاس‌های D&D 5e و فید مشترک میز بازی"
     >
-      <div className="space-y-4 text-xs text-[#EDE6D8]" dir="rtl">
+      <div className="space-y-4 text-xs text-text-primary" dir="rtl">
         {/* Tab Switcher: کیسه تاس / میز بازی */}
         <ScrollableRow
           activeKey={activeTab}
-          wrapperClassName="rounded-xl bg-[#131110] border border-[#2F2A23] p-1"
+          wrapperClassName="rounded-xl bg-bg border border-border p-1"
           className="gap-1"
         >
           <button
@@ -237,8 +237,8 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
             onClick={() => setActiveTab('bag')}
             className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all min-h-[44px] flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 snap-start ${
               activeTab === 'bag'
-                ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md font-black'
-                : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                ? 'bg-accent text-on-accent shadow-md font-black'
+                : 'text-text-muted hover:text-text-primary'
             }`}
           >
             <Dices className="w-4 h-4 shrink-0" />
@@ -253,8 +253,8 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
             }}
             className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all min-h-[44px] flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 snap-start ${
               activeTab === 'table'
-                ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md font-black'
-                : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                ? 'bg-accent text-on-accent shadow-md font-black'
+                : 'text-text-muted hover:text-text-primary'
             }`}
           >
             <Table className="w-4 h-4 shrink-0" />
@@ -269,13 +269,13 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
               <div
                 className={`p-4 rounded-[14px] border transition-all text-center ${
                   latestRoll.isCritical
-                    ? 'bg-[#E0A030]/15 border-[#E0A030] shadow-[0_0_25px_rgba(224,160,48,0.5)]'
+                    ? 'bg-accent/15 border-accent shadow-[0_0_25px_rgba(224,160,48,0.5)]'
                     : latestRoll.isFumble
-                    ? 'bg-[#C2512B]/20 border-[#C2512B] shadow-[0_0_25px_rgba(194,81,43,0.5)]'
-                    : 'bg-[#171513] border-[#2F2A23]'
+                    ? 'bg-danger/20 border-danger shadow-[0_0_25px_rgba(194,81,43,0.5)]'
+                    : 'bg-surface border-border'
                 }`}
               >
-                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#A39A89] mb-1">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-text-muted mb-1">
                   <span>{latestRoll.label}</span>
                   <span className="font-mono">{latestRoll.timestamp}</span>
                 </div>
@@ -284,35 +284,35 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                   <span
                     className={`text-5xl font-extrabold font-mono ${
                       latestRoll.isCritical
-                        ? 'text-[#F2C265]'
+                        ? 'text-accent-hover'
                         : latestRoll.isFumble
-                        ? 'text-[#C2512B]'
-                        : 'text-[#EDE6D8]'
+                        ? 'text-danger'
+                        : 'text-text-primary'
                     }`}
                   >
                     {latestRoll.total}
                   </span>
 
                   {latestRoll.isCritical && (
-                    <span className="px-2.5 py-1 text-xs font-black bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030] rounded-full flex items-center gap-1 animate-pulse">
+                    <span className="px-2.5 py-1 text-xs font-black bg-accent/20 text-accent-hover border border-accent rounded-full flex items-center gap-1 animate-pulse">
                       <Flame className="w-3.5 h-3.5" /> بحرانی طبیعی! (20)
                     </span>
                   )}
                   {latestRoll.isFumble && (
-                    <span className="px-2.5 py-1 text-xs font-black bg-[#C2512B]/25 text-[#C2512B] border border-[#C2512B] rounded-full flex items-center gap-1">
+                    <span className="px-2.5 py-1 text-xs font-black bg-danger/25 text-danger border border-danger rounded-full flex items-center gap-1">
                       <Skull className="w-3.5 h-3.5" /> شکست فاجعه‌بار! (1)
                     </span>
                   )}
                 </div>
 
-                <div className="text-center text-[11px] text-[#A39A89] flex items-center justify-center gap-2">
+                <div className="text-center text-xs text-text-muted flex items-center justify-center gap-2">
                   <span>تاس‌ها: [{latestRoll.rolls.join(' ، ')}]</span>
                   <span>•</span>
                   <span>مادیفایر: {formatModifier(latestRoll.modifier)}</span>
                   {latestRoll.advantage && (
                     <>
                       <span>•</span>
-                      <span className="text-[#E0A030] font-bold">
+                      <span className="text-accent font-bold">
                         {latestRoll.advantage === 'adv' ? 'با مزیت' : 'با ضعف'}
                       </span>
                     </>
@@ -323,7 +323,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
 
             {/* d4–d100 Row */}
             <div>
-              <label className="block text-xs font-bold text-[#A39A89] mb-1.5">نوع تاس:</label>
+              <label className="block text-xs font-bold text-text-muted mb-1.5">نوع تاس:</label>
               <ScrollableRow
                 activeKey={selectedSides}
                 wrapperClassName="w-full"
@@ -337,8 +337,8 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                     onClick={() => setSelectedSides(sides)}
                     className={`min-h-[48px] min-w-[48px] py-2 px-2 rounded-[12px] font-mono font-extrabold text-sm transition border touch-target-lg active:scale-95 flex items-center justify-center whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                       selectedSides === sides
-                        ? 'bg-[#E0A030] text-[#0E0D0C] border-[#E0A030] shadow-[0_0_12px_rgba(224,160,48,0.4)]'
-                        : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23] hover:border-[#E0A030]/50'
+                        ? 'bg-accent text-on-accent border-accent shadow-glow-amber'
+                        : 'bg-surface-2 text-text-primary border-border hover:border-accent/50'
                     }`}
                   >
                     d{sides}
@@ -350,22 +350,22 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
             {/* Count & Modifier Steppers */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-[#A39A89] mb-1">تعداد تاس:</label>
+                <label className="block text-xs font-bold text-text-muted mb-1">تعداد تاس:</label>
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={() => setDiceCount(Math.max(1, diceCount - 1))}
-                    className="w-12 h-12 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-bold text-lg flex items-center justify-center min-h-[48px] active:scale-95"
+                    className="w-12 h-12 rounded-[12px] bg-surface-2 border border-border text-text-primary font-bold text-lg flex items-center justify-center min-h-[48px] active:scale-95"
                   >
                     -
                   </button>
-                  <span className="flex-1 text-center font-extrabold font-mono text-base bg-[#0E0D0C] py-2 rounded-[12px] border border-[#2F2A23] min-h-[48px] flex items-center justify-center">
+                  <span className="flex-1 text-center font-extrabold font-mono text-base bg-bg py-2 rounded-[12px] border border-border min-h-[48px] flex items-center justify-center">
                     {diceCount}
                   </span>
                   <button
                     type="button"
                     onClick={() => setDiceCount(Math.min(20, diceCount + 1))}
-                    className="w-12 h-12 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-bold text-lg flex items-center justify-center min-h-[48px] active:scale-95"
+                    className="w-12 h-12 rounded-[12px] bg-surface-2 border border-border text-text-primary font-bold text-lg flex items-center justify-center min-h-[48px] active:scale-95"
                   >
                     +
                   </button>
@@ -373,22 +373,22 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#A39A89] mb-1">مادیفایر:</label>
+                <label className="block text-xs font-bold text-text-muted mb-1">مادیفایر:</label>
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={() => setModifier(modifier - 1)}
-                    className="w-12 h-12 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-bold text-lg flex items-center justify-center min-h-[48px] active:scale-95"
+                    className="w-12 h-12 rounded-[12px] bg-surface-2 border border-border text-text-primary font-bold text-lg flex items-center justify-center min-h-[48px] active:scale-95"
                   >
                     -
                   </button>
-                  <span className="flex-1 text-center font-extrabold font-mono text-base bg-[#0E0D0C] py-2 rounded-[12px] border border-[#2F2A23] min-h-[48px] flex items-center justify-center">
+                  <span className="flex-1 text-center font-extrabold font-mono text-base bg-bg py-2 rounded-[12px] border border-border min-h-[48px] flex items-center justify-center">
                     {formatModifier(modifier)}
                   </span>
                   <button
                     type="button"
                     onClick={() => setModifier(modifier + 1)}
-                    className="w-12 h-12 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-bold text-lg flex items-center justify-center min-h-[48px] active:scale-95"
+                    className="w-12 h-12 rounded-[12px] bg-surface-2 border border-border text-text-primary font-bold text-lg flex items-center justify-center min-h-[48px] active:scale-95"
                   >
                     +
                   </button>
@@ -398,7 +398,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
 
             {/* Advantage Toggle */}
             <div>
-              <label className="block text-xs font-bold text-[#A39A89] mb-1">حالت پرتاب (مزیت / ضعف):</label>
+              <label className="block text-xs font-bold text-text-muted mb-1">حالت پرتاب (مزیت / ضعف):</label>
               <ScrollableRow
                 activeKey={advantage}
                 wrapperClassName="w-full"
@@ -416,8 +416,8 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                     onClick={() => setAdvantage(item.id as any)}
                     className={`flex-1 py-2 px-3 rounded-[10px] text-xs font-bold transition border min-h-[44px] whitespace-nowrap shrink-0 snap-start flex items-center justify-center ${
                       advantage === item.id
-                        ? 'bg-[#E0A030] text-[#0E0D0C] border-[#E0A030]'
-                        : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23]'
+                        ? 'bg-accent text-on-accent border-accent'
+                        : 'bg-surface-2 text-text-muted border-border'
                     }`}
                   >
                     <span className="whitespace-nowrap shrink-0">{item.label}</span>
@@ -428,14 +428,14 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
 
             {/* Private Roll Toggle (Section 5) */}
             {(isDm || allowPlayerRollPrivate) && (
-              <div className="p-3 rounded-xl bg-[#131110] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
+              <div className="p-3 rounded-xl bg-bg border border-border flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <Lock className={`w-4 h-4 ${isPrivateToDm ? 'text-[#F2C265]' : 'text-[#8A8374]'}`} />
+                  <Lock className={`w-4 h-4 ${isPrivateToDm ? 'text-accent-hover' : 'text-text-muted'}`} />
                   <div>
-                    <span className="text-xs font-bold text-[#EDE6D8] block">
+                    <span className="text-xs font-bold text-text-primary block">
                       {isDm ? 'پرتاب محرمانه دانجن مستر' : 'ارسال محرمانه فقط برای دانجن مستر'}
                     </span>
-                    <span className="text-[10px] text-[#A39A89]">
+                    <span className="text-xs text-text-muted">
                       این پرتاب برای سایر بازیکنان حاضر در میز پنهان می‌ماند
                     </span>
                   </div>
@@ -444,7 +444,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                   type="checkbox"
                   checked={isPrivateToDm}
                   onChange={e => setIsPrivateToDm(e.target.checked)}
-                  className="w-5 h-5 accent-[#E0A030] rounded cursor-pointer"
+                  className="w-5 h-5 accent-accent rounded cursor-pointer"
                 />
               </div>
             )}
@@ -453,7 +453,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
             <button
               type="button"
               onClick={() => handleRoll()}
-              className="w-full py-3.5 rounded-[12px] bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-black text-sm flex items-center justify-center gap-2 shadow-lg min-h-[48px] active:scale-98 transition-colors"
+              className="w-full py-3.5 rounded-[12px] bg-accent hover:bg-accent-hover text-on-accent font-black text-sm flex items-center justify-center gap-2 shadow-lg min-h-[48px] active:scale-98 transition-colors"
             >
               <Dices className="w-5 h-5" />
               <span>پرتاب {diceCount}d{selectedSides} {modifier !== 0 ? formatModifier(modifier) : ''}</span>
@@ -463,13 +463,13 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
           /* Table Tab: Shared Dice Feed (Last 50 rolls) */
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-bold text-[#C9C0AE]">
+              <span className="text-xs font-bold text-text-primary">
                 پرتاب‌های زنده میز بازی (50 پرتاب اخیر)
               </span>
               <button
                 onClick={fetchTableRolls}
                 disabled={loadingTable}
-                className="p-1.5 text-[#F2C265] hover:bg-[#E0A030]/10 rounded-lg flex items-center gap-1 text-[11px]"
+                className="p-1.5 text-accent-hover hover:bg-accent/10 rounded-lg flex items-center gap-1 text-xs"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loadingTable ? 'animate-spin' : ''}`} />
                 <span>بروزرسانی</span>
@@ -478,7 +478,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
 
             <div className="space-y-2 max-h-96 overflow-y-auto pe-1">
               {tableRolls.length === 0 ? (
-                <div className="p-8 text-center border border-dashed border-[#2F2A23] rounded-2xl text-[#8A8374] text-xs">
+                <div className="p-8 text-center border border-dashed border-border rounded-2xl text-text-muted text-xs">
                   هنوز هیچ تاسی در این میز بازی پرتاب نشده است.
                 </div>
               ) : tableRolls.length > 50 ? (

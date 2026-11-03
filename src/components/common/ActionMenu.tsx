@@ -45,19 +45,19 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
               }}
               className={`w-full p-3.5 rounded-[12px] flex flex-wrap items-center justify-between gap-2 transition-all duration-150 touch-target min-w-[44px] ${
                 item.isDestructive
-                  ? 'bg-[#C2512B]/15 hover:bg-[#C2512B]/25 text-[#E0A030] border border-[#C2512B]/35 active:scale-[0.98]'
-                  : 'bg-[#201D19] hover:bg-[#2A2621] text-[#EDE6D8] border border-[#2F2A23] active:scale-[0.98]'
+                  ? 'bg-danger/15 hover:bg-danger/25 text-accent border border-danger/35 active:scale-[0.98]'
+                  : 'bg-surface-2 hover:bg-surface-2 text-text-primary border border-border active:scale-[0.98]'
               } ${item.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
             >
               <div className="flex items-center gap-2.5">
                 {Icon && (
                   <Icon
                     className={`w-4 h-4 ${
-                      item.isDestructive ? 'text-[#C2512B]' : 'text-[#E0A030]'
+                      item.isDestructive ? 'text-danger' : 'text-accent'
                     }`}
                   />
                 )}
-                <span className={`text-xs font-bold ${item.isDestructive ? 'text-[#C2512B]' : 'text-[#EDE6D8]'}`}>
+                <span className={`text-xs font-bold ${item.isDestructive ? 'text-danger' : 'text-text-primary'}`}>
                   {item.label}
                 </span>
               </div>
@@ -68,7 +68,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
         <button
           type="button"
           onClick={onClose}
-          className="w-full py-3 mt-2 rounded-[12px] bg-[#171513] text-[#A39A89] hover:text-[#EDE6D8] text-xs font-semibold border border-[#2F2A23] touch-target min-w-[44px]"
+          className="w-full py-3 mt-2 rounded-[12px] bg-surface text-text-muted hover:text-text-primary text-xs font-semibold border border-border touch-target min-w-[44px]"
         >
           بستن منو
         </button>

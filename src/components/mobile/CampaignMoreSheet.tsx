@@ -30,12 +30,12 @@ export const CampaignMoreSheet: React.FC<CampaignMoreSheetProps> = ({ isOpen, on
     <div dir="rtl" className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-md bg-[#171513]/95 border-t border-[#E0A030]/20 rounded-t-3xl p-5 shadow-2xl"
+        className="relative w-full max-w-md bg-surface/95 border-t border-accent/20 rounded-t-3xl p-5 shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-black text-[#F2C265]">بیشتر</h2>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-[#E0A030]/10 text-[#A39A89] hover:text-[#EDE6D8]" aria-label="بستن">✕</button>
+          <h2 className="text-lg font-black text-accent-hover">بیشتر</h2>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-accent/10 text-text-muted hover:text-text-primary" aria-label="بستن">✕</button>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {items.map(it => {
@@ -44,10 +44,10 @@ export const CampaignMoreSheet: React.FC<CampaignMoreSheetProps> = ({ isOpen, on
               <button
                 key={it.id}
                 onClick={() => { onJump(it.id); onClose(); }}
-                className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-[#2A2621]/60 hover:bg-[#E0A030]/10 border border-[#2F2A23] hover:border-[#E0A030]/40 transition touch-target min-h-[64px]"
+                className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-surface-2/60 hover:bg-accent/10 border border-border hover:border-accent/40 transition touch-target min-h-[64px]"
               >
-                <Icon className="w-6 h-6 text-[#E0A030] stroke-[2]" />
-                <span className="text-[11px] font-bold text-[#EDE6D8] whitespace-nowrap">{it.label}</span>
+                <Icon className="w-6 h-6 text-accent stroke-[2]" />
+                <span className="text-xs font-bold text-text-primary whitespace-nowrap">{it.label}</span>
               </button>
             );
           })}

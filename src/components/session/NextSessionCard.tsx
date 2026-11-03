@@ -57,22 +57,22 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
 
   if (!session) {
     return (
-      <div className="rounded-2xl bg-[#1C1814] border border-[#2A241C] p-4 sm:p-5 shadow-lg text-right" dir="rtl">
+      <div className="rounded-2xl bg-surface border border-border p-4 sm:p-5 shadow-lg text-start" dir="rtl">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#E0A030]/10 border border-[#E0A030]/20 flex items-center justify-center text-[#F2C265]">
+            <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent-hover">
               <CalendarIcon className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[#EDE6D8]">جلسات بازی</h3>
-              <p className="text-xs text-[#8C8576] mt-0.5">در حال حاضر جلسه جدیدی برنامه‌ریزی نشده است.</p>
+              <h3 className="text-sm font-bold text-text-primary">جلسات بازی</h3>
+              <p className="text-xs text-text-muted mt-0.5">در حال حاضر جلسه جدیدی برنامه‌ریزی نشده است.</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onOpenSessionList}
-              className="px-3 py-2 rounded-xl bg-[#2A241C] hover:bg-[#3A3227] text-xs font-semibold text-[#EDE6D8] transition-colors"
+              className="px-3 py-2 rounded-xl bg-surface-2 hover:bg-surface-3 text-xs font-semibold text-text-primary transition-colors"
             >
               جلسات گذشته
             </button>
@@ -80,7 +80,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
               <button
                 type="button"
                 onClick={onOpenCreateSession}
-                className="px-3.5 py-2 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md"
+                className="px-3.5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-on-accent text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md"
               >
                 <Plus className="w-4 h-4" />
                 جلسه جدید
@@ -130,14 +130,14 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
     switch (session.status) {
       case 'confirmed':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#6F9E78]/20 text-[#6F9E78] border border-[#6F9E78]/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#6F9E78] animate-pulse" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-success/20 text-success border border-success/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
             تأیید شده
           </span>
         );
       case 'planned':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-accent/20 text-accent-hover border border-accent/30">
             {poll ? 'نظرسنجی تاریخ' : 'برنامه‌ریزی اولیه'}
           </span>
         );
@@ -162,11 +162,11 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
   const noCount = session.rsvps?.filter(r => r.status === 'no').length || 0;
 
   return (
-    <div className="rounded-2xl bg-gradient-to-b from-[#221C16] to-[#181411] border border-[#3A3024] p-4 sm:p-5 shadow-xl text-right transition-all" dir="rtl">
+    <div className="rounded-2xl bg-gradient-to-b from-surface-2 to-surface border border-border p-4 sm:p-5 shadow-xl text-start transition-all" dir="rtl">
       {/* Header bar: Session # and Status */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-white/5">
         <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-lg bg-[#E0A030]/15 text-[#F2C265] border border-[#E0A030]/25 text-xs font-extrabold tracking-wide">
+          <span className="px-2.5 py-0.5 rounded-lg bg-accent/15 text-accent-hover border border-accent/25 text-xs font-extrabold tracking-wide">
             جلسه {session.number}
           </span>
           {getStatusBadge()}
@@ -176,7 +176,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
             <button
               type="button"
               onClick={() => onEditSession(session)}
-              className="p-1.5 rounded-lg hover:bg-white/5 text-[#A39A89] hover:text-[#EDE6D8] transition-colors"
+              className="p-1.5 rounded-lg hover:bg-white/5 text-text-muted hover:text-text-primary transition-colors"
               title="ویرایش مشخصات جلسه"
             >
               <Edit3 className="w-4 h-4" />
@@ -185,7 +185,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
           <button
             type="button"
             onClick={onOpenSessionList}
-            className="text-xs text-[#E0A030] hover:text-[#F2C265] flex items-center gap-1 font-semibold transition-colors"
+            className="text-xs text-accent hover:text-accent-hover flex items-center gap-1 font-semibold transition-colors"
           >
             همه جلسات
             <ChevronLeft className="w-3.5 h-3.5" />
@@ -195,24 +195,24 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
 
       {/* Title & Core Date/Time Info */}
       <div className="mt-3">
-        <h2 className="text-lg sm:text-xl font-extrabold text-[#EDE6D8] leading-tight">
+        <h2 className="text-lg sm:text-xl font-extrabold text-text-primary leading-tight">
           {session.title}
         </h2>
 
         {/* Date Display */}
         {dt ? (
           <div className="mt-3 flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
-            <div className="flex items-center gap-1.5 text-[#F2C265] font-bold bg-[#E0A030]/10 px-3 py-1.5 rounded-xl border border-[#E0A030]/20">
-              <CalendarIcon className="w-4 h-4 text-[#E0A030]" />
+            <div className="flex items-center gap-1.5 text-accent-hover font-bold bg-accent/10 px-3 py-1.5 rounded-xl border border-accent/20">
+              <CalendarIcon className="w-4 h-4 text-accent" />
               <span>{dt.weekday}، {dt.date}</span>
             </div>
-            <div className="flex items-center gap-1.5 text-[#EDE6D8] font-semibold bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
-              <Clock className="w-4 h-4 text-[#A39A89]" />
+            <div className="flex items-center gap-1.5 text-text-primary font-semibold bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
+              <Clock className="w-4 h-4 text-text-muted" />
               <span>ساعت {dt.time}</span>
-              <span className="text-[11px] text-[#8C8576]">({session.durationMinutes} دقیقه)</span>
+              <span className="text-xs text-text-muted">({session.durationMinutes} دقیقه)</span>
             </div>
             {dt.relative && (
-              <span className="text-xs font-medium text-[#6F9E78] px-2.5 py-1 rounded-lg bg-[#6F9E78]/15 border border-[#6F9E78]/25">
+              <span className="text-xs font-medium text-success px-2.5 py-1 rounded-lg bg-success/15 border border-success/25">
                 {dt.relative}
               </span>
             )}
@@ -226,19 +226,19 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
 
         {/* In-world date if available */}
         {inWorldStr && (
-          <div className="mt-2.5 flex items-center gap-1.5 text-xs text-[#C9BFAC]">
-            <Hourglass className="w-3.5 h-3.5 text-[#E0A030]" />
+          <div className="mt-2.5 flex items-center gap-1.5 text-xs text-text-muted">
+            <Hourglass className="w-3.5 h-3.5 text-accent" />
             <span className="font-medium">تاریخ در جهان بازی:</span>
-            <span className="font-bold text-[#F2C265]">{inWorldStr}</span>
+            <span className="font-bold text-accent-hover">{inWorldStr}</span>
           </div>
         )}
 
         {/* Place & Online URL */}
-        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[#A39A89]">
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-text-muted">
           {session.placeText && (
             <div className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-[#E0A030]" />
-              <span className="text-[#EDE6D8]">{session.placeText}</span>
+              <MapPin className="w-3.5 h-3.5 text-accent" />
+              <span className="text-text-primary">{session.placeText}</span>
             </div>
           )}
           {session.onlineUrl && (
@@ -246,7 +246,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
               href={session.onlineUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#9B72CF]/15 hover:bg-[#9B72CF]/25 text-[#C4A5EB] border border-[#9B72CF]/30 font-semibold transition-colors min-h-[44px]"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-role-codm/15 hover:bg-role-codm/25 text-role-codm border border-role-codm/30 font-semibold transition-colors min-h-[44px]"
             >
               <Video className="w-3.5 h-3.5" />
               <span>لینک اتاق صوتی/تصویری</span>
@@ -256,8 +256,8 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
 
         {/* DM Notes (Private to DM / Co-DM) */}
         {session.dmNotes && (
-          <div className="mt-3 p-3 rounded-xl bg-[#2A1F13] border border-[#E0A030]/20 text-xs text-[#E8D4B0] leading-relaxed">
-            <div className="flex items-center gap-1.5 font-bold text-[#F2C265] mb-1">
+          <div className="mt-3 p-3 rounded-xl bg-surface-2 border border-accent/20 text-xs text-accent-hover leading-relaxed">
+            <div className="flex items-center gap-1.5 font-bold text-accent-hover mb-1">
               <Sparkles className="w-3.5 h-3.5" />
               <span>یادداشت محرمانه دانجن مستر:</span>
             </div>
@@ -271,10 +271,10 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
         <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#E0A030] animate-ping" />
-              <h4 className="text-xs sm:text-sm font-bold text-[#F2C265]">نظرسنجی انتخاب زمان جلسه</h4>
+              <div className="w-2 h-2 rounded-full bg-accent animate-ping" />
+              <h4 className="text-xs sm:text-sm font-bold text-accent-hover">نظرسنجی انتخاب زمان جلسه</h4>
             </div>
-            <span className="text-[11px] text-[#A39A89]">
+            <span className="text-xs text-text-muted">
               {poll.votes?.length || 0} رأی ثبت شده
             </span>
           </div>
@@ -287,23 +287,23 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
               return (
                 <div
                   key={tally.optionId}
-                  className="p-3 rounded-xl bg-[#171310] border border-white/5 space-y-2.5"
+                  className="p-3 rounded-xl bg-surface border border-white/5 space-y-2.5"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="text-xs sm:text-sm font-bold text-[#EDE6D8]">
+                      <div className="text-xs sm:text-sm font-bold text-text-primary">
                         {optDt.weekday}، {optDt.date}
                       </div>
-                      <div className="text-xs text-[#A39A89] mt-0.5">
+                      <div className="text-xs text-text-muted mt-0.5">
                         ساعت {optDt.time} {optDt.relative && `(${optDt.relative})`}
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="px-2 py-0.5 rounded-md bg-[#6F9E78]/15 text-[#6F9E78] font-bold">
+                      <span className="px-2 py-0.5 rounded-md bg-success/15 text-success font-bold">
                         {tally.yes} بله
                       </span>
-                      <span className="px-2 py-0.5 rounded-md bg-[#E0A030]/15 text-[#F2C265] font-bold">
+                      <span className="px-2 py-0.5 rounded-md bg-accent/15 text-accent-hover font-bold">
                         {tally.maybe} شاید
                       </span>
                       <span className="px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-400 font-bold">
@@ -321,8 +321,8 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                         onClick={() => handleVoteSubmit(tally.optionId, 'yes')}
                         className={`min-h-[44px] py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                           myVote === 'yes'
-                            ? 'bg-[#6F9E78] text-[#0E0D0C] shadow-md ring-2 ring-[#6F9E78]/40'
-                            : 'bg-white/5 hover:bg-white/10 text-[#6F9E78] border border-[#6F9E78]/30'
+                            ? 'bg-success text-on-accent shadow-md ring-2 ring-success/40'
+                            : 'bg-white/5 hover:bg-white/10 text-success border border-success/30'
                         }`}
                       >
                         <Check className="w-3.5 h-3.5" />
@@ -335,8 +335,8 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                         onClick={() => handleVoteSubmit(tally.optionId, 'maybe')}
                         className={`min-h-[44px] py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                           myVote === 'maybe'
-                            ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md ring-2 ring-[#E0A030]/40'
-                            : 'bg-white/5 hover:bg-white/10 text-[#F2C265] border border-[#E0A030]/30'
+                            ? 'bg-accent text-on-accent shadow-md ring-2 ring-accent/40'
+                            : 'bg-white/5 hover:bg-white/10 text-accent-hover border border-accent/30'
                         }`}
                       >
                         <HelpCircle className="w-3.5 h-3.5" />
@@ -365,7 +365,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                       <button
                         type="button"
                         onClick={() => onConfirmPollOption(session.id, tally.optionId)}
-                        className="px-3 py-1.5 rounded-lg bg-[#E0A030]/20 hover:bg-[#E0A030] text-[#F2C265] hover:text-[#0E0D0C] border border-[#E0A030]/40 text-xs font-bold transition-colors flex items-center gap-1"
+                        className="px-3 py-1.5 rounded-lg bg-accent/20 hover:bg-accent text-accent-hover hover:text-on-accent border border-accent/40 text-xs font-bold transition-colors flex items-center gap-1"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>تأیید و نهایی‌سازی این تاریخ</span>
@@ -384,15 +384,15 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
         <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-[#EDE6D8]">وضعیت حضور شما:</span>
+              <span className="text-xs font-bold text-text-primary">وضعیت حضور شما:</span>
               {currentRsvp === 'yes' && (
-                <span className="text-xs font-bold text-[#6F9E78] flex items-center gap-1">
+                <span className="text-xs font-bold text-success flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   حاضر می‌شوید
                 </span>
               )}
               {currentRsvp === 'maybe' && (
-                <span className="text-xs font-bold text-[#F2C265] flex items-center gap-1">
+                <span className="text-xs font-bold text-accent-hover flex items-center gap-1">
                   <HelpCircle className="w-3.5 h-3.5" />
                   شاید حضور پیدا کنید
                 </span>
@@ -404,20 +404,20 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                 </span>
               )}
               {!currentRsvp && (
-                <span className="text-xs text-[#8C8576]">هنوز ثبت نشده است</span>
+                <span className="text-xs text-text-muted">هنوز ثبت نشده است</span>
               )}
             </div>
 
             {/* Total Counters */}
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-[#6F9E78] font-bold" title="حاضران">
+              <span className="text-success font-bold" title="حاضران">
                 {yesCount} بله
               </span>
-              <span className="text-[#8C8576]">·</span>
-              <span className="text-[#F2C265] font-bold" title="شاید">
+              <span className="text-text-muted">·</span>
+              <span className="text-accent-hover font-bold" title="شاید">
                 {maybeCount} شاید
               </span>
-              <span className="text-[#8C8576]">·</span>
+              <span className="text-text-muted">·</span>
               <span className="text-rose-400 font-bold" title="غایبان">
                 {noCount} نه
               </span>
@@ -434,8 +434,8 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                   onClick={() => handleRsvpSubmit('yes')}
                   className={`min-h-[46px] py-2.5 px-3 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 ${
                     currentRsvp === 'yes'
-                      ? 'bg-[#6F9E78] text-[#0E0D0C] shadow-lg ring-2 ring-[#6F9E78]/50'
-                      : 'bg-[#6F9E78]/10 hover:bg-[#6F9E78]/20 text-[#6F9E78] border border-[#6F9E78]/30'
+                      ? 'bg-success text-on-accent shadow-lg ring-2 ring-success/50'
+                      : 'bg-success/10 hover:bg-success/20 text-success border border-success/30'
                   }`}
                 >
                   <CheckCircle2 className="w-4 h-4" />
@@ -448,8 +448,8 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                   onClick={() => handleRsvpSubmit('maybe')}
                   className={`min-h-[46px] py-2.5 px-3 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 ${
                     currentRsvp === 'maybe'
-                      ? 'bg-[#E0A030] text-[#0E0D0C] shadow-lg ring-2 ring-[#E0A030]/50'
-                      : 'bg-[#E0A030]/10 hover:bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30'
+                      ? 'bg-accent text-on-accent shadow-lg ring-2 ring-accent/50'
+                      : 'bg-accent/10 hover:bg-accent/20 text-accent-hover border border-accent/30'
                   }`}
                 >
                   <HelpCircle className="w-4 h-4" />
@@ -477,7 +477,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                   <button
                     type="button"
                     onClick={() => setNoteOpen(true)}
-                    className="text-[11px] text-[#A39A89] hover:text-[#EDE6D8] flex items-center gap-1"
+                    className="text-xs text-text-muted hover:text-text-primary flex items-center gap-1"
                   >
                     <MessageSquare className="w-3 h-3" />
                     <span>افزودن یادداشت برای دانجن مستر...</span>
@@ -489,19 +489,19 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                       value={noteText}
                       onChange={(e) => setNoteText(e.target.value)}
                       placeholder="مثال: شاید نیم‌ساعت تاخیر داشته باشم"
-                      className="flex-1 bg-[#12100E] border border-white/10 rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+                      className="flex-1 bg-bg border border-white/10 rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent"
                     />
                     <button
                       type="button"
                       onClick={() => handleRsvpSubmit(currentRsvp || 'yes')}
-                      className="px-3 py-2 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-bold"
+                      className="px-3 py-2 rounded-xl bg-accent text-on-accent text-xs font-bold"
                     >
                       ثبت
                     </button>
                     <button
                       type="button"
                       onClick={() => setNoteOpen(false)}
-                      className="p-2 text-[#8C8576] hover:text-[#EDE6D8]"
+                      className="p-2 text-text-muted hover:text-text-primary"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -510,7 +510,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
               </div>
             </div>
           ) : (
-            <div className="text-xs text-[#8C8576] italic bg-white/5 p-2.5 rounded-xl text-center">
+            <div className="text-xs text-text-muted italic bg-white/5 p-2.5 rounded-xl text-center">
               تماشاچیان مجاز به ثبت حضور نیستند.
             </div>
           )}
@@ -525,7 +525,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenAttendance(session)}
-                className="px-3.5 py-2 rounded-xl bg-[#6F9E78]/20 hover:bg-[#6F9E78] text-[#6F9E78] hover:text-[#0E0D0C] border border-[#6F9E78]/40 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm min-h-[40px]"
+                className="px-3.5 py-2 rounded-xl bg-success/20 hover:bg-success text-success hover:text-on-accent border border-success/40 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm min-h-[40px]"
               >
                 <UserCheck className="w-4 h-4" />
                 <span>پایان جلسه و حضور و غیاب</span>
@@ -536,7 +536,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenClosingSheet(session)}
-                className="px-3.5 py-2 rounded-xl bg-[#E0A030]/20 hover:bg-[#E0A030] text-[#F2C265] hover:text-[#0E0D0C] border border-[#E0A030]/40 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm min-h-[40px]"
+                className="px-3.5 py-2 rounded-xl bg-accent/20 hover:bg-accent text-accent-hover hover:text-on-accent border border-accent/40 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm min-h-[40px]"
                 title="ثبت خلاصه، پاداش‌های XP/Milestone و نکات برجسته"
               >
                 <BookOpen className="w-4 h-4" />
@@ -550,7 +550,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
               <button
                 type="button"
                 onClick={onOpenCreateSession}
-                className="px-3 py-2 rounded-xl bg-[#2A241C] hover:bg-[#3A3227] text-xs font-semibold text-[#EDE6D8] transition-colors flex items-center gap-1"
+                className="px-3 py-2 rounded-xl bg-surface-2 hover:bg-surface-3 text-xs font-semibold text-text-primary transition-colors flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>جلسه جدید</span>

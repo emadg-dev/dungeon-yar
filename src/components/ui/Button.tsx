@@ -15,14 +15,10 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary:
-    'bg-gradient-to-r from-amber-500 to-amber-400 text-stone-950 font-bold shadow-[0_2px_10px_rgba(224,160,48,0.28)] hover:shadow-[0_0_16px_rgba(242,194,101,0.4)] active:scale-[0.98] border border-amber-400/50',
-  secondary:
-    'bg-stone-900/80 hover:bg-stone-800 text-stone-200 border border-stone-700/60 hover:border-amber-500/40 active:scale-[0.98]',
-  ghost:
-    'bg-transparent hover:bg-stone-800/60 text-stone-300 hover:text-stone-100 active:scale-[0.98]',
-  danger:
-    'bg-gradient-to-r from-red-700 to-red-600 text-white font-bold shadow-[0_2px_10px_rgba(194,81,43,0.28)] hover:shadow-[0_0_16px_rgba(214,97,56,0.4)] active:scale-[0.98] border border-red-500/40',
+  primary: 'btn-primary',
+  secondary: 'btn-secondary',
+  ghost: 'btn-ghost',
+  danger: 'btn-danger',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -56,8 +52,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         type={type}
         disabled={isDisabled}
-        style={{ touchAction: 'manipulation' }}
-        className={`inline-flex items-center justify-center font-medium whitespace-nowrap shrink-0 transition-all duration-150 select-none outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950 disabled:opacity-50 disabled:pointer-events-none ${
+        className={`btn inline-flex items-center justify-center font-medium whitespace-nowrap shrink-0 transition-all duration-150 select-none outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:opacity-50 disabled:pointer-events-none ${
           variantStyles[variant]
         } ${sizeStyles[size]} ${isFullWidth ? 'w-full' : ''} ${className}`}
         {...rest}

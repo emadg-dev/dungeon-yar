@@ -1,0 +1,822 @@
+/**
+ * ============================================================================
+ * Central Design System & Theme Engine
+ * src/styles/theme.css
+ *
+ * All typography, @font-face, colors, elevations, spacing, radii, component classes,
+ * campaign roles, and D&D mechanics tokens are centralized here.
+ * Changing values in this file uniformly restyles the entire application.
+ * ============================================================================
+ */
+
+/* ============================================================================
+ * تعریف فونت‌های خودمیزبان (@font-face Definitions)
+ * ============================================================================ */
+@font-face {
+  font-family: 'IRANSansWeb';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/iransans/IRANSansWeb.woff2') format('woff2'),
+       url('/fonts/iransans/IRANSansWeb.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'IRANSansWeb';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/iransans/IRANSansWeb_Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IRANSansWeb';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/iransans/IRANSansWeb_Bold.woff2') format('woff2'),
+       url('/fonts/iransans/IRANSansWeb_Bold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'IRANSans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/iransans/IRANSansWeb.woff2') format('woff2'),
+       url('/fonts/iransans/IRANSansWeb.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'IRANSans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/iransans/IRANSansWeb_Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IRANSans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/iransans/IRANSansWeb_Bold.woff2') format('woff2'),
+       url('/fonts/iransans/IRANSansWeb_Bold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'IranSans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/iransans/IRANSansWeb.woff2') format('woff2'),
+       url('/fonts/iransans/IRANSansWeb.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'IranSans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/iransans/IRANSansWeb_Bold.woff2') format('woff2'),
+       url('/fonts/iransans/IRANSansWeb_Bold.ttf') format('truetype');
+}
+
+/* ============================================================================
+ * بخش ۱: توکن‌های طراحی (Design Tokens on :root)
+ * ============================================================================ */
+:root,
+:root[data-theme="dark"] {
+  /* --------------------------------------------------------------------------
+   * ۱. رنگ‌های معنایی (Semantic Colors) — RGB Channels for Alpha Compositing
+   * -------------------------------------------------------------------------- */
+  /* سطوح و پس‌زمینه (Surfaces & Backgrounds) */
+  --color-bg-rgb: 14 13 12;                 /* #0E0D0C پس‌زمینه اصلی زغالی تیره */
+  --color-surface-rgb: 23 21 19;            /* #171513 سطح کارت‌ها و پنل‌های استاندارد */
+  --color-surface-2-rgb: 32 29 25;          /* #201D19 سطح بالاتر: اینپوت‌ها، چیپ‌ها و کارت‌های تودرتو */
+  --color-surface-3-rgb: 47 42 35;          /* #2F2A23 سطح مرتفع */
+  --color-surface-raised-rgb: 32 29 25;     /* سطح بالاتر (معادل surface-2) */
+  --color-surface-elevated-rgb: 47 42 35;   /* سطح مرتفع، مودال‌ها و باتم‌شیت‌ها (معادل surface-3) */
+  --color-overlay-rgb: 10 9 8;              /* پس‌زمینه محو شیت و مودال */
+
+  /* کادرها و خطوط جداکننده (Borders & Dividers) */
+  --color-border-rgb: 47 42 35;             /* #2F2A23 کادر استاندارد کاغذپوستی */
+  --color-border-strong-rgb: 58 52 43;      /* #3A342B کادر قوی‌تر و فوکوس */
+  --color-border-subtle-rgb: 38 34 28;      /* خطوط کم‌رنگ داخلی */
+
+  /* متن و تایپوگرافی (Text & Typography) */
+  --color-text-rgb: 237 230 216;            /* #EDE6D8 متن اصلی کرم پوست‌نوشته */
+  --color-text-muted-rgb: 163 154 137;      /* #A39A89 متن ثانویه و توضیحات کم‌رنگ */
+  --color-text-disabled-rgb: 115 107 94;    /* #736B5E متن غیرفعال و راهنما */
+  --color-text-inverse-rgb: 14 13 12;       /* متن تیره روی پس‌زمینه‌های روشن/کهربایی */
+
+  /* رنگ‌های تأکیدی و برند (Primary & Accent) */
+  --color-primary-rgb: 224 160 48;          /* #E0A030 کهربایی طلایی کهن (Warm Amber) */
+  --color-primary-hover-rgb: 242 194 101;   /* #F2C265 کهربایی درخشان / هاور */
+  --color-accent-rgb: 224 160 48;           /* رنگ شاخص تعاملی */
+  --color-accent-hover-rgb: 242 194 101;    /* رنگ هاور شاخص */
+  --color-accent-glow-rgb: 242 194 101;     /* کانال درخشش کهربایی */
+  --color-on-accent-rgb: 14 13 12;          /* کنتراست بالای متن روی رنگ تأکیدی */
+  --color-focus-ring-rgb: 224 160 48;       /* حلقه فوکوس */
+  --color-selection-rgb: 224 160 48;        /* هایلایت متن انتخابی */
+
+  /* بازخورد و وضعیت‌ها (Feedback & States) */
+  --color-danger-rgb: 194 81 43;            /* #C2512B آتش اخگر / اقدامات مخرب */
+  --color-danger-hover-rgb: 214 97 56;      /* #D66138 هاور دکمه حذف و هشدار */
+  --color-success-rgb: 111 158 120;         /* #6F9E78 سبز مریم‌گلی / موفقیت و درمان */
+  --color-warning-rgb: 216 148 39;          /* #D89427 هشدار کهربایی تیره */
+  --color-info-rgb: 127 180 214;            /* #7FB4D6 آبی نقره‌ای / اطلاعات و مانا */
+
+  /* --------------------------------------------------------------------------
+   * ۲. توکن‌های اختصاصی D&D و مکانیک‌های بازی (D&D Mechanics Tokens)
+   * -------------------------------------------------------------------------- */
+  /* نقاط سلامت (Hit Points) */
+  --stat-hp: #6F9E78;                       /* سلامت کامل (Healthy Green) */
+  --stat-hp-rgb: 111 158 120;
+  --stat-hp-hurt: #E0A030;                  /* صدمه جزئی (Hurt Amber) */
+  --stat-hp-bloodied: #C97B4A;              /* خونین / زیر ۵۰٪ (Bloodied Rust) */
+  --stat-hp-critical: #C2512B;              /* بحرانی / زیر ۲۵٪ (Critical Ember) */
+  --stat-hp-dead: #554C40;                  /* بیهوش / صفر (Dead Gray) */
+  --stat-temp-hp: #7FB4D6;                  /* سلامت موقت (Temp HP Mana Blue) */
+
+  /* کلاس زره و ابتکار (Armor Class & Initiative) */
+  --stat-ac: #D6B25E;                       /* زره فلزی کهن */
+  --stat-initiative: #7FB4D6;               /* چابکی و واکنش */
+  --stat-speed: #8C8576;                    /* سرعت جابجایی */
+  --stat-spell-slot: #9B72CF;               /* اسلات‌های جادو (بنفش میستیک) */
+
+  /* تاس‌ها (Dice Rolls) */
+  --dice-nat20: #F2C265;                    /* موفقیت بحرانی (Natural 20 Gold) */
+  --dice-nat1: #C2512B;                     /* شکست بحرانی (Critical Failure Ember) */
+  --dice-secret: #9B72CF;                   /* تاس مخفی دانجن مستر */
+
+  /* نقش‌های کمپین (Campaign Member Roles) */
+  --role-owner: #E0A030;                    /* دانجن مستر اصلی (طلایی) */
+  --role-codm: #9B72CF;                     /* کمک‌دانجن مستر / کو-دی‌ام (بنفش رویال) */
+  --role-player: #6F9E78;                   /* بازیکن ماجراجو (سبز مریم‌گلی) */
+  --role-spectator: #A39A89;                /* ناظر / تماشاچی (خاکستری برنزی) */
+
+  /* رنگ‌های اقلیم‌های محتوایی (Region Accents) */
+  --color-region-varna: #6F9E78;            /* ورنا - سبز کهن */
+  --color-region-desert: #C97B4A;           /* کویر خاموش - نارنجی سفال */
+  --color-region-sepidarun: #7FB4D6;        /* سپیدارون - آبی نقره‌ای */
+  --color-region-mahestan: #9AA3AD;         /* مهستان - مه نقره‌ای */
+  --color-region-shanshin: #D6B25E;         /* شانشین - طلای زرد */
+  --color-region-common: #8C8576;           /* مشترک - برنز کهن */
+
+  /* رنگ‌های کلاس‌های بازی (Class Accents) */
+  --color-class-farhadar: #D6B25E;          /* فرهدار - طلای کهن */
+  --color-class-azarin: #C97B4A;            /* موبد آذرین - آتش زرد-نارنجی */
+  --color-class-divanzad: #8C7A68;          /* دیوانزاد - سنگ قهوه‌ای */
+  --color-class-peymanban: #6F9E78;         /* پیمانبان - سبز زمردی */
+  --color-class-sayehkhan: #9B72CF;         /* سایه‌خوان - بنفش رازآلود */
+  --color-class-mehashna: #CBD5E1;          /* مه‌آشنا - خاکستری نقره‌ای */
+
+  /* نایابی آیتم‌ها (Rarity Colors) */
+  --color-rarity-common: #A39A89;
+  --color-rarity-uncommon: #6F9E78;
+  --color-rarity-rare: #7FB4D6;
+  --color-rarity-very-rare: #9B72CF;
+  --color-rarity-legendary: #E0A030;
+  --color-rarity-artifact: #C2512B;
+
+  /* --------------------------------------------------------------------------
+   * ۳. مقادیر مستقیم CSS Colors (Direct CSS Color Variables)
+   * -------------------------------------------------------------------------- */
+  --color-bg: rgb(var(--color-bg-rgb));
+  --color-surface: rgb(var(--color-surface-rgb));
+  --color-surface-2: rgb(var(--color-surface-2-rgb));
+  --color-surface-3: rgb(var(--color-surface-3-rgb));
+  --color-surface-raised: rgb(var(--color-surface-raised-rgb));
+  --color-surface-elevated: rgb(var(--color-surface-elevated-rgb));
+  --color-border: rgb(var(--color-border-rgb));
+  --color-border-strong: rgb(var(--color-border-strong-rgb));
+  --color-border-subtle: rgb(var(--color-border-subtle-rgb));
+  --color-text: rgb(var(--color-text-rgb));
+  --color-text-muted: rgb(var(--color-text-muted-rgb));
+  --color-text-disabled: rgb(var(--color-text-disabled-rgb));
+  --color-primary: rgb(var(--color-primary-rgb));
+  --color-primary-hover: rgb(var(--color-primary-hover-rgb));
+  --color-accent: rgb(var(--color-accent-rgb));
+  --color-accent-hover: rgb(var(--color-accent-hover-rgb));
+  --color-danger: rgb(var(--color-danger-rgb));
+  --color-danger-hover: rgb(var(--color-danger-hover-rgb));
+  --color-success: rgb(var(--color-success-rgb));
+  --color-warning: rgb(var(--color-warning-rgb));
+  --color-info: rgb(var(--color-info-rgb));
+
+  /* معادل‌های کوتاه برای سازگاری عقب‌رو */
+  --bg: var(--color-bg);
+  --surface: var(--color-surface);
+  --surface-2: var(--color-surface-2);
+  --surface-3: var(--color-surface-3);
+  --border: var(--color-border);
+  --border-strong: var(--color-border-strong);
+  --text: var(--color-text);
+  --text-muted: var(--color-text-muted);
+  --amber: var(--color-primary);
+  --amber-glow: var(--color-primary-hover);
+  --ember: var(--color-danger);
+  --heal: var(--color-success);
+
+  /* --------------------------------------------------------------------------
+   * ۴. تایپوگرافی و فونت‌ها (Typography & Font Hierarchy)
+   * کف استاندارد خوانایی متن فارسی: ۱۳ پیکسل (0.8125rem).
+   * توکن اصلی برای حداقل اندازه متن --text-xs است و --text-2xs به آن نگاشت شده است.
+   * -------------------------------------------------------------------------- */
+  --font-family-sans: 'IRANSansWeb', 'IRANSans', 'IranSans', 'Vazirmatn', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-body: var(--font-family-sans);
+  --font-heading: var(--font-family-sans);
+  --font-mono: var(--font-family-mono);
+  --font-numeric: var(--font-family-sans);
+
+  /* مقیاس اندازه قلم (کف قطعی ۱۳px) */
+  --text-xs: 0.8125rem;    /* 13px — کف اندازه فونت کل اپلیکیشن */
+  --text-2xs: 0.8125rem;   /* 13px (alias for backward compatibility, strictly 13px) */
+  --font-size-xs: 0.8125rem;
+  --font-size-2xs: 0.8125rem;
+  --line-height-xs: 1.4;
+  --line-height-2xs: 1.4;
+
+  --text-sm: 0.875rem;     /* 14px */
+  --font-size-sm: 0.875rem;
+  --line-height-sm: 1.45;
+
+  --text-base: 0.9375rem;  /* 15px بدنه استاندارد */
+  --font-size-base: 0.9375rem;
+  --line-height-base: 1.5;
+
+  --text-md: 1rem;         /* 16px ورودی‌ها برای جلوگیری از زوم iOS Safari */
+  --font-size-md: 1rem;
+  --line-height-md: 1.5;
+
+  --text-lg: 1.125rem;     /* 18px سرتیترهای بخش */
+  --font-size-lg: 1.125rem;
+  --line-height-lg: 1.4;
+
+  --text-xl: 1.25rem;      /* 20px تیترهای فرعی */
+  --font-size-xl: 1.25rem;
+  --line-height-xl: 1.35;
+
+  --text-2xl: 1.5rem;      /* 24px تیترهای کارت و مدال */
+  --font-size-2xl: 1.5rem;
+  --line-height-2xl: 1.3;
+
+  --text-3xl: 1.875rem;    /* 30px تیترهای صفحه */
+  --font-size-3xl: 1.875rem;
+  --line-height-3xl: 1.25;
+
+  --font-weight-regular: 400;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-black: 800;
+
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.35;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.65;
+
+  /* --------------------------------------------------------------------------
+   * ۵. مقیاس فاصله‌ها (Spacing Scale — 4px Base)
+   * -------------------------------------------------------------------------- */
+  --space-0: 0px;
+  --space-1: 0.25rem;      /* 4px */
+  --space-2: 0.5rem;       /* 8px */
+  --space-3: 0.75rem;      /* 12px */
+  --space-4: 1rem;         /* 16px */
+  --space-5: 1.25rem;      /* 20px */
+  --space-6: 1.5rem;       /* 24px */
+  --space-7: 1.75rem;      /* 28px */
+  --space-8: 2rem;         /* 32px */
+  --space-9: 2.25rem;      /* 36px */
+  --space-10: 2.5rem;      /* 40px */
+  --space-11: 2.75rem;     /* 44px لمس استاندارد */
+  --space-12: 3rem;        /* 48px */
+  --space-14: 3.5rem;      /* 56px */
+  --space-16: 4rem;        /* 64px */
+
+  /* --------------------------------------------------------------------------
+   * ۶. گوشه‌ها و انحنا (Border Radii)
+   * -------------------------------------------------------------------------- */
+  --radius-xs: 0.25rem;    /* 4px */
+  --radius-sm: 0.5rem;     /* 8px */
+  --radius-md: 0.625rem;   /* 10px */
+  --radius-lg: 0.75rem;    /* 12px */
+  --radius-xl: 1rem;       /* 16px */
+  --radius-2xl: 1.25rem;   /* 20px */
+  --radius-full: 9999px;   /* کاملاً گرد / قرصی */
+  --radius-pill: 9999px;
+  --radius-card: 0.875rem; /* 14px کارت استاندارد */
+
+  /* --------------------------------------------------------------------------
+   * ۷. سایه‌ها و درخشش‌ها (Shadows, Glows & Elevations)
+   * -------------------------------------------------------------------------- */
+  --shadow-none: none;
+  --elevation-0: none;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.65);
+  --elevation-3: 0 8px 24px rgba(0, 0, 0, 0.65);
+  --elevation-4: 0 16px 36px rgba(0, 0, 0, 0.75);
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 20px rgba(0, 0, 0, 0.35);
+
+  --shadow-glow-amber: 0 0 14px rgba(224, 160, 48, 0.35);
+  --shadow-glow-amber-lg: 0 0 24px rgba(242, 194, 101, 0.5);
+  --shadow-glow-ember: 0 0 14px rgba(194, 81, 43, 0.35);
+  --shadow-glow-heal: 0 0 14px rgba(111, 158, 120, 0.35);
+
+  /* --------------------------------------------------------------------------
+   * ۸. انیمیشن و زمان‌بندی (Motion & Easing)
+   * -------------------------------------------------------------------------- */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /* --------------------------------------------------------------------------
+   * ۹. سایز المان‌های ساختاری (Component Dimensions)
+   * -------------------------------------------------------------------------- */
+  --header-height: 56px;
+  --height-header: 56px;
+  --bottom-nav-height: 64px;
+  --height-bottom-nav: 64px;
+  --btn-height: 44px;      /* Minimum Touch Target >= 44px */
+  --btn-height-sm: 36px;
+  --input-height: 44px;
+  --size-touch-target: 44px;
+  --size-touch-target-lg: 48px;
+  --container-max: 42rem;  /* حداکثر عرض محتوای موبایل/تبلت */
+
+  /* --------------------------------------------------------------------------
+   * ۱۰. لایه‌بندی عمودی (Z-Index Scale)
+   * -------------------------------------------------------------------------- */
+  --z-content: 0;
+  --z-sticky-header: 20;
+  --z-bottom-nav: 30;
+  --z-fab: 35;
+  --z-backdrop: 40;
+  --z-modal: 50;
+  --z-sheet: 51;
+  --z-toast: 60;
+  --z-tooltip: 70;
+
+  /* محیط‌های امن آیفون (Safe Area Insets) */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+/* ============================================================================
+ * بخش ۲: تم روشن (Light Theme Overrides via CSS Variables)
+ * ============================================================================ */
+:root[data-theme="light"] {
+  /* تنظیم پالت کاغذپوستی روشن کهن (Ancient Parchment Light Theme) */
+  --color-bg-rgb: 247 244 238;             /* پس‌زمینه کاغذپوستی گرم و روشن */
+  --color-surface-rgb: 255 255 255;        /* کارت‌های سفید با تن عاجی */
+  --color-surface-2-rgb: 239 235 226;
+  --color-surface-3-rgb: 231 225 214;
+  --color-surface-raised-rgb: 239 235 226; /* اینپوت‌ها و کارت‌های ثانویه */
+  --color-surface-elevated-rgb: 231 225 214;
+  --color-overlay-rgb: 40 35 28;
+
+  --color-border-rgb: 216 206 189;         /* خطوط کادر کرم-قهوه‌ای ملایم */
+  --color-border-strong-rgb: 184 171 149;
+  --color-border-subtle-rgb: 235 228 217;
+
+  --color-text-rgb: 38 34 29;              /* متن جوهری تیره با خوانایی بالا */
+  --color-text-muted-rgb: 107 97 82;       /* متن ثانویه قهوه‌ای ملایم */
+  --color-text-disabled-rgb: 168 158 143;
+  --color-text-inverse-rgb: 255 255 255;
+
+  --color-primary-rgb: 191 127 20;         /* کهربایی تیره‌تر با کنتراست AA در تم روشن */
+  --color-primary-hover-rgb: 166 108 12;
+  --color-accent-rgb: 191 127 20;
+  --color-accent-hover-rgb: 166 108 12;
+  --color-on-accent-rgb: 255 255 255;
+  --color-focus-ring-rgb: 191 127 20;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 2px 10px rgba(0, 0, 0, 0.06);
+
+  --shadow-glow-amber: 0 0 12px rgba(191, 127, 20, 0.25);
+  --shadow-glow-amber-lg: 0 0 20px rgba(191, 127, 20, 0.35);
+}
+
+/* ============================================================================
+ * بخش ۳: کلاس‌های پایه و کامپوننتی (Component Classes)
+ * ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+ * ۳.۱ دکمه‌ها (Buttons) — بدون شکست متن و حداقل لمس ۴۴ پیکسل
+ * ---------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--btn-height);
+  padding-inline: var(--space-4);
+  padding-block: var(--space-2);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  border: 1px solid transparent;
+  outline: none;
+  text-decoration: none;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.45;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--color-focus-ring-rgb), 0.35);
+}
+
+/* دکمه اصلی کهربایی (Primary Amber Button) */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  color: var(--color-on-accent);
+  box-shadow: 0 2px 10px rgba(var(--color-primary-rgb), 0.3);
+}
+
+.btn-primary:hover {
+  box-shadow: var(--shadow-glow-amber);
+  filter: brightness(1.06);
+}
+
+/* دکمه ثانویه سطحی (Secondary Button) */
+.btn-secondary {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.btn-secondary:hover {
+  background: var(--color-surface-elevated);
+  border-color: rgba(var(--color-primary-rgb), 0.4);
+}
+
+/* دکمه شفاف / ارواحی (Ghost Button) */
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.btn-ghost:hover {
+  background: rgba(var(--color-surface-raised-rgb), 0.7);
+  color: var(--color-text);
+}
+
+/* دکمه خطی دوربریده (Outline Button) */
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.btn-outline:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary-hover);
+  background: rgba(var(--color-primary-rgb), 0.08);
+}
+
+/* دکمه خطر / حذف (Danger Destructive Button) */
+.btn-danger {
+  background: linear-gradient(135deg, var(--color-danger) 0%, var(--color-danger-hover) 100%);
+  color: #FFFFFF;
+  box-shadow: 0 2px 10px rgba(var(--color-danger-rgb), 0.3);
+}
+
+.btn-danger:hover {
+  box-shadow: var(--shadow-glow-ember);
+  filter: brightness(1.06);
+}
+
+/* دکمه کوچک نوار ابزار */
+.btn-sm {
+  min-height: var(--btn-height-sm);
+  padding-inline: var(--space-3);
+  font-size: var(--text-xs);
+  border-radius: var(--radius-md);
+}
+
+/* ----------------------------------------------------------------------------
+ * ۳.۲ کارت‌ها و سطوح (Cards & Surfaces)
+ * ---------------------------------------------------------------------------- */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text);
+  overflow: hidden;
+  transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.card-raised {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-interactive:hover {
+  border-color: rgba(var(--color-primary-rgb), 0.4);
+  box-shadow: var(--shadow-glow-amber);
+}
+
+/* خط طلایی ظریف بالای کارت‌های برجسته */
+.card-gold-top {
+  position: relative;
+}
+.card-gold-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  inset-inline: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--color-primary) 50%, transparent 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ----------------------------------------------------------------------------
+ * ۳.۳ کنترل‌های فرم (Form Controls)
+ * ---------------------------------------------------------------------------- */
+.label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  min-height: var(--input-height);
+  padding-inline: var(--space-3);
+  padding-block: var(--space-2);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-md) !important; /* حداقل ۱۶ پیکسل برای جلوگیری از زوم خودکار iOS Safari */
+  outline: none;
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.22) !important;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--color-text-disabled);
+}
+
+.input:disabled,
+.select:disabled,
+.textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------------------------------------------
+ * ۳.۴ نشان‌ها و نقش‌ها (Badges & Roles)
+ * ---------------------------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding-inline: var(--space-2);
+  padding-block: 0.2rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+/* نقش‌های کمپین */
+.badge-owner {
+  background: rgba(224, 160, 48, 0.15);
+  border-color: rgba(224, 160, 48, 0.4);
+  color: var(--role-owner);
+}
+
+.badge-codm {
+  background: rgba(155, 114, 207, 0.15);
+  border-color: rgba(155, 114, 207, 0.4);
+  color: var(--role-codm);
+}
+
+.badge-player {
+  background: rgba(111, 158, 120, 0.15);
+  border-color: rgba(111, 158, 120, 0.4);
+  color: var(--role-player);
+}
+
+.badge-spectator {
+  background: rgba(163, 154, 137, 0.15);
+  border-color: rgba(163, 154, 137, 0.4);
+  color: var(--role-spectator);
+}
+
+/* ----------------------------------------------------------------------------
+ * ۳.۵ تب‌ها و نوار ناوبری (Tabs & TabStrips)
+ * ---------------------------------------------------------------------------- */
+.tabs {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 38px;
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  white-space: nowrap !important;
+  flex-shrink: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all var(--duration-fast);
+  border: 1px solid transparent;
+}
+
+.tab:hover {
+  color: var(--color-text);
+  background: rgba(var(--color-surface-raised-rgb), 0.5);
+}
+
+.tab-active {
+  background: rgba(var(--color-primary-rgb), 0.14);
+  border-color: rgba(var(--color-primary-rgb), 0.35);
+  color: var(--color-primary-hover);
+  box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.15);
+}
+
+/* ----------------------------------------------------------------------------
+ * ۳.۶ آمار D&D و نمایشگرها (D&D Stats)
+ * ---------------------------------------------------------------------------- */
+.stat-hp {
+  color: var(--stat-hp);
+}
+.stat-ac {
+  color: var(--stat-ac);
+}
+.stat-initiative {
+  color: var(--stat-initiative);
+}
+
+/* ----------------------------------------------------------------------------
+ * ۳.۷ وضعیت‌های خالی و خطا (Empty & Error States)
+ * ---------------------------------------------------------------------------- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  color: var(--color-text-muted);
+  gap: var(--space-3);
+}
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+  background: rgba(var(--color-danger-rgb), 0.08);
+  border: 1px solid rgba(var(--color-danger-rgb), 0.3);
+  border-radius: var(--radius-card);
+  color: var(--color-text);
+  gap: var(--space-3);
+}
+
+/* ----------------------------------------------------------------------------
+ * ۳.۸ مودال و باتم‌شیت (Modals & BottomSheets)
+ * ---------------------------------------------------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(var(--color-overlay-rgb), 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: var(--z-backdrop);
+}
+
+.modal-sheet {
+  position: fixed;
+  bottom: 0;
+  inset-inline: 0;
+  z-index: var(--z-sheet);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 1rem);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* دستگیره بالای باتم‌شیت */
+.sheet-drag-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-border-strong);
+  margin-inline: auto;
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+/* ============================================================================
+ * بخش ۴: کلاس‌های کمکی چیدمان و فاصله‌ها (Layout & Spacing Helpers)
+ * ============================================================================ */
+.touch-target {
+  min-height: var(--btn-height);
+  min-width: var(--btn-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-gold {
+  color: var(--color-primary);
+}
+
+.text-gold-glow {
+  color: var(--color-primary-hover);
+  text-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.4);
+}
+
+.border-fantasy {
+  border-color: var(--color-border);
+}
+
+.bg-fantasy-surface {
+  background-color: var(--color-surface);
+}
+
+.bg-fantasy-surface-raised {
+  background-color: var(--color-surface-raised);
+}

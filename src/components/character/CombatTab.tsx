@@ -150,12 +150,12 @@ export const CombatTab: React.FC<CombatTabProps> = ({
     <div className="space-y-4" dir="rtl">
       {/* Weapons Section */}
       <div className="surface-card rounded-[14px] p-4">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-[#2F2A23]">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-border">
           <div className="flex items-center gap-2">
-            <Swords className="w-5 h-5 text-[#E0A030]" />
+            <Swords className="w-5 h-5 text-accent" />
             <div>
-              <h3 className="text-xs font-bold text-[#EDE6D8]">سلاح‌ها و حملات مبارزه</h3>
-              <p className="text-[10px] text-[#A39A89]">سلاح‌های ویژه زروانیا و ضربات تاکتیکی</p>
+              <h3 className="text-xs font-bold text-text-primary">سلاح‌ها و حملات مبارزه</h3>
+              <p className="text-xs text-text-muted">سلاح‌های ویژه زروانیا و ضربات تاکتیکی</p>
             </div>
           </div>
 
@@ -168,7 +168,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                 setShowAddWeapon(true);
               }
             }}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-[#E0A030]/15 hover:bg-[#E0A030]/25 text-[#E0A030] border border-[#E0A030]/30 text-xs font-bold transition touch-target min-w-[44px]"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-accent/15 hover:bg-accent/25 text-accent border border-accent/30 text-xs font-bold transition touch-target min-w-[44px]"
           >
             {isCombatLocked ? <Lock className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
             <span>{isCombatLocked ? 'سلاح جدید (قفل DM)' : 'سلاح جدید'}</span>
@@ -176,7 +176,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
         </div>
 
         {character.weapons.length === 0 ? (
-          <p className="text-xs text-[#A39A89] text-center py-6">
+          <p className="text-xs text-text-muted text-center py-6">
             سلاحی ثبت نشده است. از دکمه «سلاح جدید» استفاده کنید.
           </p>
         ) : (
@@ -194,19 +194,19 @@ export const CombatTab: React.FC<CombatTabProps> = ({
               return (
                 <div
                   key={w.id}
-                  className="surface-card rounded-[14px] p-3.5 flex flex-col justify-between transition border border-[#2F2A23] hover:border-[#2F2A23]/80 content-visibility-card"
+                  className="surface-card rounded-[14px] p-3.5 flex flex-col justify-between transition border border-border hover:border-border/80 content-visibility-card"
                 >
                   <div>
                     {/* Header: Name + Badge */}
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-sm text-[#EDE6D8]">{w.name}</span>
+                        <span className="font-extrabold text-sm text-text-primary">{w.name}</span>
                         {isSpecial ? (
-                          <span className="text-[10px] px-2 py-0.5 rounded-[6px] font-bold bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/40">
+                          <span className="text-xs px-2 py-0.5 rounded-[6px] font-bold bg-accent/15 text-accent border border-accent/40">
                             ویژه (Special)
                           </span>
                         ) : (
-                          <span className="text-[10px] px-2 py-0.5 rounded-[6px] font-bold bg-[#201D19] text-[#A39A89] border border-[#2F2A23]">
+                          <span className="text-xs px-2 py-0.5 rounded-[6px] font-bold bg-surface-2 text-text-muted border border-border">
                             پرزرق‌وبرق (Showy)
                           </span>
                         )}
@@ -214,7 +214,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                       <button
                         type="button"
                         onClick={() => setDeleteConfirm({ isOpen: true, type: 'weapon', id: w.id, name: w.name })}
-                        className="text-[#A39A89] hover:text-[#C2512B] p-2 touch-target min-w-[44px]"
+                        className="text-text-muted hover:text-danger p-2 touch-target min-w-[44px]"
                         title="حذف سلاح"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -222,28 +222,28 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                     </div>
 
                     {/* Stats */}
-                    <div className="grid grid-cols-2 gap-2 text-xs bg-[#0E0D0C] p-2 rounded-[10px] border border-[#2F2A23] mb-2.5">
+                    <div className="grid grid-cols-2 gap-2 text-xs bg-bg p-2 rounded-[10px] border border-border mb-2.5">
                       <div>
-                        <span className="text-[#A39A89] block text-[10px]">تاس صدمه:</span>
-                        <span className="font-extrabold text-[#E0A030] font-mono dice-ltr">{w.damageDice}</span>
-                        <span className="text-[10px] text-[#A39A89] ms-1">({w.damageType})</span>
+                        <span className="text-text-muted block text-xs">تاس صدمه:</span>
+                        <span className="font-extrabold text-accent font-mono dice-ltr">{w.damageDice}</span>
+                        <span className="text-xs text-text-muted ms-1">({w.damageType})</span>
                       </div>
                       <div>
-                        <span className="text-[#A39A89] block text-[10px]">برد و خواص:</span>
-                        <span className="text-[#EDE6D8] text-[11px] truncate block">{w.range} • {w.properties}</span>
+                        <span className="text-text-muted block text-xs">برد و خواص:</span>
+                        <span className="text-text-primary text-xs truncate block">{w.range} • {w.properties}</span>
                       </div>
                     </div>
 
                     {/* Special Ability with PipTracker */}
                     {isSpecial && abilityTitle && (
-                      <div className="p-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] mb-3">
+                      <div className="p-2.5 rounded-[10px] bg-surface-2 border border-border mb-3">
                         <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                          <span className="text-xs font-bold text-[#E0A030] flex items-center gap-1">
+                          <span className="text-xs font-bold text-accent flex items-center gap-1">
                             <Sparkles className="w-3.5 h-3.5" />
                             {abilityTitle}
                           </span>
                         </div>
-                        <p className="text-[11px] text-[#EDE6D8]/80 leading-relaxed mb-2">
+                        <p className="text-xs text-text-primary/80 leading-relaxed mb-2">
                           {abilityDescription}
                         </p>
                         {maxUses > 0 && (
@@ -260,15 +260,15 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                   </div>
 
                   {/* Two Big Roll Buttons: Attack & Damage (>= 44px) */}
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#2F2A23]">
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
                     <button
                       type="button"
                       onClick={() => onRollCheck(20, 1, attackBonus, `حمله‌ی ${w.name}`)}
-                      className="py-2.5 px-3 rounded-[12px] bg-[#201D19] hover:bg-[#201D19]/80 active:bg-[#0E0D0C] text-[#EDE6D8] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] border border-[#2F2A23]"
+                      className="py-2.5 px-3 rounded-[12px] bg-surface-2 hover:bg-surface-2/80 active:bg-bg text-text-primary text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] border border-border"
                     >
-                      <Dices className="w-4 h-4 text-[#E0A030]" />
+                      <Dices className="w-4 h-4 text-accent" />
                       <span>حمله</span>
-                      <span className="font-mono text-[#E0A030] dice-ltr font-extrabold">(+{attackBonus})</span>
+                      <span className="font-mono text-accent dice-ltr font-extrabold">(+{attackBonus})</span>
                     </button>
                     <button
                       type="button"
@@ -290,17 +290,17 @@ export const CombatTab: React.FC<CombatTabProps> = ({
       {/* Companion Cards with their own HP (if present) */}
       {character.companions && character.companions.length > 0 && (
         <div className="surface-card rounded-[14px] p-4">
-          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[#2F2A23]">
-            <Bot className="w-5 h-5 text-[#6F9E78]" />
-            <h3 className="text-xs font-bold text-[#EDE6D8]">همراهان و سازه‌های نبرد</h3>
+          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
+            <Bot className="w-5 h-5 text-success" />
+            <h3 className="text-xs font-bold text-text-primary">همراهان و سازه‌های نبرد</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {character.companions.map(comp => (
-              <div key={comp.id} className="surface-2-card rounded-[12px] p-3 border border-[#2F2A23]">
+              <div key={comp.id} className="surface-2-card rounded-[12px] p-3 border border-border">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                  <span className="font-extrabold text-xs text-[#EDE6D8]">{comp.name}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-[6px] bg-[#6F9E78]/15 text-[#6F9E78] border border-[#6F9E78]/30 font-bold">
+                  <span className="font-extrabold text-xs text-text-primary">{comp.name}</span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-[6px] bg-success/15 text-success border border-success/30 font-bold">
                     AC {comp.ac}
                   </span>
                 </div>
@@ -315,12 +315,12 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                 </div>
 
                 {comp.attack && (
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#2F2A23] text-xs">
-                    <span className="text-[#A39A89] text-[11px] truncate">{comp.attack.name}</span>
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border text-xs">
+                    <span className="text-text-muted text-xs truncate">{comp.attack.name}</span>
                     <button
                       type="button"
                       onClick={() => onRollCheck(20, 1, 4, `حمله همراه ${comp.name}`)}
-                      className="px-2 py-1 rounded-[8px] bg-[#171513] text-[#E0A030] border border-[#2F2A23] font-mono text-xs font-bold dice-ltr touch-target min-w-[44px]"
+                      className="px-2 py-1 rounded-[8px] bg-surface text-accent border border-border font-mono text-xs font-bold dice-ltr touch-target min-w-[44px]"
                     >
                       {comp.attack.toHit} ({comp.attack.damage})
                     </button>
@@ -334,12 +334,12 @@ export const CombatTab: React.FC<CombatTabProps> = ({
 
       {/* Features & Abilities Section (Collapsible cards with outside pips and filter chips) */}
       <div className="surface-card rounded-[14px] p-4">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 mb-3 pb-2 border-b border-[#2F2A23]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 mb-3 pb-2 border-b border-border">
           <div className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-[#E0A030]" />
+            <Zap className="w-5 h-5 text-accent" />
             <div>
-              <h3 className="text-xs font-bold text-[#EDE6D8]">استعدادها و توانایی‌ها (Features)</h3>
-              <p className="text-[10px] text-[#A39A89]">ویژگی‌های کلاسی، نژادی و موهبت‌های زروانیا</p>
+              <h3 className="text-xs font-bold text-text-primary">استعدادها و توانایی‌ها (Features)</h3>
+              <p className="text-xs text-text-muted">ویژگی‌های کلاسی، نژادی و موهبت‌های زروانیا</p>
             </div>
           </div>
 
@@ -352,7 +352,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                 setShowAddFeature(true);
               }
             }}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-[#E0A030]/15 hover:bg-[#E0A030]/25 text-[#E0A030] border border-[#E0A030]/30 text-xs font-bold transition touch-target min-w-[44px] self-end sm:self-auto"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-accent/15 hover:bg-accent/25 text-accent border border-accent/30 text-xs font-bold transition touch-target min-w-[44px] self-end sm:self-auto"
           >
             {isCombatLocked ? <Lock className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
             <span>{isCombatLocked ? 'توانایی نو (قفل DM)' : 'توانایی نو'}</span>
@@ -384,8 +384,8 @@ export const CombatTab: React.FC<CombatTabProps> = ({
               }}
               className={`px-3.5 py-2 rounded-[10px] text-xs font-bold transition whitespace-nowrap shrink-0 snap-start touch-target min-w-[44px] ${
                 featureFilter === chip.id
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
-                  : 'bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23]'
+                  ? 'bg-accent text-on-accent font-black shadow-sm'
+                  : 'bg-surface-2 text-text-muted hover:text-text-primary border border-border'
               }`}
             >
               <span className="whitespace-nowrap shrink-0">{chip.label}</span>
@@ -402,7 +402,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
             return (
               <div
                 key={feat.id}
-                className="surface-card rounded-[14px] p-3 border border-[#2F2A23] transition flex flex-col justify-between"
+                className="surface-card rounded-[14px] p-3 border border-border transition flex flex-col justify-between"
               >
                 <div>
                   {/* Collapsible header */}
@@ -411,8 +411,8 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                     className="flex flex-wrap items-center justify-between gap-2 cursor-pointer select-none touch-target min-w-[44px]"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-xs text-[#EDE6D8]">{feat.name}</span>
-                      <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#201D19] text-[#A39A89] border border-[#2F2A23]">
+                      <span className="font-extrabold text-xs text-text-primary">{feat.name}</span>
+                      <span className="text-xs px-1.5 py-0.2 rounded-[6px] bg-surface-2 text-text-muted border border-border">
                         {feat.source}
                       </span>
                     </div>
@@ -424,22 +424,22 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                           e.stopPropagation();
                           setDeleteConfirm({ isOpen: true, type: 'feature', id: feat.id, name: feat.name });
                         }}
-                        className="text-[#A39A89] hover:text-[#C2512B] p-1.5 touch-target min-w-[44px]"
+                        className="text-text-muted hover:text-danger p-1.5 touch-target min-w-[44px]"
                         title="حذف توانایی"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                       {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-[#A39A89]" />
+                        <ChevronUp className="w-4 h-4 text-text-muted" />
                       ) : (
-                        <ChevronDown className="w-4 h-4 text-[#A39A89]" />
+                        <ChevronDown className="w-4 h-4 text-text-muted" />
                       )}
                     </div>
                   </div>
 
                   {/* Collapsible Description Body */}
                   {isExpanded && (
-                    <p className="text-xs text-[#EDE6D8]/80 leading-relaxed mt-2 pt-2 border-t border-[#2F2A23]">
+                    <p className="text-xs text-text-primary/80 leading-relaxed mt-2 pt-2 border-t border-border">
                       {feat.description}
                     </p>
                   )}
@@ -447,7 +447,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
 
                 {/* Pips Outside Card */}
                 {hasUses && (
-                  <div className="mt-3 pt-2 border-t border-[#2F2A23]">
+                  <div className="mt-3 pt-2 border-t border-border">
                     <PipTracker
                       label={`استفاده (${feat.usageType === 'short' ? 'کوتاه' : 'بلند'})`}
                       current={feat.usedCount || 0}

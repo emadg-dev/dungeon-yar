@@ -69,13 +69,13 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
   const getStatusBadge = (status: Session['status']) => {
     switch (status) {
       case 'confirmed':
-        return <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#6F9E78]/20 text-[#6F9E78] border border-[#6F9E78]/30">تأیید شده</span>;
+        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-success/20 text-success border border-success/30">تأیید شده</span>;
       case 'planned':
-        return <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30">برنامه‌ریزی</span>;
+        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-accent/20 text-accent-hover border border-accent/30">برنامه‌ریزی</span>;
       case 'done':
-        return <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-neutral-800 text-neutral-300 border border-neutral-700">پایان‌یافته</span>;
+        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-neutral-800 text-neutral-300 border border-neutral-700">پایان‌یافته</span>;
       case 'cancelled':
-        return <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">لغو شده</span>;
+        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">لغو شده</span>;
     }
   };
 
@@ -87,18 +87,18 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
       subtitle={`مدیریت زمان، هماهنگی حضور و تاریخچه جلسات (${campaign?.name || ''})`}
       fullHeight
     >
-      <div className="space-y-4 pb-20 text-right" dir="rtl">
+      <div className="space-y-4 pb-20 text-start" dir="rtl">
         {/* Top Control Bar: Tabs & New Session Button */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <ScrollableRow activeKey={activeTab} wrapperClassName="bg-[#12100E] p-1 rounded-xl border border-white/10 shrink-0" className="gap-1">
+          <ScrollableRow activeKey={activeTab} wrapperClassName="bg-bg p-1 rounded-xl border border-white/10 shrink-0" className="gap-1">
             <button
               type="button"
               data-scroll-key="upcoming"
               onClick={() => setActiveTab('upcoming')}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
                 activeTab === 'upcoming'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent shadow-md'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               پیش‌رو ({upcoming.length})
@@ -109,8 +109,8 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
               onClick={() => setActiveTab('past')}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
                 activeTab === 'past'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent shadow-md'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               گذشته ({past.length})
@@ -125,10 +125,10 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                   onClose();
                   onOpenRecapArchive();
                 }}
-                className="px-3 py-2 rounded-xl bg-[#2A241C] hover:bg-[#3A3227] text-[#EDE6D8] text-xs font-semibold transition-colors inline-flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
+                className="px-3 py-2 rounded-xl bg-surface-2 hover:bg-surface-3 text-text-primary text-xs font-semibold transition-colors inline-flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
                 title="آرشیو خلاصه جلسات"
               >
-                <BookOpen className="w-3.5 h-3.5 text-[#E0A030] shrink-0" />
+                <BookOpen className="w-3.5 h-3.5 text-accent shrink-0" />
                 <span className="whitespace-nowrap shrink-0">آرشیو خلاصه‌ها</span>
               </button>
             )}
@@ -140,7 +140,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                   onClose();
                   onOpenCreateSession();
                 }}
-                className="px-3.5 py-2 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] text-xs font-bold transition-colors inline-flex items-center gap-1.5 shadow-md min-h-[44px] whitespace-nowrap shrink-0 snap-start"
+                className="px-3.5 py-2 rounded-xl bg-accent hover:bg-accent-hover text-on-accent text-xs font-bold transition-colors inline-flex items-center gap-1.5 shadow-md min-h-[44px] whitespace-nowrap shrink-0 snap-start"
               >
                 <Plus className="w-4 h-4 shrink-0" />
                 <span className="whitespace-nowrap shrink-0">جلسه جدید</span>
@@ -151,8 +151,8 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
 
         {/* Sessions List */}
         {currentList.length === 0 ? (
-          <div className="py-12 text-center text-[#8C8576] space-y-2">
-            <CalendarIcon className="w-10 h-10 mx-auto text-[#8C8576]/50" />
+          <div className="py-12 text-center text-text-muted space-y-2">
+            <CalendarIcon className="w-10 h-10 mx-auto text-text-muted/50" />
             <p className="text-sm font-semibold">
               {activeTab === 'upcoming' ? 'جلسه پیش‌رویی ثبت نشده است.' : 'هنوز جلسه‌ای برگزار نشده است.'}
             </p>
@@ -171,18 +171,18 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
               return (
                 <div
                   key={s.id}
-                  className="rounded-2xl bg-[#1C1814] border border-[#2E2820] p-4 shadow-md space-y-3 transition-all hover:border-[#E0A030]/30"
+                  className="rounded-2xl bg-surface border border-border p-4 shadow-md space-y-3 transition-all hover:border-accent/30"
                 >
                   {/* Header: Session number, title & status */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-[#E0A030]/15 text-[#F2C265] font-extrabold text-xs">
+                        <span className="px-2 py-0.5 rounded-md bg-accent/15 text-accent-hover font-extrabold text-xs">
                           جلسه {s.number}
                         </span>
                         {getStatusBadge(s.status)}
                       </div>
-                      <h3 className="text-base font-bold text-[#EDE6D8]">{s.title}</h3>
+                      <h3 className="text-base font-bold text-text-primary">{s.title}</h3>
                     </div>
 
                     {/* Actions for DM */}
@@ -195,7 +195,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                               onClose();
                               onEditSession(s);
                             }}
-                            className="p-2 rounded-lg text-[#A39A89] hover:text-[#EDE6D8] hover:bg-white/5 transition-colors"
+                            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
                             title="ویرایش جلسه"
                           >
                             <Edit3 className="w-4 h-4" />
@@ -219,17 +219,17 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                   {/* Date & Time */}
                   {dt ? (
                     <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <div className="flex items-center gap-1 text-[#F2C265] font-semibold bg-[#E0A030]/10 px-2.5 py-1 rounded-lg">
+                      <div className="flex items-center gap-1 text-accent-hover font-semibold bg-accent/10 px-2.5 py-1 rounded-lg">
                         <CalendarIcon className="w-3.5 h-3.5" />
                         <span>{dt.weekday}، {dt.date}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-[#EDE6D8] bg-white/5 px-2.5 py-1 rounded-lg">
-                        <Clock className="w-3.5 h-3.5 text-[#8C8576]" />
+                      <div className="flex items-center gap-1 text-text-primary bg-white/5 px-2.5 py-1 rounded-lg">
+                        <Clock className="w-3.5 h-3.5 text-text-muted" />
                         <span>ساعت {dt.time}</span>
-                        <span className="text-[11px] text-[#8C8576]">({s.durationMinutes} د)</span>
+                        <span className="text-xs text-text-muted">({s.durationMinutes} د)</span>
                       </div>
                       {dt.relative && (
-                        <span className="text-[11px] text-[#6F9E78] font-medium bg-[#6F9E78]/15 px-2 py-0.5 rounded-md">
+                        <span className="text-xs text-success font-medium bg-success/15 px-2 py-0.5 rounded-md">
                           {dt.relative}
                         </span>
                       )}
@@ -242,19 +242,19 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
 
                   {/* In-world date */}
                   {inWorldStr && (
-                    <div className="flex items-center gap-1.5 text-xs text-[#C9BFAC]">
-                      <Hourglass className="w-3.5 h-3.5 text-[#E0A030]" />
+                    <div className="flex items-center gap-1.5 text-xs text-text-muted">
+                      <Hourglass className="w-3.5 h-3.5 text-accent" />
                       <span>تقویم جهان بازی:</span>
-                      <span className="font-semibold text-[#F2C265]">{inWorldStr}</span>
+                      <span className="font-semibold text-accent-hover">{inWorldStr}</span>
                     </div>
                   )}
 
                   {/* Place / URL */}
                   {(s.placeText || s.onlineUrl) && (
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#A39A89]">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted">
                       {s.placeText && (
                         <div className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-[#E0A030]" />
+                          <MapPin className="w-3.5 h-3.5 text-accent" />
                           <span>{s.placeText}</span>
                         </div>
                       )}
@@ -263,7 +263,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                           href={s.onlineUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-[#C4A5EB] hover:underline"
+                          className="flex items-center gap-1 text-role-codm hover:underline"
                         >
                           <Video className="w-3.5 h-3.5" />
                           <span>اتاق آنلاین</span>
@@ -274,8 +274,8 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
 
                   {/* DM Notes */}
                   {s.dmNotes && (
-                    <div className="p-2.5 rounded-xl bg-[#2A1F13] border border-[#E0A030]/20 text-xs text-[#E8D4B0] leading-relaxed">
-                      <span className="font-bold text-[#F2C265]">یادداشت مستر: </span>
+                    <div className="p-2.5 rounded-xl bg-surface-2 border border-accent/20 text-xs text-accent-hover leading-relaxed">
+                      <span className="font-bold text-accent-hover">یادداشت مستر: </span>
                       {s.dmNotes}
                     </div>
                   )}
@@ -283,16 +283,16 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                   {/* Footer Stats: RSVP / Attendance */}
                   <div className="pt-2 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
                     {s.status === 'done' ? (
-                      <div className="flex items-center gap-1.5 text-[#6F9E78] font-bold">
+                      <div className="flex items-center gap-1.5 text-success font-bold">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>{attendedCount} نفر شرکت داشتند</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <span className="text-[#6F9E78] font-bold">{yesCount} بله</span>
-                        <span className="text-[#8C8576]">·</span>
-                        <span className="text-[#F2C265] font-bold">{maybeCount} شاید</span>
-                        <span className="text-[#8C8576]">·</span>
+                        <span className="text-success font-bold">{yesCount} بله</span>
+                        <span className="text-text-muted">·</span>
+                        <span className="text-accent-hover font-bold">{maybeCount} شاید</span>
+                        <span className="text-text-muted">·</span>
                         <span className="text-rose-400 font-bold">{noCount} نه</span>
                       </div>
                     )}
@@ -306,7 +306,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                             onClose();
                             onOpenAttendance(s);
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-[#6F9E78]/20 hover:bg-[#6F9E78] text-[#6F9E78] hover:text-[#0E0D0C] text-xs font-bold transition-colors flex items-center gap-1"
+                          className="px-2.5 py-1 rounded-lg bg-success/20 hover:bg-success text-success hover:text-on-accent text-xs font-bold transition-colors flex items-center gap-1"
                         >
                           <UserCheck className="w-3.5 h-3.5" />
                           <span>ثبت حضور</span>
@@ -321,7 +321,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                             onClose();
                             onOpenClosingSheet(s);
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-[#E0A030]/20 hover:bg-[#E0A030] text-[#F2C265] hover:text-[#0E0D0C] text-xs font-bold transition-colors flex items-center gap-1"
+                          className="px-2.5 py-1 rounded-lg bg-accent/20 hover:bg-accent text-accent-hover hover:text-on-accent text-xs font-bold transition-colors flex items-center gap-1"
                           title="خلاصه جلسه، پاداش‌ها و رویدادهای کاراکترها"
                         >
                           <BookOpen className="w-3.5 h-3.5" />

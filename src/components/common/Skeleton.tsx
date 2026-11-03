@@ -46,7 +46,7 @@ export const CardSkeleton: React.FC<{ count?: number; className?: string }> = ({
   <div className={`space-y-3 ${className}`}>
     {Array.from({ length: count }).map((_, i) => (
       <div key={i} className="skeleton h-28 p-4 space-y-2.5">
-        <div className="h-3.5 w-1/3 rounded-lg bg-[#E0A030]/10" />
+        <div className="h-3.5 w-1/3 rounded-lg bg-accent/10" />
         <div className="h-3 w-3/4 rounded-lg bg-white/5" />
         <div className="h-3 w-1/2 rounded-lg bg-white/5" />
       </div>
@@ -59,7 +59,7 @@ export const StatsCardSkeleton: React.FC<{ count?: number }> = ({ count = 4 }) =
   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
     {Array.from({ length: count }).map((_, i) => (
       <div key={i} className="skeleton h-20 p-3 space-y-2">
-        <div className="h-2.5 w-1/2 rounded-md bg-[#E0A030]/10" />
+        <div className="h-2.5 w-1/2 rounded-md bg-accent/10" />
         <div className="h-4 w-2/3 rounded-md bg-white/5" />
       </div>
     ))}

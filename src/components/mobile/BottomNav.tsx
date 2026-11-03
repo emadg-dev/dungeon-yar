@@ -62,8 +62,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 aria-label={item.label}
                 aria-pressed={isActive}
                 onClick={() => onSelectHomeTab?.(item.id)}
-                className={`liquid-dock__item mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
-                style={{ minWidth: 44, minHeight: 44 }}
+                className={`liquid-dock__item touch-target mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
                 <span className="dock-label whitespace-nowrap">{item.label}</span>
@@ -103,8 +102,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                   else if (item.id === 'world') onSelectDmTab('library');
                   else onSelectDmTab(item.id);
                 }}
-                className={`liquid-dock__item mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
-                style={{ minWidth: 44, minHeight: 44 }}
+                className={`liquid-dock__item touch-target mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
                 <span className="dock-label whitespace-nowrap">{item.label}</span>
@@ -137,9 +135,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 key={item.id}
                 type="button"
                 onClick={onOpenDice}
-                className="w-13 h-13 -mt-6 rounded-full bg-gradient-to-tr from-[#C97B4A] to-[#E0A030] text-[#0E0D0C] flex items-center justify-center shadow-[0_0_20px_rgba(224,160,48,0.5)] hover:scale-105 active:scale-95 transition touch-target z-[35]"
+                className="w-13 h-13 -mt-6 rounded-full bg-gradient-to-tr from-warning to-accent text-on-accent flex items-center justify-center shadow-glow-amber-lg hover:scale-105 active:scale-95 transition touch-target z-[35]"
                 aria-label="پرتاب تاس"
-                style={{ minWidth: 44, minHeight: 44 }}
               >
                 <Dices className="w-6 h-6 stroke-[2.5]" />
               </button>
@@ -157,8 +154,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 else if (item.id === 'world') onSelectPlayerTab('codex');
                 else onSelectPlayerTab(item.id);
               }}
-              className={`liquid-dock__item mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
-              style={{ minWidth: 44, minHeight: 44 }}
+              className={`liquid-dock__item touch-target mx-auto ${isActive ? 'liquid-dock__item--active font-extrabold' : 'font-semibold'}`}
             >
               <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
               <span className="dock-label whitespace-nowrap">{item.label}</span>

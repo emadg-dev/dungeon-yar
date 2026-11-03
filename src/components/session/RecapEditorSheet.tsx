@@ -132,7 +132,7 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
         )}
 
         <div className="space-y-1.5">
-          <label className="text-[11px] font-bold text-[#A39A89]">جلسه مربوطه</label>
+          <label className="text-xs font-bold text-text-muted">جلسه مربوطه</label>
           <select
             value={sessionId}
             onChange={(e) => {
@@ -142,7 +142,7 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
                 setTitle(`خلاصه جلسه ${found.number}: ${found.title}`);
               }
             }}
-            className="w-full px-3 py-2.5 rounded-[10px] bg-[#171310] border border-[#2F2A23] text-xs text-[#EDE6D8]"
+            className="w-full px-3 py-2.5 rounded-[10px] bg-surface border border-border text-xs text-text-primary"
           >
             {sessions.map(s => (
               <option key={s.id} value={s.id}>
@@ -153,45 +153,45 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[11px] font-bold text-[#A39A89]">عنوان سرگذشت</label>
+          <label className="text-xs font-bold text-text-muted">عنوان سرگذشت</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="مثال: نبرد بر فراز برج عقربه‌ها"
-            className="w-full px-3 py-2.5 rounded-[10px] bg-[#171310] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+            className="w-full px-3 py-2.5 rounded-[10px] bg-surface border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[11px] font-bold text-[#A39A89]">متن و شرح وقایع</label>
+          <label className="text-xs font-bold text-text-muted">متن و شرح وقایع</label>
           <textarea
             rows={7}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="رویدادها، پیروزی‌ها، تصمیمات کلیدی و رازهای فاش شده در جلسه را شرح دهید..."
-            className="w-full p-3 rounded-[10px] bg-[#171310] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] leading-relaxed"
+            className="w-full p-3 rounded-[10px] bg-surface border border-border text-xs text-text-primary focus:outline-none focus:border-accent leading-relaxed"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-[10px] font-bold text-[#A39A89] block mb-1">محدوده نمایش</label>
+            <label className="text-xs font-bold text-text-muted block mb-1">محدوده نمایش</label>
             <select
               value={visibility}
               onChange={(e) => setVisibility(e.target.value as any)}
-              className="w-full px-2.5 py-2 rounded-[8px] bg-[#171310] border border-[#2F2A23] text-xs text-[#EDE6D8]"
+              className="w-full px-2.5 py-2 rounded-[8px] bg-surface border border-border text-xs text-text-primary"
             >
               <option value="party">نمایش برای همه گروه (Party)</option>
               <option value="dm_only">محرمانه دانجن مستر (DM Only)</option>
             </select>
           </div>
           <div>
-            <label className="text-[10px] font-bold text-[#A39A89] block mb-1">وضعیت انتشار</label>
+            <label className="text-xs font-bold text-text-muted block mb-1">وضعیت انتشار</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
-              className="w-full px-2.5 py-2 rounded-[8px] bg-[#171310] border border-[#2F2A23] text-xs text-[#EDE6D8]"
+              className="w-full px-2.5 py-2 rounded-[8px] bg-surface border border-border text-xs text-text-primary"
             >
               <option value="published">انتشار در کمپین</option>
               <option value="draft">ذخیره به عنوان پیش‌نویس</option>
@@ -201,8 +201,8 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
 
         {/* Link Entities */}
         {(locations.length > 0 || npcs.length > 0 || campaignNotes.length > 0) && (
-          <div className="p-3 rounded-[10px] bg-[#171310] border border-[#2F2A23] space-y-2">
-            <span className="text-[10px] font-bold text-[#A39A89] block">پیوند با مکان‌ها و شخصیت‌ها:</span>
+          <div className="p-3 rounded-[10px] bg-surface border border-border space-y-2">
+            <span className="text-xs font-bold text-text-muted block">پیوند با مکان‌ها و شخصیت‌ها:</span>
             <div className="flex flex-wrap gap-1.5">
               {locations.slice(0, 8).map(loc => {
                 const sel = linkedLocIds.includes(loc.id);
@@ -211,8 +211,8 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
                     key={loc.id}
                     type="button"
                     onClick={() => toggleLocation(loc.id)}
-                    className={`px-2 py-0.5 rounded text-[10px] border flex items-center gap-1 ${
-                      sel ? 'bg-[#93C48B]/20 text-[#93C48B] border-[#93C48B]' : 'bg-[#120F0D] text-[#A39A89] border-[#2F2A23]'
+                    className={`px-2 py-0.5 rounded text-xs border flex items-center gap-1 ${
+                      sel ? 'bg-success/20 text-success border-success' : 'bg-bg text-text-muted border-border'
                     }`}
                   >
                     <MapPin className="w-2.5 h-2.5" />
@@ -227,8 +227,8 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
                     key={npc.id}
                     type="button"
                     onClick={() => toggleNpc(npc.id)}
-                    className={`px-2 py-0.5 rounded text-[10px] border flex items-center gap-1 ${
-                      sel ? 'bg-[#C48BC0]/20 text-[#C48BC0] border-[#C48BC0]' : 'bg-[#120F0D] text-[#A39A89] border-[#2F2A23]'
+                    className={`px-2 py-0.5 rounded text-xs border flex items-center gap-1 ${
+                      sel ? 'bg-role-codm/20 text-role-codm border-role-codm' : 'bg-bg text-text-muted border-border'
                     }`}
                   >
                     <UserIcon className="w-2.5 h-2.5" />

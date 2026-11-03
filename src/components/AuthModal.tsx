@@ -57,7 +57,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   const strength = calculatePasswordStrength(password);
   const strengthLabels = ['خیلی کوتاه / ضعیف', 'متوسط', 'خوب', 'قوی', 'بسیار امن'];
-  const strengthColors = ['bg-[#C2512B]', 'bg-[#C97B4A]', 'bg-[#E0A030]', 'bg-[#6F9E78]', 'bg-[#6F9E78]'];
+  const strengthColors = ['bg-danger', 'bg-warning', 'bg-accent', 'bg-success', 'bg-success'];
 
   const validate = () => {
     const errors: Record<string, string> = {};
@@ -149,10 +149,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Seal Mark & Logo Wordmark */}
         <div className="text-center pt-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#171513] border-2 border-[#E0A030] shadow-[0_0_24px_rgba(224,160,48,0.3)] mb-3 relative">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-surface border-2 border-accent shadow-[0_0_24px_rgba(224,160,48,0.3)] mb-3 relative">
             <svg
               viewBox="0 0 100 100"
-              className="w-10 h-10 text-[#E0A030]"
+              className="w-10 h-10 text-accent"
               fill="none"
               stroke="currentColor"
               strokeWidth="4"
@@ -167,10 +167,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </svg>
           </div>
 
-          <h2 className="text-xl font-black text-[#EDE6D8] tracking-tight">
+          <h2 className="text-xl font-black text-text-primary tracking-tight">
             درگاه احراز هویت {APP_NAME_FA}
           </h2>
-          <p className="text-xs text-[#A39A89] mt-1">
+          <p className="text-xs text-text-muted mt-1">
             {mode === 'login' && 'ورود ماجراجویان و دانجن مستر به گاهشمار وقایع'}
             {mode === 'register' && 'عضویت در کارزار با کد دعوت دانجن مستر'}
             {mode === 'reset' && 'تنظیم رمز عبور جدید از طریق پیوند اختصاصی'}
@@ -180,14 +180,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Mode Selector Tabs */}
         {mode !== 'reset' && mode !== 'forgot' && (
-          <div className="flex rounded-[12px] bg-[#201D19] p-1 border border-[#2F2A23]">
+          <div className="flex rounded-[12px] bg-surface-2 p-1 border border-border">
             <button
               type="button"
               onClick={() => { setMode('login'); setGeneralError(''); }}
               className={`flex-1 py-2 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
                 mode === 'login'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] shadow-sm font-extrabold'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent shadow-sm font-extrabold'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <LogIn className="w-3.5 h-3.5" />
@@ -198,8 +198,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={() => { setMode('register'); setGeneralError(''); }}
               className={`flex-1 py-2 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
                 mode === 'register'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] shadow-sm font-extrabold'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent shadow-sm font-extrabold'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <UserPlus className="w-3.5 h-3.5" />
@@ -210,8 +210,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* General Error Banner */}
         {generalError && (
-          <div className="p-3 rounded-[10px] bg-[#C2512B]/15 border border-[#C2512B]/40 text-[#EDE6D8] text-xs flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-[#C2512B] shrink-0 mt-0.5" />
+          <div className="p-3 rounded-[10px] bg-danger/15 border border-danger/40 text-text-primary text-xs flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
             <span className="leading-relaxed">{generalError}</span>
           </div>
         )}
@@ -219,11 +219,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Forgot Password Explanation View */}
         {mode === 'forgot' && (
           <div className="space-y-4 text-center py-2">
-            <div className="w-12 h-12 rounded-full bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#E0A030] flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-full bg-accent/15 border border-accent/30 text-accent flex items-center justify-center mx-auto">
               <HelpCircle className="w-6 h-6" />
             </div>
-            <h3 className="text-sm font-extrabold text-[#EDE6D8]">فراموشی رمز عبور</h3>
-            <p className="text-xs text-[#A39A89] leading-relaxed">
+            <h3 className="text-sm font-extrabold text-text-primary">فراموشی رمز عبور</h3>
+            <p className="text-xs text-text-muted leading-relaxed">
               جهت حفظ امنیت و محرمانگی سناریوی کمپین، بازنشانی رمز عبور ماجراجویان به صورت مستقیم توسط <strong>دانجن مستر</strong> انجام می‌شود. لطفاً از دانجن مستر خود بخواهید یک «لینک یک‌بار مصرف تغییر رمز» برای شما ارسال کند.
             </p>
             <button
@@ -242,7 +242,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {/* Display Name (Register only) */}
             {mode === 'register' && (
               <div className="space-y-1">
-                <label className="block text-xs font-bold text-[#EDE6D8]">نام نمایشی در بازی</label>
+                <label className="block text-xs font-bold text-text-primary">نام نمایشی در بازی</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -251,11 +251,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     placeholder="مثال: پردیس یا آریا"
                     autoComplete="nickname"
                     enterKeyHint="next"
-                    className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
+                    className="w-full py-2.5 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
                   />
                 </div>
                 {fieldErrors.displayName && (
-                  <p className="text-[11px] text-[#C2512B]">{fieldErrors.displayName}</p>
+                  <p className="text-xs text-danger">{fieldErrors.displayName}</p>
                 )}
               </div>
             )}
@@ -263,7 +263,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {/* Email (Login / Register) */}
             {(mode === 'login' || mode === 'register') && (
               <div className="space-y-1">
-                <label className="block text-xs font-bold text-[#EDE6D8]">رایانامه (ایمیل)</label>
+                <label className="block text-xs font-bold text-text-primary">رایانامه (ایمیل)</label>
                 <div className="relative">
                   <input
                     type="email"
@@ -274,12 +274,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     inputMode="email"
                     dir="ltr"
                     enterKeyHint="next"
-                    className="w-full py-2.5 ps-9 pe-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none text-left min-h-[44px]"
+                    className="w-full py-2.5 ps-9 pe-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
                   />
-                  <Mail className="w-4 h-4 text-[#A39A89] absolute top-3.5 start-3 pointer-events-none" />
+                  <Mail className="w-4 h-4 text-text-muted absolute top-3.5 start-3 pointer-events-none" />
                 </div>
                 {fieldErrors.email && (
-                  <p className="text-[11px] text-[#C2512B]">{fieldErrors.email}</p>
+                  <p className="text-xs text-danger">{fieldErrors.email}</p>
                 )}
               </div>
             )}
@@ -288,8 +288,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {mode === 'register' && (
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="text-xs font-bold text-[#EDE6D8]">کد دعوت کمپین</label>
-                  <span className="text-[10px] text-[#A39A89]">برای ایمیل‌های DM الزامی نیست</span>
+                  <label className="text-xs font-bold text-text-primary">کد دعوت کمپین</label>
+                  <span className="text-xs text-text-muted">برای ایمیل‌های DM الزامی نیست</span>
                 </div>
                 <div className="relative">
                   <input
@@ -299,12 +299,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     placeholder="کد دعوت دریافتی از DM"
                     dir="ltr"
                     enterKeyHint="next"
-                    className="w-full py-2.5 ps-9 pe-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none text-left font-mono min-h-[44px]"
+                    className="w-full py-2.5 ps-9 pe-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end font-mono min-h-[44px]"
                   />
-                  <KeyRound className="w-4 h-4 text-[#A39A89] absolute top-3.5 start-3 pointer-events-none" />
+                  <KeyRound className="w-4 h-4 text-text-muted absolute top-3.5 start-3 pointer-events-none" />
                 </div>
                 {fieldErrors.inviteCode && (
-                  <p className="text-[11px] text-[#C2512B]">{fieldErrors.inviteCode}</p>
+                  <p className="text-xs text-danger">{fieldErrors.inviteCode}</p>
                 )}
               </div>
             )}
@@ -312,17 +312,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {/* Reset Token (Reset mode only) */}
             {mode === 'reset' && (
               <div className="space-y-1">
-                <label className="block text-xs font-bold text-[#EDE6D8]">توکن بازنشانی</label>
+                <label className="block text-xs font-bold text-text-primary">توکن بازنشانی</label>
                 <input
                   type="text"
                   value={resetToken}
                   onChange={(e) => setResetToken(e.target.value)}
                   placeholder="توکن دریافت شده از دانجن مستر"
                   dir="ltr"
-                  className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none text-left font-mono min-h-[44px]"
+                  className="w-full py-2.5 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end font-mono min-h-[44px]"
                 />
                 {fieldErrors.resetToken && (
-                  <p className="text-[11px] text-[#C2512B]">{fieldErrors.resetToken}</p>
+                  <p className="text-xs text-danger">{fieldErrors.resetToken}</p>
                 )}
               </div>
             )}
@@ -330,14 +330,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {/* Password */}
             <div className="space-y-1">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="text-xs font-bold text-[#EDE6D8]">
+                <label className="text-xs font-bold text-text-primary">
                   {mode === 'reset' ? 'رمز عبور جدید' : 'رمز عبور'}
                 </label>
                 {mode === 'login' && (
                   <button
                     type="button"
                     onClick={() => setMode('forgot')}
-                    className="text-[11px] text-[#E0A030] hover:underline"
+                    className="text-xs text-accent hover:underline"
                   >
                     فراموشی رمز؟
                   </button>
@@ -352,13 +352,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                   dir="ltr"
                   enterKeyHint={mode === 'reset' ? 'next' : 'done'}
-                  className="w-full py-2.5 ps-10 pe-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none text-left min-h-[44px]"
+                  className="w-full py-2.5 ps-10 pe-10 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
                 />
-                <KeyRound className="w-4 h-4 text-[#A39A89] absolute top-3.5 start-3 pointer-events-none" />
+                <KeyRound className="w-4 h-4 text-text-muted absolute top-3.5 start-3 pointer-events-none" />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-2.5 end-2.5 p-1.5 rounded-[8px] text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
+                  className="absolute top-2.5 end-2.5 p-1.5 rounded-[8px] text-text-muted hover:text-text-primary touch-target min-w-[44px]"
                   title={showPassword ? 'مخفی کردن' : 'نمایش'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -373,12 +373,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       <div
                         key={idx}
                         className={`flex-1 rounded-full transition-all duration-300 ${
-                          strength > idx ? strengthColors[strength] : 'bg-[#2F2A23]'
+                          strength > idx ? strengthColors[strength] : 'bg-surface-3'
                         }`}
                       />
                     ))}
                   </div>
-                  <div className="flex justify-between items-center text-[10px] text-[#A39A89]">
+                  <div className="flex justify-between items-center text-xs text-text-muted">
                     <span>استحکام رمز: {strengthLabels[strength]}</span>
                     <span>حداقل 8 کاراکتر</span>
                   </div>
@@ -386,14 +386,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               )}
 
               {fieldErrors.password && (
-                <p className="text-[11px] text-[#C2512B]">{fieldErrors.password}</p>
+                <p className="text-xs text-danger">{fieldErrors.password}</p>
               )}
             </div>
 
             {/* Confirm Password (Reset only) */}
             {mode === 'reset' && (
               <div className="space-y-1">
-                <label className="block text-xs font-bold text-[#EDE6D8]">تکرار رمز عبور جدید</label>
+                <label className="block text-xs font-bold text-text-primary">تکرار رمز عبور جدید</label>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
@@ -402,23 +402,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   autoComplete="new-password"
                   dir="ltr"
                   enterKeyHint="done"
-                  className="w-full py-2.5 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none text-left min-h-[44px]"
+                  className="w-full py-2.5 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
                 />
                 {fieldErrors.confirmPassword && (
-                  <p className="text-[11px] text-[#C2512B]">{fieldErrors.confirmPassword}</p>
+                  <p className="text-xs text-danger">{fieldErrors.confirmPassword}</p>
                 )}
               </div>
             )}
 
             {/* Sticky Submit Button */}
-            <div className="pt-2 sticky bottom-0 bg-[#171513] py-1">
+            <div className="pt-2 sticky bottom-0 bg-surface py-1">
               <button
                 type="submit"
                 disabled={loading}
                 className="w-full py-3 px-4 rounded-[12px] btn-primary-amber font-extrabold text-sm shadow-lg flex items-center justify-center gap-2 touch-target min-w-[44px] disabled:opacity-50 min-h-[48px]"
               >
                 {loading ? (
-                  <span className="w-5 h-5 border-2 border-[#0E0D0C] border-t-transparent rounded-full animate-spin" />
+                  <span className="w-5 h-5 border-2 border-bg border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     {mode === 'login' && <LogIn className="w-4 h-4" />}
@@ -438,10 +438,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Quick Demo Switcher (Only in preview / test mode) */}
         {onSelectPreloadedUser && (
-          <div className="pt-3 border-t border-[#2F2A23] space-y-2">
+          <div className="pt-3 border-t border-border space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-[11px] font-bold text-[#A39A89]">تست سریع (حالت پیش‌نمایش):</span>
-              <span className="text-[10px] text-[#E0A030] font-mono">Preview only</span>
+              <span className="text-xs font-bold text-text-muted">تست سریع (حالت پیش‌نمایش):</span>
+              <span className="text-xs text-accent font-mono">Preview only</span>
             </div>
             <div className="grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto">
               {SEED_USERS.map((u) => (
@@ -452,9 +452,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     onSelectPreloadedUser(u.id);
                     onClose();
                   }}
-                  className="text-start p-2 rounded-[8px] bg-[#201D19] hover:bg-[#2F2A23] border border-[#2F2A23] text-[11px] font-bold text-[#EDE6D8] truncate touch-target min-w-[44px]"
+                  className="text-start p-2 rounded-[8px] bg-surface-2 hover:bg-surface-3 border border-border text-xs font-bold text-text-primary truncate touch-target min-w-[44px]"
                 >
-                  <span className="text-[#E0A030] text-[10px] block">
+                  <span className="text-accent text-xs block">
                     {u.role === 'dm' ? 'دانجن مستر' : 'بازیکن'}
                   </span>
                   <span className="truncate block">{u.displayName || u.name}</span>

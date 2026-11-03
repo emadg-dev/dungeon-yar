@@ -156,12 +156,12 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
       {/* World-Date Bar + "Next Day" Button */}
       <div className="surface-card rounded-[14px] p-3.5 flex flex-wrap items-center justify-between gap-3 card-gold-top">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-[10px] bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-[10px] bg-accent/15 text-accent border border-accent/30 flex items-center justify-center shrink-0">
             <Calendar className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] text-[#A39A89] block">گاهشمار زمان زروانیا</span>
-            <span className="font-extrabold text-sm text-[#EDE6D8]">
+            <span className="text-xs text-text-muted block">گاهشمار زمان زروانیا</span>
+            <span className="font-extrabold text-sm text-text-primary">
               {worldDay} {worldMonth}، سال {worldYear} عصر شکاف
             </span>
           </div>
@@ -212,19 +212,19 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
       )}
 
       {/* Campaign Setup Checklist (Progress Ring / Shortcut) */}
-      <div className="surface-card rounded-[14px] p-3.5 flex flex-wrap items-center justify-between gap-2 gap-3 border border-[#2F2A23] hover:border-[#E0A030]/40 transition">
+      <div className="surface-card rounded-[14px] p-3.5 flex flex-wrap items-center justify-between gap-2 gap-3 border border-border hover:border-accent/40 transition">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-[#E0A030]/15 text-[#F2C265] border border-[#E0A030]/30 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-accent/15 text-accent-hover border border-accent/30 flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-xs text-[#EDE6D8]">چک‌لیست راه‌اندازی و آمادگی کمپین</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#6F9E78]/20 text-[#6F9E78] font-bold">
+              <span className="font-extrabold text-xs text-text-primary">چک‌لیست راه‌اندازی و آمادگی کمپین</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-success/20 text-success font-bold">
                 {activeCampaign?.wizardState?.completed?.length || 8}/8 گام
               </span>
             </div>
-            <p className="text-[11px] text-[#A39A89] mt-0.5">
+            <p className="text-xs text-text-muted mt-0.5">
               مشخصات، قوانین 5e، تقویم، جناح‌ها، هیولاها، لوت و جلسه‌ی صفر
             </p>
           </div>
@@ -234,7 +234,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           <button
             type="button"
             onClick={onOpenSetupChecklist}
-            className="px-3 py-1.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#F2C265] text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
+            className="px-3 py-1.5 rounded-xl bg-surface-3 hover:bg-surface-3 text-accent-hover text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
           >
             <span>بازبینی چک‌لیست</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -244,48 +244,48 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
 
       {/* Quick-Action Bar: Award XP, Award Inspiration, Roll Secret Check, Group Rest */}
       <div className="surface-card rounded-[14px] p-3 space-y-2">
-        <span className="text-[11px] font-bold text-[#A39A89] block px-0.5">عملیات سریع گروهی و پیشرفت</span>
+        <span className="text-xs font-bold text-text-muted block px-0.5">عملیات سریع گروهی و پیشرفت</span>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {/* XP Award Quick Action */}
           <button
             type="button"
             onClick={() => setXpModalOpen(true)}
-            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/25 transition touch-target min-w-[44px]"
+            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-accent/15 border border-accent/40 text-accent-hover text-xs font-bold hover:bg-accent/25 transition touch-target min-w-[44px]"
           >
-            <Award className="w-4 h-4 text-[#F2C265]" />
+            <Award className="w-4 h-4 text-accent-hover" />
             <span>اعطای امتیاز تجربه (XP)</span>
           </button>
 
           <button
             type="button"
             onClick={rollSecretCheck}
-            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] text-xs font-bold hover:border-[#E0A030] transition touch-target min-w-[44px]"
+            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-surface-2 border border-border text-text-primary text-xs font-bold hover:border-accent transition touch-target min-w-[44px]"
           >
-            <Dices className="w-4 h-4 text-[#E0A030]" />
+            <Dices className="w-4 h-4 text-accent" />
             <span>چک ادراک مخفی</span>
           </button>
 
           <button
             type="button"
             onClick={() => onApplyGroupRest('short')}
-            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] text-xs font-bold hover:border-[#E0A030] transition touch-target min-w-[44px]"
+            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-surface-2 border border-border text-text-primary text-xs font-bold hover:border-accent transition touch-target min-w-[44px]"
           >
-            <Moon className="w-4 h-4 text-[#E0A030]" />
+            <Moon className="w-4 h-4 text-accent" />
             <span>استراحت کوتاه گروه</span>
           </button>
 
           <button
             type="button"
             onClick={() => onApplyGroupRest('long')}
-            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] text-xs font-bold hover:border-[#E0A030] transition touch-target min-w-[44px]"
+            className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-surface-2 border border-border text-text-primary text-xs font-bold hover:border-accent transition touch-target min-w-[44px]"
           >
-            <Sun className="w-4 h-4 text-[#E0A030]" />
+            <Sun className="w-4 h-4 text-accent" />
             <span>استراحت بلند گروه</span>
           </button>
         </div>
 
         {secretCheckNotice && (
-          <div className="p-2 rounded-[8px] bg-[#E0A030]/20 border border-[#E0A030] text-[#EDE6D8] text-xs font-bold text-center animate-pulse">
+          <div className="p-2 rounded-[8px] bg-accent/20 border border-accent text-text-primary text-xs font-bold text-center animate-pulse">
             {secretCheckNotice}
           </div>
         )}
@@ -295,17 +295,17 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2 px-1">
           <div className="flex items-center gap-2">
-            <h3 className="text-xs font-bold text-[#A39A89] flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-[#E0A030]" />
+            <h3 className="text-xs font-bold text-text-muted flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-accent" />
               یاران حاضر در کمپین ({characters.length})
             </h3>
-            <span className="text-[10px] text-[#A39A89] hidden sm:inline">• نظارت، کنترل ارتقا، اسنپ‌شات و قفل برگه</span>
+            <span className="text-xs text-text-muted hidden sm:inline">• نظارت، کنترل ارتقا، اسنپ‌شات و قفل برگه</span>
           </div>
           {onCreateForPlayer && (
             <button
               type="button"
               onClick={onCreateForPlayer}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/40 hover:bg-[#E0A030]/30 text-xs font-bold transition min-h-[44px]"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-accent/20 text-accent-hover border border-accent/40 hover:bg-accent/30 text-xs font-bold transition min-h-[44px]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>ساخت برای بازیکن (ویزارد)</span>
@@ -323,7 +323,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
             return (
               <div
                 key={char.id}
-                className="surface-card rounded-[14px] p-3.5 border border-[#2F2A23] transition hover:border-[#2F2A23]/80 space-y-3 content-visibility-card"
+                className="surface-card rounded-[14px] p-3.5 border border-border transition hover:border-border/80 space-y-3 content-visibility-card"
               >
                 {/* Header: Portrait, Name, Class & "Needs Attention" Badge */}
                 <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
@@ -335,21 +335,21 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                       decoding="async"
                       width={44}
                       height={44}
-                      className="w-11 h-11 rounded-[10px] object-cover border border-[#2F2A23] shrink-0"
+                      className="w-11 h-11 rounded-[10px] object-cover border border-border shrink-0"
                     />
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-extrabold text-sm text-[#EDE6D8] truncate">{char.name}</span>
-                        <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30 font-bold shrink-0">
+                        <span className="font-extrabold text-sm text-text-primary truncate">{char.name}</span>
+                        <span className="text-xs px-1.5 py-0.2 rounded-[6px] bg-accent/15 text-accent border border-accent/30 font-bold shrink-0">
                           سطح {char.level}
                         </span>
                         {isLevelUpAvailable && (
-                          <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#6F9E78]/20 text-[#6F9E78] border border-[#6F9E78]/30 font-bold shrink-0 animate-pulse">
+                          <span className="text-xs px-1.5 py-0.2 rounded-[6px] bg-success/20 text-success border border-success/30 font-bold shrink-0 animate-pulse">
                             آماده ارتقا
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-[#A39A89] truncate">
+                      <p className="text-xs text-text-muted truncate">
                         {char.className} {char.subclassName ? `(${char.subclassName})` : ''} • AC {char.ac}
                       </p>
                     </div>
@@ -357,7 +357,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
 
                   {/* "Needs Attention" Amber Badge for unread/shared notes */}
                   {hasSharedNotes && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#E0A030]/20 text-[#E0A030] border border-[#E0A030]/40 flex items-center gap-1 shrink-0 animate-pulse">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-black bg-accent/20 text-accent border border-accent/40 flex items-center gap-1 shrink-0 animate-pulse">
                       <Eye className="w-3 h-3" />
                       نیاز به توجه
                     </span>
@@ -373,15 +373,15 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                 />
 
                 {/* Step 3.4 Level-Up, Lock & Snapshot Controls for DM */}
-                <div className="p-2.5 rounded-xl bg-[#141822] border border-[#2F2A23] space-y-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
-                    <span className="text-[#A39A89] font-bold">ابزارهای دانجن مستر:</span>
-                    <span className="text-[10px] text-[#EDE6D8] font-mono">
+                <div className="p-2.5 rounded-xl bg-info border border-border space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <span className="text-text-muted font-bold">ابزارهای دانجن مستر:</span>
+                    <span className="text-xs text-text-primary font-mono">
                       XP: {part?.xp ?? 0}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                  <div className="grid grid-cols-2 gap-1.5 text-xs">
                     {/* Milestone Level-Up Toggle */}
                     {onToggleMilestoneLevelUp && part && (
                       <button
@@ -389,8 +389,8 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                         onClick={() => onToggleMilestoneLevelUp(part.id, !isLevelUpAvailable)}
                         className={`px-2 py-1.5 rounded-lg border flex items-center justify-center gap-1 font-bold transition ${
                           isLevelUpAvailable
-                            ? 'bg-[#6F9E78]/20 border-[#6F9E78] text-[#6F9E78]'
-                            : 'bg-[#201D19] border-[#2F2A23] text-[#EDE6D8] hover:border-[#E0A030]'
+                            ? 'bg-success/20 border-success text-success'
+                            : 'bg-surface-2 border-border text-text-primary hover:border-accent'
                         }`}
                       >
                         <ArrowUpCircle className="w-3.5 h-3.5" />
@@ -405,8 +405,8 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                         onClick={() => onToggleRespecWindow(part.id, isSheetLocked)}
                         className={`px-2 py-1.5 rounded-lg border flex items-center justify-center gap-1 font-bold transition ${
                           !isSheetLocked
-                            ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
-                            : 'bg-[#201D19] border-[#2F2A23] text-[#EDE6D8] hover:border-[#E0A030]'
+                            ? 'bg-accent/20 border-accent text-accent-hover'
+                            : 'bg-surface-2 border-border text-text-primary hover:border-accent'
                         }`}
                       >
                         {isSheetLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
@@ -419,9 +419,9 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                       <button
                         type="button"
                         onClick={() => setSnapshotModalChar({ participationId: part.id, characterName: char.name })}
-                        className="px-2 py-1.5 rounded-lg bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-[#EDE6D8] flex items-center justify-center gap-1 font-bold transition"
+                        className="px-2 py-1.5 rounded-lg bg-surface-2 border border-border hover:border-accent text-text-primary flex items-center justify-center gap-1 font-bold transition"
                       >
-                        <Clock className="w-3.5 h-3.5 text-[#E0A030]" />
+                        <Clock className="w-3.5 h-3.5 text-accent" />
                         <span>اسنپ‌شات‌ها (10)</span>
                       </button>
                     )}
@@ -435,7 +435,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                             onUndoLevelUp(part.id);
                           }
                         }}
-                        className="px-2 py-1.5 rounded-lg bg-[#201D19] border border-[#2F2A23] hover:border-[#C2512B] text-[#E8836B] flex items-center justify-center gap-1 font-bold transition"
+                        className="px-2 py-1.5 rounded-lg bg-surface-2 border border-border hover:border-danger text-danger flex items-center justify-center gap-1 font-bold transition"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                         <span>واگرد ارتقا (-1)</span>
@@ -445,11 +445,11 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                 </div>
 
                 {/* Bottom Actions: Award Inspiration / DM Override / Inspect */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#2F2A23] text-xs gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border text-xs gap-2">
                   <button
                     type="button"
                     onClick={() => awardInspiration(char)}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#E0A030] hover:border-[#E0A030] text-[11px] font-bold transition touch-target min-w-[44px]"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-surface-2 border border-border text-accent hover:border-accent text-xs font-bold transition touch-target min-w-[44px]"
                   >
                     <Award className="w-3.5 h-3.5" />
                     <span>اعطای الهام</span>
@@ -458,9 +458,9 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                   <button
                     type="button"
                     onClick={() => setOverrideModalChar({ character: char, participation: part })}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:text-[#E0A030] text-[11px] font-bold transition touch-target min-w-[44px]"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-surface-2 border border-border text-text-primary hover:text-accent text-xs font-bold transition touch-target min-w-[44px]"
                   >
-                    <Edit3 className="w-3.5 h-3.5 text-[#E0A030]" />
+                    <Edit3 className="w-3.5 h-3.5 text-accent" />
                     <span>ویرایش مستقیم DM</span>
                   </button>
 
@@ -468,10 +468,10 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                     <button
                       type="button"
                       onClick={() => setGrantModalChar({ participationId: part.id, characterName: char.name })}
-                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#F2C265] hover:border-[#E0A030] text-[11px] font-bold transition touch-target min-w-[44px]"
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-surface-2 border border-border text-accent-hover hover:border-accent text-xs font-bold transition touch-target min-w-[44px]"
                       title="صدور مجوز ویرایش موقت"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-[#E0A030]" />
+                      <Sparkles className="w-3.5 h-3.5 text-accent" />
                       <span>اجازه‌ی ویرایش</span>
                     </button>
                   )}
@@ -479,7 +479,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                   <button
                     type="button"
                     onClick={() => onInspectCharacter(char.id)}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:text-[#E0A030] text-[11px] font-bold transition touch-target min-w-[44px] ms-auto"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-surface-2 border border-border text-text-primary hover:text-accent text-xs font-bold transition touch-target min-w-[44px] ms-auto"
                   >
                     <span>برگه</span>
                     <ChevronRight className="w-3.5 h-3.5" />

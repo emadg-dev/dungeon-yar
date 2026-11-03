@@ -75,9 +75,9 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
       title="ویرایش مستقیم دانجن مستر (DM Override)"
       subtitle={`شخصیت: ${character.name} • ثبت شده در تاریخچه رویدادها`}
     >
-      <div className="space-y-4 py-2 text-right" dir="rtl">
-        <div className="p-3 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/40 flex items-start gap-2.5 text-xs text-[#EDE6D8]">
-          <ShieldAlert className="w-5 h-5 text-[#E8836B] shrink-0 mt-0.5" />
+      <div className="space-y-4 py-2 text-start" dir="rtl">
+        <div className="p-3 rounded-xl bg-danger/15 border border-danger/40 flex items-start gap-2.5 text-xs text-text-primary">
+          <ShieldAlert className="w-5 h-5 text-danger shrink-0 mt-0.5" />
           <p className="leading-relaxed">
             این حالت قفل قوانین را دور زده و داده‌ها را مستقیماً اصلاح می‌کند. این تغییر با عنوان «ویرایش DM» در تاریخچه رسمی شخصیت با ذکر دلیل مستند می‌گردد.
           </p>
@@ -86,52 +86,52 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-3.5">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">سطح (Level):</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">سطح (Level):</label>
               <input
                 type="number"
                 min="1"
                 max="20"
                 value={level}
                 onChange={e => setLevel(Number(e.target.value) || 1)}
-                className="w-full p-2.5 rounded-xl bg-[#10131e] border border-[#2F2A23] text-xs font-mono text-[#F2C265]"
+                className="w-full p-2.5 rounded-xl bg-info border border-border text-xs font-mono text-accent-hover"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">حداکثر جان (Max HP):</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">حداکثر جان (Max HP):</label>
               <input
                 type="number"
                 min="1"
                 value={maxHp}
                 onChange={e => setMaxHp(Number(e.target.value) || 1)}
-                className="w-full p-2.5 rounded-xl bg-[#10131e] border border-[#2F2A23] text-xs font-mono text-[#6F9E78]"
+                className="w-full p-2.5 rounded-xl bg-info border border-border text-xs font-mono text-success"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">عنوان زیرکلاس:</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">عنوان زیرکلاس:</label>
             <input
               type="text"
               value={subclassName}
               onChange={e => setSubclassName(e.target.value)}
               placeholder="مثال: قهرمان رزم، راه سایه‌ها..."
-              className="w-full p-2.5 rounded-xl bg-[#10131e] border border-[#2F2A23] text-xs text-[#EDE6D8]"
+              className="w-full p-2.5 rounded-xl bg-info border border-border text-xs text-text-primary"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1.5">امتیازات ویژگی‌های بنیادین:</label>
+            <label className="block text-xs font-bold text-text-primary mb-1.5">امتیازات ویژگی‌های بنیادین:</label>
             <div className="grid grid-cols-3 gap-2">
               {(Object.keys(abilityFa) as AbilityName[]).map(stat => (
-                <div key={stat} className="bg-[#10131e] p-2 rounded-xl border border-[#2F2A23]">
-                  <span className="text-[10px] text-[#A39A89] block">{abilityFa[stat]}</span>
+                <div key={stat} className="bg-info p-2 rounded-xl border border-border">
+                  <span className="text-xs text-text-muted block">{abilityFa[stat]}</span>
                   <input
                     type="number"
                     min="1"
                     max="30"
                     value={abilities[stat]}
                     onChange={e => setAbilities(prev => ({ ...prev, [stat]: Number(e.target.value) || 10 }))}
-                    className="w-full bg-transparent text-sm font-mono font-bold text-[#EDE6D8] focus:outline-none"
+                    className="w-full bg-transparent text-sm font-mono font-bold text-text-primary focus:outline-none"
                   />
                 </div>
               ))}
@@ -139,15 +139,15 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">وضعیت قفل برگه:</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">وضعیت قفل برگه:</label>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setSheetLocked(true)}
                 className={`flex-1 py-2 rounded-xl border text-xs font-bold transition ${
                   sheetLocked
-                    ? 'bg-[#E0A030] text-[#0E0D0C] border-[#F2C265]'
-                    : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23]'
+                    ? 'bg-accent text-on-accent border-accent-hover'
+                    : 'bg-surface-2 text-text-muted border-border'
                 }`}
               >
                 قفل استاندارد (Locked Core)
@@ -157,8 +157,8 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
                 onClick={() => setSheetLocked(false)}
                 className={`flex-1 py-2 rounded-xl border text-xs font-bold transition ${
                   !sheetLocked
-                    ? 'bg-[#6F9E78] text-[#0E0D0C] border-[#6F9E78]'
-                    : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23]'
+                    ? 'bg-success text-on-accent border-success'
+                    : 'bg-surface-2 text-text-muted border-border'
                 }`}
               >
                 ویرایش آزاد (Respec Window)
@@ -167,18 +167,18 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">دلیل ویرایش دانجن مستر (ثبت در لاگ):</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">دلیل ویرایش دانجن مستر (ثبت در لاگ):</label>
             <input
               type="text"
               value={reason}
               onChange={e => setReason(e.target.value)}
               placeholder="مثال: اصلاح امتیاز اشتباه یا پاداش اختصاصی راوی..."
-              className="w-full p-2.5 rounded-xl bg-[#10131e] border border-[#2F2A23] text-xs text-[#EDE6D8]"
+              className="w-full p-2.5 rounded-xl bg-info border border-border text-xs text-text-primary"
             />
           </div>
 
           {error && (
-            <div className="p-2.5 rounded-xl bg-[#C2512B]/20 border border-[#C2512B] text-xs text-[#E8836B] flex items-center gap-2">
+            <div className="p-2.5 rounded-xl bg-danger/20 border border-danger text-xs text-danger flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -187,7 +187,7 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-[#C2512B] to-[#E0A030] text-[#0E0D0C] font-black text-xs transition flex items-center justify-center gap-2 touch-target min-w-[44px] min-h-[48px] shadow-lg shadow-[#E0A030]/20 disabled:opacity-50"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-danger to-accent text-on-accent font-black text-xs transition flex items-center justify-center gap-2 touch-target min-w-[44px] min-h-[48px] shadow-lg shadow-accent/20 disabled:opacity-50"
           >
             <Check className="w-4 h-4" />
             <span>{isSubmitting ? 'در حال اعمال...' : 'اعمال تغییرات مستقیم و ثبت در تاریخچه'}</span>

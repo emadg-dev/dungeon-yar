@@ -259,9 +259,9 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
       title={`ارتقای سطح به سطح ${nextLevel}`}
       subtitle={`${character.name} • ${character.className}`}
     >
-      <div className="space-y-4 text-[#EDE6D8] pb-4" dir="rtl">
+      <div className="space-y-4 text-text-primary pb-4" dir="rtl">
         {/* Step Progress Stepper */}
-        <div className="flex flex-wrap items-center justify-between gap-2 gap-1 overflow-x-auto pb-1 border-b border-[#2F2A23] no-scrollbar">
+        <div className="flex flex-wrap items-center justify-between gap-2 gap-1 overflow-x-auto pb-1 border-b border-border no-scrollbar">
           {steps.map((st, idx) => {
             const isCompleted = idx < currentStepIndex;
             const isCurrent = idx === currentStepIndex;
@@ -270,12 +270,12 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                 key={st.id}
                 type="button"
                 onClick={() => setCurrentStepIndex(idx)}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold shrink-0 transition ${
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold shrink-0 transition ${
                   isCurrent
-                    ? 'bg-[#E0A030] text-[#0E0D0C]'
+                    ? 'bg-accent text-on-accent'
                     : isCompleted
-                    ? 'bg-[#6F9E78]/15 text-[#6F9E78] border border-[#6F9E78]/30'
-                    : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                    ? 'bg-success/15 text-success border border-success/30'
+                    : 'text-text-muted hover:text-text-primary'
                 }`}
               >
                 <span>{idx + 1}.</span>
@@ -288,28 +288,28 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {/* STEP 1: FEATURES & SUMMARY */}
         {currentStep.id === 'features' && (
           <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#C97B4A]/20 via-[#181c26] to-[#171513] border border-[#E0A030]/40 text-center space-y-1">
-              <div className="w-12 h-12 mx-auto rounded-full bg-[#E0A030]/20 border border-[#E0A030]/40 flex items-center justify-center text-[#F2C265]">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-warning/20 via-info to-surface border border-accent/40 text-center space-y-1">
+              <div className="w-12 h-12 mx-auto rounded-full bg-accent/20 border border-accent/40 flex items-center justify-center text-accent-hover">
                 <ArrowUpCircle className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-black text-[#F2C265]">
+              <h3 className="text-base font-black text-accent-hover">
                 صعود به سطح {nextLevel}
               </h3>
-              <p className="text-xs text-[#A39A89]">
-                بونوس مهارت (Proficiency): <span className="font-mono text-[#F2C265] font-bold">+{nextProf}</span>
-                {nextProf > currentProf && <span className="text-[#6F9E78] font-bold me-1"> (+1 افزایش!)</span>}
+              <p className="text-xs text-text-muted">
+                بونوس مهارت (Proficiency): <span className="font-mono text-accent-hover font-bold">+{nextProf}</span>
+                {nextProf > currentProf && <span className="text-success font-bold me-1"> (+1 افزایش!)</span>}
               </p>
             </div>
 
-            <div className="surface-card rounded min-h-[75vh]-xl p-3.5 border border-[#2F2A23] space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#F2C265]">
-                <Sparkles className="w-4 h-4 text-[#F2C265]" />
+            <div className="surface-card rounded min-h-[75vh]-xl p-3.5 border border-border space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-accent-hover">
+                <Sparkles className="w-4 h-4 text-accent-hover" />
                 <span>قابلیت‌های جدید سطح {nextLevel}:</span>
               </div>
               <div className="space-y-1.5">
                 {newFeatures.map((f, i) => (
-                  <div key={i} className="text-xs text-[#EDE6D8] bg-[#1a1714] p-2.5 rounded-lg border border-[#2F2A23] flex items-start gap-2">
-                    <span className="text-[#E0A030] font-black">✦</span>
+                  <div key={i} className="text-xs text-text-primary bg-surface p-2.5 rounded-lg border border-border flex items-start gap-2">
+                    <span className="text-accent font-black">✦</span>
                     <span className="leading-relaxed">{f}</span>
                   </div>
                 ))}
@@ -321,11 +321,11 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {/* STEP 2: HP GAIN WITH CON LINE BREAKDOWN */}
         {currentStep.id === 'hp' && (
           <div className="space-y-4">
-            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-[#2F2A23] space-y-3">
+            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-border space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <Heart className="w-5 h-5 text-[#E8836B]" />
-                  <span className="text-xs font-bold text-[#EDE6D8]">محاسبه افزایش جان (HP)</span>
+                  <Heart className="w-5 h-5 text-danger" />
+                  <span className="text-xs font-bold text-text-primary">محاسبه افزایش جان (HP)</span>
                 </div>
                 <div className="flex gap-1">
                   <button
@@ -333,8 +333,8 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                     onClick={() => setHpMode('fixed')}
                     className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
                       hpMode === 'fixed'
-                        ? 'bg-[#E0A030] text-[#0E0D0C]'
-                        : 'bg-[#201D19] text-[#A39A89] border border-[#3A342B]'
+                        ? 'bg-accent text-on-accent'
+                        : 'bg-surface-2 text-text-muted border border-border-strong'
                     }`}
                   >
                     مقدار ثابت (Fixed)
@@ -344,8 +344,8 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                     onClick={() => setHpMode('roll')}
                     className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
                       hpMode === 'roll'
-                        ? 'bg-[#E0A030] text-[#0E0D0C]'
-                        : 'bg-[#201D19] text-[#A39A89] border border-[#3A342B]'
+                        ? 'bg-accent text-on-accent'
+                        : 'bg-surface-2 text-text-muted border border-border-strong'
                     }`}
                   >
                     پرتاب تاس (Roll)
@@ -354,31 +354,31 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               </div>
 
               {/* CON Breakdown formula display */}
-              <div className="p-3 rounded-xl bg-[#131110] border border-[#2F2A23] space-y-2">
-                <span className="text-[11px] text-[#A39A89] block">فرمول استاندارد 5e: تاس جان (1d{hitDie}) + اصلاحگر بنیه</span>
+              <div className="p-3 rounded-xl bg-bg border border-border space-y-2">
+                <span className="text-xs text-text-muted block">فرمول استاندارد 5e: تاس جان (1d{hitDie}) + اصلاحگر بنیه</span>
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <span className="text-[#A39A89]">اصلاحگر بنیه (CON {conScore}):</span>
-                  <span className="font-mono font-bold text-[#F2C265]">
+                  <span className="text-text-muted">اصلاحگر بنیه (CON {conScore}):</span>
+                  <span className="font-mono font-bold text-accent-hover">
                     {conMod >= 0 ? `+${conMod}` : conMod}
                   </span>
                 </div>
 
                 {hpMode === 'fixed' ? (
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1 border-t border-[#2F2A23]/60">
-                    <span className="text-[#A39A89]">محاسبه مقدار ثابت:</span>
-                    <span className="font-mono font-bold text-[#EDE6D8]">
-                      پایه ({fixedHpRoll}) + بنیه ({conMod >= 0 ? `+${conMod}` : conMod}) = <strong className="text-[#6F9E78]">+{fixedHpTotal} جان</strong>
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1 border-t border-border/60">
+                    <span className="text-text-muted">محاسبه مقدار ثابت:</span>
+                    <span className="font-mono font-bold text-text-primary">
+                      پایه ({fixedHpRoll}) + بنیه ({conMod >= 0 ? `+${conMod}` : conMod}) = <strong className="text-success">+{fixedHpTotal} جان</strong>
                     </span>
                   </div>
                 ) : (
-                  <div className="space-y-2 pt-2 border-t border-[#2F2A23]/60">
+                  <div className="space-y-2 pt-2 border-t border-border/60">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-xs text-[#A39A89]">نتیجه تاس 1d{hitDie}:</span>
-                      <span className="font-mono text-base font-black text-[#F2C265]">{rolledHpValue}</span>
+                      <span className="text-xs text-text-muted">نتیجه تاس 1d{hitDie}:</span>
+                      <span className="font-mono text-base font-black text-accent-hover">{rolledHpValue}</span>
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-xs text-[#A39A89]">جمع کل با بنیه:</span>
-                      <span className="font-mono text-sm font-bold text-[#6F9E78]">
+                      <span className="text-xs text-text-muted">جمع کل با بنیه:</span>
+                      <span className="font-mono text-sm font-bold text-success">
                         +{Math.max(1, rolledHpValue + conMod)} جان
                       </span>
                     </div>
@@ -386,7 +386,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                       type="button"
                       onClick={handleRollHp}
                       disabled={isRollingHp}
-                      className="w-full py-2 rounded-xl bg-[#201D19] border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/15 transition"
+                      className="w-full py-2 rounded-xl bg-surface-2 border border-accent/40 text-accent-hover text-xs font-bold hover:bg-accent/15 transition"
                     >
                       {isRollingHp ? 'در حال پرتاب تاس...' : `پرتاب مجدد تاس 1d${hitDie}`}
                     </button>
@@ -394,9 +394,9 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                 )}
               </div>
 
-              <div className="p-2.5 rounded-lg bg-[#6F9E78]/10 border border-[#6F9E78]/30 flex flex-wrap items-center justify-between gap-2">
-                <span className="text-xs text-[#A39A89]">حداکثر جان بعد از ارتقا:</span>
-                <span className="font-mono text-sm font-black text-[#6F9E78]">
+              <div className="p-2.5 rounded-lg bg-success/10 border border-success/30 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs text-text-muted">حداکثر جان بعد از ارتقا:</span>
+                <span className="font-mono text-sm font-black text-success">
                   {activeParticipation.maxHp} → {activeParticipation.maxHp + (hpMode === 'fixed' ? fixedHpTotal : Math.max(1, rolledHpValue + conMod))} HP
                 </span>
               </div>
@@ -407,20 +407,20 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {/* STEP 3: ASI SCREEN (CAPPED AT 20, FEATS HIDDEN) */}
         {currentStep.id === 'asi' && (
           <div className="space-y-4">
-            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-[#2F2A23] space-y-3">
+            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-border space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <Dumbbell className="w-5 h-5 text-[#E0A030]" />
-                  <span className="text-xs font-bold text-[#EDE6D8]">بهبود ویژگی‌ها (ASI)</span>
+                  <Dumbbell className="w-5 h-5 text-accent" />
+                  <span className="text-xs font-bold text-text-primary">بهبود ویژگی‌ها (ASI)</span>
                 </div>
-                <div className="flex gap-1 text-[11px]">
+                <div className="flex gap-1 text-xs">
                   <button
                     type="button"
                     onClick={() => setAsiMode('plus2')}
                     className={`px-2.5 py-1 rounded-lg border font-bold transition ${
                       asiMode === 'plus2'
-                        ? 'bg-[#E0A030] text-[#0E0D0C] border-[#F2C265]'
-                        : 'bg-[#201D19] text-[#A39A89] border-[#3A342B]'
+                        ? 'bg-accent text-on-accent border-accent-hover'
+                        : 'bg-surface-2 text-text-muted border-border-strong'
                     }`}
                   >
                     +2 به یک ویژگی
@@ -430,8 +430,8 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                     onClick={() => setAsiMode('plus1plus1')}
                     className={`px-2.5 py-1 rounded-lg border font-bold transition ${
                       asiMode === 'plus1plus1'
-                        ? 'bg-[#E0A030] text-[#0E0D0C] border-[#F2C265]'
-                        : 'bg-[#201D19] text-[#A39A89] border-[#3A342B]'
+                        ? 'bg-accent text-on-accent border-accent-hover'
+                        : 'bg-surface-2 text-text-muted border-border-strong'
                     }`}
                   >
                     +1 به دو ویژگی
@@ -439,17 +439,17 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                 </div>
               </div>
 
-              <p className="text-[11px] text-[#A39A89] leading-relaxed">
+              <p className="text-xs text-text-muted leading-relaxed">
                 طبق قوانین رسمی 5e، سقف طبیعی هر ویژگی برابر 20 است. در این کمپین فیت‌ها (Feats) غیرفعال بوده و تنها ارتقای مستقیم امتیازات ویژگی مجاز است.
               </p>
 
               {asiMode === 'plus2' ? (
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-[#EDE6D8]">انتخاب ویژگی (+2):</label>
+                  <label className="block text-xs font-bold text-text-primary">انتخاب ویژگی (+2):</label>
                   <select
                     value={asiStat1}
                     onChange={(e) => setAsiStat1(e.target.value as AbilityName)}
-                    className="w-full p-2.5 rounded-xl bg-[#10131e] border border-[#3A342B] text-xs text-[#EDE6D8]"
+                    className="w-full p-2.5 rounded-xl bg-info border border-border-strong text-xs text-text-primary"
                   >
                     {(Object.keys(abilityFa) as AbilityName[]).map(stat => {
                       const cur = currentAbilityScore(stat);
@@ -465,11 +465,11 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-[#EDE6D8]">ویژگی اول (+1):</label>
+                    <label className="block text-xs font-bold text-text-primary">ویژگی اول (+1):</label>
                     <select
                       value={asiStat1}
                       onChange={(e) => setAsiStat1(e.target.value as AbilityName)}
-                      className="w-full p-2.5 rounded-xl bg-[#10131e] border border-[#3A342B] text-xs text-[#EDE6D8]"
+                      className="w-full p-2.5 rounded-xl bg-info border border-border-strong text-xs text-text-primary"
                     >
                       {(Object.keys(abilityFa) as AbilityName[]).map(stat => {
                         const cur = currentAbilityScore(stat);
@@ -483,11 +483,11 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-[#EDE6D8]">ویژگی دوم (+1):</label>
+                    <label className="block text-xs font-bold text-text-primary">ویژگی دوم (+1):</label>
                     <select
                       value={asiStat2}
                       onChange={(e) => setAsiStat2(e.target.value as AbilityName)}
-                      className="w-full p-2.5 rounded-xl bg-[#10131e] border border-[#3A342B] text-xs text-[#EDE6D8]"
+                      className="w-full p-2.5 rounded-xl bg-info border border-border-strong text-xs text-text-primary"
                     >
                       {(Object.keys(abilityFa) as AbilityName[]).map(stat => {
                         const cur = currentAbilityScore(stat);
@@ -508,12 +508,12 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {/* STEP 4: SUBCLASS UNLOCK */}
         {currentStep.id === 'subclass' && (
           <div className="space-y-4">
-            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-[#2F2A23] space-y-3">
+            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-border space-y-3">
               <div className="flex items-center gap-2">
-                <Star className="w-5 h-5 text-[#E0A030]" />
-                <span className="text-xs font-bold text-[#EDE6D8]">انتخاب زیرکلاس اختصاصی (سطح 3)</span>
+                <Star className="w-5 h-5 text-accent" />
+                <span className="text-xs font-bold text-text-primary">انتخاب زیرکلاس اختصاصی (سطح 3)</span>
               </div>
-              <p className="text-[11px] text-[#A39A89]">
+              <p className="text-xs text-text-muted">
                 با رسیدن به سطح 3، مسیر تخصصی خود را برای کلاس {character.className} برگزینید.
               </p>
 
@@ -527,12 +527,12 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                       onClick={() => setChosenSubclass(sub.name)}
                       className={`w-full text-start p-3 rounded-xl border transition ${
                         isSelected
-                          ? 'bg-[#E0A030]/20 border-[#F2C265] text-[#F2C265]'
-                          : 'bg-[#171513] border-[#2F2A23] text-[#EDE6D8]'
+                          ? 'bg-accent/20 border-accent-hover text-accent-hover'
+                          : 'bg-surface border-border text-text-primary'
                       }`}
                     >
                       <div className="text-xs font-black">{sub.name}</div>
-                      {sub.desc && <p className="text-[11px] text-[#A39A89] mt-1 leading-relaxed">{sub.desc}</p>}
+                      {sub.desc && <p className="text-xs text-text-muted mt-1 leading-relaxed">{sub.desc}</p>}
                     </button>
                   );
                 })}
@@ -544,12 +544,12 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {/* STEP 5: SPELLS (FOR CASTERS) */}
         {currentStep.id === 'spells' && (
           <div className="space-y-4">
-            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-[#2F2A23] space-y-3">
+            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-border space-y-3">
               <div className="flex items-center gap-2">
-                <Wand2 className="w-5 h-5 text-[#7FB4D6]" />
-                <span className="text-xs font-bold text-[#EDE6D8]">طلسم‌های آموخته‌شده یا آماده جدید</span>
+                <Wand2 className="w-5 h-5 text-info" />
+                <span className="text-xs font-bold text-text-primary">طلسم‌های آموخته‌شده یا آماده جدید</span>
               </div>
-              <p className="text-[11px] text-[#A39A89]">
+              <p className="text-xs text-text-muted">
                 طلسم‌های جدید مجاز در این سطح را وارد کنید یا ذخیره نمایید.
               </p>
 
@@ -559,7 +559,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   value={newSpellInput}
                   onChange={e => setNewSpellInput(e.target.value)}
                   placeholder="نام طلسم جدید (مثال: Fireball یا پرتو جادویی)..."
-                  className="flex-1 p-2 rounded-xl bg-[#10131e] border border-[#2F2A23] text-xs text-[#EDE6D8]"
+                  className="flex-1 p-2 rounded-xl bg-info border border-border text-xs text-text-primary"
                   onKeyDown={e => {
                     if (e.key === 'Enter' && newSpellInput.trim()) {
                       e.preventDefault();
@@ -576,7 +576,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                       setNewSpellInput('');
                     }
                   }}
-                  className="px-3 py-2 rounded-xl bg-[#7FB4D6]/20 border border-[#7FB4D6]/40 text-[#7FB4D6] text-xs font-bold"
+                  className="px-3 py-2 rounded-xl bg-info/20 border border-info/40 text-info text-xs font-bold"
                 >
                   افزودن
                 </button>
@@ -587,13 +587,13 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   {learnedSpells.map((sp, idx) => (
                     <span
                       key={idx}
-                      className="px-2.5 py-1 rounded-lg bg-[#7FB4D6]/15 border border-[#7FB4D6]/30 text-xs text-[#7FB4D6] flex items-center gap-1.5"
+                      className="px-2.5 py-1 rounded-lg bg-info/15 border border-info/30 text-xs text-info flex items-center gap-1.5"
                     >
                       <span>{sp}</span>
                       <button
                         type="button"
                         onClick={() => setLearnedSpells(prev => prev.filter((_, i) => i !== idx))}
-                        className="text-[#E8836B] hover:text-[#C2512B]"
+                        className="text-danger hover:text-danger"
                       >
                         ×
                       </button>
@@ -608,30 +608,30 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {/* STEP 6: COMPANIONS & RESOURCES AUTO-RECALC */}
         {currentStep.id === 'resources' && (
           <div className="space-y-4">
-            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-[#2F2A23] space-y-3">
+            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-border space-y-3">
               <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-[#E0A030]" />
-                <span className="text-xs font-bold text-[#EDE6D8]">محاسبه خودکار همراهان و مخازن منابع</span>
+                <Users className="w-5 h-5 text-accent" />
+                <span className="text-xs font-bold text-text-primary">محاسبه خودکار همراهان و مخازن منابع</span>
               </div>
-              <p className="text-[11px] text-[#A39A89] leading-relaxed">
+              <p className="text-xs text-text-muted leading-relaxed">
                 تاس‌های جان و ظرفیت منابع متناسب با سطح {nextLevel} به‌طور خودکار افزایش می‌یابند:
               </p>
 
               <div className="space-y-2 text-xs">
-                <div className="p-2.5 rounded-lg bg-[#141822] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-[#A39A89]">تاس‌های جان (Hit Dice):</span>
-                  <span className="font-mono font-bold text-[#EDE6D8]">
-                    {currentLevel}d{hitDie} → <strong className="text-[#6F9E78]">{nextLevel}d{hitDie}</strong>
+                <div className="p-2.5 rounded-lg bg-info border border-border flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-text-muted">تاس‌های جان (Hit Dice):</span>
+                  <span className="font-mono font-bold text-text-primary">
+                    {currentLevel}d{hitDie} → <strong className="text-success">{nextLevel}d{hitDie}</strong>
                   </span>
                 </div>
 
                 {character.companions && character.companions.length > 0 && (
-                  <div className="p-2.5 rounded-lg bg-[#141822] border border-[#2F2A23] space-y-1.5">
-                    <span className="text-xs font-bold text-[#F2C265] block">همراهان ارتقایافته:</span>
+                  <div className="p-2.5 rounded-lg bg-info border border-border space-y-1.5">
+                    <span className="text-xs font-bold text-accent-hover block">همراهان ارتقایافته:</span>
                     {character.companions.map((comp, idx) => (
-                      <div key={idx} className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#C9C0AE]">
+                      <div key={idx} className="flex flex-wrap items-center justify-between gap-2 text-xs text-text-primary">
                         <span>{comp.name} ({comp.type})</span>
-                        <span className="text-[#6F9E78] font-bold">همگام با سطح کاراکتر</span>
+                        <span className="text-success font-bold">همگام با سطح کاراکتر</span>
                       </div>
                     ))}
                   </div>
@@ -644,66 +644,66 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {/* STEP 7: REVIEW & CONFIRM */}
         {currentStep.id === 'review' && (
           <div className="space-y-4">
-            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-[#E0A030]/40 space-y-3">
+            <div className="surface-card rounded min-h-[75vh]-xl p-4 border border-accent/40 space-y-3">
               <div className="flex items-center gap-2">
-                <Check className="w-5 h-5 text-[#6F9E78]" />
-                <span className="text-xs font-bold text-[#EDE6D8]">بازبینی و مقایسه تغییرات (قبل و بعد)</span>
+                <Check className="w-5 h-5 text-success" />
+                <span className="text-xs font-bold text-text-primary">بازبینی و مقایسه تغییرات (قبل و بعد)</span>
               </div>
 
               {diffResult ? (
                 <div className="space-y-2 text-xs">
-                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-[#141822] border border-[#2F2A23]">
+                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-info border border-border">
                     <div>
-                      <span className="text-[10px] text-[#A39A89] block">سطح کاراکتر:</span>
-                      <span className="font-mono font-bold text-[#EDE6D8]">{diffResult.diff.fromLevel} → <strong className="text-[#F2C265]">{diffResult.diff.toLevel}</strong></span>
+                      <span className="text-xs text-text-muted block">سطح کاراکتر:</span>
+                      <span className="font-mono font-bold text-text-primary">{diffResult.diff.fromLevel} → <strong className="text-accent-hover">{diffResult.diff.toLevel}</strong></span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-[#A39A89] block">بونوس مهارت:</span>
-                      <span className="font-mono font-bold text-[#EDE6D8]">+{diffResult.diff.oldProfBonus} → <strong className="text-[#6F9E78]">+{diffResult.diff.newProfBonus}</strong></span>
+                      <span className="text-xs text-text-muted block">بونوس مهارت:</span>
+                      <span className="font-mono font-bold text-text-primary">+{diffResult.diff.oldProfBonus} → <strong className="text-success">+{diffResult.diff.newProfBonus}</strong></span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-[#A39A89] block">حداکثر جان (HP):</span>
-                      <span className="font-mono font-bold text-[#EDE6D8]">{diffResult.diff.oldMaxHp} → <strong className="text-[#6F9E78]">+{diffResult.diff.hpGain} ({diffResult.diff.newMaxHp})</strong></span>
+                      <span className="text-xs text-text-muted block">حداکثر جان (HP):</span>
+                      <span className="font-mono font-bold text-text-primary">{diffResult.diff.oldMaxHp} → <strong className="text-success">+{diffResult.diff.hpGain} ({diffResult.diff.newMaxHp})</strong></span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-[#A39A89] block">تاس جان:</span>
-                      <span className="font-mono font-bold text-[#EDE6D8]">{diffResult.diff.fromLevel}d{hitDie} → <strong className="text-[#F2C265]">{diffResult.diff.toLevel}d{hitDie}</strong></span>
+                      <span className="text-xs text-text-muted block">تاس جان:</span>
+                      <span className="font-mono font-bold text-text-primary">{diffResult.diff.fromLevel}d{hitDie} → <strong className="text-accent-hover">{diffResult.diff.toLevel}d{hitDie}</strong></span>
                     </div>
                   </div>
 
                   {diffResult.diff.abilityChanges && Object.keys(diffResult.diff.abilityChanges).length > 0 && (
-                    <div className="p-2.5 rounded-lg bg-[#141822] border border-[#2F2A23] space-y-1">
-                      <span className="text-[10px] text-[#A39A89] block font-bold">تغییرات ویژگی‌های بنیادین (ASI):</span>
+                    <div className="p-2.5 rounded-lg bg-info border border-border space-y-1">
+                      <span className="text-xs text-text-muted block font-bold">تغییرات ویژگی‌های بنیادین (ASI):</span>
                       {Object.entries(diffResult.diff.abilityChanges).map(([stat, val]) => (
                         <div key={stat} className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                          <span className="text-[#EDE6D8]">{abilityFa[stat as AbilityName]}:</span>
-                          <span className="font-mono text-[#F2C265] font-bold">{val?.before} → {val?.after}</span>
+                          <span className="text-text-primary">{abilityFa[stat as AbilityName]}:</span>
+                          <span className="font-mono text-accent-hover font-bold">{val?.before} → {val?.after}</span>
                         </div>
                       ))}
                     </div>
                   )}
 
                   {diffResult.diff.unlockedSubclass && (
-                    <div className="p-2 rounded-lg bg-[#E0A030]/10 border border-[#E0A030]/30 text-xs text-[#F2C265]">
+                    <div className="p-2 rounded-lg bg-accent/10 border border-accent/30 text-xs text-accent-hover">
                       زیرکلاس جدید: <strong>{diffResult.diff.unlockedSubclass}</strong>
                     </div>
                   )}
 
                   {campaign?.settings?.approval?.onLevelUp && (
-                    <div className="p-2.5 rounded-lg bg-[#7FB4D6]/10 border border-[#7FB4D6]/30 text-[11px] text-[#7FB4D6] flex items-center gap-2">
+                    <div className="p-2.5 rounded-lg bg-info/10 border border-info/30 text-xs text-info flex items-center gap-2">
                       <Shield className="w-4 h-4 shrink-0" />
                       <span>این کمپین نیازمند تأیید رسمی راوی (DM) است. پس از ارسال، درخواست در صف بررسی قرار خواهد گرفت.</span>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="text-xs text-[#E8836B] p-2 rounded-lg bg-[#C2512B]/10 border border-[#C2512B]/30">
+                <div className="text-xs text-danger p-2 rounded-lg bg-danger/10 border border-danger/30">
                   خطا در محاسبه تفاوت‌های ارتقا. لطفاً مقادیر ورودی را بررسی نمایید.
                 </div>
               )}
 
               {submitError && (
-                <div className="p-2.5 rounded-lg bg-[#C2512B]/20 border border-[#C2512B] text-xs text-[#E8836B] flex items-center gap-2">
+                <div className="p-2.5 rounded-lg bg-danger/20 border border-danger text-xs text-danger flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{submitError}</span>
                 </div>
@@ -713,12 +713,12 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         )}
 
         {/* Stepper Navigation Buttons */}
-        <div className="flex flex-wrap items-center justify-between gap-2 gap-3 pt-3 border-t border-[#2F2A23]">
+        <div className="flex flex-wrap items-center justify-between gap-2 gap-3 pt-3 border-t border-border">
           {currentStepIndex > 0 ? (
             <button
               type="button"
               onClick={handleBack}
-              className="px-4 py-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#EDE6D8] hover:border-[#E0A030] transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
+              className="px-4 py-2.5 rounded-xl bg-surface-2 border border-border text-xs font-bold text-text-primary hover:border-accent transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
             >
               <ChevronRight className="w-4 h-4" />
               <span>مرحله قبل</span>
@@ -731,7 +731,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
             <button
               type="button"
               onClick={handleNext}
-              className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-extrabold hover:bg-[#F2C265] transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px] shadow-lg shadow-[#E0A030]/20"
+              className="px-5 py-2.5 rounded-xl bg-accent text-on-accent text-xs font-extrabold hover:bg-accent-hover transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px] shadow-lg shadow-accent/20"
             >
               <span>مرحله بعد</span>
               <ChevronLeft className="w-4 h-4" />
@@ -741,7 +741,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               type="button"
               disabled={isSubmitting}
               onClick={handleSubmit}
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] text-xs font-black transition flex items-center gap-2 touch-target min-w-[44px] min-h-[44px] shadow-lg shadow-[#E0A030]/30 disabled:opacity-50"
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-warning to-accent hover:from-accent hover:to-accent-hover text-on-accent text-xs font-black transition flex items-center gap-2 touch-target min-w-[44px] min-h-[44px] shadow-lg shadow-accent/30 disabled:opacity-50"
             >
               <Check className="w-4 h-4" />
               <span>{isSubmitting ? 'در حال ثبت ارتقا...' : `تأیید و صعود به سطح ${nextLevel}`}</span>

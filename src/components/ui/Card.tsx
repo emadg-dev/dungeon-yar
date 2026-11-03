@@ -10,10 +10,10 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles: Record<CardVariant, string> = {
-  surface: 'bg-[#171513] border border-stone-800/80 shadow-md',
-  'surface-2': 'bg-[#1E1B18] border border-stone-800/60',
-  glass: 'bg-stone-900/80 border border-white/5 shadow-xl',
-  outlined: 'bg-transparent border border-stone-800',
+  surface: 'bg-surface border border-border shadow-card',
+  'surface-2': 'bg-surface-2 border border-border-subtle shadow-sm',
+  glass: 'glass-card',
+  outlined: 'bg-transparent border border-border',
 };
 
 const paddingStyles = {
@@ -57,7 +57,7 @@ export const Card: React.FC<CardProps> = ({
         hasGoldTop ? 'card-gold-top' : ''
       } ${
         isClickable
-          ? 'cursor-pointer hover:border-amber-500/40 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-amber-400'
+          ? 'cursor-pointer hover:border-accent/40 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-accent'
           : ''
       } ${className}`}
       {...rest}

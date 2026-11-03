@@ -99,32 +99,32 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
   return (
     <div className="space-y-4 pb-12" dir="rtl">
       {/* Search & Filter Header */}
-      <div className="surface-card p-3 rounded-[16px] border border-[#2F2A23] space-y-2.5">
+      <div className="surface-card p-3 rounded-[16px] border border-border space-y-2.5">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           {/* Search bar */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-[#A39A89] absolute start-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-text-muted absolute start-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="جستجو در اسناد و نقشه‌ها..."
-              className="w-full ps-9 pe-3 py-2 bg-[#14120E] border border-[#2F2A23] rounded-[10px] text-xs text-white placeholder-[#787063] focus:outline-none focus:border-[#E0A030]"
+              className="w-full ps-9 pe-3 py-2 bg-bg border border-border rounded-[10px] text-xs text-white placeholder-border-strong focus:outline-none focus:border-accent"
             />
           </div>
 
           {/* Filter Pills */}
           <ScrollableRow
             activeKey={kindFilter}
-            wrapperClassName="bg-[#14120E] p-1 rounded-[10px] border border-[#2F2A23] shrink-0"
+            wrapperClassName="bg-bg p-1 rounded-[10px] border border-border shrink-0"
             className="gap-1"
           >
             <button
               type="button"
               data-scroll-key="all"
               onClick={() => setKindFilter('all')}
-              className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
-                kindFilter === 'all' ? 'bg-[#E0A030] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              className={`px-3 py-1.5 rounded-[8px] text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
+                kindFilter === 'all' ? 'bg-accent text-on-accent' : 'text-text-muted hover:text-text-primary'
               }`}
             >
               همه ({handouts.length})
@@ -133,8 +133,8 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
               type="button"
               data-scroll-key="map"
               onClick={() => setKindFilter('map')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition inline-flex items-center gap-1 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
-                kindFilter === 'map' ? 'bg-[#4ADE80] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition inline-flex items-center gap-1 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
+                kindFilter === 'map' ? 'bg-success text-on-accent' : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <MapIcon className="w-3.5 h-3.5 shrink-0" />
@@ -144,8 +144,8 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
               type="button"
               data-scroll-key="image"
               onClick={() => setKindFilter('image')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition inline-flex items-center gap-1 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
-                kindFilter === 'image' ? 'bg-[#38BDF8] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition inline-flex items-center gap-1 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
+                kindFilter === 'image' ? 'bg-info text-on-accent' : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <ImageIcon className="w-3.5 h-3.5 shrink-0" />
@@ -155,8 +155,8 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
               type="button"
               data-scroll-key="text"
               onClick={() => setKindFilter('text')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition inline-flex items-center gap-1 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
-                kindFilter === 'text' ? 'bg-[#E0A030] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition inline-flex items-center gap-1 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
+                kindFilter === 'text' ? 'bg-accent text-on-accent' : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <FileText className="w-3.5 h-3.5 shrink-0" />
@@ -168,17 +168,17 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
         {/* Tag Pills */}
         {allTags.length > 0 && (
           <ScrollableRow activeKey={selectedTag || 'all'} className="gap-1.5 pt-1">
-            <span className="text-[10px] text-[#A39A89] whitespace-nowrap shrink-0 self-center">دسته‌بندی:</span>
+            <span className="text-xs text-text-muted whitespace-nowrap shrink-0 self-center">دسته‌بندی:</span>
             {allTags.map(tag => (
               <button
                 key={tag}
                 type="button"
                 data-scroll-key={tag}
                 onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition whitespace-nowrap shrink-0 snap-start min-h-[36px] sm:min-h-[44px] inline-flex items-center ${
+                className={`px-2.5 py-1 rounded-full text-xs font-medium border transition whitespace-nowrap shrink-0 snap-start min-h-[36px] sm:min-h-[44px] inline-flex items-center ${
                   selectedTag === tag
-                    ? 'bg-[#E0A030] text-[#14120E] border-[#E0A030]'
-                    : 'bg-[#14120E] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
+                    ? 'bg-accent text-on-accent border-accent'
+                    : 'bg-bg text-text-muted border-border hover:text-text-primary'
                 }`}
               >
                 #{tag}
@@ -190,16 +190,16 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
 
       {/* Handouts Grid / List */}
       {loading ? (
-        <div className="p-10 text-center text-xs text-[#A39A89] animate-pulse">
+        <div className="p-10 text-center text-xs text-text-muted animate-pulse">
           در حال بارگذاری اسناد و نقشه‌ها...
         </div>
       ) : filteredHandouts.length === 0 ? (
-        <div className="surface-card p-8 rounded-[16px] border border-[#2F2A23] text-center space-y-3">
-          <div className="w-14 h-14 rounded-full bg-[#1C1813] border border-[#2F2A23] flex items-center justify-center mx-auto text-[#A39A89]">
-            <MapIcon className="w-7 h-7 opacity-30 text-[#E0A030]" />
+        <div className="surface-card p-8 rounded-[16px] border border-border text-center space-y-3">
+          <div className="w-14 h-14 rounded-full bg-surface border border-border flex items-center justify-center mx-auto text-text-muted">
+            <MapIcon className="w-7 h-7 opacity-30 text-accent" />
           </div>
-          <h3 className="text-sm font-bold text-[#EDE6D8]">سند یا نقشه‌ای یافت نشد</h3>
-          <p className="text-xs text-[#A39A89] max-w-sm mx-auto">
+          <h3 className="text-sm font-bold text-text-primary">سند یا نقشه‌ای یافت نشد</h3>
+          <p className="text-xs text-text-muted max-w-sm mx-auto">
             هر سندی که دانجن‌مستر در طول ماجراجویی برای شما یا کل گروه آشکار کند، در این بخش نمایش داده خواهد شد.
           </p>
         </div>
@@ -215,21 +215,21 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
             }[handout.kind];
 
             const kindIcon = {
-              text: <FileText className="w-4 h-4 text-[#E0A030]" />,
-              image: <ImageIcon className="w-4 h-4 text-[#38BDF8]" />,
-              map: <MapIcon className="w-4 h-4 text-[#4ADE80]" />,
+              text: <FileText className="w-4 h-4 text-accent" />,
+              image: <ImageIcon className="w-4 h-4 text-info" />,
+              map: <MapIcon className="w-4 h-4 text-success" />,
             }[handout.kind];
 
             return (
               <div
                 key={handout.id}
                 onClick={() => handleOpenHandout(handout)}
-                className="surface-card p-3.5 rounded-[16px] border border-[#2F2A23] hover:border-[#E0A030]/60 active:scale-[0.99] transition cursor-pointer flex flex-col justify-between group shadow-md"
+                className="surface-card p-3.5 rounded-[16px] border border-border hover:border-accent/60 active:scale-[0.99] transition cursor-pointer flex flex-col justify-between group shadow-md"
               >
                 <div className="space-y-2.5">
                   {/* Top Thumbnail (if image or map) */}
                   {(handout.mediaUrl || handout.mediaId) && (
-                    <div className="relative w-full h-32 rounded-[10px] overflow-hidden bg-[#14120E] border border-[#2F2A23]">
+                    <div className="relative w-full h-32 rounded-[10px] overflow-hidden bg-bg border border-border">
                       <img
                         src={handout.mediaUrl || `/api/media/${handout.mediaId}`}
                         alt={handout.title}
@@ -240,7 +240,7 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
                         className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                       />
                       {isUnread && (
-                        <div className="absolute top-2 start-2 bg-[#E0A030] text-[#14120E] text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1 animate-pulse">
+                        <div className="absolute top-2 start-2 bg-accent text-on-accent text-xs font-black px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1 animate-pulse">
                           <Sparkles className="w-2.5 h-2.5" />
                           <span>جدید</span>
                         </div>
@@ -250,19 +250,19 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
 
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-8 h-8 rounded-[8px] bg-[#14120E] border border-[#2F2A23] flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-[8px] bg-bg border border-border flex items-center justify-center shrink-0">
                         {kindIcon}
                       </div>
                       <div className="min-w-0">
-                        <h4 className="font-bold text-sm text-[#EDE6D8] group-hover:text-[#E0A030] transition truncate">
+                        <h4 className="font-bold text-sm text-text-primary group-hover:text-accent transition truncate">
                           {handout.title}
                         </h4>
-                        <span className="text-[10px] text-[#A39A89]">{kindLabel}</span>
+                        <span className="text-xs text-text-muted">{kindLabel}</span>
                       </div>
                     </div>
 
                     {isUnread && !(handout.mediaUrl || handout.mediaId) && (
-                      <span className="bg-[#E0A030] text-[#14120E] text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 flex items-center gap-1">
+                      <span className="bg-accent text-on-accent text-xs font-black px-2 py-0.5 rounded-full shrink-0 flex items-center gap-1">
                         <Sparkles className="w-2.5 h-2.5" />
                         <span>جدید</span>
                       </span>
@@ -271,14 +271,14 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
 
                   {/* Text snippet */}
                   {handout.kind === 'text' && handout.body && (
-                    <p className="text-xs text-[#A39A89] line-clamp-2 leading-relaxed font-serif">
+                    <p className="text-xs text-text-muted line-clamp-2 leading-relaxed font-serif">
                       {handout.body}
                     </p>
                   )}
 
                   {/* Map Pins Info */}
                   {handout.kind === 'map' && handout.pins && (
-                    <div className="flex items-center gap-1 text-[11px] text-[#4ADE80]">
+                    <div className="flex items-center gap-1 text-xs text-success">
                       <MapPin className="w-3.5 h-3.5" />
                       <span>{handout.pins.length} نشانگر ثبت‌شده روی نقشه</span>
                     </div>
@@ -286,16 +286,16 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
                 </div>
 
                 {/* Footer Tags & Action */}
-                <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-[#2F2A23]/60 text-[11px]">
+                <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-border/60 text-xs">
                   <div className="flex items-center gap-1 overflow-hidden truncate">
                     {handout.tags && handout.tags.slice(0, 2).map(tag => (
-                      <span key={tag} className="text-[#A39A89] text-[10px]">
+                      <span key={tag} className="text-text-muted text-xs">
                         #{tag}
                       </span>
                     ))}
                   </div>
 
-                  <span className="text-[#E0A030] group-hover:translate-x-[-2px] transition flex items-center gap-1 text-xs font-semibold shrink-0">
+                  <span className="text-accent group-hover:translate-x-[-2px] transition flex items-center gap-1 text-xs font-semibold shrink-0">
                     <span>مشاهده</span>
                     <ChevronLeft className="w-3.5 h-3.5" />
                   </span>

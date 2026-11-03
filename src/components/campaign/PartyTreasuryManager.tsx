@@ -307,27 +307,27 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
   return (
     <div className="space-y-4" dir="rtl">
       {/* Treasury Header */}
-      <div className="surface-card rounded-[14px] p-4 border border-[#2F2A23] flex flex-wrap items-center justify-between gap-3">
+      <div className="surface-card rounded-[14px] p-4 border border-border flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-[#E0A030]">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-accent">
             <Coins className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-extrabold text-base text-[#EDE6D8]">خزانه مشترک گروه</h3>
+              <h3 className="font-extrabold text-base text-text-primary">خزانه مشترک گروه</h3>
               {isLocked ? (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-950/40 border border-red-800/40 text-red-400 font-bold flex items-center gap-1">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-red-950/40 border border-red-800/40 text-red-400 font-bold flex items-center gap-1">
                   <Lock className="w-3 h-3" />
                   <span>قفل شده</span>
                 </span>
               ) : (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 font-bold flex items-center gap-1">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 font-bold flex items-center gap-1">
                   <Unlock className="w-3 h-3" />
                   <span>آزاد برای اعضا</span>
                 </span>
               )}
             </div>
-            <p className="text-xs text-[#A39A89]">
+            <p className="text-xs text-text-muted">
               صندوق غنائم، سکه‌ها و آذوقه اشتراکی تمام هم‌سفران با ثبت شفاف تاریخچه رویدادها
             </p>
           </div>
@@ -338,7 +338,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
             type="button"
             onClick={loadData}
             title="بازخوانی خزانه"
-            className="p-2 rounded-lg bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] transition"
+            className="p-2 rounded-lg bg-surface-2 border border-border text-text-muted hover:text-text-primary transition"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -346,9 +346,9 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
           <button
             type="button"
             onClick={handleOpenLogs}
-            className="px-3 py-2 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#EDE6D8] hover:bg-[#2B2620] flex items-center gap-1.5 transition"
+            className="px-3 py-2 rounded-xl bg-surface-2 border border-border text-xs font-bold text-text-primary hover:bg-surface-2 flex items-center gap-1.5 transition"
           >
-            <History className="w-3.5 h-3.5 text-[#E0A030]" />
+            <History className="w-3.5 h-3.5 text-accent" />
             <span>گزارش فعالیت‌ها</span>
           </button>
 
@@ -356,7 +356,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
             <button
               type="button"
               onClick={() => setAddItemModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-extrabold text-xs flex items-center gap-1.5 shadow-sm hover:brightness-110 active:scale-95 transition"
+              className="px-3.5 py-2 rounded-xl bg-accent text-on-accent font-extrabold text-xs flex items-center gap-1.5 shadow-sm hover:brightness-110 active:scale-95 transition"
             >
               <Plus className="w-4 h-4" />
               <span>افزودن آیتم به خزانه</span>
@@ -387,25 +387,25 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
 
       {/* Locked Notice for players */}
       {isLocked && !isDm && (
-        <div className="p-3.5 rounded-xl bg-[#201D19] border border-red-500/30 text-xs text-red-300 flex items-center gap-2.5">
+        <div className="p-3.5 rounded-xl bg-surface-2 border border-red-500/30 text-xs text-red-300 flex items-center gap-2.5">
           <Lock className="w-4 h-4 text-red-400 shrink-0" />
           <span>خزانه گروه توسط دانجن‌مستر قفل شده است. دسترسی شما در وضعیت فقط-خواندنی قرار دارد.</span>
         </div>
       )}
 
       {/* Currency Section Cards */}
-      <div className="surface-card rounded-[14px] p-4 border border-[#2F2A23] card-gold-top space-y-3">
+      <div className="surface-card rounded-[14px] p-4 border border-border card-gold-top space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Coins className="w-4 h-4 text-[#F2C265]" />
-            <h4 className="font-extrabold text-sm text-[#EDE6D8]">موجودی سکه‌های اشتراکی</h4>
+            <Coins className="w-4 h-4 text-accent-hover" />
+            <h4 className="font-extrabold text-sm text-text-primary">موجودی سکه‌های اشتراکی</h4>
           </div>
 
           {permissions.canModify && (
             <button
               type="button"
               onClick={handleOpenCurrencyModal}
-              className="px-2.5 py-1 rounded-lg bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#F2C265] hover:bg-[#2B2620] flex items-center gap-1 transition"
+              className="px-2.5 py-1 rounded-lg bg-surface-2 border border-border text-xs font-bold text-accent-hover hover:bg-surface-2 flex items-center gap-1 transition"
             >
               <Edit2 className="w-3 h-3" />
               <span>ویرایش موجودی</span>
@@ -415,20 +415,20 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {Object.entries(currency.balances).length === 0 ? (
-            <div className="col-span-full text-xs text-[#A39A89] py-2 text-center">
+            <div className="col-span-full text-xs text-text-muted py-2 text-center">
               هنوز سکه‌ای در خزانه ثبت نشده است.
             </div>
           ) : (
             Object.entries(currency.balances).map(([currKey, amount]) => (
               <div
                 key={currKey}
-                className="p-3 rounded-xl bg-[#1A1815] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2"
+                className="p-3 rounded-xl bg-surface border border-border flex flex-wrap items-center justify-between gap-2"
               >
                 <div>
-                  <span className="text-[11px] text-[#A39A89] block">{getCurrencyLabel(currKey)}</span>
-                  <span className="text-base font-black text-[#EDE6D8]">{amount.toLocaleString('fa-IR-u-nu-latn')}</span>
+                  <span className="text-xs text-text-muted block">{getCurrencyLabel(currKey)}</span>
+                  <span className="text-base font-black text-text-primary">{amount.toLocaleString('fa-IR-u-nu-latn')}</span>
                 </div>
-                <div className="w-7 h-7 rounded-lg bg-[#201D19] border border-[#2F2A23] flex items-center justify-center text-[#E0A030] text-xs font-black">
+                <div className="w-7 h-7 rounded-lg bg-surface-2 border border-border flex items-center justify-center text-accent text-xs font-black">
                   {currKey.slice(0, 2).toUpperCase()}
                 </div>
               </div>
@@ -438,30 +438,30 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
       </div>
 
       {/* Shared Stash Items */}
-      <div className="surface-card rounded-[14px] p-4 border border-[#2F2A23] space-y-3">
+      <div className="surface-card rounded-[14px] p-4 border border-border space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Package className="w-4 h-4 text-[#E0A030]" />
-            <h4 className="font-extrabold text-sm text-[#EDE6D8]">
+            <Package className="w-4 h-4 text-accent" />
+            <h4 className="font-extrabold text-sm text-text-primary">
               لوازم و غنائم اشتراکی ({items.length} مورد)
             </h4>
           </div>
 
           {activeCharacter && permissions.canModify && (
-            <div className="text-xs text-[#A39A89]">
-              شخصیت فعال: <strong className="text-[#EDE6D8]">{activeCharacter.name}</strong>
+            <div className="text-xs text-text-muted">
+              شخصیت فعال: <strong className="text-text-primary">{activeCharacter.name}</strong>
             </div>
           )}
         </div>
 
         {items.length === 0 ? (
-          <div className="py-8 text-center text-xs text-[#A39A89] space-y-1">
-            <Package className="w-8 h-8 mx-auto opacity-30 text-[#A39A89]" />
-            <p className="font-bold text-[#EDE6D8]">خزانه در حال حاضر خالی است</p>
+          <div className="py-8 text-center text-xs text-text-muted space-y-1">
+            <Package className="w-8 h-8 mx-auto opacity-30 text-text-muted" />
+            <p className="font-bold text-text-primary">خزانه در حال حاضر خالی است</p>
             <p>می‌توانید غنائم ماجراجویی را در این بخش قرار دهید تا همه به آن دسترسی داشته باشند.</p>
           </div>
         ) : (
-          <div className="divide-y divide-[#2F2A23]/60">
+          <div className="divide-y divide-border/60">
             {items.map(item => (
               <div
                 key={item.id}
@@ -469,16 +469,16 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
               >
                 <div className="space-y-1 max-w-md">
                   <div className="flex items-center gap-2">
-                    <span className="font-extrabold text-sm text-[#EDE6D8]">{item.name}</span>
-                    <span className="px-2 py-0.5 rounded-full bg-[#1A1815] border border-[#2F2A23] text-[10px] font-bold text-[#F2C265]">
+                    <span className="font-extrabold text-sm text-text-primary">{item.name}</span>
+                    <span className="px-2 py-0.5 rounded-full bg-surface border border-border text-xs font-bold text-accent-hover">
                       تعداد: {item.quantity}
                     </span>
-                    <span className="text-[10px] text-[#A39A89] bg-[#201D19] px-1.5 py-0.5 rounded">
+                    <span className="text-xs text-text-muted bg-surface-2 px-1.5 py-0.5 rounded">
                       نسخه: {item.revision}
                     </span>
                   </div>
                   {item.description && (
-                    <p className="text-[11px] text-[#A39A89] leading-relaxed line-clamp-2">
+                    <p className="text-xs text-text-muted leading-relaxed line-clamp-2">
                       {item.description}
                     </p>
                   )}
@@ -495,7 +495,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
                         quantity: 1,
                         submitting: false
                       })}
-                      className="px-2.5 py-1.5 rounded-lg bg-[#201D19] border border-[#2F2A23] text-emerald-400 font-bold hover:bg-[#2B2620] flex items-center gap-1 transition"
+                      className="px-2.5 py-1.5 rounded-lg bg-surface-2 border border-border text-emerald-400 font-bold hover:bg-surface-2 flex items-center gap-1 transition"
                       title="برداشتن به کوله‌پشتی کاراکتر"
                     >
                       <ArrowDownLeft className="w-3.5 h-3.5" />
@@ -522,11 +522,11 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
 
       {/* Deposit from Character Backpack Section (if active character has inventory) */}
       {activeCharacter && permissions.canModify && (
-        <div className="surface-card rounded-[14px] p-4 border border-[#2F2A23] space-y-3">
+        <div className="surface-card rounded-[14px] p-4 border border-border space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <ArrowUpRight className="w-4 h-4 text-emerald-400" />
-              <h4 className="font-extrabold text-sm text-[#EDE6D8]">
+              <h4 className="font-extrabold text-sm text-text-primary">
                 واریز آیتم از کوله‌پشتی {activeCharacter.name} به خزانه
               </h4>
             </div>
@@ -537,11 +537,11 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
               {activeCharacter.inventory.map(ci => (
                 <div
                   key={ci.id}
-                  className="p-2.5 rounded-xl bg-[#1A1815] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-2 text-xs"
+                  className="p-2.5 rounded-xl bg-surface border border-border flex flex-wrap items-center justify-between gap-2 gap-2 text-xs"
                 >
                   <div className="truncate">
-                    <p className="font-bold text-[#EDE6D8] truncate">{ci.name}</p>
-                    <p className="text-[10px] text-[#A39A89]">موجودی: {ci.quantity}</p>
+                    <p className="font-bold text-text-primary truncate">{ci.name}</p>
+                    <p className="text-xs text-text-muted">موجودی: {ci.quantity}</p>
                   </div>
                   <button
                     type="button"
@@ -551,7 +551,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
                       quantity: 1,
                       submitting: false
                     })}
-                    className="px-2 py-1 rounded-lg bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#F2C265] hover:bg-[#2B2620] shrink-0"
+                    className="px-2 py-1 rounded-lg bg-surface-2 border border-border text-xs font-bold text-accent-hover hover:bg-surface-2 shrink-0"
                   >
                     واریز به خزانه
                   </button>
@@ -559,7 +559,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
               ))}
             </div>
           ) : (
-            <p className="text-xs text-[#A39A89]">کوله‌پشتی کاراکتر خالی است.</p>
+            <p className="text-xs text-text-muted">کوله‌پشتی کاراکتر خالی است.</p>
           )}
         </div>
       )}
@@ -572,35 +572,35 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
       >
         <form onSubmit={handleAddItem} className="p-4 space-y-3.5" dir="rtl">
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">نام آیتم</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">نام آیتم</label>
             <input
               type="text"
               placeholder="مثلاً: مشعل، طناب ابریشمی، معجون شفا"
               value={newItemName}
               onChange={e => setNewItemName(e.target.value)}
               required
-              className="w-full px-3 py-2 rounded-xl bg-[#1A1815] border border-[#2F2A23] text-xs text-[#EDE6D8] outline-none"
+              className="w-full px-3 py-2 rounded-xl bg-surface border border-border text-xs text-text-primary outline-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">تعداد</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">تعداد</label>
               <input
                 type="number"
                 min="1"
                 value={newItemQuantity}
                 onChange={e => setNewItemQuantity(Number(e.target.value))}
                 required
-                className="w-full px-3 py-2 rounded-xl bg-[#1A1815] border border-[#2F2A23] text-xs text-[#EDE6D8] text-center font-bold"
+                className="w-full px-3 py-2 rounded-xl bg-surface border border-border text-xs text-text-primary text-center font-bold"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">دسته‌بندی</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">دسته‌بندی</label>
               <select
                 value={newItemCategory}
                 onChange={e => setNewItemCategory(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#1A1815] border border-[#2F2A23] text-xs text-[#EDE6D8] outline-none"
+                className="w-full px-3 py-2 rounded-xl bg-surface border border-border text-xs text-text-primary outline-none"
               >
                 <option value="misc">لوازم عمومی</option>
                 <option value="potion">معجون و کیمیاگری</option>
@@ -613,13 +613,13 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">توضیحات و ویژگی‌ها</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">توضیحات و ویژگی‌ها</label>
             <textarea
               placeholder="توضیح کوتاه درباره خواص یا منشأ آیتم..."
               value={newItemDesc}
               onChange={e => setNewItemDesc(e.target.value)}
               rows={2}
-              className="w-full px-3 py-2 rounded-xl bg-[#1A1815] border border-[#2F2A23] text-xs text-[#EDE6D8] outline-none"
+              className="w-full px-3 py-2 rounded-xl bg-surface border border-border text-xs text-text-primary outline-none"
             />
           </div>
 
@@ -627,13 +627,13 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
             <button
               type="button"
               onClick={() => setAddItemModal(false)}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-[#A39A89]"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-text-muted"
             >
               انصراف
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-extrabold text-xs shadow-sm"
+              className="px-5 py-2.5 rounded-xl bg-accent text-on-accent font-extrabold text-xs shadow-sm"
             >
               افزودن به خزانه
             </button>
@@ -649,10 +649,10 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
       >
         <form onSubmit={handleWithdraw} className="p-4 space-y-4" dir="rtl">
           <div>
-            <p className="text-xs text-[#A39A89] mb-2 leading-relaxed">
+            <p className="text-xs text-text-muted mb-2 leading-relaxed">
               این آیتم از خزانه اشتراکی کسر شده و مستقیماً وارد کوله‌پشتی کاراکتر <strong>{activeCharacter?.name}</strong> خواهد شد.
             </p>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">
+            <label className="block text-xs font-bold text-text-primary mb-1">
               تعداد برداشت (حداکثر موجود: {withdrawModal.item?.quantity || 1})
             </label>
             <input
@@ -662,7 +662,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
               value={withdrawModal.quantity}
               onChange={e => setWithdrawModal(prev => ({ ...prev, quantity: Math.max(1, Number(e.target.value)) }))}
               required
-              className="w-full px-3 py-2 rounded-xl bg-[#1A1815] border border-[#2F2A23] text-sm text-center font-black text-[#EDE6D8]"
+              className="w-full px-3 py-2 rounded-xl bg-surface border border-border text-sm text-center font-black text-text-primary"
             />
           </div>
 
@@ -670,7 +670,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
             <button
               type="button"
               onClick={() => setWithdrawModal(prev => ({ ...prev, isOpen: false }))}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-[#A39A89]"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-text-muted"
             >
               انصراف
             </button>
@@ -693,10 +693,10 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
       >
         <form onSubmit={handleDeposit} className="p-4 space-y-4" dir="rtl">
           <div>
-            <p className="text-xs text-[#A39A89] mb-2 leading-relaxed">
+            <p className="text-xs text-text-muted mb-2 leading-relaxed">
               این آیتم از کوله‌پشتی کاراکتر شما کسر شده و برای استفاده تمام هم‌سفران در خزانه گروه قرار می‌گیرد.
             </p>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">
+            <label className="block text-xs font-bold text-text-primary mb-1">
               تعداد واریز (موجودی در کوله‌پشتی: {depositModal.charItem?.quantity || 1})
             </label>
             <input
@@ -706,7 +706,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
               value={depositModal.quantity}
               onChange={e => setDepositModal(prev => ({ ...prev, quantity: Math.max(1, Number(e.target.value)) }))}
               required
-              className="w-full px-3 py-2 rounded-xl bg-[#1A1815] border border-[#2F2A23] text-sm text-center font-black text-[#EDE6D8]"
+              className="w-full px-3 py-2 rounded-xl bg-surface border border-border text-sm text-center font-black text-text-primary"
             />
           </div>
 
@@ -714,14 +714,14 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
             <button
               type="button"
               onClick={() => setDepositModal(prev => ({ ...prev, isOpen: false }))}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-[#A39A89]"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-text-muted"
             >
               انصراف
             </button>
             <button
               type="submit"
               disabled={depositModal.submitting}
-              className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-extrabold text-xs shadow-sm"
+              className="px-5 py-2.5 rounded-xl bg-accent text-on-accent font-extrabold text-xs shadow-sm"
             >
               {depositModal.submitting ? 'در حال واریز...' : 'تأیید و واریز به خزانه'}
             </button>
@@ -739,26 +739,26 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
           <div className="space-y-3">
             {['gold', 'silver', 'copper', 'platinum'].map(k => (
               <div key={k} className="flex flex-wrap items-center justify-between gap-2 gap-3">
-                <label className="text-xs font-bold text-[#EDE6D8]">{getCurrencyLabel(k)}</label>
+                <label className="text-xs font-bold text-text-primary">{getCurrencyLabel(k)}</label>
                 <input
                   type="number"
                   min="0"
                   value={tempBalances[k] ?? 0}
                   onChange={e => setTempBalances(prev => ({ ...prev, [k]: Math.max(0, Number(e.target.value)) }))}
-                  className="w-32 px-3 py-1.5 rounded-lg bg-[#1A1815] border border-[#2F2A23] text-center font-bold text-xs text-[#EDE6D8]"
+                  className="w-32 px-3 py-1.5 rounded-lg bg-surface border border-border text-center font-bold text-xs text-text-primary"
                 />
               </div>
             ))}
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">یادداشت ثبت رویداد</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">یادداشت ثبت رویداد</label>
             <input
               type="text"
               placeholder="مثلاً: پاداش انجام مأموریت نجات کاروان"
               value={currencyNote}
               onChange={e => setCurrencyNote(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[#1A1815] border border-[#2F2A23] text-xs text-[#EDE6D8] outline-none"
+              className="w-full px-3 py-2 rounded-xl bg-surface border border-border text-xs text-text-primary outline-none"
             />
           </div>
 
@@ -766,13 +766,13 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
             <button
               type="button"
               onClick={() => setCurrencyModal(false)}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-[#A39A89]"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-text-muted"
             >
               انصراف
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-extrabold text-xs shadow-sm"
+              className="px-5 py-2.5 rounded-xl bg-accent text-on-accent font-extrabold text-xs shadow-sm"
             >
               ذخیره موجودی
             </button>
@@ -788,9 +788,9 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
       >
         <div className="p-4 space-y-2.5 max-h-[60vh] overflow-y-auto" dir="rtl">
           {logsModal.loading ? (
-            <div className="text-center py-6 text-xs text-[#A39A89]">در حال بارگذاری گزارش...</div>
+            <div className="text-center py-6 text-xs text-text-muted">در حال بارگذاری گزارش...</div>
           ) : logsModal.logs.length === 0 ? (
-            <div className="text-center py-6 text-xs text-[#A39A89]">هنوز گردشی در خزانه ثبت نشده است.</div>
+            <div className="text-center py-6 text-xs text-text-muted">هنوز گردشی در خزانه ثبت نشده است.</div>
           ) : (
             logsModal.logs.map(log => {
               const isOut = log.type === 'transfer_out' || log.type === 'remove';
@@ -799,22 +799,22 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
               return (
                 <div
                   key={log.id}
-                  className="p-3 rounded-xl bg-[#1A1815] border border-[#2F2A23] flex items-start justify-between gap-3 text-xs"
+                  className="p-3 rounded-xl bg-surface border border-border flex items-start justify-between gap-3 text-xs"
                 >
                   <div className="space-y-1">
-                    <p className="font-bold text-[#EDE6D8] leading-relaxed">{log.note || log.itemRef}</p>
-                    <p className="text-[11px] text-[#A39A89]">
+                    <p className="font-bold text-text-primary leading-relaxed">{log.note || log.itemRef}</p>
+                    <p className="text-xs text-text-muted">
                       عامل: {log.actorName || 'کاربر سیستم'} • {new Date(log.createdAt).toLocaleDateString('fa-IR-u-nu-latn')}
                     </p>
                   </div>
 
                   <span
-                    className={`px-2 py-0.5 rounded text-[10px] font-black shrink-0 ${
+                    className={`px-2 py-0.5 rounded text-xs font-black shrink-0 ${
                       isIn
                         ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
                         : isOut
                         ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                        : 'bg-[#2F2A23] text-[#EDE6D8]/80'
+                        : 'bg-surface-3 text-text-primary/80'
                     }`}
                   >
                     {log.type === 'transfer_in'

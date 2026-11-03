@@ -158,15 +158,15 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
 
           {/* Kind Selector */}
           <div>
-            <label className="block text-xs font-semibold text-[#A39A89] mb-1.5">نوع سند</label>
+            <label className="block text-xs font-semibold text-text-muted mb-1.5">نوع سند</label>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setKind('text')}
                 className={`py-2.5 px-3 rounded-[10px] border flex flex-col items-center gap-1.5 transition touch-target min-w-[44px] ${
                   kind === 'text'
-                    ? 'bg-[#E0A030]/15 border-[#E0A030] text-[#E0A030] font-bold'
-                    : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89] hover:bg-[#252019]'
+                    ? 'bg-accent/15 border-accent text-accent font-bold'
+                    : 'bg-surface border-border text-text-muted hover:bg-surface-2'
                 }`}
               >
                 <FileText className="w-5 h-5" />
@@ -178,8 +178,8 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                 onClick={() => setKind('image')}
                 className={`py-2.5 px-3 rounded-[10px] border flex flex-col items-center gap-1.5 transition touch-target min-w-[44px] ${
                   kind === 'image'
-                    ? 'bg-[#38BDF8]/15 border-[#38BDF8] text-[#38BDF8] font-bold'
-                    : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89] hover:bg-[#252019]'
+                    ? 'bg-info/15 border-info text-info font-bold'
+                    : 'bg-surface border-border text-text-muted hover:bg-surface-2'
                 }`}
               >
                 <ImageIcon className="w-5 h-5" />
@@ -191,8 +191,8 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                 onClick={() => setKind('map')}
                 className={`py-2.5 px-3 rounded-[10px] border flex flex-col items-center gap-1.5 transition touch-target min-w-[44px] ${
                   kind === 'map'
-                    ? 'bg-[#4ADE80]/15 border-[#4ADE80] text-[#4ADE80] font-bold'
-                    : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89] hover:bg-[#252019]'
+                    ? 'bg-success/15 border-success text-success font-bold'
+                    : 'bg-surface border-border text-text-muted hover:bg-surface-2'
                 }`}
               >
                 <MapIcon className="w-5 h-5" />
@@ -203,7 +203,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
 
           {/* Title */}
           <div>
-            <label className="block text-xs font-semibold text-[#A39A89] mb-1">
+            <label className="block text-xs font-semibold text-text-muted mb-1">
               عنوان سند / نقشه <span className="text-rose-400">*</span>
             </label>
             <input
@@ -212,20 +212,20 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="مثال: نقشه سپیدارون، نامه خونین، پرتره جادوگر..."
-              className="w-full px-3 py-2.5 bg-[#1C1813] border border-[#2F2A23] rounded-[10px] text-xs text-white focus:outline-none focus:border-[#E0A030]"
+              className="w-full px-3 py-2.5 bg-surface border border-border rounded-[10px] text-xs text-white focus:outline-none focus:border-accent"
             />
           </div>
 
           {/* Body for Text Kind */}
           {kind === 'text' && (
             <div>
-              <label className="block text-xs font-semibold text-[#A39A89] mb-1">متن یا محتوای سند</label>
+              <label className="block text-xs font-semibold text-text-muted mb-1">متن یا محتوای سند</label>
               <textarea
                 rows={6}
                 value={body}
                 onChange={e => setBody(e.target.value)}
                 placeholder="متن کامل نامه، دست‌نوشته، کتیبه باستانی..."
-                className="w-full px-3 py-2.5 bg-[#1C1813] border border-[#2F2A23] rounded-[10px] text-xs text-white focus:outline-none focus:border-[#E0A030] leading-relaxed resize-y font-serif"
+                className="w-full px-3 py-2.5 bg-surface border border-border rounded-[10px] text-xs text-white focus:outline-none focus:border-accent leading-relaxed resize-y font-serif"
               />
             </div>
           )}
@@ -233,11 +233,11 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
           {/* File Upload for Image or Map */}
           {(kind === 'image' || kind === 'map') && (
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-[#A39A89]">
+              <label className="block text-xs font-semibold text-text-muted">
                 تصویر {kind === 'map' ? 'نقشه' : ''} (فشرده‌سازی خودکار WebP، حداکثر ۴۰۰ کیلوبایت)
               </label>
 
-              <div className="border-2 border-dashed border-[#2F2A23] rounded-[14px] p-4 text-center hover:border-[#E0A030]/50 transition bg-[#1C1813]">
+              <div className="border-2 border-dashed border-border rounded-[14px] p-4 text-center hover:border-accent/50 transition bg-surface">
                 {mediaPreviewUrl ? (
                   <div className="space-y-3">
                     <img
@@ -247,9 +247,9 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                       decoding="async"
                       width={320}
                       height={176}
-                      className="max-h-44 mx-auto rounded-[8px] object-contain border border-[#2F2A23]"
+                      className="max-h-44 mx-auto rounded-[8px] object-contain border border-border"
                     />
-                    <label className="inline-block px-3 py-1.5 rounded-[8px] bg-[#2A241C] hover:bg-[#383126] text-xs text-[#EDE6D8] cursor-pointer touch-target min-w-[44px] transition">
+                    <label className="inline-block px-3 py-1.5 rounded-[8px] bg-surface-2 hover:bg-surface-3 text-xs text-text-primary cursor-pointer touch-target min-w-[44px] transition">
                       تغییر تصویر
                       <input
                         type="file"
@@ -261,13 +261,13 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                   </div>
                 ) : (
                   <label className="flex flex-col items-center justify-center gap-2 cursor-pointer py-4 touch-target min-w-[44px]">
-                    <div className="w-12 h-12 rounded-full bg-[#241F18] border border-[#3A3327] flex items-center justify-center text-[#E0A030]">
+                    <div className="w-12 h-12 rounded-full bg-surface-2 border border-border flex items-center justify-center text-accent">
                       <Upload className="w-6 h-6" />
                     </div>
-                    <span className="text-xs font-medium text-[#EDE6D8]">
+                    <span className="text-xs font-medium text-text-primary">
                       انتخاب فایل تصویر یا نقشه
                     </span>
-                    <span className="text-[11px] text-[#A39A89]">
+                    <span className="text-xs text-text-muted">
                       PNG, JPG, WebP - با فشرده‌سازی خودکار بهینه‌شده
                     </span>
                     <input
@@ -281,13 +281,13 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               </div>
 
               {isCompressing && (
-                <div className="text-xs text-[#E0A030] flex items-center gap-1.5 animate-pulse">
-                  <span className="w-2 h-2 rounded-full bg-[#E0A030]" />
+                <div className="text-xs text-accent flex items-center gap-1.5 animate-pulse">
+                  <span className="w-2 h-2 rounded-full bg-accent" />
                   {compressionInfo}
                 </div>
               )}
               {compressionInfo && !isCompressing && (
-                <div className="text-[11px] text-emerald-400 flex items-center gap-1.5">
+                <div className="text-xs text-emerald-400 flex items-center gap-1.5">
                   <Check className="w-3.5 h-3.5" />
                   {compressionInfo}
                 </div>
@@ -297,7 +297,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
 
           {/* Visibility Options */}
           <div>
-            <label className="block text-xs font-semibold text-[#A39A89] mb-1.5">وضعیت انتشار و دسترسی</label>
+            <label className="block text-xs font-semibold text-text-muted mb-1.5">وضعیت انتشار و دسترسی</label>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
@@ -305,7 +305,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                 className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target min-w-[44px] ${
                   visibility === 'hidden'
                     ? 'bg-rose-500/15 border-rose-500 text-rose-300 font-bold'
-                    : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89]'
+                    : 'bg-surface border-border text-text-muted'
                 }`}
               >
                 <EyeOff className="w-4 h-4" />
@@ -318,7 +318,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                 className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target min-w-[44px] ${
                   visibility === 'revealed'
                     ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 font-bold'
-                    : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89]'
+                    : 'bg-surface border-border text-text-muted'
                 }`}
               >
                 <Eye className="w-4 h-4" />
@@ -331,7 +331,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                 className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target min-w-[44px] ${
                   visibility === 'selected'
                     ? 'bg-sky-500/15 border-sky-500 text-sky-300 font-bold'
-                    : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89]'
+                    : 'bg-surface border-border text-text-muted'
                 }`}
               >
                 <Users className="w-4 h-4" />
@@ -342,12 +342,12 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
 
           {/* If Selected: choose recipients */}
           {visibility === 'selected' && (
-            <div className="p-3 bg-[#1C1813] border border-sky-800/40 rounded-[12px] space-y-2">
+            <div className="p-3 bg-surface border border-sky-800/40 rounded-[12px] space-y-2">
               <span className="text-xs font-semibold text-sky-300 block">
                 انتخاب شخصیت‌های مجاز به دیدن این سند:
               </span>
               {campaignCharacters.length === 0 ? (
-                <p className="text-xs text-[#A39A89] italic">هنوز شخصیتی در کمپین ثبت نشده است.</p>
+                <p className="text-xs text-text-muted italic">هنوز شخصیتی در کمپین ثبت نشده است.</p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                   {campaignCharacters.map(char => {
@@ -358,18 +358,18 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                         className={`flex items-center gap-2 p-2 rounded-[8px] border cursor-pointer transition ${
                           isChecked
                             ? 'bg-sky-950/40 border-sky-600/50 text-white'
-                            : 'bg-[#14120E] border-[#2F2A23] text-[#A39A89]'
+                            : 'bg-bg border-border text-text-muted'
                         }`}
                       >
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => handleToggleRecipient(char.id)}
-                          className="w-4 h-4 rounded text-sky-500 focus:ring-sky-500 bg-[#14120E] border-[#2F2A23]"
+                          className="w-4 h-4 rounded text-sky-500 focus:ring-sky-500 bg-bg border-border"
                         />
                         <span className="text-xs font-medium truncate">{char.name}</span>
                         {char.playerName && (
-                          <span className="text-[10px] text-[#A39A89]">({char.playerName})</span>
+                          <span className="text-xs text-text-muted">({char.playerName})</span>
                         )}
                       </label>
                     );
@@ -381,7 +381,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
 
           {/* Tags */}
           <div>
-            <label className="block text-xs font-semibold text-[#A39A89] mb-1">
+            <label className="block text-xs font-semibold text-text-muted mb-1">
               برچسب‌ها (با ویرگول یا کاما جدا کنید)
             </label>
             <input
@@ -389,23 +389,23 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               value={tagsInput}
               onChange={e => setTagsInput(e.target.value)}
               placeholder="مثال: نقشه، مخفیگاه، سپیدارون، نامه"
-              className="w-full px-3 py-2 bg-[#1C1813] border border-[#2F2A23] rounded-[10px] text-xs text-white focus:outline-none focus:border-[#E0A030]"
+              className="w-full px-3 py-2 bg-surface border border-border rounded-[10px] text-xs text-white focus:outline-none focus:border-accent"
             />
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#2F2A23]">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-[10px] bg-[#241F18] text-xs font-medium text-[#EDE6D8] hover:bg-[#322A21] transition touch-target min-w-[44px]"
+              className="px-4 py-2.5 rounded-[10px] bg-surface-2 text-xs font-medium text-text-primary hover:bg-surface-3 transition touch-target min-w-[44px]"
             >
               انصراف
             </button>
             <button
               type="submit"
               disabled={isSaving || isCompressing || !title.trim()}
-              className="px-5 py-2.5 rounded-[10px] bg-[#E0A030] hover:bg-[#F2C265] text-xs font-bold text-[#14120E] transition touch-target min-w-[44px] disabled:opacity-40 shadow-lg"
+              className="px-5 py-2.5 rounded-[10px] bg-accent hover:bg-accent-hover text-xs font-bold text-on-accent transition touch-target min-w-[44px] disabled:opacity-40 shadow-lg"
             >
               {isSaving ? 'در حال ذخیره‌سازی...' : initialHandout ? 'ذخیره تغییرات' : 'ایجاد سند'}
             </button>

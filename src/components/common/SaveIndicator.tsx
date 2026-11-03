@@ -16,29 +16,29 @@ export const SaveIndicator: React.FC<SaveIndicatorProps> = ({
 }) => {
   const configs: Record<SyncStatus, { icon: React.ReactNode; text: string; color: string }> = {
     saving: {
-      icon: <RefreshCw className="w-3.5 h-3.5 text-[#E0A030] animate-spin" />,
+      icon: <RefreshCw className="w-3.5 h-3.5 text-accent animate-spin" />,
       text: 'در حال ذخیره‌سازی...',
-      color: 'text-[#E0A030]',
+      color: 'text-accent',
     },
     saved: {
-      icon: <CheckCircle2 className="w-3.5 h-3.5 text-[#6F9E78]" />,
+      icon: <CheckCircle2 className="w-3.5 h-3.5 text-success" />,
       text: 'ذخیره شد',
-      color: 'text-[#6F9E78]',
+      color: 'text-success',
     },
     offline: {
-      icon: <WifiOff className="w-3.5 h-3.5 text-[#A39A89]" />,
+      icon: <WifiOff className="w-3.5 h-3.5 text-text-muted" />,
       text: 'آفلاین (در صف همگام‌سازی)',
-      color: 'text-[#A39A89]',
+      color: 'text-text-muted',
     },
     conflict: {
-      icon: <AlertTriangle className="w-3.5 h-3.5 text-[#C2512B] animate-pulse" />,
+      icon: <AlertTriangle className="w-3.5 h-3.5 text-danger animate-pulse" />,
       text: 'تداخل نسخه',
-      color: 'text-[#C2512B]',
+      color: 'text-danger',
     },
     idle: {
-      icon: <CheckCircle2 className="w-3.5 h-3.5 text-[#A39A89]" />,
+      icon: <CheckCircle2 className="w-3.5 h-3.5 text-text-muted" />,
       text: 'آماده',
-      color: 'text-[#A39A89]',
+      color: 'text-text-muted',
     },
   };
 
@@ -46,12 +46,12 @@ export const SaveIndicator: React.FC<SaveIndicatorProps> = ({
 
   return (
     <div
-      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-[8px] bg-[#171513] border border-[#2F2A23] text-xs font-semibold ${className}`}
+      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-[8px] bg-surface border border-border text-xs font-semibold ${className}`}
       title={current.text}
       dir="rtl"
     >
       {current.icon}
-      {showText && <span className={`text-[11px] ${current.color}`}>{current.text}</span>}
+      {showText && <span className={`text-xs ${current.color}`}>{current.text}</span>}
     </div>
   );
 };

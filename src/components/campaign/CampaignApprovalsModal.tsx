@@ -60,15 +60,15 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title={`صف بررسی و تأیید دانجن مستر (${approvals.length})`}>
       <div className="space-y-4 py-2 text-start" dir="rtl">
-        <p className="text-xs text-[#A39A89]">
+        <p className="text-xs text-text-muted">
           درخواست‌های ورود شخصیت جدید، ارتقای سطح (Level-Up) و تغییرات برگه کاراکتر که نیازمند تأیید رسمی راوی هستند.
         </p>
 
         {approvals.length === 0 ? (
-          <div className="p-8 rounded-2xl border border-dashed border-[#2F2A23] text-center space-y-2">
-            <Check className="w-8 h-8 text-[#6F9E78] mx-auto" />
-            <h4 className="text-sm font-bold text-[#EDE6D8]">صف بررسی خالی است</h4>
-            <p className="text-xs text-[#8A8374]">هیچ درخواست تأیید نشده‌ای در کمپین‌های شما وجود ندارد.</p>
+          <div className="p-8 rounded-2xl border border-dashed border-border text-center space-y-2">
+            <Check className="w-8 h-8 text-success mx-auto" />
+            <h4 className="text-sm font-bold text-text-primary">صف بررسی خالی است</h4>
+            <p className="text-xs text-text-muted">هیچ درخواست تأیید نشده‌ای در کمپین‌های شما وجود ندارد.</p>
           </div>
         ) : (
           <div className="space-y-3 max-h-96 overflow-y-auto no-scrollbar">
@@ -80,19 +80,19 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
               return (
                 <div
                   key={item.participationId || idx}
-                  className="p-4 rounded-2xl bg-[#131110]/90 border border-[#2F2A23] space-y-3"
+                  className="p-4 rounded-2xl bg-bg/90 border border-border space-y-3"
                 >
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
                           item.type === 'create'
-                            ? 'bg-[#7FB4D6]/20 text-[#7FB4D6] border border-[#7FB4D6]/30'
+                            ? 'bg-info/20 text-info border border-info/30'
                             : item.type === 'level_up'
-                            ? 'bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30'
+                            ? 'bg-accent/20 text-accent-hover border border-accent/30'
                             : item.type === 'sheet_change'
-                            ? 'bg-[#C97B4A]/20 text-[#F2C265] border border-[#C97B4A]/30'
-                            : 'bg-[#9B72CF]/20 text-[#CBD5E1] border border-[#9B72CF]/30'
+                            ? 'bg-warning/20 text-accent-hover border border-warning/30'
+                            : 'bg-role-codm/20 text-info border border-role-codm/30'
                         }`}>
                           {item.type === 'create' 
                             ? 'ورود شخصیت جدید' 
@@ -102,20 +102,20 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
                             ? 'درخواست تغییر برگه'
                             : 'بازبینی پیشینه داستانی'}
                         </span>
-                        <h4 className="text-sm font-bold text-[#EDE6D8]">{item.characterName}</h4>
+                        <h4 className="text-sm font-bold text-text-primary">{item.characterName}</h4>
                       </div>
-                      <p className="text-xs text-[#A39A89] mt-1">
+                      <p className="text-xs text-text-muted mt-1">
                         بازیکن: {item.playerName} | کمپین: {item.campaignName} {item.level ? `| سطح: ${item.level}` : ''}
                       </p>
                     </div>
-                    <span className="text-[10px] text-[#8A8374]">{dateStr}</span>
+                    <span className="text-xs text-text-muted">{dateStr}</span>
                   </div>
 
                   {/* Backstory Review Details */}
                   {item.type === 'backstory_review' && item.details?.backstory && (
-                    <div className="p-3 rounded-xl bg-[#0E0D0C]/80 border border-[#2F2A23] space-y-1.5 text-xs">
-                      <div className="text-[#F2C265] font-bold">خلاصه پیشینه ارسالی:</div>
-                      <p className="text-[#C9C0AE] leading-relaxed line-clamp-3">
+                    <div className="p-3 rounded-xl bg-bg/80 border border-border space-y-1.5 text-xs">
+                      <div className="text-accent-hover font-bold">خلاصه پیشینه ارسالی:</div>
+                      <p className="text-text-primary leading-relaxed line-clamp-3">
                         {item.details.backstory.summary || item.details.backstory.origin || 'پیشینه تدوین شده و آماده بازبینی است.'}
                       </p>
                     </div>
@@ -123,29 +123,29 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
 
                   {/* Level-Up Detailed Diff */}
                   {item.type === 'level_up' && (
-                    <div className="p-3 rounded-xl bg-[#0E0D0C]/80 border border-[#2F2A23] space-y-2 text-xs">
-                      <div className="flex items-center justify-between text-[#F2C265] font-bold">
+                    <div className="p-3 rounded-xl bg-bg/80 border border-border space-y-2 text-xs">
+                      <div className="flex items-center justify-between text-accent-hover font-bold">
                         <span className="flex items-center gap-1.5">
                           <ArrowUp className="w-3.5 h-3.5" />
                           ارتقا به سطح {item.level}
                         </span>
                         {diff?.hp && (
-                          <span className="text-[#6F9E78] font-mono">
+                          <span className="text-success font-mono">
                             جان: {diff.hp.before} → {diff.hp.after} (+{diff.hp.gain})
                           </span>
                         )}
                       </div>
 
                       {diff?.abilityScores && Object.keys(diff.abilityScores).length > 0 && (
-                        <div className="pt-1.5 border-t border-[#2F2A23]/60 space-y-1">
-                          <span className="text-[10px] text-[#A39A89] block font-bold flex items-center gap-1">
-                            <Dumbbell className="w-3 h-3 text-[#E0A030]" />
+                        <div className="pt-1.5 border-t border-border/60 space-y-1">
+                          <span className="text-xs text-text-muted block font-bold flex items-center gap-1">
+                            <Dumbbell className="w-3 h-3 text-accent" />
                             بهبود ویژگی‌ها (ASI):
                           </span>
-                          <div className="flex flex-wrap gap-2 text-[11px]">
+                          <div className="flex flex-wrap gap-2 text-xs">
                             {Object.entries(diff.abilityScores).map(([stat, val]: any) => (
-                              <span key={stat} className="px-2 py-0.5 rounded bg-[#1f1b18] border border-[#2F2A23] text-[#EDE6D8]">
-                                {stat.toUpperCase()}: <strong className="text-[#F2C265]">{val.before} → {val.after}</strong>
+                              <span key={stat} className="px-2 py-0.5 rounded bg-surface-2 border border-border text-text-primary">
+                                {stat.toUpperCase()}: <strong className="text-accent-hover">{val.before} → {val.after}</strong>
                               </span>
                             ))}
                           </div>
@@ -153,7 +153,7 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
                       )}
 
                       {diff?.subclass && (
-                        <div className="text-[11px] text-[#F2C265] pt-1">
+                        <div className="text-xs text-accent-hover pt-1">
                           زیرکلاس انتخابی: <strong>{diff.subclass.after}</strong>
                         </div>
                       )}
@@ -162,18 +162,18 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
 
                   {/* Sheet Change Request Details */}
                   {item.type === 'sheet_change' && (
-                    <div className="p-3 rounded-xl bg-[#0E0D0C]/80 border border-[#2F2A23] space-y-2 text-xs">
-                      <div className="flex items-center gap-1.5 text-[#E0A030] font-bold">
+                    <div className="p-3 rounded-xl bg-bg/80 border border-border space-y-2 text-xs">
+                      <div className="flex items-center gap-1.5 text-accent font-bold">
                         <Shield className="w-3.5 h-3.5" />
                         <span>بخش درخواستی: {fieldLabels[item.details?.field] || item.details?.field}</span>
                       </div>
-                      <div className="text-[#EDE6D8] bg-[#1a1714] p-2 rounded-lg border border-[#2F2A23]">
-                        <span className="text-[10px] text-[#A39A89] block mb-0.5">تغییر پیشنهادی:</span>
+                      <div className="text-text-primary bg-surface p-2 rounded-lg border border-border">
+                        <span className="text-xs text-text-muted block mb-0.5">تغییر پیشنهادی:</span>
                         <span className="font-semibold">{item.details?.proposedValue}</span>
                       </div>
                       {item.details?.reason && (
-                        <div className="text-[#A39A89] text-[11px] leading-relaxed">
-                          <strong className="text-[#EDE6D8]">دلیل بازیکن: </strong>
+                        <div className="text-text-muted text-xs leading-relaxed">
+                          <strong className="text-text-primary">دلیل بازیکن: </strong>
                           {item.details.reason}
                         </div>
                       )}
@@ -182,26 +182,26 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
 
                   {/* Character Creation Details */}
                   {item.type === 'create' && item.details && (
-                    <div className="p-2.5 rounded-xl bg-[#0E0D0C]/60 border border-[#2F2A23]/80 text-xs text-[#C9C0AE]">
-                      <span className="text-[10px] text-[#8A8374] block mb-1">مشخصات شخصیت:</span>
+                    <div className="p-2.5 rounded-xl bg-bg/60 border border-border/80 text-xs text-text-primary">
+                      <span className="text-xs text-text-muted block mb-1">مشخصات شخصیت:</span>
                       <span>کلاس پیشنهادی: {item.details.className || 'ماجراجو'}</span>
                     </div>
                   )}
 
                   {isSelected ? (
-                    <div className="pt-2 border-t border-[#2F2A23] space-y-2">
+                    <div className="pt-2 border-t border-border space-y-2">
                       <textarea
                         value={comment}
                         onChange={e => setComment(e.target.value)}
                         placeholder="یادداشت یا دلیل رد / درخواست تغییرات برای بازیکن..."
                         rows={2}
-                        className="w-full bg-[#0E0D0C] border border-[#2F2A23] rounded-xl p-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+                        className="w-full bg-bg border border-border rounded-xl p-2 text-xs text-text-primary focus:outline-none focus:border-accent"
                       />
                       <div className="flex justify-end gap-2">
                         <button
                           type="button"
                           onClick={() => setActiveItemId(null)}
-                          className="px-3 py-1.5 rounded-xl text-xs text-[#A39A89] hover:text-[#EDE6D8]"
+                          className="px-3 py-1.5 rounded-xl text-xs text-text-muted hover:text-text-primary"
                         >
                           انصراف
                         </button>
@@ -209,7 +209,7 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
                           type="button"
                           disabled={loading}
                           onClick={() => handleAction(item, 'reject')}
-                          className="px-3 py-1.5 rounded-xl bg-[#C2512B]/20 text-[#E8836B] border border-[#C2512B]/30 hover:bg-[#C2512B]/30 text-xs font-bold"
+                          className="px-3 py-1.5 rounded-xl bg-danger/20 text-danger border border-danger/30 hover:bg-danger/30 text-xs font-bold"
                         >
                           رد درخواست
                         </button>
@@ -217,17 +217,17 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
                           type="button"
                           disabled={loading}
                           onClick={() => handleAction(item, 'request_changes')}
-                          className="px-3 py-1.5 rounded-xl bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/30 hover:bg-[#E0A030]/30 text-xs font-bold"
+                          className="px-3 py-1.5 rounded-xl bg-accent/20 text-accent-hover border border-accent/30 hover:bg-accent/30 text-xs font-bold"
                         >
                           درخواست اصلاح
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#2F2A23]/60">
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
                       <button
                         onClick={() => setActiveItemId(item.participationId)}
-                        className="px-3 py-1.5 rounded-xl bg-[#201D19] text-[#C9C0AE] hover:text-[#EDE6D8] text-xs font-medium flex items-center gap-1 min-h-[36px]"
+                        className="px-3 py-1.5 rounded-xl bg-surface-2 text-text-primary hover:text-text-primary text-xs font-medium flex items-center gap-1 min-h-[36px]"
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
                         <span>رد یا اصلاح...</span>
@@ -235,7 +235,7 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
                       <button
                         disabled={loading}
                         onClick={() => handleAction(item, 'approve')}
-                        className="px-4 py-1.5 rounded-xl bg-[#6F9E78] text-[#0E0D0C] hover:bg-[#6F9E78] text-xs font-bold flex items-center gap-1 min-h-[36px] shadow-md shadow-[#6F9E78]/20"
+                        className="px-4 py-1.5 rounded-xl bg-success text-on-accent hover:bg-success text-xs font-bold flex items-center gap-1 min-h-[36px] shadow-md shadow-success/20"
                       >
                         <Check className="w-3.5 h-3.5" />
                         <span>تأیید رسمی</span>

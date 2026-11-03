@@ -47,21 +47,21 @@ export const CodexTab: React.FC<CodexTabProps> = ({
       name: 'نوژان (Nozhan)',
       motto: 'احیاگران جادو و جریان‌های کهن',
       region: 'ورنا',
-      regionColor: 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/30',
+      regionColor: 'bg-success/15 text-success border-success/30',
       description: 'استقبال‌کنندگان از جادو؛ این فرقه جادو و تاروپودهای باستانی را با آغوش باز می‌پذیرد و در پی احیای کامل جریان‌های ماورایی زروانیا است.'
     },
     {
       name: 'رهامان (Rohaman)',
       motto: 'نابودکنندگان آثار جادویی و تحریفات زمان',
       region: 'کویر خاموش',
-      regionColor: 'bg-[#C97B4A]/15 text-[#C97B4A] border-[#C97B4A]/30',
+      regionColor: 'bg-warning/15 text-warning border-warning/30',
       description: 'نابودکنندگان جادو؛ مصمم به محو و سوزاندن هرگونه آثار جادویی و پاکسازی تمام بقایای حاصل از فروپاشی زمان.'
     },
     {
       name: 'پیمانداران (Peymandaran)',
       motto: 'پاسداران نظم، ثبات و قوانین مدنی',
       region: 'شان‌شین',
-      regionColor: 'bg-[#D6B25E]/15 text-[#D6B25E] border-[#D6B25E]/30',
+      regionColor: 'bg-stat-ac/15 text-stat-ac border-stat-ac/30',
       description: 'طرفداران کنترل، انضباط و ثبات زمانی؛ آنان بیشترین نفوذ و تسلط اجرایی را در ارکان فعلی قدرت و حکومت در دست دارند.'
     }
   ];
@@ -111,8 +111,8 @@ export const CodexTab: React.FC<CodexTabProps> = ({
           onClick={() => setSubTab('quests')}
           className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'quests'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
-              : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              ? 'bg-accent text-on-accent font-black shadow-sm'
+              : 'text-text-muted hover:text-text-primary'
           }`}
         >
           <Scroll className="w-3.5 h-3.5 shrink-0" />
@@ -125,8 +125,8 @@ export const CodexTab: React.FC<CodexTabProps> = ({
           onClick={() => setSubTab('locations')}
           className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'locations'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
-              : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              ? 'bg-accent text-on-accent font-black shadow-sm'
+              : 'text-text-muted hover:text-text-primary'
           }`}
         >
           <MapPin className="w-3.5 h-3.5 shrink-0" />
@@ -139,8 +139,8 @@ export const CodexTab: React.FC<CodexTabProps> = ({
           onClick={() => setSubTab('handouts')}
           className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'handouts'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
-              : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              ? 'bg-accent text-on-accent font-black shadow-sm'
+              : 'text-text-muted hover:text-text-primary'
           }`}
         >
           <MapIcon className="w-3.5 h-3.5 shrink-0" />
@@ -153,8 +153,8 @@ export const CodexTab: React.FC<CodexTabProps> = ({
           onClick={() => setSubTab('items')}
           className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'items'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
-              : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              ? 'bg-accent text-on-accent font-black shadow-sm'
+              : 'text-text-muted hover:text-text-primary'
           }`}
         >
           <Sparkles className="w-3.5 h-3.5 shrink-0" />
@@ -167,8 +167,8 @@ export const CodexTab: React.FC<CodexTabProps> = ({
           onClick={() => setSubTab('creatures')}
           className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'creatures'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
-              : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              ? 'bg-accent text-on-accent font-black shadow-sm'
+              : 'text-text-muted hover:text-text-primary'
           }`}
         >
           <Users className="w-3.5 h-3.5 shrink-0" />
@@ -181,8 +181,8 @@ export const CodexTab: React.FC<CodexTabProps> = ({
           onClick={() => setSubTab('rules')}
           className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'rules'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
-              : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              ? 'bg-accent text-on-accent font-black shadow-sm'
+              : 'text-text-muted hover:text-text-primary'
           }`}
         >
           <BookOpen className="w-3.5 h-3.5 shrink-0" />
@@ -195,8 +195,8 @@ export const CodexTab: React.FC<CodexTabProps> = ({
           onClick={() => setSubTab('calendar')}
           className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'calendar'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
-              : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              ? 'bg-accent text-on-accent font-black shadow-sm'
+              : 'text-text-muted hover:text-text-primary'
           }`}
         >
           <Calendar className="w-3.5 h-3.5 shrink-0" />
@@ -209,8 +209,8 @@ export const CodexTab: React.FC<CodexTabProps> = ({
           onClick={() => setSubTab('factions')}
           className={`py-2 px-3 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
             subTab === 'factions'
-              ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
-              : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              ? 'bg-accent text-on-accent font-black shadow-sm'
+              : 'text-text-muted hover:text-text-primary'
           }`}
         >
           <Compass className="w-3.5 h-3.5 shrink-0" />
@@ -248,9 +248,9 @@ export const CodexTab: React.FC<CodexTabProps> = ({
             placeholder="جستجو در دانشنامه زروانیا..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full py-2 pe-3 ps-8 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+            className="w-full py-2 pe-3 ps-8 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent focus:outline-none"
           />
-          <Search className="w-3.5 h-3.5 text-[#A39A89] absolute start-2.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 text-text-muted absolute start-2.5 top-1/2 -translate-y-1/2" />
         </div>
       )}
 
@@ -258,19 +258,19 @@ export const CodexTab: React.FC<CodexTabProps> = ({
       {subTab === 'locations' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filteredLocations.length === 0 ? (
-            <div className="surface-card rounded-[14px] col-span-2 text-center py-10 text-[#A39A89] text-xs">
+            <div className="surface-card rounded-[14px] col-span-2 text-center py-10 text-text-muted text-xs">
               مکانی در دانشنامه فاش نشده است. با کشف و کاوش در زروانیا نقاط جدید در این بخش ثبت خواهند شد.
             </div>
           ) : (
             filteredLocations.map(loc => (
-              <div key={loc.id} className="surface-card rounded-[14px] p-3.5 border border-[#2F2A23] flex flex-col justify-between gap-2.5 card-gold-top">
+              <div key={loc.id} className="surface-card rounded-[14px] p-3.5 border border-border flex flex-col justify-between gap-2.5 card-gold-top">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <h4 className="font-extrabold text-sm text-[#EDE6D8] truncate">{loc.name}</h4>
+                    <h4 className="font-extrabold text-sm text-text-primary truncate">{loc.name}</h4>
                     <Chip variant="region" region={loc.region as any} />
                   </div>
                   {loc.imageUrl && (
-                    <div className="w-full h-32 rounded-[10px] overflow-hidden border border-[#2F2A23] bg-[#0E0D0C]">
+                    <div className="w-full h-32 rounded-[10px] overflow-hidden border border-border bg-bg">
                       <img
                         src={loc.imageUrl}
                         alt={loc.name}
@@ -282,7 +282,7 @@ export const CodexTab: React.FC<CodexTabProps> = ({
                       />
                     </div>
                   )}
-                  <p className="text-xs text-[#EDE6D8]/80 leading-relaxed select-text">
+                  <p className="text-xs text-text-primary/80 leading-relaxed select-text">
                     {loc.description}
                   </p>
                 </div>
@@ -301,24 +301,24 @@ export const CodexTab: React.FC<CodexTabProps> = ({
       {subTab === 'items' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filteredItems.length === 0 ? (
-            <div className="surface-card rounded-[14px] col-span-2 text-center py-10 text-[#A39A89] text-xs">
+            <div className="surface-card rounded-[14px] col-span-2 text-center py-10 text-text-muted text-xs">
               شیئی در دانشنامه فاش نشده است.
             </div>
           ) : (
             filteredItems.map(item => (
-              <div key={item.id} className="surface-card rounded-[14px] p-3.5 border border-[#2F2A23] flex flex-col justify-between">
+              <div key={item.id} className="surface-card rounded-[14px] p-3.5 border border-border flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-1.5 gap-2">
-                    <span className="font-extrabold text-xs text-[#EDE6D8]">{item.name}</span>
+                    <span className="font-extrabold text-xs text-text-primary">{item.name}</span>
                     <Chip variant="region" region={(item.region || 'مشترک') as any} />
                   </div>
-                  <p className="text-xs text-[#EDE6D8]/80 leading-relaxed mb-2 select-text">
+                  <p className="text-xs text-text-primary/80 leading-relaxed mb-2 select-text">
                     {item.description}
                   </p>
                 </div>
                 {item.rarity && (
-                  <div className="text-[10px] text-[#A39A89] pt-2 border-t border-[#2F2A23]">
-                    کمیابی: <span className="text-[#E0A030] font-bold">{item.rarity}</span>
+                  <div className="text-xs text-text-muted pt-2 border-t border-border">
+                    کمیابی: <span className="text-accent font-bold">{item.rarity}</span>
                   </div>
                 )}
               </div>
@@ -331,25 +331,25 @@ export const CodexTab: React.FC<CodexTabProps> = ({
       {subTab === 'creatures' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filteredNpcs.length === 0 ? (
-            <div className="surface-card rounded-[14px] col-span-2 text-center py-10 text-[#A39A89] text-xs">
+            <div className="surface-card rounded-[14px] col-span-2 text-center py-10 text-text-muted text-xs">
               موجودی فاش نشده است.
             </div>
           ) : (
             filteredNpcs.map(npc => (
-              <div key={npc.id} className="surface-card rounded-[14px] p-3.5 border border-[#2F2A23] flex flex-col justify-between">
+              <div key={npc.id} className="surface-card rounded-[14px] p-3.5 border border-border flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-1.5 gap-2">
-                    <span className="font-extrabold text-xs text-[#EDE6D8]">{npc.name}</span>
+                    <span className="font-extrabold text-xs text-text-primary">{npc.name}</span>
                     <Chip variant="region" region={(npc.region || 'ورنا') as any} />
                   </div>
-                  <p className="text-xs text-[#EDE6D8]/80 leading-relaxed mb-2 select-text">
+                  <p className="text-xs text-text-primary/80 leading-relaxed mb-2 select-text">
                     {npc.description}
                   </p>
                 </div>
-                <div className="flex items-center justify-between text-[10px] text-[#A39A89] pt-2 border-t border-[#2F2A23]">
-                  <span>AC: <strong className="text-[#EDE6D8]">{npc.ac}</strong></span>
-                  <span>جان: <strong className="text-[#EDE6D8]">{npc.hp.max}</strong></span>
-                  {npc.cr && <span>درجه چالش (CR): <strong className="text-[#E0A030]">{npc.cr}</strong></span>}
+                <div className="flex items-center justify-between text-xs text-text-muted pt-2 border-t border-border">
+                  <span>AC: <strong className="text-text-primary">{npc.ac}</strong></span>
+                  <span>جان: <strong className="text-text-primary">{npc.hp.max}</strong></span>
+                  {npc.cr && <span>درجه چالش (CR): <strong className="text-accent">{npc.cr}</strong></span>}
                 </div>
               </div>
             ))
@@ -361,9 +361,9 @@ export const CodexTab: React.FC<CodexTabProps> = ({
       {subTab === 'rules' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filteredRules.map(rule => (
-            <div key={rule.id} className="surface-card rounded-[14px] p-3.5 border border-[#2F2A23] card-gold-top">
-              <h4 className="font-extrabold text-xs text-[#E0A030] mb-1.5">{rule.title}</h4>
-              <p className="text-xs text-[#EDE6D8]/80 leading-relaxed select-text">
+            <div key={rule.id} className="surface-card rounded-[14px] p-3.5 border border-border card-gold-top">
+              <h4 className="font-extrabold text-xs text-accent mb-1.5">{rule.title}</h4>
+              <p className="text-xs text-text-primary/80 leading-relaxed select-text">
                 {rule.description || rule.details || rule.summary}
               </p>
             </div>
@@ -374,17 +374,17 @@ export const CodexTab: React.FC<CodexTabProps> = ({
       {/* Calendar Inner Tab */}
       {subTab === 'calendar' && (
         <div className="surface-card rounded-[14px] p-4 space-y-3">
-          <div className="border-b border-[#2F2A23] pb-2">
-            <h4 className="text-xs font-bold text-[#EDE6D8]">گاهشمار زمان‌های زروانیا</h4>
-            <p className="text-[10px] text-[#A39A89]">وقایع نجومی، فصول تغییر جریان و گردهمایی‌های اقوام</p>
+          <div className="border-b border-border pb-2">
+            <h4 className="text-xs font-bold text-text-primary">گاهشمار زمان‌های زروانیا</h4>
+            <p className="text-xs text-text-muted">وقایع نجومی، فصول تغییر جریان و گردهمایی‌های اقوام</p>
           </div>
 
           <div className="space-y-2">
             {calendarEvents.map((evt, idx) => (
-              <div key={idx} className="surface-2-card rounded-[10px] p-2.5 border border-[#2F2A23] flex items-center justify-between gap-2">
+              <div key={idx} className="surface-2-card rounded-[10px] p-2.5 border border-border flex items-center justify-between gap-2">
                 <div>
-                  <span className="font-extrabold text-xs text-[#EDE6D8] block">{evt.day}</span>
-                  <span className="text-[11px] text-[#A39A89]">{evt.event}</span>
+                  <span className="font-extrabold text-xs text-text-primary block">{evt.day}</span>
+                  <span className="text-xs text-text-muted">{evt.event}</span>
                 </div>
                 <Chip variant="region" region={evt.region as any} />
               </div>

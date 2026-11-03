@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./styles/theme.css";
 @import "./styles/tokens.css";
 
 @theme {
@@ -8,11 +9,16 @@
   --color-surface: rgb(var(--color-surface-rgb) / <alpha-value>);
   --color-surface-2: rgb(var(--color-surface-2-rgb) / <alpha-value>);
   --color-surface-3: rgb(var(--color-surface-3-rgb) / <alpha-value>);
+  --color-surface-raised: rgb(var(--color-surface-raised-rgb) / <alpha-value>);
+  --color-surface-elevated: rgb(var(--color-surface-elevated-rgb) / <alpha-value>);
   --color-border: rgb(var(--color-border-rgb) / <alpha-value>);
   --color-border-strong: rgb(var(--color-border-strong-rgb) / <alpha-value>);
+  --color-border-subtle: rgb(var(--color-border-subtle-rgb) / <alpha-value>);
   --color-text-primary: rgb(var(--color-text-rgb) / <alpha-value>);
   --color-text-muted: rgb(var(--color-text-muted-rgb) / <alpha-value>);
   --color-text-disabled: rgb(var(--color-text-disabled-rgb) / <alpha-value>);
+  --color-primary: rgb(var(--color-primary-rgb) / <alpha-value>);
+  --color-primary-hover: rgb(var(--color-primary-hover-rgb) / <alpha-value>);
   --color-accent: rgb(var(--color-accent-rgb) / <alpha-value>);
   --color-accent-hover: rgb(var(--color-accent-hover-rgb) / <alpha-value>);
   --color-accent-glow: rgb(var(--color-accent-glow-rgb) / <alpha-value>);
@@ -25,6 +31,12 @@
   --color-focus-ring: rgb(var(--color-focus-ring-rgb) / <alpha-value>);
   --color-overlay: rgb(var(--color-overlay-rgb) / <alpha-value>);
   --color-selection: rgb(var(--color-selection-rgb) / <alpha-value>);
+  --color-role-owner: var(--role-owner);
+  --color-role-codm: var(--role-codm);
+  --color-role-player: var(--role-player);
+  --color-role-spectator: var(--role-spectator);
+  --color-stat-hp: var(--stat-hp);
+  --color-stat-ac: var(--stat-ac);
 
   --radius-xs: var(--radius-xs);
   --radius-sm: var(--radius-sm);
@@ -38,79 +50,6 @@
   --shadow-glow-amber-lg: var(--shadow-glow-amber-lg);
   --shadow-glow-ember: var(--shadow-glow-ember);
   --shadow-glow-heal: var(--shadow-glow-heal);
-}
-
-/* -------------------------------------------------------------
-   Self-Hosted IRANSans (woff2 & ttf: 400 Regular, 500 Medium, 700 Bold)
-   ------------------------------------------------------------- */
-@font-face {
-  font-family: 'IRANSansWeb';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/iransans/IRANSansWeb.woff2') format('woff2'),
-       url('/fonts/iransans/IRANSansWeb.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'IRANSansWeb';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url('/fonts/iransans/IRANSansWeb_Medium.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'IRANSansWeb';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/iransans/IRANSansWeb_Bold.woff2') format('woff2'),
-       url('/fonts/iransans/IRANSansWeb_Bold.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'IRANSans';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/iransans/IRANSansWeb.woff2') format('woff2'),
-       url('/fonts/iransans/IRANSansWeb.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'IRANSans';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url('/fonts/iransans/IRANSansWeb_Medium.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'IRANSans';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/iransans/IRANSansWeb_Bold.woff2') format('woff2'),
-       url('/fonts/iransans/IRANSansWeb_Bold.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'IranSans';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/iransans/IRANSansWeb.woff2') format('woff2'),
-       url('/fonts/iransans/IRANSansWeb.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'IranSans';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/iransans/IRANSansWeb_Bold.woff2') format('woff2'),
-       url('/fonts/iransans/IRANSansWeb_Bold.ttf') format('truetype');
 }
 
 :root {

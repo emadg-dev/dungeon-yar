@@ -102,7 +102,7 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
       title="ثبت پایان جلسه و حضور و غیاب"
       subtitle={`جلسه شماره ${session.number}: ${session.title}`}
     >
-      <form onSubmit={handleSubmit} className="space-y-4 pb-20 text-right" dir="rtl">
+      <form onSubmit={handleSubmit} className="space-y-4 pb-20 text-start" dir="rtl">
         {errorMsg && (
           <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -110,24 +110,24 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
           </div>
         )}
 
-        <div className="p-3 rounded-xl bg-[#2A1F13] border border-[#E0A030]/20 text-xs text-[#E8D4B0] leading-relaxed">
+        <div className="p-3 rounded-xl bg-surface-2 border border-accent/20 text-xs text-accent-hover leading-relaxed">
           با ثبت این فرم، وضعیت جلسه به «برگزار شده» تغییر یافته، به شمارنده جلسات کاراکترهای حاضر (+۱) افزوده می‌شود و یک رویداد افتخار با عنوان «حضور در جلسه {session.number}» در شناسنامه کاراکترها ثبت می‌گردد.
         </div>
 
         {/* Quick select buttons */}
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="font-bold text-[#EDE6D8]">
-            شخصیت‌های حاضر: <span className="text-[#F2C265]">{attendedCount} از {participations.length}</span>
+          <div className="font-bold text-text-primary">
+            شخصیت‌های حاضر: <span className="text-accent-hover">{attendedCount} از {participations.length}</span>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => handleSelectAll(true)}
-              className="text-[#6F9E78] hover:underline font-semibold"
+              className="text-success hover:underline font-semibold"
             >
               انتخاب همه
             </button>
-            <span className="text-[#8C8576]">·</span>
+            <span className="text-text-muted">·</span>
             <button
               type="button"
               onClick={() => handleSelectAll(false)}
@@ -150,15 +150,15 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
                 onClick={() => toggleAttendance(p.id)}
                 className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-wrap items-center justify-between gap-2 gap-3 min-h-[52px] ${
                   isAttended
-                    ? 'bg-[#6F9E78]/10 border-[#6F9E78]/40 text-[#EDE6D8]'
-                    : 'bg-[#171310] border-white/5 text-[#A39A89] opacity-70'
+                    ? 'bg-success/10 border-success/40 text-text-primary'
+                    : 'bg-surface border-white/5 text-text-muted opacity-70'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
                       isAttended
-                        ? 'bg-[#6F9E78] text-[#0E0D0C]'
+                        ? 'bg-success text-on-accent'
                         : 'border border-white/20 text-transparent'
                     }`}
                   >
@@ -166,14 +166,14 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
                   </div>
 
                   <div>
-                    <div className="text-xs sm:text-sm font-bold text-[#EDE6D8] flex items-center gap-2">
+                    <div className="text-xs sm:text-sm font-bold text-text-primary flex items-center gap-2">
                       <span>{char?.name || 'شخصیت ماجراجو'}</span>
-                      <span className="text-[11px] font-normal text-[#8C8576]">
+                      <span className="text-xs font-normal text-text-muted">
                         ({char?.className || 'کلاس'} · سطح {p.level})
                       </span>
                     </div>
-                    <div className="text-[11px] text-[#A39A89] mt-0.5 flex items-center gap-1.5">
-                      <Award className="w-3 h-3 text-[#E0A030]" />
+                    <div className="text-xs text-text-muted mt-0.5 flex items-center gap-1.5">
+                      <Award className="w-3 h-3 text-accent" />
                       <span>جلسات حضور یافته تا کنون: {p.sessionsAttended || 0}</span>
                     </div>
                   </div>
@@ -181,7 +181,7 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
 
                 <div className="text-xs font-bold">
                   {isAttended ? (
-                    <span className="text-[#6F9E78]">حاضر</span>
+                    <span className="text-success">حاضر</span>
                   ) : (
                     <span className="text-rose-400">غایب</span>
                   )}
@@ -196,7 +196,7 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3.5 rounded-xl bg-[#6F9E78] hover:bg-[#82B38C] text-[#0E0D0C] font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-lg min-h-[48px]"
+            className="w-full py-3.5 rounded-xl bg-success hover:bg-success text-on-accent font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-lg min-h-[48px]"
           >
             <UserCheck className="w-4 h-4" />
             <span>ثبت نهایی حضور و غیاب</span>

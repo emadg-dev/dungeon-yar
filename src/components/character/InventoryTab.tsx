@@ -25,7 +25,7 @@ const InventoryItemRow = memo<InventoryItemRowProps>(({
   onOpenActionMenu
 }) => (
   <div
-    className="surface-2-card rounded-[12px] p-2.5 border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-2 transition hover:border-[#2F2A23]/80 content-visibility-card"
+    className="surface-2-card rounded-[12px] p-2.5 border border-border flex flex-wrap items-center justify-between gap-2 gap-2 transition hover:border-border/80 content-visibility-card"
   >
     {/* Left: Item Info (Tap = Detail Sheet) */}
     <button
@@ -36,34 +36,34 @@ const InventoryItemRow = memo<InventoryItemRowProps>(({
       {/* Amber "New" Dot for DM-granted items */}
       {item.isNew && (
         <span
-          className="w-2.5 h-2.5 rounded-full bg-[#E0A030] shadow-[0_0_8px_rgba(224,160,48,0.8)] shrink-0 animate-pulse"
+          className="w-2.5 h-2.5 rounded-full bg-accent shadow-glow-amber shrink-0 animate-pulse"
           title="شیء جدید از طرف دانجن مستر"
         />
       )}
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="font-extrabold text-xs text-[#EDE6D8] truncate">{item.name}</span>
+          <span className="font-extrabold text-xs text-text-primary truncate">{item.name}</span>
           
           {/* Badges: Equipped / Quest / Artifact */}
           {item.isEquipped && (
-            <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#6F9E78]/15 text-[#6F9E78] border border-[#6F9E78]/30 font-bold shrink-0">
+            <span className="text-xs px-1.5 py-0.2 rounded-[6px] bg-success/15 text-success border border-success/30 font-bold shrink-0">
               مجهز
             </span>
           )}
           {item.isQuest && (
-            <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#C97B4A]/15 text-[#C97B4A] border border-[#C97B4A]/30 font-bold shrink-0">
+            <span className="text-xs px-1.5 py-0.2 rounded-[6px] bg-warning/15 text-warning border border-warning/30 font-bold shrink-0">
               مأموریت
             </span>
           )}
           {item.isArtifact && (
-            <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30 font-bold shrink-0">
+            <span className="text-xs px-1.5 py-0.2 rounded-[6px] bg-accent/15 text-accent border border-accent/30 font-bold shrink-0">
               آرتیفکت
             </span>
           )}
         </div>
 
-        <div className="text-[10px] text-[#A39A89] mt-0.5 truncate">
+        <div className="text-xs text-text-muted mt-0.5 truncate">
           وزن: {item.weight} کیلو • {item.description || 'بدون توضیحات'}
         </div>
       </div>
@@ -71,21 +71,21 @@ const InventoryItemRow = memo<InventoryItemRowProps>(({
 
     {/* Right: Quantity Stepper & ⋯ Action Menu */}
     <div className="flex items-center gap-1.5 shrink-0">
-      <div className="flex items-center gap-1 bg-[#0E0D0C] p-0.5 rounded-[8px] border border-[#2F2A23]">
+      <div className="flex items-center gap-1 bg-bg p-0.5 rounded-[8px] border border-border">
         <button
           type="button"
           onClick={() => onAdjustQuantity(item.id, -1)}
-          className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
+          className="w-7 h-7 rounded-[6px] bg-surface-2 text-text-muted hover:text-text-primary font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
         >
           -
         </button>
-        <span className="font-mono text-xs font-extrabold text-[#EDE6D8] min-w-[20px] text-center dice-ltr">
+        <span className="font-mono text-xs font-extrabold text-text-primary min-w-[20px] text-center dice-ltr">
           {item.quantity}
         </span>
         <button
           type="button"
           onClick={() => onAdjustQuantity(item.id, 1)}
-          className="w-7 h-7 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
+          className="w-7 h-7 rounded-[6px] bg-surface-2 text-text-muted hover:text-text-primary font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
         >
           +
         </button>
@@ -94,7 +94,7 @@ const InventoryItemRow = memo<InventoryItemRowProps>(({
       <button
         type="button"
         onClick={() => onOpenActionMenu(item)}
-        className="w-9 h-9 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] flex items-center justify-center touch-target min-w-[44px]"
+        className="w-9 h-9 rounded-[8px] bg-surface-2 text-text-muted hover:text-text-primary border border-border flex items-center justify-center touch-target min-w-[44px]"
         title="منوی عملیات"
         aria-label={`عملیات برای ${item.name}`}
       >
@@ -305,12 +305,12 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
         {/* 1. Rations Bar */}
         <div className="surface-card rounded-[14px] p-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-[10px] bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-[10px] bg-accent/15 text-accent border border-accent/30 flex items-center justify-center shrink-0">
               <Utensils className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-xs font-extrabold text-[#EDE6D8]">جیره غذایی (Rations)</h4>
-              <p className="text-[10px] text-[#A39A89]">1 جیره در روز، مانع خستگی</p>
+              <h4 className="text-xs font-extrabold text-text-primary">جیره غذایی (Rations)</h4>
+              <p className="text-xs text-text-muted">1 جیره در روز، مانع خستگی</p>
             </div>
           </div>
 
@@ -318,18 +318,18 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             <button
               type="button"
               onClick={() => updateRations(-1)}
-              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
+              className="w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="کاهش جیره"
             >
               -
             </button>
-            <span className="font-mono text-xl font-extrabold text-[#E0A030] min-w-[32px] text-center dice-ltr">
+            <span className="font-mono text-xl font-extrabold text-accent min-w-[32px] text-center dice-ltr">
               {character.rations}
             </span>
             <button
               type="button"
               onClick={() => updateRations(1)}
-              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
+              className="w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="افزایش جیره"
             >
               +
@@ -340,12 +340,12 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
         {/* 2. Lanterns Bar */}
         <div className="surface-card rounded-[14px] p-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-[10px] bg-[#C2512B]/15 text-[#C2512B] border border-[#C2512B]/30 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-[10px] bg-danger/15 text-danger border border-danger/30 flex items-center justify-center shrink-0">
               <Flame className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-xs font-extrabold text-[#EDE6D8]">چراغ روغنی (Lanterns)</h4>
-              <p className="text-[10px] text-[#A39A89]">هر چراغ ≈ 6 ساعت روشنایی</p>
+              <h4 className="text-xs font-extrabold text-text-primary">چراغ روغنی (Lanterns)</h4>
+              <p className="text-xs text-text-muted">هر چراغ ≈ 6 ساعت روشنایی</p>
             </div>
           </div>
 
@@ -353,18 +353,18 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             <button
               type="button"
               onClick={() => updateLanternOil(-1)}
-              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
+              className="w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="کاهش روغن"
             >
               -
             </button>
-            <span className="font-mono text-xl font-extrabold text-[#E0A030] min-w-[32px] text-center dice-ltr">
+            <span className="font-mono text-xl font-extrabold text-accent min-w-[32px] text-center dice-ltr">
               {character.lanternOil}
             </span>
             <button
               type="button"
               onClick={() => updateLanternOil(1)}
-              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
+              className="w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="افزایش روغن"
             >
               +
@@ -375,12 +375,12 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
         {/* 3. Currency Bar */}
         <div className="surface-card rounded-[14px] p-3 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-[10px] bg-[#D6B25E]/15 text-[#D6B25E] border border-[#D6B25E]/30 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-[10px] bg-stat-ac/15 text-stat-ac border border-stat-ac/30 flex items-center justify-center shrink-0">
               <Coins className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-xs font-extrabold text-[#EDE6D8]">سکه طلا و نقره</h4>
-              <p className="text-[10px] text-[#A39A89]">وزن کوله: {totalWeight.toFixed(1)} کیلو</p>
+              <h4 className="text-xs font-extrabold text-text-primary">سکه طلا و نقره</h4>
+              <p className="text-xs text-text-muted">وزن کوله: {totalWeight.toFixed(1)} کیلو</p>
             </div>
           </div>
 
@@ -388,18 +388,18 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             <button
               type="button"
               onClick={() => updateCurrency('gold', -1)}
-              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
+              className="w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="کاهش طلا"
             >
               -
             </button>
-            <span className="font-mono text-xl font-extrabold text-[#D6B25E] min-w-[32px] text-center dice-ltr">
+            <span className="font-mono text-xl font-extrabold text-stat-ac min-w-[32px] text-center dice-ltr">
               {character.currencies.gold}
             </span>
             <button
               type="button"
               onClick={() => updateCurrency('gold', 1)}
-              className="w-10 h-10 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
+              className="w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="افزایش طلا"
             >
               +
@@ -418,15 +418,15 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
               placeholder="جستجو در اشیاء و نشان‌ها..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full py-2 pe-3 ps-8 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+              className="w-full py-2 pe-3 ps-8 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent focus:outline-none"
             />
-            <Search className="w-3.5 h-3.5 text-[#A39A89] absolute start-2.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-text-muted absolute start-2.5 top-1/2 -translate-y-1/2" />
           </div>
 
           <button
             type="button"
             onClick={() => setShowTreasuryModal(true)}
-            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] bg-[#201D19] border border-[#E0A030]/40 text-[#E0A030] hover:bg-[#2B2620] text-xs font-bold transition touch-target min-w-[44px] shrink-0"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] bg-surface-2 border border-accent/40 text-accent hover:bg-surface-2 text-xs font-bold transition touch-target min-w-[44px] shrink-0"
           >
             <Coins className="w-3.5 h-3.5" />
             <span>خزانه گروه</span>
@@ -466,8 +466,8 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
               }}
               className={`px-3.5 py-2 rounded-[10px] text-xs font-bold transition whitespace-nowrap shrink-0 snap-start touch-target min-w-[44px] ${
                 selectedCategory === cat.id
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-black shadow-sm'
-                  : 'bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23]'
+                  ? 'bg-accent text-on-accent font-black shadow-sm'
+                  : 'bg-surface-2 text-text-muted hover:text-text-primary border border-border'
               }`}
             >
               <span className="whitespace-nowrap shrink-0">{cat.label}</span>
@@ -478,7 +478,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
         {/* Item Rows List */}
         <div className="space-y-2 pt-1">
           {filteredItems.length === 0 ? (
-            <div className="text-center py-8 text-[#A39A89] text-xs">
+            <div className="text-center py-8 text-text-muted text-xs">
               شیئی در این دسته‌بندی یافت نشد.
             </div>
           ) : filteredItems.length > 50 ? (
@@ -520,8 +520,8 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
           title={selectedItemDetail.name}
           subtitle={`تعداد: ${selectedItemDetail.quantity} • وزن: ${selectedItemDetail.weight} کیلو`}
         >
-          <div className="space-y-4 text-xs text-[#EDE6D8]" dir="rtl">
-            <div className="p-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] leading-relaxed">
+          <div className="space-y-4 text-xs text-text-primary" dir="rtl">
+            <div className="p-3 rounded-[12px] bg-surface-2 border border-border leading-relaxed">
               {selectedItemDetail.description || 'توضیحات تکمیلی برای این شیء ثبت نشده است.'}
             </div>
 
@@ -532,7 +532,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                   toggleEquipped(selectedItemDetail.id);
                   setSelectedItemDetail(null);
                 }}
-                className="py-2.5 px-4 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold touch-target min-w-[44px]"
+                className="py-2.5 px-4 rounded-[12px] bg-surface-2 border border-border text-xs font-bold touch-target min-w-[44px]"
               >
                 {selectedItemDetail.isEquipped ? 'خارج کردن از حالت مجهز' : 'مجهز کردن'}
               </button>
@@ -567,24 +567,24 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
       >
         <form onSubmit={handleAddItem} className="space-y-3" dir="rtl">
           <div>
-            <label className="text-xs text-[#A39A89] block mb-1">نام شیء یا غنیمت:</label>
+            <label className="text-xs text-text-muted block mb-1">نام شیء یا غنیمت:</label>
             <input
               type="text"
               required
               placeholder="مثلاً: خنجر نقره‌ای کاروانسرای ماه"
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
-              className="w-full py-2.5 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+              className="w-full py-2.5 px-3 rounded-[12px] bg-surface-2 border border-border text-sm text-text-primary focus:border-accent focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-xs text-[#A39A89] block mb-1">دسته‌بندی:</label>
+              <label className="text-xs text-text-muted block mb-1">دسته‌بندی:</label>
               <select
                 value={itemCategory}
                 onChange={(e) => setItemCategory(e.target.value as ItemCategory)}
-                className="w-full py-2.5 px-2 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                className="w-full py-2.5 px-2 rounded-[12px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent focus:outline-none"
               >
                 <option value="weapon">سلاح</option>
                 <option value="armor">زره</option>
@@ -595,26 +595,26 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             </div>
 
             <div>
-              <label className="text-xs text-[#A39A89] block mb-1">وزن (کیلوگرم):</label>
+              <label className="text-xs text-text-muted block mb-1">وزن (کیلوگرم):</label>
               <input
                 type="number"
                 step="0.1"
                 min="0"
                 value={itemWeight}
                 onChange={(e) => setItemWeight(parseFloat(e.target.value) || 0)}
-                className="w-full py-2.5 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                className="w-full py-2.5 px-3 rounded-[12px] bg-surface-2 border border-border text-sm text-text-primary focus:border-accent focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs text-[#A39A89] block mb-1">شرح و خواص جادویی:</label>
+            <label className="text-xs text-text-muted block mb-1">شرح و خواص جادویی:</label>
             <textarea
               rows={3}
               placeholder="توضیحات و کاربرد..."
               value={itemDescription}
               onChange={(e) => setItemDescription(e.target.value)}
-              className="w-full py-2 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+              className="w-full py-2 px-3 rounded-[12px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent focus:outline-none"
             />
           </div>
 
@@ -622,7 +622,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             <button
               type="button"
               onClick={() => setShowAddItem(false)}
-              className="py-2.5 px-4 rounded-[12px] text-xs text-[#A39A89] touch-target min-w-[44px]"
+              className="py-2.5 px-4 rounded-[12px] text-xs text-text-muted touch-target min-w-[44px]"
             >
               انصراف
             </button>

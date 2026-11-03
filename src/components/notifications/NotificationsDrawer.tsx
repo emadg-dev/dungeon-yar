@@ -136,26 +136,26 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
       case 'session_changed':
       case 'session_cancelled':
       case 'rsvp_reminder':
-        return <Calendar className="w-4 h-4 text-[#E0A030]" />;
+        return <Calendar className="w-4 h-4 text-accent" />;
       case 'poll_opened':
       case 'poll_closed':
-        return <Vote className="w-4 h-4 text-[#D89427]" />;
+        return <Vote className="w-4 h-4 text-warning" />;
       case 'encounter_started':
-        return <Swords className="w-4 h-4 text-[#DC4437]" />;
+        return <Swords className="w-4 h-4 text-danger" />;
       case 'quest_updated':
-        return <Sparkles className="w-4 h-4 text-[#4285F4]" />;
+        return <Sparkles className="w-4 h-4 text-info" />;
       case 'handout_revealed':
-        return <Scroll className="w-4 h-4 text-[#34A853]" />;
+        return <Scroll className="w-4 h-4 text-success" />;
       case 'approval_decided':
       case 'level_up_available':
-        return <Award className="w-4 h-4 text-[#F4B400]" />;
+        return <Award className="w-4 h-4 text-accent" />;
       case 'invite_received':
       case 'campaign_joined':
-        return <Users className="w-4 h-4 text-[#00ACC1]" />;
+        return <Users className="w-4 h-4 text-info" />;
       case 'backstory_comment':
-        return <MessageSquare className="w-4 h-4 text-[#AB47BC]" />;
+        return <MessageSquare className="w-4 h-4 text-role-codm" />;
       default:
-        return <Bell className="w-4 h-4 text-[#E0A030]" />;
+        return <Bell className="w-4 h-4 text-accent" />;
     }
   };
 
@@ -173,9 +173,9 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
   return (
     <>
       <BottomSheet isOpen={isOpen} onClose={onClose} title="اعلان‌ها و رویدادها">
-        <div className="space-y-4 pb-6 text-sm text-[#E2D8C3]" dir="rtl">
+        <div className="space-y-4 pb-6 text-sm text-text-primary" dir="rtl">
           {/* Top action bar: Filter Pills & Action buttons */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-b border-[#2F2A23] pb-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-b border-border pb-3">
             <ScrollableRow activeKey={filterMode} className="items-center gap-1.5 py-0.5">
               <button
                 type="button"
@@ -183,8 +183,8 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                 onClick={() => setFilterMode('all')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 snap-start transition-all min-h-[44px] ${
                   filterMode === 'all'
-                    ? 'bg-[#E0A030] text-[#0E0D0C] shadow-sm'
-                    : 'bg-[#1F1C18] text-[#9E9080] hover:text-[#E2D8C3]'
+                    ? 'bg-accent text-on-accent shadow-sm'
+                    : 'bg-surface-2 text-text-muted hover:text-text-primary'
                 }`}
               >
                 همه ({notifications.length})
@@ -196,13 +196,13 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                 onClick={() => setFilterMode('unread')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 snap-start transition-all inline-flex items-center gap-1.5 min-h-[44px] ${
                   filterMode === 'unread'
-                    ? 'bg-[#E0A030] text-[#0E0D0C] shadow-sm'
-                    : 'bg-[#1F1C18] text-[#9E9080] hover:text-[#E2D8C3]'
+                    ? 'bg-accent text-on-accent shadow-sm'
+                    : 'bg-surface-2 text-text-muted hover:text-text-primary'
                 }`}
               >
                 <span className="whitespace-nowrap shrink-0">خوانده‌نشده</span>
                 {totalUnread > 0 && (
-                  <span className="w-4 h-4 rounded-full bg-[#DC4437] text-white text-[10px] flex items-center justify-center font-bold shrink-0">
+                  <span className="w-4 h-4 rounded-full bg-danger text-white text-xs flex items-center justify-center font-bold shrink-0">
                     {totalUnread}
                   </span>
                 )}
@@ -215,8 +215,8 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                   onClick={() => setFilterMode('current')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 snap-start transition-all min-h-[44px] ${
                     filterMode === 'current'
-                      ? 'bg-[#E0A030] text-[#0E0D0C] shadow-sm'
-                      : 'bg-[#1F1C18] text-[#9E9080] hover:text-[#E2D8C3]'
+                      ? 'bg-accent text-on-accent shadow-sm'
+                      : 'bg-surface-2 text-text-muted hover:text-text-primary'
                   }`}
                 >
                   کمپین فعلی
@@ -229,7 +229,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                 <button
                   type="button"
                   onClick={handleMarkAllRead}
-                  className="p-1.5 rounded-lg bg-[#1F1C18] hover:bg-[#2A2620] text-[#E0A030] text-xs font-medium flex items-center gap-1 border border-[#3E352B] transition-colors"
+                  className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-2 text-accent text-xs font-medium flex items-center gap-1 border border-border-strong transition-colors"
                   title="خواندن همه اعلان‌ها"
                 >
                   <CheckCheck className="w-4 h-4" />
@@ -240,7 +240,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenPreferences ? onOpenPreferences() : setPrefsModalOpen(true)}
-                className="p-1.5 rounded-lg bg-[#1F1C18] hover:bg-[#2A2620] text-[#9E9080] hover:text-[#E2D8C3] border border-[#2F2A23] transition-colors"
+                className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-2 text-text-muted hover:text-text-primary border border-border transition-colors"
                 title="تنظیمات اعلان‌ها"
               >
                 <Settings className="w-4 h-4" />
@@ -250,16 +250,16 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
 
           {/* Notification List / Grouped by Campaign */}
           {loading ? (
-            <div className="py-12 flex flex-col items-center justify-center gap-2 text-[#9E9080]">
-              <Loader2 className="w-6 h-6 animate-spin text-[#E0A030]" />
+            <div className="py-12 flex flex-col items-center justify-center gap-2 text-text-muted">
+              <Loader2 className="w-6 h-6 animate-spin text-accent" />
               <p className="text-xs">در حال بارگذاری اعلان‌ها...</p>
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="py-12 flex flex-col items-center justify-center gap-2 text-center text-[#9E9080]">
-              <div className="w-12 h-12 rounded-full bg-[#1F1C18] border border-[#2F2A23] flex items-center justify-center text-[#554C40] mb-1">
+            <div className="py-12 flex flex-col items-center justify-center gap-2 text-center text-text-muted">
+              <div className="w-12 h-12 rounded-full bg-surface-2 border border-border flex items-center justify-center text-text-disabled mb-1">
                 <Inbox className="w-6 h-6" />
               </div>
-              <p className="font-semibold text-sm text-[#C8BCAB]">هیچ اعلانی یافت نشد</p>
+              <p className="font-semibold text-sm text-text-muted">هیچ اعلانی یافت نشد</p>
               <p className="text-xs max-w-xs">
                 {filterMode === 'unread'
                   ? 'همه پیام‌ها را خوانده‌اید! صندوق ورودی شما پاکیزه است.'
@@ -271,13 +271,13 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
               {grouped.map((group) => (
                 <div key={group.campaignId || 'global'} className="space-y-2">
                   {/* Campaign Group Header */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-[#A89885] px-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-text-muted px-1">
                     <span className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#E0A030]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                       {group.campaignTitle}
                     </span>
                     {group.unreadCount > 0 && (
-                      <span className="text-[11px] font-normal text-[#E0A030]">
+                      <span className="text-xs font-normal text-accent">
                         {group.unreadCount} خوانده‌نشده
                       </span>
                     )}
@@ -293,16 +293,16 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                           key={item.id}
                           className={`p-3 rounded-xl border transition-all relative flex items-start gap-3 group ${
                             isUnread
-                              ? 'bg-[#1C1813] border-[#705224] shadow-[0_0_10px_rgba(224,160,48,0.08)]'
-                              : 'bg-[#141210] border-[#26221C] opacity-80 hover:opacity-100 hover:border-[#383127]'
+                              ? 'bg-surface border-border-strong shadow-glow-amber'
+                              : 'bg-bg border-border opacity-80 hover:opacity-100 hover:border-border'
                           }`}
                         >
                           {/* Type Icon Badge */}
                           <div
                             className={`w-9 h-9 rounded-lg shrink-0 flex items-center justify-center border ${
                               isUnread
-                                ? 'bg-[#272118] border-[#8A6329]'
-                                : 'bg-[#1A1815] border-[#2B2620]'
+                                ? 'bg-surface-2 border-accent'
+                                : 'bg-surface border-border'
                             }`}
                           >
                             {getTypeIcon(item.type)}
@@ -313,21 +313,21 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                             <div className="flex items-start justify-between gap-2">
                               <h5
                                 onClick={() => handleItemClick(item)}
-                                className={`font-bold text-xs sm:text-sm leading-snug cursor-pointer hover:text-[#F2C265] transition-colors ${
-                                  isUnread ? 'text-[#FBF7EE]' : 'text-[#C9BDAB]'
+                                className={`font-bold text-xs sm:text-sm leading-snug cursor-pointer hover:text-accent-hover transition-colors ${
+                                  isUnread ? 'text-text-primary' : 'text-text-muted'
                                 }`}
                               >
                                 {item.payload.title}
                               </h5>
-                              <span className="text-[10px] text-[#8C8070] shrink-0 flex items-center gap-1 mt-0.5">
-                                <Clock className="w-3 h-3 text-[#6A6054]" />
+                              <span className="text-xs text-text-muted shrink-0 flex items-center gap-1 mt-0.5">
+                                <Clock className="w-3 h-3 text-text-disabled" />
                                 {formatRelativeTime(item.createdAt)}
                               </span>
                             </div>
 
                             <p
                               onClick={() => handleItemClick(item)}
-                              className="text-xs text-[#A89885] leading-relaxed cursor-pointer line-clamp-2"
+                              className="text-xs text-text-muted leading-relaxed cursor-pointer line-clamp-2"
                             >
                               {item.payload.body}
                             </p>
@@ -337,7 +337,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                               <button
                                 type="button"
                                 onClick={() => handleItemClick(item)}
-                                className="inline-flex items-center gap-1 text-[#E0A030] hover:text-[#F2C265] font-semibold text-[11px] transition-colors py-0.5"
+                                className="inline-flex items-center gap-1 text-accent hover:text-accent-hover font-semibold text-xs transition-colors py-0.5"
                               >
                                 <span>مشاهده جزئیات</span>
                                 <ExternalLink className="w-3 h-3" />
@@ -348,7 +348,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => handleMarkAsRead(item.id)}
-                                    className="text-[11px] text-[#9E9080] hover:text-[#E2D8C3] transition-colors"
+                                    className="text-xs text-text-muted hover:text-text-primary transition-colors"
                                   >
                                     علامت خوانده‌شده
                                   </button>
@@ -356,7 +356,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => handleDelete(item.id)}
-                                  className="text-[#6D6357] hover:text-[#DC4437] transition-colors p-1"
+                                  className="text-text-disabled hover:text-danger transition-colors p-1"
                                   title="حذف این اعلان"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />

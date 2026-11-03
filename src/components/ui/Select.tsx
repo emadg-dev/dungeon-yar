@@ -49,15 +49,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             id={selectId}
             disabled={disabled}
             aria-invalid={Boolean(error)}
-            style={{ fontSize: '16px' }}
-            className={`w-full min-h-[44px] ps-3.5 pe-10 py-2.5 rounded-xl bg-stone-900/80 border text-stone-100 transition-colors outline-none appearance-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:border-amber-400 disabled:opacity-40 disabled:pointer-events-none cursor-pointer ${
-              error ? 'border-red-500/80 ring-1 ring-red-500/50' : 'border-stone-800 focus:border-amber-400'
+            className={`w-full min-h-[44px] ps-3.5 pe-10 py-2.5 rounded-xl bg-surface-2 border text-text-primary transition-colors outline-none appearance-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:border-accent disabled:opacity-40 disabled:pointer-events-none cursor-pointer ${
+              error ? 'border-danger/80 ring-1 ring-danger/50' : 'border-border focus:border-accent'
             } ${className}`}
             {...rest}
           >
             {options
               ? options.map((opt) => (
-                  <option key={opt.value} value={opt.value} disabled={opt.disabled} className="bg-stone-900 text-stone-100">
+                  <option key={opt.value} value={opt.value} disabled={opt.disabled} className="bg-surface-2 text-text-primary">
                     {opt.label}
                   </option>
                 ))

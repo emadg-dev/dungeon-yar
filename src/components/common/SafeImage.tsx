@@ -33,12 +33,12 @@ export const SafeImage: React.FC<SafeImageProps> = ({
   if (!src || hasError) {
     return (
       <div
-        className={`flex items-center justify-center bg-[#171513] text-[#A39A89] border border-[#2F2A23] ${containerClassName || className}`}
+        className={`flex items-center justify-center bg-surface text-text-muted border border-border ${containerClassName || className}`}
         style={{ width, height, aspectRatio, ...style }}
         role="img"
         aria-label={alt}
       >
-        {fallbackIcon || <span className="text-[10px] text-[#A39A89] select-none">{alt.slice(0, 2)}</span>}
+        {fallbackIcon || <span className="text-xs text-text-muted select-none">{alt.slice(0, 2)}</span>}
       </div>
     );
   }
@@ -50,7 +50,7 @@ export const SafeImage: React.FC<SafeImageProps> = ({
     >
       {!isLoaded && (
         <div
-          className="absolute inset-0 skeleton animate-pulse bg-[#201D19]"
+          className="absolute inset-0 skeleton animate-pulse bg-surface-2"
           style={{ width: '100%', height: '100%' }}
         />
       )}

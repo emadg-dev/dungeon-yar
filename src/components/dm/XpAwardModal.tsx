@@ -59,18 +59,18 @@ export const XpAwardModal: React.FC<XpAwardModalProps> = ({
       title="اعطای امتیاز تجربه (XP)"
       subtitle="سیستم پیشرفت و تجربه رسمی ۵e"
     >
-      <div className="space-y-4 py-2 text-right" dir="rtl">
+      <div className="space-y-4 py-2 text-start" dir="rtl">
         {success ? (
-          <div className="p-6 rounded-2xl bg-[#6F9E78]/15 border border-[#6F9E78]/40 text-center space-y-2">
-            <Check className="w-8 h-8 text-[#6F9E78] mx-auto" />
-            <h4 className="text-sm font-bold text-[#EDE6D8]">تجربه با موفقیت اعطا شد!</h4>
-            <p className="text-xs text-[#A39A89]">امتیاز تجربه به شخصیت‌ها افزوده شد و در صورت عبور از آستانه، ارتقای سطح فعال گردید.</p>
+          <div className="p-6 rounded-2xl bg-success/15 border border-success/40 text-center space-y-2">
+            <Check className="w-8 h-8 text-success mx-auto" />
+            <h4 className="text-sm font-bold text-text-primary">تجربه با موفقیت اعطا شد!</h4>
+            <p className="text-xs text-text-muted">امتیاز تجربه به شخصیت‌ها افزوده شد و در صورت عبور از آستانه، ارتقای سطح فعال گردید.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Target Selection */}
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1.5">
+              <label className="block text-xs font-bold text-text-primary mb-1.5">
                 گیرنده تجربه:
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -79,8 +79,8 @@ export const XpAwardModal: React.FC<XpAwardModalProps> = ({
                   onClick={() => setTargetMode('party')}
                   className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition ${
                     targetMode === 'party'
-                      ? 'bg-[#E0A030] text-[#0E0D0C] border-[#F2C265]'
-                      : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23]'
+                      ? 'bg-accent text-on-accent border-accent-hover'
+                      : 'bg-surface-2 text-text-muted border-border'
                   }`}
                 >
                   <Users className="w-4 h-4" />
@@ -92,8 +92,8 @@ export const XpAwardModal: React.FC<XpAwardModalProps> = ({
                   onClick={() => setTargetMode('single')}
                   className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition ${
                     targetMode === 'single'
-                      ? 'bg-[#E0A030] text-[#0E0D0C] border-[#F2C265]'
-                      : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23]'
+                      ? 'bg-accent text-on-accent border-accent-hover'
+                      : 'bg-surface-2 text-text-muted border-border'
                   }`}
                 >
                   <User className="w-4 h-4" />
@@ -104,13 +104,13 @@ export const XpAwardModal: React.FC<XpAwardModalProps> = ({
 
             {targetMode === 'single' && (
               <div>
-                <label className="block text-xs font-bold text-[#EDE6D8] mb-1.5">
+                <label className="block text-xs font-bold text-text-primary mb-1.5">
                   انتخاب شخصیت:
                 </label>
                 <select
                   value={selectedCharId}
                   onChange={e => setSelectedCharId(e.target.value)}
-                  className="w-full p-2.5 rounded-xl bg-[#10131e] border border-[#2F2A23] text-xs text-[#EDE6D8]"
+                  className="w-full p-2.5 rounded-xl bg-info border border-border text-xs text-text-primary"
                 >
                   {characters.map(c => (
                     <option key={c.id} value={c.id}>
@@ -123,7 +123,7 @@ export const XpAwardModal: React.FC<XpAwardModalProps> = ({
 
             {/* Amount & Presets */}
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1.5">
+              <label className="block text-xs font-bold text-text-primary mb-1.5">
                 میزان XP:
               </label>
               <input
@@ -132,7 +132,7 @@ export const XpAwardModal: React.FC<XpAwardModalProps> = ({
                 step="10"
                 value={amount}
                 onChange={e => setAmount(Number(e.target.value) || 0)}
-                className="w-full p-2.5 rounded-xl bg-[#10131e] border border-[#2F2A23] text-sm font-mono text-[#F2C265] focus:outline-none focus:border-[#E0A030]"
+                className="w-full p-2.5 rounded-xl bg-info border border-border text-sm font-mono text-accent-hover focus:outline-none focus:border-accent"
               />
 
               <div className="flex flex-wrap gap-1.5 mt-2">
@@ -141,7 +141,7 @@ export const XpAwardModal: React.FC<XpAwardModalProps> = ({
                     key={preset}
                     type="button"
                     onClick={() => setAmount(preset)}
-                    className="px-2.5 py-1 rounded-lg bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-[11px] font-mono text-[#EDE6D8] transition"
+                    className="px-2.5 py-1 rounded-lg bg-surface-2 border border-border hover:border-accent text-xs font-mono text-text-primary transition"
                   >
                     +{preset} XP
                   </button>
@@ -151,7 +151,7 @@ export const XpAwardModal: React.FC<XpAwardModalProps> = ({
 
             {/* Reason */}
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1.5">
+              <label className="block text-xs font-bold text-text-primary mb-1.5">
                 دلیل و رویداد داستانی:
               </label>
               <input
@@ -159,14 +159,14 @@ export const XpAwardModal: React.FC<XpAwardModalProps> = ({
                 value={reason}
                 onChange={e => setReason(e.target.value)}
                 placeholder="مثال: کشف معبد کهن زروانیا یا شکست هیولای باتلاق..."
-                className="w-full p-2.5 rounded-xl bg-[#10131e] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+                className="w-full p-2.5 rounded-xl bg-info border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
               />
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting || amount <= 0}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] font-black text-xs transition flex items-center justify-center gap-2 touch-target min-w-[44px] min-h-[48px] shadow-lg shadow-[#E0A030]/20 disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-warning to-accent hover:from-accent hover:to-accent-hover text-on-accent font-black text-xs transition flex items-center justify-center gap-2 touch-target min-w-[44px] min-h-[48px] shadow-lg shadow-accent/20 disabled:opacity-50"
             >
               <Award className="w-4 h-4" />
               <span>{isSubmitting ? 'در حال ثبت...' : `اعطای ${amount} امتیاز تجربه (XP)`}</span>

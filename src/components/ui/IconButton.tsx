@@ -14,14 +14,10 @@ export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 }
 
 const variantStyles: Record<IconButtonVariant, string> = {
-  primary:
-    'bg-gradient-to-r from-amber-500 to-amber-400 text-stone-950 shadow-[0_2px_8px_rgba(224,160,48,0.28)] hover:shadow-[0_0_12px_rgba(242,194,101,0.4)] active:scale-95 border border-amber-400/50',
-  secondary:
-    'bg-stone-900/80 hover:bg-stone-800 text-stone-300 hover:text-stone-100 border border-stone-700/60 hover:border-amber-500/40 active:scale-95',
-  ghost:
-    'bg-transparent hover:bg-stone-800/60 text-stone-400 hover:text-stone-200 active:scale-95',
-  danger:
-    'bg-red-900/40 hover:bg-red-800/60 text-red-300 border border-red-700/50 active:scale-95',
+  primary: 'btn-primary',
+  secondary: 'btn-secondary',
+  ghost: 'btn-ghost',
+  danger: 'btn-danger',
 };
 
 const sizeStyles: Record<IconButtonSize, string> = {
@@ -56,8 +52,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         aria-label={ariaLabel}
         title={ariaLabel}
         disabled={isDisabled}
-        style={{ touchAction: 'manipulation' }}
-        className={`inline-flex items-center justify-center whitespace-nowrap shrink-0 transition-all duration-150 select-none outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950 disabled:opacity-40 disabled:pointer-events-none ${
+        className={`btn inline-flex items-center justify-center whitespace-nowrap shrink-0 transition-all duration-150 select-none outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:opacity-40 disabled:pointer-events-none ${
           variantStyles[variant]
         } ${sizeStyles[size]} ${roundedClass} ${className}`}
         {...rest}

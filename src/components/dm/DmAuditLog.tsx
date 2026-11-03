@@ -64,13 +64,13 @@ export const DmAuditLog: React.FC<DmAuditLogProps> = ({ campaignId }) => {
   return (
     <div className="space-y-4" dir="rtl">
       {/* Header & Filter */}
-      <div className="surface-card rounded-[14px] p-4 border border-[#2F2A23] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="surface-card rounded-[14px] p-4 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-extrabold text-[#EDE6D8] flex items-center gap-1.5">
-            <Scroll className="w-4 h-4 text-[#E0A030]" />
+          <h3 className="text-sm font-extrabold text-text-primary flex items-center gap-1.5">
+            <Scroll className="w-4 h-4 text-accent" />
             <span>گزارش وقایع و امنیت سیستم (Audit Log)</span>
           </h3>
-          <p className="text-[11px] text-[#A39A89]">
+          <p className="text-xs text-text-muted">
             ثبت تمام اقدامات کلیدی، تغییر نقش‌ها، ورودها و صدور کدهای دعوت
           </p>
         </div>
@@ -79,7 +79,7 @@ export const DmAuditLog: React.FC<DmAuditLogProps> = ({ campaignId }) => {
           <select
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
-            className="py-1.5 px-3 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
+            className="py-1.5 px-3 rounded-[8px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
           >
             <option value="">همه رخدادها ({logs.length})</option>
             {availableActions.map(act => (
@@ -92,7 +92,7 @@ export const DmAuditLog: React.FC<DmAuditLogProps> = ({ campaignId }) => {
           <button
             type="button"
             onClick={loadLogs}
-            className="p-2 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] touch-target min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="p-2 rounded-[8px] bg-surface-2 border border-border text-text-muted hover:text-text-primary touch-target min-h-[44px] min-w-[44px] flex items-center justify-center"
             title="تازه‌سازی لاگ"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -103,7 +103,7 @@ export const DmAuditLog: React.FC<DmAuditLogProps> = ({ campaignId }) => {
       {/* Log list */}
       <div className="space-y-2">
         {filteredLogs.length === 0 ? (
-          <div className="surface-card rounded-[14px] p-8 text-center text-xs text-[#A39A89]">
+          <div className="surface-card rounded-[14px] p-8 text-center text-xs text-text-muted">
             {loading ? 'در حال دریافت وقایع...' : 'هیچ رخدادی ثبت نشده است.'}
           </div>
         ) : (
@@ -112,26 +112,26 @@ export const DmAuditLog: React.FC<DmAuditLogProps> = ({ campaignId }) => {
             return (
               <div
                 key={item.id}
-                className="surface-card rounded-[10px] p-3 border border-[#2F2A23] flex items-start gap-3 text-xs"
+                className="surface-card rounded-[10px] p-3 border border-border flex items-start gap-3 text-xs"
               >
-                <div className="p-2 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#E0A030] shrink-0 mt-0.5">
+                <div className="p-2 rounded-[8px] bg-surface-2 border border-border text-accent shrink-0 mt-0.5">
                   <Icon className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1 space-y-0.5">
                   <div className="flex flex-wrap items-center justify-between gap-2 gap-2 flex-wrap">
-                    <span className="font-bold text-[#EDE6D8]">{getActionFa(item.action)}</span>
-                    <span className="text-[10px] text-[#A39A89] font-mono" dir="ltr">
+                    <span className="font-bold text-text-primary">{getActionFa(item.action)}</span>
+                    <span className="text-xs text-text-muted font-mono" dir="ltr">
                       {new Date(item.createdAt).toLocaleDateString('fa-IR-u-nu-latn')} {new Date(item.createdAt).toLocaleTimeString('fa-IR-u-nu-latn', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </span>
                   </div>
 
-                  <div className="text-[11px] text-[#A39A89] flex items-center gap-2 flex-wrap">
-                    {item.actorId && <span>توسط: <code className="text-[#EDE6D8]">{item.actorId}</code></span>}
-                    {item.targetId && <span>هدف: <code className="text-[#E0A030]">{item.targetId}</code></span>}
+                  <div className="text-xs text-text-muted flex items-center gap-2 flex-wrap">
+                    {item.actorId && <span>توسط: <code className="text-text-primary">{item.actorId}</code></span>}
+                    {item.targetId && <span>هدف: <code className="text-accent">{item.targetId}</code></span>}
                   </div>
 
                   {item.meta && (
-                    <div className="text-[10px] font-mono text-[#A39A89] bg-[#171513] p-1.5 rounded-[6px] border border-[#2F2A23] mt-1 overflow-x-auto" dir="ltr">
+                    <div className="text-xs font-mono text-text-muted bg-surface p-1.5 rounded-[6px] border border-border mt-1 overflow-x-auto" dir="ltr">
                       {JSON.stringify(item.meta)}
                     </div>
                   )}

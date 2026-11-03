@@ -14,7 +14,7 @@ export const PWAInstallPrompt: React.FC = () => {
     return (
       <button
         onClick={install}
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#E0A030]/15 hover:bg-[#E0A030]/25 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold transition active:scale-95 touch-target min-w-[44px]"
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-accent/15 hover:bg-accent/25 border border-accent/40 text-accent-hover text-xs font-bold transition active:scale-95 touch-target min-w-[44px]"
         title="نصب اپلیکیشن روی دستگاه"
       >
         <Download className="w-3.5 h-3.5" />
@@ -29,7 +29,7 @@ export const PWAInstallPrompt: React.FC = () => {
       <>
         <button
           onClick={() => setShowIOSGuide(true)}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#E0A030]/10 hover:bg-[#E0A030]/20 border border-[#E0A030]/30 text-[#F2C265] text-xs font-bold transition active:scale-95 touch-target min-w-[44px]"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-accent/10 hover:bg-accent/20 border border-accent/30 text-accent-hover text-xs font-bold transition active:scale-95 touch-target min-w-[44px]"
           title="نصب در آیفون / آیپد"
         >
           <Download className="w-3.5 h-3.5" />
@@ -43,34 +43,34 @@ export const PWAInstallPrompt: React.FC = () => {
               if (e.target === e.currentTarget) setShowIOSGuide(false);
             }}
           >
-            <div className="w-full max-w-sm max-h-[90dvh] overflow-y-auto rounded-2xl bg-[#171513] border border-[#E0A030]/30 p-5 text-[#EDE6D8] shadow-2xl space-y-3" dir="rtl">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-2">
-                <h4 className="font-bold text-sm text-[#F2C265]">نصب {APP_NAME_FA} روی آیفون و آیپد</h4>
-                <button type="button" onClick={() => setShowIOSGuide(false)} className="text-[#A39A89] p-2 touch-target min-w-[44px] hover:text-[#EDE6D8]">
+            <div className="w-full max-w-sm max-h-[90dvh] overflow-y-auto rounded-2xl bg-surface border border-accent/30 p-5 text-text-primary shadow-2xl space-y-3" dir="rtl">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
+                <h4 className="font-bold text-sm text-accent-hover">نصب {APP_NAME_FA} روی آیفون و آیپد</h4>
+                <button type="button" onClick={() => setShowIOSGuide(false)} className="text-text-muted p-2 touch-target min-w-[44px] hover:text-text-primary">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="space-y-2.5 text-xs text-[#C9C0AE]">
+              <div className="space-y-2.5 text-xs text-text-primary">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[#E0A030] text-[#0E0D0C] font-bold flex items-center justify-center shrink-0 text-[10px]">۱</span>
+                  <span className="w-5 h-5 rounded-full bg-accent text-on-accent font-bold flex items-center justify-center shrink-0 text-xs">۱</span>
                   <span>در نوار پایین مرورگر سافاری، دکمه <strong>Share</strong> (اشتراک‌گذاری) را لمس کنید:</span>
-                  <Share2 className="w-4 h-4 text-[#F2C265] shrink-0" />
+                  <Share2 className="w-4 h-4 text-accent-hover shrink-0" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[#E0A030] text-[#0E0D0C] font-bold flex items-center justify-center shrink-0 text-[10px]">۲</span>
+                  <span className="w-5 h-5 rounded-full bg-accent text-on-accent font-bold flex items-center justify-center shrink-0 text-xs">۲</span>
                   <span>به پایین پیمایش کرده و گزینه <strong>Add to Home Screen</strong> را بزنید:</span>
-                  <PlusSquare className="w-4 h-4 text-[#F2C265] shrink-0" />
+                  <PlusSquare className="w-4 h-4 text-accent-hover shrink-0" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[#E0A030] text-[#0E0D0C] font-bold flex items-center justify-center shrink-0 text-[10px]">۳</span>
+                  <span className="w-5 h-5 rounded-full bg-accent text-on-accent font-bold flex items-center justify-center shrink-0 text-xs">۳</span>
                   <span>اکنون {APP_NAME_FA} به صورت تمام‌صفحه و آفلاین در صفحه اصلی قرار می‌گیرد.</span>
                 </div>
               </div>
 
               <button
                 onClick={() => setShowIOSGuide(false)}
-                className="w-full mt-3 py-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] text-[#EDE6D8] font-bold text-xs"
+                className="w-full mt-3 py-2 rounded-xl bg-surface-2 hover:bg-surface-2 text-text-primary font-bold text-xs"
               >
                 متوجه شدم
               </button>

@@ -189,29 +189,29 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
       case 'retired':
         return <Lock className="w-4 h-4 text-amber-500" />;
       default:
-        return <Clock className="w-4 h-4 text-[#E0A030]" />;
+        return <Clock className="w-4 h-4 text-accent" />;
     }
   };
 
   const getEventBadge = (eventType: string) => {
     switch (eventType) {
       case 'joined':
-        return <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-medium">پیوستن</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-medium">پیوستن</span>;
       case 'level_up':
-        return <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-medium">ارتقای سطح</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-medium">ارتقای سطح</span>;
       case 'milestone':
       case 'major_deed':
-        return <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30 font-medium">دستاورد / مایلیستون</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30 font-medium">دستاورد / مایلیستون</span>;
       case 'session_attendance':
-        return <span className="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30 font-medium">حضور در جلسه</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30 font-medium">حضور در جلسه</span>;
       case 'status_change':
-        return <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/30 font-medium">تغییر وضعیت</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/30 font-medium">تغییر وضعیت</span>;
       case 'death':
-        return <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 font-medium">درگذشت</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 font-medium">درگذشت</span>;
       case 'retired':
-        return <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-medium">بازنشستگی</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-medium">بازنشستگی</span>;
       default:
-        return <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#201D19] text-[#A39A89] border border-[#2F2A23] font-medium">رویداد</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-surface-2 text-text-muted border border-border font-medium">رویداد</span>;
     }
   };
 
@@ -221,7 +221,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <button
           onClick={onBack}
-          className="flex items-center gap-1.5 text-xs font-bold text-[#A39A89] hover:text-[#F2C265] transition-colors p-2 rounded-xl bg-[#131110] border border-[#2F2A23] min-h-[44px]"
+          className="flex items-center gap-1.5 text-xs font-bold text-text-muted hover:text-accent-hover transition-colors p-2 rounded-xl bg-bg border border-border min-h-[44px]"
         >
           <ArrowRight className="w-4 h-4" />
           <span>بازگشت به خانه</span>
@@ -231,21 +231,21 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           <button
             type="button"
             onClick={() => window.print()}
-            className="px-3 py-2 rounded-xl bg-[#131110] border border-[#2F2A23] text-[#A39A89] hover:text-[#F2C265] font-bold text-xs transition-colors flex items-center gap-1.5 min-h-[44px]"
+            className="px-3 py-2 rounded-xl bg-bg border border-border text-text-muted hover:text-accent-hover font-bold text-xs transition-colors flex items-center gap-1.5 min-h-[44px]"
             title="چاپ شناسنامه و پیشینه در قالب A4"
           >
-            <Printer className="w-4 h-4 text-[#E0A030]" />
+            <Printer className="w-4 h-4 text-accent" />
             <span className="hidden sm:inline">چاپ A4</span>
           </button>
 
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="px-4 py-2 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs hover:bg-[#F2C265] disabled:opacity-50 transition-colors flex items-center gap-1.5 min-h-[44px] shadow-lg shadow-[#E0A030]/20"
+            className="px-4 py-2 rounded-xl bg-accent text-on-accent font-bold text-xs hover:bg-accent-hover disabled:opacity-50 transition-colors flex items-center gap-1.5 min-h-[44px] shadow-lg shadow-accent/20"
           >
             {saveSuccess ? (
               <>
-                <Check className="w-4 h-4 text-[#0E0D0C]" />
+                <Check className="w-4 h-4 text-on-accent" />
                 <span>ذخیره شد</span>
               </>
             ) : (
@@ -259,7 +259,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
       </div>
 
       {/* Character Identity Hero Card */}
-      <div className="rounded-2xl bg-[#171513] border border-[#2F2A23] p-5 shadow-xl flex flex-col sm:flex-row items-center gap-5">
+      <div className="rounded-2xl bg-surface border border-border p-5 shadow-xl flex flex-col sm:flex-row items-center gap-5">
         <div className="relative group shrink-0">
           <img
             src={charData.portraitUrl || 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=300&q=80'}
@@ -268,21 +268,21 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
             decoding="async"
             width={112}
             height={112}
-            className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-[#E0A030]/30 shadow-lg"
+            className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover border-2 border-accent/30 shadow-lg"
           />
         </div>
 
         <div className="flex-1 text-center sm:text-start space-y-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-[#F2C265]">{charData.name}</h1>
-              <p className="text-xs text-[#A39A89] mt-0.5">{charData.race} | شناسنامه کلان پلتفرم {APP_NAME_FA}</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-accent-hover">{charData.name}</h1>
+              <p className="text-xs text-text-muted mt-0.5">{charData.race} | شناسنامه کلان پلتفرم {APP_NAME_FA}</p>
             </div>
             {/* Status Selector */}
             <select
               value={charData.status}
               onChange={e => setCharData({ ...charData, status: e.target.value as any })}
-              className="bg-[#131110] border border-[#2F2A23] rounded-xl px-3 py-1.5 text-xs font-semibold text-[#EDE6D8] self-center sm:self-auto min-h-[44px]"
+              className="bg-bg border border-border rounded-xl px-3 py-1.5 text-xs font-semibold text-text-primary self-center sm:self-auto min-h-[44px]"
             >
               <option value="active">🟢 وضعیت: فعال</option>
               <option value="retired">🟡 وضعیت: بازنشسته</option>
@@ -292,22 +292,22 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           </div>
 
           {/* Simple Aggregate Stats Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-[#2F2A23]">
-            <div className="p-2 rounded-xl bg-[#131110]/80 border border-[#2F2A23] text-center">
-              <span className="block text-[10px] text-[#8A8374]">کمپین‌های شرکت‌کرده</span>
-              <span className="text-sm font-bold text-[#EDE6D8]">{toPersianDigits(stats.campaignsCount)} کمپین</span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-border">
+            <div className="p-2 rounded-xl bg-bg/80 border border-border text-center">
+              <span className="block text-xs text-text-muted">کمپین‌های شرکت‌کرده</span>
+              <span className="text-sm font-bold text-text-primary">{toPersianDigits(stats.campaignsCount)} کمپین</span>
             </div>
-            <div className="p-2 rounded-xl bg-[#131110]/80 border border-[#2F2A23] text-center">
-              <span className="block text-[10px] text-[#8A8374]">کل جلسات حضور</span>
-              <span className="text-sm font-bold text-[#EDE6D8]">{toPersianDigits(stats.sessionsAttended)} جلسه</span>
+            <div className="p-2 rounded-xl bg-bg/80 border border-border text-center">
+              <span className="block text-xs text-text-muted">کل جلسات حضور</span>
+              <span className="text-sm font-bold text-text-primary">{toPersianDigits(stats.sessionsAttended)} جلسه</span>
             </div>
-            <div className="p-2 rounded-xl bg-[#131110]/80 border border-[#2F2A23] text-center">
-              <span className="block text-[10px] text-[#8A8374]">بالاترین سطح تجربه</span>
-              <span className="text-sm font-bold text-[#F2C265]">سطح {toPersianDigits(stats.highestLevel)}</span>
+            <div className="p-2 rounded-xl bg-bg/80 border border-border text-center">
+              <span className="block text-xs text-text-muted">بالاترین سطح تجربه</span>
+              <span className="text-sm font-bold text-accent-hover">سطح {toPersianDigits(stats.highestLevel)}</span>
             </div>
-            <div className="p-2 rounded-xl bg-[#131110]/80 border border-[#2F2A23] text-center">
-              <span className="block text-[10px] text-[#8A8374]">رویدادهای خط زمانی</span>
-              <span className="text-sm font-bold text-[#C9C0AE]">{toPersianDigits(history.length)} رویداد</span>
+            <div className="p-2 rounded-xl bg-bg/80 border border-border text-center">
+              <span className="block text-xs text-text-muted">رویدادهای خط زمانی</span>
+              <span className="text-sm font-bold text-text-primary">{toPersianDigits(history.length)} رویداد</span>
             </div>
           </div>
         </div>
@@ -316,7 +316,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
       {/* Tabs Strip */}
       <ScrollableRow
         activeKey={activeTab}
-        wrapperClassName="rounded-2xl bg-[#131110]/90 border border-[#2F2A23] p-1.5"
+        wrapperClassName="rounded-2xl bg-bg/90 border border-border p-1.5"
         className="gap-1.5"
       >
         <button
@@ -329,8 +329,8 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           }}
           className={`py-2.5 px-4 rounded-xl text-xs font-bold transition-all min-h-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 flex items-center justify-center ${
             activeTab === 'identity'
-              ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md font-black'
-              : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A2621]/50'
+              ? 'bg-accent text-on-accent shadow-md font-black'
+              : 'text-text-muted hover:text-text-primary hover:bg-surface-2/50'
           }`}
         >
           <span className="whitespace-nowrap shrink-0">هویت و بک‌استوری</span>
@@ -345,8 +345,8 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           }}
           className={`py-2.5 px-4 rounded-xl text-xs font-bold transition-all min-h-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 flex items-center justify-center ${
             activeTab === 'history'
-              ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md font-black'
-              : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A2621]/50'
+              ? 'bg-accent text-on-accent shadow-md font-black'
+              : 'text-text-muted hover:text-text-primary hover:bg-surface-2/50'
           }`}
         >
           <span className="whitespace-nowrap shrink-0">خط زمانی و وقایع ({toPersianDigits(history.length)})</span>
@@ -361,8 +361,8 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           }}
           className={`py-2.5 px-4 rounded-xl text-xs font-bold transition-all min-h-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 flex items-center justify-center ${
             activeTab === 'campaigns'
-              ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md font-black'
-              : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A2621]/50'
+              ? 'bg-accent text-on-accent shadow-md font-black'
+              : 'text-text-muted hover:text-text-primary hover:bg-surface-2/50'
           }`}
         >
           <span className="whitespace-nowrap shrink-0">کمپین‌های شخصیت ({toPersianDigits(participations.length)})</span>
@@ -373,50 +373,50 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
       {activeTab === 'identity' && (
         <div className="space-y-5">
           {/* Basic Identity Details */}
-          <div className="rounded-2xl bg-[#171513] border border-[#2F2A23] p-5 space-y-4">
-            <h3 className="text-sm font-bold text-[#F2C265] flex items-center gap-2">
+          <div className="rounded-2xl bg-surface border border-border p-5 space-y-4">
+            <h3 className="text-sm font-bold text-accent-hover flex items-center gap-2">
               <Shield className="w-4 h-4" />
               شناسنامه پایه‌ای
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-[#A39A89] mb-1">نام شخصیت</label>
+                <label className="block text-xs text-text-muted mb-1">نام شخصیت</label>
                 <input
                   type="text"
                   value={charData.name}
                   onChange={e => setCharData({ ...charData, name: e.target.value })}
-                  className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl px-3 py-2 text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                  className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs text-[#A39A89] mb-1">نژاد یا تبار</label>
+                <label className="block text-xs text-text-muted mb-1">نژاد یا تبار</label>
                 <input
                   type="text"
                   value={charData.race}
                   onChange={e => setCharData({ ...charData, race: e.target.value })}
-                  className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl px-3 py-2 text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                  className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs text-[#A39A89] mb-1">نشانی تصویر چهره (URL)</label>
+              <label className="block text-xs text-text-muted mb-1">نشانی تصویر چهره (URL)</label>
               <input
                 type="text"
                 value={charData.portraitUrl || ''}
                 onChange={e => setCharData({ ...charData, portraitUrl: e.target.value })}
-                className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:border-accent focus:outline-none"
                 placeholder="https://..."
               />
             </div>
 
             <div>
-              <label className="block text-xs text-[#A39A89] mb-1">توصیف ظاهری و سیمای ماجراجو</label>
+              <label className="block text-xs text-text-muted mb-1">توصیف ظاهری و سیمای ماجراجو</label>
               <textarea
                 value={charData.appearance || ''}
                 onChange={e => setCharData({ ...charData, appearance: e.target.value })}
                 rows={2}
-                className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl p-3 text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none leading-relaxed"
+                className="w-full bg-bg border border-border rounded-xl p-3 text-xs text-text-primary focus:border-accent focus:outline-none leading-relaxed"
                 placeholder="قد، جثه، رنگ چشم، زخم‌ها، پوشش و سلاح‌های آویخته..."
               />
             </div>
@@ -452,17 +452,17 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
         <div className="space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 className="text-sm font-bold text-[#EDE6D8] flex items-center gap-2">
-                <Clock className="w-4 h-4 text-[#F2C265]" />
+              <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
+                <Clock className="w-4 h-4 text-accent-hover" />
                 خط زمانی و تاریخچه وقایع کلان
               </h3>
-              <p className="text-xs text-[#8A8374] mt-0.5">
+              <p className="text-xs text-text-muted mt-0.5">
                 وقایع، ارتقای سطح، مایلیستون‌ها و حضور در جلسات به تفکیک کمپین‌های بازی
               </p>
             </div>
             <button
               onClick={() => setShowMilestoneForm(!showMilestoneForm)}
-              className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/25 transition-colors flex items-center gap-1.5 min-h-[44px]"
+              className="px-3 py-1.5 rounded-xl bg-accent/15 border border-accent/30 text-accent-hover text-xs font-bold hover:bg-accent/25 transition-colors flex items-center gap-1.5 min-h-[44px]"
             >
               <Plus className="w-4 h-4" />
               افزودن دستاورد شخصی
@@ -470,15 +470,15 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           </div>
 
           {showMilestoneForm && (
-            <form onSubmit={handleCreateMilestoneSubmit} className="p-4 rounded-2xl bg-[#171513] border border-[#E0A030]/30 space-y-3">
-              <h4 className="text-xs font-bold text-[#F2C265]">ثبت دستاورد یا واقعه تاریخی جدید</h4>
+            <form onSubmit={handleCreateMilestoneSubmit} className="p-4 rounded-2xl bg-surface border border-accent/30 space-y-3">
+              <h4 className="text-xs font-bold text-accent-hover">ثبت دستاورد یا واقعه تاریخی جدید</h4>
               <div>
                 <input
                   type="text"
                   value={newMilestoneTitle}
                   onChange={e => setNewMilestoneTitle(e.target.value)}
                   placeholder="عنوان واقعه (مثلاً شکست دیو آتش در معبد)..."
-                  className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+                  className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent"
                 />
               </div>
               <div>
@@ -487,20 +487,20 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                   onChange={e => setNewMilestoneDesc(e.target.value)}
                   placeholder="شرح و پیامدهای این واقعه..."
                   rows={2}
-                  className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl p-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+                  className="w-full bg-bg border border-border rounded-xl p-2 text-xs text-text-primary focus:outline-none focus:border-accent"
                 />
               </div>
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowMilestoneForm(false)}
-                  className="px-3 py-1.5 text-xs text-[#A39A89] hover:text-[#EDE6D8]"
+                  className="px-3 py-1.5 text-xs text-text-muted hover:text-text-primary"
                 >
                   انصراف
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-[#E0A030] text-[#0E0D0C] text-xs font-bold rounded-xl hover:bg-[#F2C265]"
+                  className="px-4 py-1.5 bg-accent text-on-accent text-xs font-bold rounded-xl hover:bg-accent-hover"
                 >
                   ثبت در خط زمانی
                 </button>
@@ -509,32 +509,32 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           )}
 
           {groupedTimeline.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[#2F2A23] bg-[#141210]/60 p-8 text-center space-y-2">
-              <Clock className="w-8 h-8 text-[#8A8374] mx-auto" />
-              <p className="text-xs text-[#A39A89]">هنوز هیچ رویدادی در تاریخچه این شخصیت ثبت نشده است.</p>
+            <div className="rounded-2xl border border-dashed border-border bg-bg/60 p-8 text-center space-y-2">
+              <Clock className="w-8 h-8 text-text-muted mx-auto" />
+              <p className="text-xs text-text-muted">هنوز هیچ رویدادی در تاریخچه این شخصیت ثبت نشده است.</p>
             </div>
           ) : (
             <div className="space-y-6">
               {groupedTimeline.map(group => (
-                <div key={group.campaignId || 'general'} className="rounded-2xl bg-[#171513] border border-[#2F2A23] p-5 space-y-4 shadow-md">
+                <div key={group.campaignId || 'general'} className="rounded-2xl bg-surface border border-border p-5 space-y-4 shadow-md">
                   {/* Campaign Group Header */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#2F2A23]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-border">
                     <div className="flex items-center gap-2">
-                      <Compass className="w-4 h-4 text-[#F2C265]" />
-                      <h4 className="text-sm font-bold text-[#EDE6D8]">{group.campaignName}</h4>
+                      <Compass className="w-4 h-4 text-accent-hover" />
+                      <h4 className="text-sm font-bold text-text-primary">{group.campaignName}</h4>
                       {group.isGeneral && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#201D19] text-[#A39A89]">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-surface-2 text-text-muted">
                           عمومی
                         </span>
                       )}
                     </div>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#201D19] text-[#C9C0AE]">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-surface-2 text-text-primary">
                       {toPersianDigits(group.eventsCount)} رویداد
                     </span>
                   </div>
 
                   {/* Events Timeline in this Group */}
-                  <div className="relative border-r-2 border-[#E0A030]/25 pe-4 space-y-4 me-2">
+                  <div className="relative border-r-2 border-accent/25 pe-4 space-y-4 me-2">
                     {group.events.map((event, idx) => {
                       const dateStr = new Date(event.timestamp).toLocaleDateString('fa-IR-u-nu-latn');
                       const title = event.payload?.title || event.title || 'رویداد ثبت‌شده';
@@ -543,32 +543,32 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                       return (
                         <div key={event.id || idx} className="relative group">
                           {/* Node Icon on timeline */}
-                          <div className="absolute -right-[25px] top-1.5 w-4 h-4 rounded-full bg-[#171513] border-2 border-[#E0A030] flex items-center justify-center">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#E0A030]" />
+                          <div className="absolute -right-[25px] top-1.5 w-4 h-4 rounded-full bg-surface border-2 border-accent flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 rounded-full bg-accent" />
                           </div>
 
-                          <div className="rounded-xl bg-[#141210] border border-[#2F2A23] p-3.5 space-y-1.5 hover:border-[#E0A030]/40 transition-colors">
+                          <div className="rounded-xl bg-bg border border-border p-3.5 space-y-1.5 hover:border-accent/40 transition-colors">
                             <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
                               <div className="flex items-center gap-2 min-w-0">
                                 {getEventIcon(event.eventType)}
-                                <span className="font-bold text-xs text-[#EDE6D8] truncate">
+                                <span className="font-bold text-xs text-text-primary truncate">
                                   {title}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
                                 {getEventBadge(event.eventType)}
-                                <span className="text-[10px] text-[#8A8374]">{dateStr}</span>
+                                <span className="text-xs text-text-muted">{dateStr}</span>
                               </div>
                             </div>
 
                             {desc && (
-                              <p className="text-xs text-[#C9C0AE] leading-relaxed pt-1">
+                              <p className="text-xs text-text-primary leading-relaxed pt-1">
                                 {desc}
                               </p>
                             )}
 
                             {event.payload?.sessionNumber && (
-                              <span className="inline-block text-[10px] text-[#E0A030] pt-1">
+                              <span className="inline-block text-xs text-accent pt-1">
                                 جلسه شماره {toPersianDigits(event.payload.sessionNumber)}
                               </span>
                             )}
@@ -589,10 +589,10 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h3 className="text-sm font-bold text-[#EDE6D8]">
+              <h3 className="text-sm font-bold text-text-primary">
                 حضور در کمپین‌ها ({toPersianDigits(participations.length)})
               </h3>
-              <p className="text-xs text-[#8A8374] mt-0.5">
+              <p className="text-xs text-text-muted mt-0.5">
                 بازی‌های مستقل که این شخصیت در آن‌ها حضور دارد یا داشته است.
               </p>
             </div>
@@ -614,7 +614,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
               )}
               <button
                 onClick={() => onOpenJoinCampaign(character.id)}
-                className="px-3 py-1.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-bold hover:bg-[#F2C265] transition-colors flex items-center gap-1.5 min-h-[44px]"
+                className="px-3 py-1.5 rounded-xl bg-accent text-on-accent text-xs font-bold hover:bg-accent-hover transition-colors flex items-center gap-1.5 min-h-[44px]"
               >
                 <Plus className="w-4 h-4" />
                 پیوستن عادی
@@ -624,13 +624,13 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
 
           <div className="grid grid-cols-1 gap-3">
             {participations.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-[#2F2A23] bg-[#141210]/60 p-6 text-center space-y-2">
-                <p className="text-xs text-[#A39A89]">
+              <div className="rounded-2xl border border-dashed border-border bg-bg/60 p-6 text-center space-y-2">
+                <p className="text-xs text-text-muted">
                   این شخصیت در حال حاضر در هیچ کمپینی شرکت نکرده است.
                 </p>
                 <button
                   onClick={() => onOpenJoinCampaign(character.id)}
-                  className="px-4 py-2 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs"
+                  className="px-4 py-2 rounded-xl bg-accent text-on-accent font-bold text-xs"
                 >
                   پیوستن به اولین کمپین
                 </button>
@@ -640,23 +640,23 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                 <div
                   key={part.id}
                   onClick={() => onSelectCampaignParticipation(part.campaignId, part.id)}
-                  className="rounded-2xl bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030]/40 p-4 transition-all cursor-pointer flex flex-wrap items-center justify-between gap-2 group shadow-sm"
+                  className="rounded-2xl bg-surface border border-border hover:border-accent/40 p-4 transition-all cursor-pointer flex flex-wrap items-center justify-between gap-2 group shadow-sm"
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-bold text-[#EDE6D8] group-hover:text-[#F2C265] transition-colors">
+                      <h4 className="text-sm font-bold text-text-primary group-hover:text-accent-hover transition-colors">
                         {part.campaignName || 'کمپین'}
                       </h4>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#201D19] text-[#C9C0AE]">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-surface-2 text-text-primary">
                         {part.status === 'active' ? '🟢 فعال' : part.status === 'pending_approval' ? '⏳ در انتظار تأیید' : part.status === 'retired' ? '🟡 بازنشسته' : part.status === 'dead' ? '🔴 درگذشته' : part.status}
                       </span>
                     </div>
-                    <p className="text-xs text-[#A39A89] mt-1">
+                    <p className="text-xs text-text-muted mt-1">
                       کلاس و سطح: {part.className} (سطح {toPersianDigits(part.level)}) • {toPersianDigits(part.sessionsAttended || 0)} جلسه حضور • جان: {toPersianDigits(part.currentHp)}/{toPersianDigits(part.maxHp)}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-1 text-xs text-[#F2C265] font-semibold group-hover:translate-x-[-2px] transition-transform">
+                  <div className="flex items-center gap-1 text-xs text-accent-hover font-semibold group-hover:translate-x-[-2px] transition-transform">
                     <span>ورود به کاراکترشیت</span>
                     <ArrowRight className="w-4 h-4 rotate-180" />
                   </div>
@@ -682,7 +682,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           maxWidth="max-w-lg"
         >
           <div className="space-y-4 text-start">
-            <p className="text-xs text-[#A39A89] leading-relaxed">
+            <p className="text-xs text-text-muted leading-relaxed">
               با قابلیت ورود میراثی (Legacy Join)، هویت و خاطرات <strong>{charData.name}</strong> از کمپین پیشین حفظ می‌شود، اما یک وضعیت بازی (Participation) تازه متناسب با قوانین و سطح ورود کمپین مقصد برای وی شکل می‌گیرد.
             </p>
 
@@ -695,11 +695,11 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
 
             <form onSubmit={handleLegacyJoinSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-[#EDE6D8] mb-1.5">انتخاب کمپین مقصد</label>
+                <label className="block text-xs font-bold text-text-primary mb-1.5">انتخاب کمپین مقصد</label>
                 <select
                   value={selectedTargetCampaignId}
                   onChange={e => setSelectedTargetCampaignId(e.target.value)}
-                  className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl px-3 py-2.5 text-xs text-[#EDE6D8] focus:border-purple-400 focus:outline-none min-h-[44px]"
+                  className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-xs text-text-primary focus:border-purple-400 focus:outline-none min-h-[44px]"
                 >
                   <option value="">— یک کمپین را انتخاب کنید —</option>
                   {availableCampaigns
@@ -724,14 +724,14 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                 const needsAppr = Boolean(target.settings?.approval?.onCreate);
 
                 return (
-                  <div className="p-3 rounded-xl bg-[#131110] border border-[#2F2A23] text-xs space-y-1.5 text-[#C9C0AE]">
+                  <div className="p-3 rounded-xl bg-bg border border-border text-xs space-y-1.5 text-text-primary">
                     <div className="flex justify-between">
                       <span>سطح شروع کمپین:</span>
-                      <span className="font-bold text-[#F2C265]">سطح {toPersianDigits(startLvl)}</span>
+                      <span className="font-bold text-accent-hover">سطح {toPersianDigits(startLvl)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>حداکثر سطح مجاز ورود:</span>
-                      <span className="font-bold text-[#EDE6D8]">سطح {toPersianDigits(maxLvl)}</span>
+                      <span className="font-bold text-text-primary">سطح {toPersianDigits(maxLvl)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>نیاز به بررسی دانجن‌مستر:</span>
@@ -744,21 +744,21 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
               })()}
 
               <div>
-                <label className="block text-xs font-bold text-[#EDE6D8] mb-1.5">یادداشت روایی یا توضیحات ورود میراثی (اختیاری)</label>
+                <label className="block text-xs font-bold text-text-primary mb-1.5">یادداشت روایی یا توضیحات ورود میراثی (اختیاری)</label>
                 <textarea
                   value={legacyNotes}
                   onChange={e => setLegacyNotes(e.target.value)}
                   rows={2}
                   placeholder="انگیزه ورود به سرزمین نو، ماجراهای فاصله دو کمپین..."
-                  className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl p-2.5 text-xs text-[#EDE6D8] focus:border-purple-400 focus:outline-none"
+                  className="w-full bg-bg border border-border rounded-xl p-2.5 text-xs text-text-primary focus:border-purple-400 focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#2F2A23]">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setLegacyJoinOpen(false)}
-                  className="px-4 py-2 text-xs text-[#A39A89] hover:text-[#EDE6D8] min-h-[44px]"
+                  className="px-4 py-2 text-xs text-text-muted hover:text-text-primary min-h-[44px]"
                 >
                   انصراف
                 </button>

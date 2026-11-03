@@ -1207,7 +1207,7 @@ export default function App() {
   };
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] overflow-hidden text-[#EDE6D8] flex flex-col font-sans selection:bg-[#E0A030]/25 selection:text-[#E0A030]" dir="rtl">
+    <div className="h-[100dvh] max-h-[100dvh] overflow-hidden text-text-primary flex flex-col font-sans selection:bg-accent/25 selection:text-accent" dir="rtl">
       {/* Toast notifications */}
       {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
 
@@ -1714,12 +1714,12 @@ export default function App() {
                 </div>
               ) : characters.length === 0 ? (
                 /* Empty state when user has no active character in this campaign */
-                <div className="surface-card rounded-[14px] p-6 text-center py-12 max-w-md mx-auto space-y-4 card-gold-top border border-[#2F2A23]">
-                  <div className="w-14 h-14 rounded-[12px] bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#E0A030] flex items-center justify-center mx-auto shadow-md">
+                <div className="surface-card rounded-[14px] p-6 text-center py-12 max-w-md mx-auto space-y-4 card-gold-top border border-border">
+                  <div className="w-14 h-14 rounded-[12px] bg-accent/15 border border-accent/30 text-accent flex items-center justify-center mx-auto shadow-md">
                     <Shield className="w-7 h-7" />
                   </div>
-                  <h2 className="text-base font-black text-[#EDE6D8]">شخصیتی در این کمپین ندارید</h2>
-                  <p className="text-xs text-[#A39A89] leading-relaxed">
+                  <h2 className="text-base font-black text-text-primary">شخصیتی در این کمپین ندارید</h2>
+                  <p className="text-xs text-text-muted leading-relaxed">
                     برای ماجراجویی در کمپین <strong>{activeCampaign?.name}</strong>، یکی از شخصیت‌های خود را وارد کنید یا شخصیت جدید بسازید.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
@@ -1752,7 +1752,7 @@ export default function App() {
                             await loadCampaignWorkspace(activeCampaignId);
                           }
                         }}
-                        className="py-2.5 px-6 rounded-[12px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] font-extrabold text-xs text-[#EDE6D8] transition touch-target min-w-[44px]"
+                        className="py-2.5 px-6 rounded-[12px] bg-surface-2 border border-border hover:border-accent font-extrabold text-xs text-text-primary transition touch-target min-w-[44px]"
                       >
                         ساخت شخصیت تازه
                       </button>
@@ -2247,10 +2247,10 @@ export default function App() {
             subtitle="نیاز به ورود مجدد جهت همگام‌سازی اطلاعات"
           >
             <div className="space-y-4 py-2 text-center" dir="rtl">
-              <div className="w-12 h-12 rounded-full bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30 flex items-center justify-center mx-auto">
+              <div className="w-12 h-12 rounded-full bg-accent/15 text-accent border border-accent/30 flex items-center justify-center mx-auto">
                 <AlertTriangle className="w-6 h-6" />
               </div>
-              <p className="text-xs text-[#EDE6D8]/90 leading-relaxed">
+              <p className="text-xs text-text-primary/90 leading-relaxed">
                 نشست امنیتی شما منقضی یا توسط دستگاه دیگری خاتمه یافته است. داده‌های تغییریافته شما در حافظه دستگاه محفوظ است و پس از ورود مجدد همگام‌سازی خواهند شد.
               </p>
               <button

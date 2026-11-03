@@ -77,19 +77,19 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
         {/* Top Controls: Search Bar & Create Button */}
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[#A39A89]" />
+            <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-text-muted" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="جستجو در متن، عنوان یا شماره جلسه..."
-              className="w-full pl-9 pr-9 py-2.5 rounded-[12px] bg-[#171310] border border-[#2F2A23] text-xs text-[#EDE6D8] placeholder-[#736A5B] focus:outline-none focus:border-[#E0A030] transition"
+              className="w-full ps-9 pe-9 py-2.5 rounded-[12px] bg-surface border border-border text-xs text-text-primary placeholder-border-strong focus:outline-none focus:border-accent transition"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A39A89] hover:text-[#EDE6D8]"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -111,30 +111,30 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
 
         {/* Selected Recap Reading Modal View */}
         {activeRecap && (
-          <div className="p-4 sm:p-5 rounded-[14px] bg-[#1E1914] border border-[#E0A030]/40 shadow-xl space-y-3 relative card-gold-top">
+          <div className="p-4 sm:p-5 rounded-[14px] bg-surface border border-accent/40 shadow-xl space-y-3 relative card-gold-top">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   {activeRecap.sessionNumber !== undefined && (
-                    <span className="px-2 py-0.5 rounded-full bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#F2C265] text-[10px] font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-accent/15 border border-accent/30 text-accent-hover text-xs font-bold">
                       جلسه {activeRecap.sessionNumber}
                     </span>
                   )}
                   {activeRecap.status === 'draft' && (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-950/40 text-amber-300 border border-amber-800/40 text-[10px] font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-amber-950/40 text-amber-300 border border-amber-800/40 text-xs font-bold">
                       پیش‌نویس
                     </span>
                   )}
                   {activeRecap.visibility === 'dm_only' && (
-                    <span className="px-2 py-0.5 rounded-full bg-purple-950/40 text-purple-300 border border-purple-800/40 text-[10px] font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-purple-950/40 text-purple-300 border border-purple-800/40 text-xs font-bold">
                       فقط دانجن مستر
                     </span>
                   )}
                 </div>
-                <h3 className="text-base font-black text-[#EDE6D8]">
+                <h3 className="text-base font-black text-text-primary">
                   {activeRecap.title}
                 </h3>
-                <div className="text-[11px] text-[#A39A89] mt-0.5">
+                <div className="text-xs text-text-muted mt-0.5">
                   نگارش توسط <strong>{activeRecap.authorName || 'کاربر'}</strong>
                 </div>
               </div>
@@ -146,7 +146,7 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
                       <button
                         type="button"
                         onClick={() => onEditRecap(activeRecap)}
-                        className="p-1.5 rounded-lg text-[#A39A89] hover:text-[#EDE6D8] hover:bg-white/5 transition touch-target min-w-[44px]"
+                        className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition touch-target min-w-[44px]"
                         title="ویرایش"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -168,7 +168,7 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
                 <button
                   type="button"
                   onClick={() => setSelectedRecapId(null)}
-                  className="p-1.5 rounded-lg text-[#A39A89] hover:text-[#EDE6D8] hover:bg-white/5 transition touch-target min-w-[44px]"
+                  className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition touch-target min-w-[44px]"
                   title="بستن پنجره مطالعه"
                 >
                   <X className="w-4 h-4" />
@@ -176,7 +176,7 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
               </div>
             </div>
 
-            <div className="text-xs sm:text-[13px] text-[#D8CFBF] leading-relaxed whitespace-pre-line space-y-2.5 pt-2 border-t border-[#2F2A23]">
+            <div className="text-xs sm:text-[13px] text-text-muted leading-relaxed whitespace-pre-line space-y-2.5 pt-2 border-t border-border">
               {activeRecap.body.split('\n\n').map((para, i) => (
                 <p key={i}>{para}</p>
               ))}
@@ -187,9 +187,9 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
         {/* List of Recaps */}
         <div className="space-y-3">
           {filteredRecaps.length === 0 ? (
-            <div className="text-center py-12 px-4 rounded-[14px] bg-[#171310] border border-[#2F2A23] space-y-2">
-              <BookOpen className="w-8 h-8 mx-auto text-[#736A5B]" />
-              <p className="text-xs text-[#A39A89]">
+            <div className="text-center py-12 px-4 rounded-[14px] bg-surface border border-border space-y-2">
+              <BookOpen className="w-8 h-8 mx-auto text-text-muted" />
+              <p className="text-xs text-text-muted">
                 {searchQuery ? 'هیچ خلاصه‌ای منطبق با جستجو یافت نشد.' : 'هنوز خلاصه‌ای ثبت نشده است.'}
               </p>
             </div>
@@ -206,15 +206,15 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
                   onClick={() => setSelectedRecapId(isSelected ? null : recap.id)}
                   className={`p-3.5 sm:p-4 rounded-[14px] border transition cursor-pointer ${
                     isSelected 
-                      ? 'bg-[#221C16] border-[#E0A030] shadow-md' 
-                      : 'bg-[#171310] border-[#2F2A23] hover:border-[#42392C] hover:bg-[#1D1813]'
+                      ? 'bg-surface-2 border-accent shadow-md' 
+                      : 'bg-surface border-border hover:border-border-strong hover:bg-surface'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-1">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {recap.sessionNumber !== undefined && (
-                          <span className="px-2 py-0.5 rounded-full bg-[#201C16] border border-[#383125] text-[#F2C265] text-[10px] font-bold">
+                          <span className="px-2 py-0.5 rounded-full bg-surface-2 border border-border text-accent-hover text-xs font-bold">
                             جلسه {recap.sessionNumber}
                           </span>
                         )}
@@ -229,23 +229,23 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
                           </span>
                         )}
                         {dt && (
-                          <span className="text-[10px] text-[#736A5B]">
+                          <span className="text-xs text-text-muted">
                             {dt.weekday}، {dt.date}
                           </span>
                         )}
                       </div>
 
-                      <h4 className="text-xs sm:text-sm font-black text-[#EDE6D8]">
+                      <h4 className="text-xs sm:text-sm font-black text-text-primary">
                         {recap.title}
                       </h4>
 
-                      <p className="text-[11px] text-[#A39A89] line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-text-muted line-clamp-2 leading-relaxed">
                         {recap.body}
                       </p>
                     </div>
 
-                    <div className="text-left shrink-0">
-                      <span className="text-[10px] font-bold text-[#E0A030] hover:underline">
+                    <div className="text-end shrink-0">
+                      <span className="text-xs font-bold text-accent hover:underline">
                         {isSelected ? 'بستن' : 'مطالعه'}
                       </span>
                     </div>

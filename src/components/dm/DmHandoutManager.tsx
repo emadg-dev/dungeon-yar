@@ -257,12 +257,12 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
       {/* Top Banner & Action */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className={`${isCompact ? 'text-sm' : 'text-base sm:text-lg'} font-black text-[#EDE6D8] flex items-center gap-2`}>
-            <MapIcon className="w-5 h-5 text-[#E0A030]" />
+          <h2 className={`${isCompact ? 'text-sm' : 'text-base sm:text-lg'} font-black text-text-primary flex items-center gap-2`}>
+            <MapIcon className="w-5 h-5 text-accent" />
             <span>اسناد و نقشه‌های کمپین</span>
           </h2>
           {!isCompact && (
-            <p className="text-xs text-[#A39A89] mt-0.5">
+            <p className="text-xs text-text-muted mt-0.5">
               مدیریت اسناد، نامه‌ها، تصاویر و نقشه‌های تعاملی همراه با نشانگر و کنترل دسترسی زنده.
             </p>
           )}
@@ -275,7 +275,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
               setEditingHandout(null);
               setIsEditorOpen(true);
             }}
-            className="px-3.5 py-2 rounded-[10px] bg-[#E0A030] hover:bg-[#F2C265] text-[#14120E] text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] shadow-md"
+            className="px-3.5 py-2 rounded-[10px] bg-accent hover:bg-accent-hover text-on-accent text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] shadow-md"
           >
             <Plus className="w-4 h-4" />
             <span>سند یا نقشه جدید</span>
@@ -293,27 +293,27 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
       )}
 
       {/* Filter & Search Bar */}
-      <div className="surface-card p-3 rounded-[14px] border border-[#2F2A23] space-y-2.5">
+      <div className="surface-card p-3 rounded-[14px] border border-border space-y-2.5">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           {/* Search Input */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-[#A39A89] absolute start-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-text-muted absolute start-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="جستجو در عنوان، متن یا برچسب‌ها..."
-              className="w-full ps-9 pe-3 py-2 bg-[#14120E] border border-[#2F2A23] rounded-[10px] text-xs text-white placeholder-[#787063] focus:outline-none focus:border-[#E0A030]"
+              className="w-full ps-9 pe-3 py-2 bg-bg border border-border rounded-[10px] text-xs text-white placeholder-border-strong focus:outline-none focus:border-accent"
             />
           </div>
 
           {/* Kind Filter Tabs */}
-          <div className="flex items-center gap-1 bg-[#14120E] p-1 rounded-[10px] border border-[#2F2A23] shrink-0 overflow-x-auto">
+          <div className="flex items-center gap-1 bg-bg p-1 rounded-[10px] border border-border shrink-0 overflow-x-auto">
             <button
               type="button"
               onClick={() => setKindFilter('all')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition touch-target min-w-[44px] ${
-                kindFilter === 'all' ? 'bg-[#E0A030] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition touch-target min-w-[44px] ${
+                kindFilter === 'all' ? 'bg-accent text-on-accent' : 'text-text-muted hover:text-text-primary'
               }`}
             >
               همه ({handouts.length})
@@ -321,8 +321,8 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
             <button
               type="button"
               onClick={() => setKindFilter('map')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
-                kindFilter === 'map' ? 'bg-[#4ADE80] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
+                kindFilter === 'map' ? 'bg-success text-on-accent' : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <MapIcon className="w-3.5 h-3.5" />
@@ -331,8 +331,8 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
             <button
               type="button"
               onClick={() => setKindFilter('image')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
-                kindFilter === 'image' ? 'bg-[#38BDF8] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
+                kindFilter === 'image' ? 'bg-info text-on-accent' : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <ImageIcon className="w-3.5 h-3.5" />
@@ -341,8 +341,8 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
             <button
               type="button"
               onClick={() => setKindFilter('text')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-[11px] font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
-                kindFilter === 'text' ? 'bg-[#E0A030] text-[#14120E]' : 'text-[#A39A89] hover:text-[#EDE6D8]'
+              className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
+                kindFilter === 'text' ? 'bg-accent text-on-accent' : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
@@ -354,16 +354,16 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
         {/* Tag Pills */}
         {allTags.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
-            <span className="text-[10px] text-[#A39A89]">برچسب:</span>
+            <span className="text-xs text-text-muted">برچسب:</span>
             {allTags.map(tag => (
               <button
                 key={tag}
                 type="button"
                 onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition ${
+                className={`px-2 py-0.5 rounded-full text-xs font-medium border transition ${
                   selectedTag === tag
-                    ? 'bg-[#E0A030] text-[#14120E] border-[#E0A030]'
-                    : 'bg-[#14120E] text-[#A39A89] border-[#2F2A23] hover:text-[#EDE6D8]'
+                    ? 'bg-accent text-on-accent border-accent'
+                    : 'bg-bg text-text-muted border-border hover:text-text-primary'
                 }`}
               >
                 #{tag}
@@ -375,16 +375,16 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
 
       {/* Handouts List */}
       {loading ? (
-        <div className="p-8 text-center text-xs text-[#A39A89] animate-pulse">
+        <div className="p-8 text-center text-xs text-text-muted animate-pulse">
           در حال بارگذاری اسناد و نقشه‌ها...
         </div>
       ) : filteredHandouts.length === 0 ? (
-        <div className="surface-card p-8 rounded-[16px] border border-[#2F2A23] text-center space-y-3">
-          <div className="w-12 h-12 rounded-full bg-[#1C1813] border border-[#2F2A23] flex items-center justify-center mx-auto text-[#A39A89]">
+        <div className="surface-card p-8 rounded-[16px] border border-border text-center space-y-3">
+          <div className="w-12 h-12 rounded-full bg-surface border border-border flex items-center justify-center mx-auto text-text-muted">
             <MapIcon className="w-6 h-6 opacity-40" />
           </div>
-          <h3 className="text-sm font-bold text-[#EDE6D8]">سندی یافت نشد</h3>
-          <p className="text-xs text-[#A39A89] max-w-sm mx-auto">
+          <h3 className="text-sm font-bold text-text-primary">سندی یافت نشد</h3>
+          <p className="text-xs text-text-muted max-w-sm mx-auto">
             هنوز سندی ایجاد نشده یا با فیلترهای جستجو همخوانی ندارد. می‌توانید با کلیک روی «سند یا نقشه جدید» اولین سند را اضافه کنید.
           </p>
         </div>
@@ -392,9 +392,9 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
         <div className="space-y-2.5">
           {filteredHandouts.map((handout, index) => {
             const kindIcon = {
-              text: <FileText className="w-4 h-4 text-[#E0A030]" />,
-              image: <ImageIcon className="w-4 h-4 text-[#38BDF8]" />,
-              map: <MapIcon className="w-4 h-4 text-[#4ADE80]" />,
+              text: <FileText className="w-4 h-4 text-accent" />,
+              image: <ImageIcon className="w-4 h-4 text-info" />,
+              map: <MapIcon className="w-4 h-4 text-success" />,
             }[handout.kind];
 
             const isRevealed = handout.visibility === 'revealed';
@@ -404,14 +404,14 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
             return (
               <div
                 key={handout.id}
-                className="surface-card p-3 sm:p-3.5 rounded-[14px] border border-[#2F2A23] hover:border-[#3E372E] transition flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                className="surface-card p-3 sm:p-3.5 rounded-[14px] border border-border hover:border-border-strong transition flex flex-col sm:flex-row sm:items-center justify-between gap-3"
               >
                 {/* Left: Info & Type */}
                 <div className="flex items-start gap-3 min-w-0 flex-1">
                   {/* Thumbnail / Kind Icon */}
                   <div
                     onClick={() => setViewingHandout(handout)}
-                    className="w-12 h-12 rounded-[10px] bg-[#14120E] border border-[#2F2A23] flex items-center justify-center shrink-0 cursor-pointer overflow-hidden group"
+                    className="w-12 h-12 rounded-[10px] bg-bg border border-border flex items-center justify-center shrink-0 cursor-pointer overflow-hidden group"
                   >
                     {handout.mediaUrl || handout.mediaId ? (
                       <img
@@ -433,14 +433,14 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4
                         onClick={() => setViewingHandout(handout)}
-                        className="font-bold text-sm text-[#EDE6D8] hover:text-[#E0A030] cursor-pointer truncate"
+                        className="font-bold text-sm text-text-primary hover:text-accent cursor-pointer truncate"
                       >
                         {handout.title}
                       </h4>
 
                       {/* Visibility Badge */}
                       <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${
                           isRevealed
                             ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                             : isSelected
@@ -456,15 +456,15 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
 
                       {/* Map Pins Count */}
                       {handout.kind === 'map' && (
-                        <span className="text-[10px] text-[#A39A89] bg-[#14120E] px-2 py-0.5 rounded-[6px] border border-[#2F2A23] flex items-center gap-1">
-                          <MapPin className="w-2.5 h-2.5 text-[#E0A030]" />
+                        <span className="text-xs text-text-muted bg-bg px-2 py-0.5 rounded-[6px] border border-border flex items-center gap-1">
+                          <MapPin className="w-2.5 h-2.5 text-accent" />
                           {(handout.pins || []).length} نشانگر
                         </span>
                       )}
                     </div>
 
                     {/* Excerpt or tags */}
-                    <div className="flex items-center gap-2 mt-1 text-[11px] text-[#A39A89] flex-wrap">
+                    <div className="flex items-center gap-2 mt-1 text-xs text-text-muted flex-wrap">
                       {handout.tags && handout.tags.length > 0 && (
                         <span>{handout.tags.map(t => `#${t}`).join(' ')}</span>
                       )}
@@ -478,14 +478,14 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                 </div>
 
                 {/* Right: 1-Tap Quick Reveal Buttons & Actions */}
-                <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center border-t sm:border-t-0 pt-2 sm:pt-0 border-[#2F2A23]/60 w-full sm:w-auto justify-between sm:justify-end">
+                <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center border-t sm:border-t-0 pt-2 sm:pt-0 border-border/60 w-full sm:w-auto justify-between sm:justify-end">
                   {/* Sort reordering */}
                   <div className="flex items-center">
                     <button
                       type="button"
                       disabled={index === 0}
                       onClick={() => handleMoveSort(index, 'up')}
-                      className="p-1.5 rounded-[6px] text-[#A39A89] hover:text-[#EDE6D8] disabled:opacity-20 touch-target min-w-[44px]"
+                      className="p-1.5 rounded-[6px] text-text-muted hover:text-text-primary disabled:opacity-20 touch-target min-w-[44px]"
                       title="انتقال به بالا"
                     >
                       <ArrowUp className="w-3.5 h-3.5" />
@@ -494,7 +494,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                       type="button"
                       disabled={index === filteredHandouts.length - 1}
                       onClick={() => handleMoveSort(index, 'down')}
-                      className="p-1.5 rounded-[6px] text-[#A39A89] hover:text-[#EDE6D8] disabled:opacity-20 touch-target min-w-[44px]"
+                      className="p-1.5 rounded-[6px] text-text-muted hover:text-text-primary disabled:opacity-20 touch-target min-w-[44px]"
                       title="انتقال به پایین"
                     >
                       <ArrowDown className="w-3.5 h-3.5" />
@@ -520,7 +520,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                   <button
                     type="button"
                     onClick={() => handleOpenRecipientModal(handout)}
-                    className="p-1.5 rounded-[8px] bg-[#14120E] hover:bg-[#252019] text-sky-400 border border-sky-800/40 touch-target min-w-[44px]"
+                    className="p-1.5 rounded-[8px] bg-bg hover:bg-surface-2 text-sky-400 border border-sky-800/40 touch-target min-w-[44px]"
                     title="انتخاب بازیکنان مجاز"
                   >
                     <Users className="w-3.5 h-3.5" />
@@ -530,7 +530,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                   <button
                     type="button"
                     onClick={() => setViewingHandout(handout)}
-                    className="p-1.5 rounded-[8px] bg-[#14120E] hover:bg-[#252019] text-[#E0A030] border border-[#3A3327] touch-target min-w-[44px]"
+                    className="p-1.5 rounded-[8px] bg-bg hover:bg-surface-2 text-accent border border-border touch-target min-w-[44px]"
                     title="مشاهده و ویرایش نشانگرها"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -543,7 +543,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                       setEditingHandout(handout);
                       setIsEditorOpen(true);
                     }}
-                    className="p-1.5 rounded-[8px] bg-[#14120E] hover:bg-[#252019] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target min-w-[44px]"
+                    className="p-1.5 rounded-[8px] bg-bg hover:bg-surface-2 text-text-muted hover:text-text-primary border border-border touch-target min-w-[44px]"
                     title="ویرایش مشخصات"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
@@ -553,7 +553,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                   <button
                     type="button"
                     onClick={() => handleDeleteHandout(handout.id)}
-                    className="p-1.5 rounded-[8px] bg-[#14120E] hover:bg-rose-500/20 text-[#A39A89] hover:text-rose-400 border border-[#2F2A23] touch-target min-w-[44px]"
+                    className="p-1.5 rounded-[8px] bg-bg hover:bg-rose-500/20 text-text-muted hover:text-rose-400 border border-border touch-target min-w-[44px]"
                     title="حذف سند"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -614,7 +614,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
           <div className="space-y-4 text-start">
             <div className="space-y-1.5 max-h-60 overflow-y-auto">
               {campaignCharacters.length === 0 ? (
-                <p className="text-xs text-[#A39A89] italic">شخصیتی در کمپین یافت نشد.</p>
+                <p className="text-xs text-text-muted italic">شخصیتی در کمپین یافت نشد.</p>
               ) : (
                 campaignCharacters.map(char => {
                   const isChecked = tempRecipients.includes(char.id);
@@ -624,7 +624,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                       className={`flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl border cursor-pointer transition ${
                         isChecked
                           ? 'bg-sky-950/40 border-sky-600/50 text-white'
-                          : 'bg-[#1C1813] border-[#2F2A23] text-[#A39A89]'
+                          : 'bg-surface border-border text-text-muted'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
@@ -636,12 +636,12 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                               prev.includes(char.id) ? prev.filter(id => id !== char.id) : [...prev, char.id]
                             )
                           }
-                          className="w-4 h-4 rounded text-sky-500 focus:ring-sky-500 bg-[#14120E] border-[#2F2A23]"
+                          className="w-4 h-4 rounded text-sky-500 focus:ring-sky-500 bg-bg border-border"
                         />
                         <span className="text-xs font-bold truncate">{char.name}</span>
                       </div>
                       {char.playerName && (
-                        <span className="text-[10px] text-[#A39A89]">({char.playerName})</span>
+                        <span className="text-xs text-text-muted">({char.playerName})</span>
                       )}
                     </label>
                   );
@@ -649,11 +649,11 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#2F2A23]">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
               <button
                 type="button"
                 onClick={() => setRecipientModalHandout(null)}
-                className="px-4 py-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] transition touch-target min-w-[44px] min-h-[44px]"
+                className="px-4 py-2.5 rounded-xl bg-surface-2 border border-border text-xs font-bold text-text-muted hover:text-text-primary transition touch-target min-w-[44px] min-h-[44px]"
               >
                 انصراف
               </button>

@@ -209,7 +209,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
       {/* DM Navigation Tab Bar */}
       <ScrollableRow
         activeKey={activeTab}
-        wrapperClassName="surface-card rounded-[14px] p-1.5 border border-[#2F2A23]"
+        wrapperClassName="surface-card rounded-[14px] p-1.5 border border-border"
         className="gap-1.5"
       >
         {navItems.map(item => {
@@ -223,8 +223,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setActiveDmTab(item.id)}
               className={`py-2 px-3.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                 isActive
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
@@ -291,7 +291,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
         <div className="space-y-4">
           <ScrollableRow
             activeKey={librarySubTab}
-            wrapperClassName="surface-card rounded-[12px] p-1 border border-[#2F2A23]"
+            wrapperClassName="surface-card rounded-[12px] p-1 border border-border"
             className="gap-1"
           >
             <button
@@ -300,8 +300,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setLibrarySubTab('library_hub')}
               className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'library_hub'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <Library className="w-3.5 h-3.5 shrink-0" />
@@ -313,8 +313,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setLibrarySubTab('npcs')}
               className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'npcs'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <Users className="w-3.5 h-3.5 shrink-0" />
@@ -326,8 +326,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setLibrarySubTab('items')}
               className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'items'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 shrink-0" />
@@ -339,8 +339,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setLibrarySubTab('locations')}
               className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'locations'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <MapPin className="w-3.5 h-3.5 shrink-0" />
@@ -352,8 +352,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setLibrarySubTab('handouts')}
               className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'handouts'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <MapIcon className="w-3.5 h-3.5 shrink-0" />
@@ -365,8 +365,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setLibrarySubTab('quests')}
               className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'quests'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <Scroll className="w-3.5 h-3.5 shrink-0" />
@@ -378,8 +378,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setLibrarySubTab('reputation')}
               className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'reputation'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <Flag className="w-3.5 h-3.5 shrink-0" />
@@ -391,8 +391,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setLibrarySubTab('treasury')}
               className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
                 librarySubTab === 'treasury'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <Coins className="w-3.5 h-3.5 shrink-0" />
@@ -506,7 +506,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
         <div className="space-y-4">
           <ScrollableRow
             activeKey={narrativeSubTab}
-            wrapperClassName="surface-card rounded-[12px] p-1 border border-[#2F2A23]"
+            wrapperClassName="surface-card rounded-[12px] p-1 border border-border"
             className="gap-1"
           >
             <button
@@ -515,8 +515,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setNarrativeSubTab('notes')}
               className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                 narrativeSubTab === 'notes'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <BookOpen className="w-3.5 h-3.5 shrink-0" />
@@ -528,8 +528,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setNarrativeSubTab('endings')}
               className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                 narrativeSubTab === 'endings'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <Compass className="w-3.5 h-3.5 shrink-0" />
@@ -557,7 +557,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
         <div className="space-y-4">
           <ScrollableRow
             activeKey={moreSubTab}
-            wrapperClassName="surface-card rounded-[12px] p-1 border border-[#2F2A23]"
+            wrapperClassName="surface-card rounded-[12px] p-1 border border-border"
             className="gap-1"
           >
             <button
@@ -566,8 +566,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setMoreSubTab('users')}
               className={`py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                 moreSubTab === 'users'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <Users className="w-3.5 h-3.5 shrink-0" />
@@ -579,8 +579,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setMoreSubTab('invites')}
               className={`py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                 moreSubTab === 'invites'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <KeyRound className="w-3.5 h-3.5 shrink-0" />
@@ -592,8 +592,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setMoreSubTab('audit')}
               className={`py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                 moreSubTab === 'audit'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <Scroll className="w-3.5 h-3.5 shrink-0" />
@@ -605,8 +605,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
               onClick={() => setMoreSubTab('settings')}
               className={`py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
                 moreSubTab === 'settings'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <SettingsIcon className="w-3.5 h-3.5 shrink-0" />

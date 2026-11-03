@@ -51,26 +51,26 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
     <BottomSheet isOpen={isOpen} onClose={onClose} title={`اعضای کمپین (${members.length})`}>
       <div className="space-y-4 py-2 text-start" dir="rtl">
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs">
+          <div className="p-3 rounded-xl bg-danger/15 border border-danger/30 text-danger text-xs">
             {errorMsg}
           </div>
         )}
 
         {/* Transfer Ownership Confirmation Section */}
         {transferTargetId && (
-          <div className="p-4 rounded-2xl bg-[#E0A030]/15 border border-[#E0A030]/40 space-y-3">
-            <div className="flex items-center gap-2 text-[#F2C265] text-xs font-bold">
-              <AlertTriangle className="w-4 h-4 text-[#F2C265]" />
+          <div className="p-4 rounded-2xl bg-accent/15 border border-accent/40 space-y-3">
+            <div className="flex items-center gap-2 text-accent-hover text-xs font-bold">
+              <AlertTriangle className="w-4 h-4 text-accent-hover" />
               <span>هشدار انتقال مالکیت کمپین</span>
             </div>
-            <p className="text-xs text-[#C9C0AE] leading-relaxed">
+            <p className="text-xs text-text-primary leading-relaxed">
               آیا مطمئن هستید که می‌خواهید مالکیت این کمپین را واگذار کنید؟ پس از این کار، نقش شما به دستیار دانجن مستر تغییر یافته و کاربر جدید مالک کامل کمپین خواهد بود.
             </p>
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setTransferTargetId(null)}
-                className="px-3 py-1.5 rounded-xl text-xs text-[#A39A89] hover:text-[#EDE6D8]"
+                className="px-3 py-1.5 rounded-xl text-xs text-text-muted hover:text-text-primary"
               >
                 انصراف
               </button>
@@ -78,7 +78,7 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
                 type="button"
                 onClick={handleTransfer}
                 disabled={loading}
-                className="px-4 py-1.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs hover:bg-[#F2C265]"
+                className="px-4 py-1.5 rounded-xl bg-accent text-on-accent font-bold text-xs hover:bg-accent-hover"
               >
                 تأیید و انتقال مالکیت
               </button>
@@ -100,30 +100,30 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
 
             const badgeColorClass =
               member.role === 'owner'
-                ? 'bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/40'
+                ? 'bg-accent/20 text-accent-hover border border-accent/40'
                 : member.role === 'co_dm'
-                ? 'bg-[#8B5CF6]/20 text-[#C4B5FD] border border-[#8B5CF6]/40'
+                ? 'bg-role-codm/20 text-role-codm border border-role-codm/40'
                 : member.role === 'player'
-                ? 'bg-[#475569]/30 text-[#CBD5E1] border border-[#64748B]/40'
-                : 'bg-[#3F3F46]/30 text-[#A1A1AA] border border-[#52525B]/40';
+                ? 'bg-info/30 text-info border border-info/40'
+                : 'bg-text-disabled/30 text-text-muted border border-text-disabled/40';
 
             return (
               <div
                 key={member.userId}
-                className="p-3.5 rounded-2xl bg-[#131110]/80 border border-[#2F2A23] flex items-center justify-between gap-3 min-h-[48px]"
+                className="p-3.5 rounded-2xl bg-bg/80 border border-border flex items-center justify-between gap-3 min-h-[48px]"
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                    isMemberOwner ? 'bg-[#E0A030]/20 text-[#F2C265]' : 'bg-[#201D19] text-[#A39A89]'
+                    isMemberOwner ? 'bg-accent/20 text-accent-hover' : 'bg-surface-2 text-text-muted'
                   }`}>
                     {isMemberOwner ? <Crown className="w-5 h-5" /> : <Shield className="w-4 h-4" />}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-bold text-[#EDE6D8]">{member.userName || 'کاربر'}</h4>
-                      {isSelf && <span className="text-[10px] text-[#F2C265] font-semibold">(شما)</span>}
+                      <h4 className="text-sm font-bold text-text-primary">{member.userName || 'کاربر'}</h4>
+                      {isSelf && <span className="text-xs text-accent-hover font-semibold">(شما)</span>}
                     </div>
-                    <p className="text-xs text-[#A39A89]">
+                    <p className="text-xs text-text-muted">
                       {member.characterName ? `شخصیت: ${member.characterName}` : member.userEmail || ''}
                     </p>
                   </div>
@@ -135,7 +135,7 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
                     <select
                       value={member.role}
                       onChange={e => onUpdateMemberRole(member.userId, e.target.value as CampaignRole)}
-                      className="bg-[#0E0D0C] border border-[#2F2A23] rounded-xl px-2.5 py-1.5 text-xs text-[#C9C0AE] font-medium"
+                      className="bg-bg border border-border rounded-xl px-2.5 py-1.5 text-xs text-text-primary font-medium"
                     >
                       <option value={member.role}>{getRoleLabelFa(member.role as CampaignRole)}</option>
                       {allowedNextRoles.map(r => (
@@ -156,7 +156,7 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
                       <button
                         title="انتقال مالکیت به این کاربر"
                         onClick={() => setTransferTargetId(member.userId)}
-                        className="p-2 rounded-xl text-[#F2C265] hover:bg-[#E0A030]/10 transition-colors"
+                        className="p-2 rounded-xl text-accent-hover hover:bg-accent/10 transition-colors"
                       >
                         <ArrowRightLeft className="w-4 h-4" />
                       </button>
@@ -165,7 +165,7 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
                       <button
                         title="حذف از کمپین"
                         onClick={() => onRemoveMember(member.userId)}
-                        className="p-2 rounded-xl text-[#D66138] hover:bg-[#C2512B]/10 transition-colors"
+                        className="p-2 rounded-xl text-danger-hover hover:bg-danger/10 transition-colors"
                       >
                         <UserX className="w-4 h-4" />
                       </button>

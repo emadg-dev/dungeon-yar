@@ -42,14 +42,13 @@ export const Chip: React.FC<ChipProps> = ({
           onClick?.();
         }
       }}
-      style={{ touchAction: 'manipulation' }}
       className={`inline-flex items-center rounded-xl font-medium select-none whitespace-nowrap shrink-0 transition-all duration-150 border outline-none ${
         selected
-          ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-[0_0_10px_rgba(224,160,48,0.2)] font-bold'
-          : 'bg-stone-900/60 border-stone-800 text-stone-300 hover:border-stone-700 hover:text-stone-100'
+          ? 'bg-accent/20 border-accent/60 text-accent-hover shadow-glow-amber font-bold'
+          : 'bg-surface-2 border-border text-text-muted hover:border-border-strong hover:text-text-primary'
       } ${
         isInteractive && !disabled
-          ? 'cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-amber-400'
+          ? 'cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-accent'
           : ''
       } ${disabled ? 'opacity-40 pointer-events-none' : ''} ${sizeClasses} ${className}`}
     >
@@ -57,8 +56,8 @@ export const Chip: React.FC<ChipProps> = ({
       <span className="whitespace-nowrap shrink-0">{label}</span>
       {badge !== undefined && (
         <span
-          className={`px-1.5 py-0.2 rounded-md text-[11px] font-bold ${
-            selected ? 'bg-amber-400 text-stone-950' : 'bg-stone-800 text-stone-400'
+          className={`px-1.5 py-0.2 rounded-md text-xs font-bold ${
+            selected ? 'bg-accent text-on-accent' : 'bg-surface-2 text-text-muted'
           }`}
         >
           {badge}

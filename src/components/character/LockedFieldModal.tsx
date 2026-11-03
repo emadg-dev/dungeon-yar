@@ -28,19 +28,19 @@ export const LockedFieldModal: React.FC<LockedFieldModalProps> = ({
       subtitle={`شخصیت: ${characterName}`}
     >
       <div className="space-y-4 py-2 text-start" dir="rtl">
-        <div className="p-4 rounded-2xl bg-[#171513] border border-[#E0A030]/40 space-y-2">
-          <div className="flex items-center gap-2 text-[#F2C265] font-bold text-sm">
-            <Lock className="w-4 h-4 text-[#E0A030]" />
+        <div className="p-4 rounded-2xl bg-surface border border-accent/40 space-y-2">
+          <div className="flex items-center gap-2 text-accent-hover font-bold text-sm">
+            <Lock className="w-4 h-4 text-accent" />
             <span>بخش قفل‌شده: {label}</span>
           </div>
-          <p className="text-xs text-[#EDE6D8]/90 leading-relaxed">
+          <p className="text-xs text-text-primary/90 leading-relaxed">
             پس از نهایی‌شدن آفرینش شخصیت، مقادیر بنیادین برگه (از جمله سطح، کلاس، ویژگی‌های پایه، سقف جان و مهارت‌ها) جهت حفظ تعادل قوانین کمپین قفل هستند.
           </p>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs text-[#A39A89] space-y-1.5 leading-relaxed">
-          <div className="text-[#EDE6D8] font-bold flex items-center gap-1.5">
-            <ShieldAlert className="w-3.5 h-3.5 text-[#E0A030]" />
+        <div className="p-3.5 rounded-xl bg-surface-2 border border-border text-xs text-text-muted space-y-1.5 leading-relaxed">
+          <div className="text-text-primary font-bold flex items-center gap-1.5">
+            <ShieldAlert className="w-3.5 h-3.5 text-accent" />
             <span>چگونه این فیلد را تغییر دهم؟</span>
           </div>
           <p>
@@ -61,7 +61,7 @@ export const LockedFieldModal: React.FC<LockedFieldModalProps> = ({
               onClose();
               onRequestChange(fieldName);
             }}
-            className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] text-xs font-black transition flex items-center justify-center gap-2 shadow-md shadow-[#E0A030]/20 min-h-[44px]"
+            className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-warning to-accent hover:from-accent hover:to-accent-hover text-on-accent text-xs font-black transition flex items-center justify-center gap-2 shadow-md shadow-accent/20 min-h-[44px]"
           >
             <Send className="w-4 h-4" />
             <span>درخواست تغییر به DM</span>
@@ -69,7 +69,7 @@ export const LockedFieldModal: React.FC<LockedFieldModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="py-3 px-4 rounded-xl bg-[#201D19] hover:bg-[#2F2A23] text-[#EDE6D8] text-xs font-bold border border-[#2F2A23] transition min-h-[44px]"
+            className="py-3 px-4 rounded-xl bg-surface-2 hover:bg-surface-3 text-text-primary text-xs font-bold border border-border transition min-h-[44px]"
           >
             بستن
           </button>

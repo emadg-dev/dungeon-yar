@@ -202,7 +202,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
       subtitle={isEditing ? `جلسه شماره ${sessionToEdit?.number}` : 'برنامه‌ریزی زمان، نظرسنجی و هماهنگی بازیکنان'}
       fullHeight
     >
-      <form onSubmit={handleSubmit} className="space-y-4 pb-20 text-right" dir="rtl">
+      <form onSubmit={handleSubmit} className="space-y-4 pb-20 text-start" dir="rtl">
         {errorMsg && (
           <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -212,7 +212,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
 
         {/* Mode Selector */}
         {!isEditing && (
-          <div className="grid grid-cols-2 gap-2 bg-[#12100E] p-1.5 rounded-2xl border border-white/10">
+          <div className="grid grid-cols-2 gap-2 bg-bg p-1.5 rounded-2xl border border-white/10">
             <button
               type="button"
               onClick={() => {
@@ -221,8 +221,8 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
               }}
               className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 min-h-[44px] ${
                 mode === 'fixed'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent shadow-md'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <CalendarIcon className="w-4 h-4" />
@@ -236,8 +236,8 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
               }}
               className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 min-h-[44px] ${
                 mode === 'poll'
-                  ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
-                  : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                  ? 'bg-accent text-on-accent shadow-md'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <Hourglass className="w-4 h-4" />
@@ -249,23 +249,23 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
         {/* Title & Number */}
         <div className="grid grid-cols-4 gap-3">
           <div className="col-span-1 space-y-1">
-            <label className="text-xs font-bold text-[#A39A89]">شماره جلسه</label>
+            <label className="text-xs font-bold text-text-muted">شماره جلسه</label>
             <input
               type="number"
               min={1}
               value={number}
               onChange={(e) => setNumber(Math.max(1, parseInt(e.target.value, 10) || 1))}
-              className="w-full bg-[#12100E] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-[#EDE6D8] font-bold text-center focus:outline-none focus:border-[#E0A030] min-h-[44px]"
+              className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2.5 text-xs text-text-primary font-bold text-center focus:outline-none focus:border-accent min-h-[44px]"
             />
           </div>
           <div className="col-span-3 space-y-1">
-            <label className="text-xs font-bold text-[#A39A89]">عنوان جلسه *</label>
+            <label className="text-xs font-bold text-text-muted">عنوان جلسه *</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="مثال: گذر از دروازه ساعت‌ساز"
-              className="w-full bg-[#12100E] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-[#EDE6D8] font-bold focus:outline-none focus:border-[#E0A030] min-h-[44px]"
+              className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2.5 text-xs text-text-primary font-bold focus:outline-none focus:border-accent min-h-[44px]"
               required
             />
           </div>
@@ -273,41 +273,41 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
 
         {/* Fixed Date Mode */}
         {mode === 'fixed' && (
-          <div className="space-y-3 p-3.5 rounded-2xl bg-[#171310] border border-white/5">
-            <h4 className="text-xs font-bold text-[#F2C265] flex items-center gap-1.5">
+          <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-white/5">
+            <h4 className="text-xs font-bold text-accent-hover flex items-center gap-1.5">
               <CalendarIcon className="w-3.5 h-3.5" />
               <span>زمان‌بندی جلسه</span>
             </h4>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-[11px] text-[#A39A89]">تاریخ جلسه</label>
+                <label className="text-xs text-text-muted">تاریخ جلسه</label>
                 <input
                   type="date"
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
-                  className="w-full bg-[#12100E] border border-white/10 rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[44px]"
+                  className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] text-[#A39A89]">ساعت شروع</label>
+                <label className="text-xs text-text-muted">ساعت شروع</label>
                 <input
                   type="time"
                   value={scheduledTime}
                   onChange={(e) => setScheduledTime(e.target.value)}
-                  className="w-full bg-[#12100E] border border-white/10 rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[44px]"
+                  className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
                 />
               </div>
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] text-[#A39A89]">مدت زمان پیش‌بینی‌شده (دقیقه)</label>
+              <label className="text-xs text-text-muted">مدت زمان پیش‌بینی‌شده (دقیقه)</label>
               <input
                 type="number"
                 step={30}
                 min={30}
                 value={durationMinutes}
                 onChange={(e) => setDurationMinutes(Math.max(30, parseInt(e.target.value, 10) || 240))}
-                className="w-full bg-[#12100E] border border-white/10 rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[44px]"
+                className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
               />
             </div>
           </div>
@@ -315,9 +315,9 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
 
         {/* Poll Mode (2 to 5 date options) */}
         {mode === 'poll' && (
-          <div className="space-y-3 p-3.5 rounded-2xl bg-[#171310] border border-white/5">
+          <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-white/5">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 className="text-xs font-bold text-[#F2C265] flex items-center gap-1.5">
+              <h4 className="text-xs font-bold text-accent-hover flex items-center gap-1.5">
                 <Hourglass className="w-3.5 h-3.5" />
                 <span>گزینه‌های نظرسنجی تاریخ (۲ تا ۵ گزینه)</span>
               </h4>
@@ -325,7 +325,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
                 <button
                   type="button"
                   onClick={handleAddPollOption}
-                  className="px-2.5 py-1 rounded-lg bg-[#E0A030]/20 hover:bg-[#E0A030] text-[#F2C265] hover:text-[#0E0D0C] text-[11px] font-bold transition-colors flex items-center gap-1"
+                  className="px-2.5 py-1 rounded-lg bg-accent/20 hover:bg-accent text-accent-hover hover:text-on-accent text-xs font-bold transition-colors flex items-center gap-1"
                 >
                   <Plus className="w-3 h-3" />
                   <span>افزودن گزینه</span>
@@ -335,8 +335,8 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
 
             <div className="space-y-2.5">
               {pollOptions.map((opt, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-[#12100E] p-2 rounded-xl border border-white/5">
-                  <span className="text-xs font-bold text-[#A39A89] w-6 text-center">
+                <div key={idx} className="flex items-center gap-2 bg-bg p-2 rounded-xl border border-white/5">
+                  <span className="text-xs font-bold text-text-muted w-6 text-center">
                     {idx + 1}
                   </span>
                   <input
@@ -347,7 +347,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
                       updated[idx].date = e.target.value;
                       setPollOptions(updated);
                     }}
-                    className="flex-1 bg-transparent border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[40px]"
+                    className="flex-1 bg-transparent border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
                     required
                   />
                   <input
@@ -358,7 +358,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
                       updated[idx].time = e.target.value;
                       setPollOptions(updated);
                     }}
-                    className="w-24 bg-transparent border border-white/10 rounded-lg px-2 py-1.5 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[40px]"
+                    className="w-24 bg-transparent border border-white/10 rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
                   />
                   {pollOptions.length > 2 && (
                     <button
@@ -378,8 +378,8 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
 
         {/* In-world Date */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-[#A39A89] flex items-center gap-1.5">
-            <Hourglass className="w-3.5 h-3.5 text-[#E0A030]" />
+          <label className="text-xs font-bold text-text-muted flex items-center gap-1.5">
+            <Hourglass className="w-3.5 h-3.5 text-accent" />
             <span>تاریخ در جهان بازی (In-world date)</span>
           </label>
           <input
@@ -387,15 +387,15 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
             value={inWorldDate}
             onChange={(e) => setInWorldDate(e.target.value)}
             placeholder="مثال: ۱۲ سایه‌باد ۱۱۷۸"
-            className="w-full bg-[#12100E] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[44px]"
+            className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
           />
         </div>
 
         {/* Place & Online URL */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#A39A89] flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-[#E0A030]" />
+            <label className="text-xs font-bold text-text-muted flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-accent" />
               <span>محل برگزاری فیزیکی</span>
             </label>
             <input
@@ -403,13 +403,13 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
               value={placeText}
               onChange={(e) => setPlaceText(e.target.value)}
               placeholder="مثال: کافه ماجراجویان یا منزل سامان"
-              className="w-full bg-[#12100E] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[44px]"
+              className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#A39A89] flex items-center gap-1.5">
-              <Video className="w-3.5 h-3.5 text-[#9B72CF]" />
+            <label className="text-xs font-bold text-text-muted flex items-center gap-1.5">
+              <Video className="w-3.5 h-3.5 text-role-codm" />
               <span>لینک جلسه آنلاین (گوگل میت، دیسکورد)</span>
             </label>
             <input
@@ -417,7 +417,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
               value={onlineUrl}
               onChange={(e) => setOnlineUrl(e.target.value)}
               placeholder="https://meet.google.com/..."
-              className="w-full bg-[#12100E] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[44px]"
+              className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
             />
           </div>
         </div>
@@ -425,11 +425,11 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
         {/* Status (If editing) */}
         {isEditing && (
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#A39A89]">وضعیت جلسه</label>
+            <label className="text-xs font-bold text-text-muted">وضعیت جلسه</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as SessionStatus)}
-              className="w-full bg-[#12100E] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[44px]"
+              className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
             >
               <option value="planned">برنامه‌ریزی اولیه</option>
               <option value="confirmed">تأیید شده و قطعی</option>
@@ -441,7 +441,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
 
         {/* DM Secret Notes */}
         <div className="space-y-1">
-          <label className="text-xs font-bold text-[#E0A030] flex items-center gap-1.5">
+          <label className="text-xs font-bold text-accent flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5" />
             <span>یادداشت محرمانه دانجن مستر (فقط برای شما و دستیاران قابل مشاهده است)</span>
           </label>
@@ -450,7 +450,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
             onChange={(e) => setDmNotes(e.target.value)}
             rows={3}
             placeholder="نکات روایی، هیولاها، تله‌ها و سورپرایزهای این جلسه..."
-            className="w-full bg-[#12100E] border border-[#E0A030]/20 rounded-xl p-3 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+            className="w-full bg-bg border border-accent/20 rounded-xl p-3 text-xs text-text-primary focus:outline-none focus:border-accent"
           />
         </div>
 
@@ -459,7 +459,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3.5 rounded-xl bg-[#E0A030] hover:bg-[#F2C265] text-[#0E0D0C] font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-lg min-h-[48px]"
+            className="w-full py-3.5 rounded-xl bg-accent hover:bg-accent-hover text-on-accent font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-lg min-h-[48px]"
           >
             <Save className="w-4 h-4" />
             <span>{isEditing ? 'ذخیره تغییرات جلسه' : 'ایجاد و ثبت جلسه'}</span>

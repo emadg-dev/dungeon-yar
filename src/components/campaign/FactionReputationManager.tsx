@@ -222,7 +222,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
       case 'دشمن خونی':
         return 'bg-red-500/10 text-red-400 border-red-500/30';
       default:
-        return 'bg-[#2F2A23] text-[#EDE6D8]/80 border-[#3D372E]';
+        return 'bg-surface-3 text-text-primary/80 border-accent';
     }
   };
 
@@ -235,14 +235,14 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
   return (
     <div className="space-y-4" dir="rtl">
       {/* Header bar */}
-      <div className="surface-card rounded-[14px] p-4 border border-[#2F2A23] flex flex-wrap items-center justify-between gap-3">
+      <div className="surface-card rounded-[14px] p-4 border border-border flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-[#E0A030]/10 border border-[#E0A030]/30 flex items-center justify-center text-[#E0A030]">
+          <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center text-accent">
             <Flag className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-extrabold text-base text-[#EDE6D8]">شهرت و نگرش جناح‌ها</h3>
-            <p className="text-xs text-[#A39A89]">
+            <h3 className="font-extrabold text-base text-text-primary">شهرت و نگرش جناح‌ها</h3>
+            <p className="text-xs text-text-muted">
               {isDm
                 ? 'مدیریت و سنجش پایگاه اجتماعی گروه و کاراکترها نزد سازمان‌ها و قدرت‌های منطقه'
                 : 'میزان اعتماد، دوستی یا خصومت جناح‌ها و فرقه‌های منطقه با ماجراجویان'}
@@ -255,7 +255,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
             type="button"
             onClick={loadData}
             title="بازخوانی"
-            className="p-2 rounded-lg bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] transition"
+            className="p-2 rounded-lg bg-surface-2 border border-border text-text-muted hover:text-text-primary transition"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -264,7 +264,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
             <button
               type="button"
               onClick={() => setCreateModal(prev => ({ ...prev, isOpen: true }))}
-              className="px-3.5 py-2 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-extrabold text-xs flex items-center gap-1.5 shadow-sm hover:brightness-110 active:scale-95 transition"
+              className="px-3.5 py-2 rounded-xl bg-accent text-on-accent font-extrabold text-xs flex items-center gap-1.5 shadow-sm hover:brightness-110 active:scale-95 transition"
             >
               <Plus className="w-4 h-4" />
               <span>ردیابی جناح جدید</span>
@@ -280,8 +280,8 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
           onClick={() => setTargetFilter('all')}
           className={`px-3 py-1.5 rounded-lg font-bold transition whitespace-nowrap ${
             targetFilter === 'all'
-              ? 'bg-[#E0A030] text-[#0E0D0C]'
-              : 'bg-[#201D19] text-[#A39A89] border border-[#2F2A23] hover:text-[#EDE6D8]'
+              ? 'bg-accent text-on-accent'
+              : 'bg-surface-2 text-text-muted border border-border hover:text-text-primary'
           }`}
         >
           همه مسیرها ({reputations.length})
@@ -291,8 +291,8 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
           onClick={() => setTargetFilter('party')}
           className={`px-3 py-1.5 rounded-lg font-bold transition whitespace-nowrap flex items-center gap-1 ${
             targetFilter === 'party'
-              ? 'bg-[#E0A030] text-[#0E0D0C]'
-              : 'bg-[#201D19] text-[#A39A89] border border-[#2F2A23] hover:text-[#EDE6D8]'
+              ? 'bg-accent text-on-accent'
+              : 'bg-surface-2 text-text-muted border border-border hover:text-text-primary'
           }`}
         >
           <Users className="w-3.5 h-3.5" />
@@ -306,8 +306,8 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
             onClick={() => setTargetFilter(p.id)}
             className={`px-3 py-1.5 rounded-lg font-bold transition whitespace-nowrap flex items-center gap-1 ${
               targetFilter === p.id
-                ? 'bg-[#E0A030] text-[#0E0D0C]'
-                : 'bg-[#201D19] text-[#A39A89] border border-[#2F2A23] hover:text-[#EDE6D8]'
+                ? 'bg-accent text-on-accent'
+                : 'bg-surface-2 text-text-muted border border-border hover:text-text-primary'
             }`}
           >
             <User className="w-3.5 h-3.5" />
@@ -325,14 +325,14 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
       )}
 
       {loading && reputations.length === 0 ? (
-        <div className="surface-card rounded-[14px] p-8 border border-[#2F2A23] text-center text-[#A39A89] text-xs">
+        <div className="surface-card rounded-[14px] p-8 border border-border text-center text-text-muted text-xs">
           در حال بارگذاری وضعیت شهرت جناح‌ها...
         </div>
       ) : filteredReputations.length === 0 ? (
-        <div className="surface-card rounded-[14px] p-8 border border-[#2F2A23] text-center space-y-2">
-          <ShieldAlert className="w-8 h-8 text-[#A39A89] mx-auto opacity-40" />
-          <p className="text-sm font-bold text-[#EDE6D8]">هیچ رکورد شهرتی یافت نشد</p>
-          <p className="text-xs text-[#A39A89]">
+        <div className="surface-card rounded-[14px] p-8 border border-border text-center space-y-2">
+          <ShieldAlert className="w-8 h-8 text-text-muted mx-auto opacity-40" />
+          <p className="text-sm font-bold text-text-primary">هیچ رکورد شهرتی یافت نشد</p>
+          <p className="text-xs text-text-muted">
             {isDm ? 'برای شروع ردیابی نگرش جناح‌ها، دکمه «ردیابی جناح جدید» را لمس کنید.' : 'هنوز ارتباط ثبت‌شده‌ای با جناح‌های منطقه ندارید.'}
           </p>
         </div>
@@ -346,24 +346,24 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
             return (
               <div
                 key={rep.id}
-                className="surface-card rounded-[14px] p-4 border border-[#2F2A23] card-gold-top relative space-y-3"
+                className="surface-card rounded-[14px] p-4 border border-border card-gold-top relative space-y-3"
               >
                 {/* Header row */}
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="font-extrabold text-sm text-[#EDE6D8]">{rep.factionName || 'جناح ناشناس'}</h4>
+                      <h4 className="font-extrabold text-sm text-text-primary">{rep.factionName || 'جناح ناشناس'}</h4>
                       {!rep.visible && isDm && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-950/40 text-red-400 border border-red-800/40 font-bold flex items-center gap-1">
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-red-950/40 text-red-400 border border-red-800/40 font-bold flex items-center gap-1">
                           <EyeOff className="w-3 h-3" />
                           <span>مخفی از بازیکنان</span>
                         </span>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 mt-1 text-[11px] text-[#A39A89]">
+                    <div className="flex items-center gap-2 mt-1 text-xs text-text-muted">
                       <span className="flex items-center gap-1">
-                        {isPartyWide ? <Users className="w-3 h-3 text-[#E0A030]" /> : <User className="w-3 h-3 text-cyan-400" />}
+                        {isPartyWide ? <Users className="w-3 h-3 text-accent" /> : <User className="w-3 h-3 text-cyan-400" />}
                         <span>{isPartyWide ? 'مربوط به کل گروه' : (rep.characterName || 'کاراکتر خاص')}</span>
                       </span>
                       {rep.factionRegion && (
@@ -383,25 +383,25 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
 
                 {/* Description if present */}
                 {rep.factionDescription && (
-                  <p className="text-xs text-[#EDE6D8]/70 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-text-primary/70 line-clamp-2 leading-relaxed">
                     {rep.factionDescription}
                   </p>
                 )}
 
                 {/* Visual Scale Progress Bar */}
                 <div className="space-y-1.5 pt-1">
-                  <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-[#A39A89]">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-text-muted">
                       مقیاس: {rep.min} تا {rep.max}
                     </span>
-                    <span className="font-black text-[#EDE6D8]">
+                    <span className="font-black text-text-primary">
                       امتیاز: {rep.value > 0 ? `+${rep.value}` : rep.value}
                     </span>
                   </div>
 
-                  <div className="w-full h-2 rounded-full bg-[#1A1815] border border-[#2F2A23] overflow-hidden p-0.5 relative">
+                  <div className="w-full h-2 rounded-full bg-surface border border-border overflow-hidden p-0.5 relative">
                     {/* Neutral center mark */}
-                    <div className="absolute top-0 bottom-0 start-1/2 w-0.5 bg-[#4A4337] z-10" />
+                    <div className="absolute top-0 bottom-0 start-1/2 w-0.5 bg-surface-3 z-10" />
 
                     <div
                       className={`h-full rounded-full transition-all duration-300 ${
@@ -409,14 +409,14 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                           ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
                           : rep.value < -20
                           ? 'bg-gradient-to-r from-red-600 to-rose-500'
-                          : 'bg-gradient-to-r from-[#C9A048] to-[#F2C265]'
+                          : 'bg-gradient-to-r from-accent to-accent-hover'
                       }`}
                       style={{ width: `${Math.max(4, Math.min(100, percentage))}%` }}
                     />
                   </div>
 
                   {/* Threshold steps tags */}
-                  <div className="flex justify-between text-[10px] text-[#A39A89] px-0.5 pt-0.5">
+                  <div className="flex justify-between text-xs text-text-muted px-0.5 pt-0.5">
                     <span>خصومت ({rep.min})</span>
                     <span>بی‌طرف (0)</span>
                     <span>اتحاد ({rep.max})</span>
@@ -424,11 +424,11 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                 </div>
 
                 {/* Footer action buttons */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#2F2A23]/60 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/60 text-xs">
                   <button
                     type="button"
                     onClick={() => handleOpenLogs(rep)}
-                    className="text-[#A39A89] hover:text-[#EDE6D8] flex items-center gap-1 transition"
+                    className="text-text-muted hover:text-text-primary flex items-center gap-1 transition"
                   >
                     <History className="w-3.5 h-3.5" />
                     <span>تاریخچه رویدادها</span>
@@ -442,7 +442,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                         title={rep.visible ? 'پنهان کردن از بازیکنان' : 'نمایش برای بازیکنان'}
                         className={`p-1.5 rounded-lg border transition ${
                           rep.visible
-                            ? 'bg-[#201D19] border-[#2F2A23] text-emerald-400'
+                            ? 'bg-surface-2 border-border text-emerald-400'
                             : 'bg-red-500/10 border-red-500/30 text-red-400'
                         }`}
                       >
@@ -458,7 +458,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                           reason: '',
                           submitting: false
                         })}
-                        className="px-2.5 py-1.5 rounded-lg bg-[#201D19] border border-[#2F2A23] text-[#F2C265] font-bold hover:bg-[#2B2620] flex items-center gap-1 transition"
+                        className="px-2.5 py-1.5 rounded-lg bg-surface-2 border border-border text-accent-hover font-bold hover:bg-surface-2 flex items-center gap-1 transition"
                       >
                         <Sliders className="w-3.5 h-3.5" />
                         <span>تغییر شهرت</span>
@@ -488,7 +488,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
       >
         <form onSubmit={handleAdjustReputation} className="p-4 space-y-4" dir="rtl">
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1.5">
+            <label className="block text-xs font-bold text-text-primary mb-1.5">
               میزان تغییر امتیاز (دلتا)
             </label>
             <div className="flex items-center gap-2">
@@ -502,7 +502,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                       ? val > 0
                         ? 'bg-emerald-500 text-black border-emerald-400'
                         : 'bg-red-500 text-white border-red-400'
-                      : 'bg-[#1A1815] border-[#2F2A23] text-[#A39A89]'
+                      : 'bg-surface border-border text-text-muted'
                   }`}
                 >
                   {val > 0 ? `+${val}` : val}
@@ -513,12 +513,12 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
               type="number"
               value={adjustModal.delta}
               onChange={e => setAdjustModal(prev => ({ ...prev, delta: Number(e.target.value) }))}
-              className="mt-2 w-full px-3 py-2 rounded-xl bg-[#1A1815] border border-[#2F2A23] text-center text-sm font-extrabold text-[#EDE6D8]"
+              className="mt-2 w-full px-3 py-2 rounded-xl bg-surface border border-border text-center text-sm font-extrabold text-text-primary"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1.5">
+            <label className="block text-xs font-bold text-text-primary mb-1.5">
               دلیل تغییر شهرت
             </label>
             <input
@@ -527,7 +527,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
               value={adjustModal.reason}
               onChange={e => setAdjustModal(prev => ({ ...prev, reason: e.target.value }))}
               required
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#1A1815] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border text-xs text-text-primary focus:border-accent outline-none"
             />
           </div>
 
@@ -535,14 +535,14 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
             <button
               type="button"
               onClick={() => setAdjustModal(prev => ({ ...prev, isOpen: false }))}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8]"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-text-muted hover:text-text-primary"
             >
               انصراف
             </button>
             <button
               type="submit"
               disabled={adjustModal.submitting}
-              className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-extrabold text-xs shadow-sm disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl bg-accent text-on-accent font-extrabold text-xs shadow-sm disabled:opacity-50"
             >
               {adjustModal.submitting ? 'در حال ثبت...' : 'ثبت تغییر'}
             </button>
@@ -558,18 +558,18 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
       >
         <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto" dir="rtl">
           {logsModal.loading ? (
-            <div className="text-center py-6 text-xs text-[#A39A89]">در حال دریافت تاریخچه...</div>
+            <div className="text-center py-6 text-xs text-text-muted">در حال دریافت تاریخچه...</div>
           ) : logsModal.logs.length === 0 ? (
-            <div className="text-center py-6 text-xs text-[#A39A89]">رویدادی برای این جناح ثبت نشده است.</div>
+            <div className="text-center py-6 text-xs text-text-muted">رویدادی برای این جناح ثبت نشده است.</div>
           ) : (
             logsModal.logs.map(log => (
               <div
                 key={log.id}
-                className="p-3 rounded-xl bg-[#1A1815] border border-[#2F2A23] flex items-start justify-between gap-3 text-xs"
+                className="p-3 rounded-xl bg-surface border border-border flex items-start justify-between gap-3 text-xs"
               >
                 <div>
-                  <p className="font-bold text-[#EDE6D8] leading-relaxed">{log.reason}</p>
-                  <p className="text-[11px] text-[#A39A89] mt-1">
+                  <p className="font-bold text-text-primary leading-relaxed">{log.reason}</p>
+                  <p className="text-xs text-text-muted mt-1">
                     ثبت توسط: {log.createdByName || 'دانجن‌مستر'} • {new Date(log.createdAt).toLocaleDateString('fa-IR-u-nu-latn')}
                   </p>
                 </div>
@@ -596,12 +596,12 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
       >
         <form onSubmit={handleCreateReputation} className="p-4 space-y-4" dir="rtl">
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1.5">انتخاب جناح</label>
+            <label className="block text-xs font-bold text-text-primary mb-1.5">انتخاب جناح</label>
             <select
               value={createModal.factionId}
               onChange={e => setCreateModal(prev => ({ ...prev, factionId: e.target.value }))}
               required
-              className="w-full px-3 py-2 rounded-xl bg-[#1A1815] border border-[#2F2A23] text-xs text-[#EDE6D8] outline-none"
+              className="w-full px-3 py-2 rounded-xl bg-surface border border-border text-xs text-text-primary outline-none"
             >
               <option value="">-- جناح را انتخاب کنید --</option>
               {factions.map(f => (
@@ -613,11 +613,11 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1.5">مخاطب مسیر شهرت</label>
+            <label className="block text-xs font-bold text-text-primary mb-1.5">مخاطب مسیر شهرت</label>
             <select
               value={createModal.participationId}
               onChange={e => setCreateModal(prev => ({ ...prev, participationId: e.target.value }))}
-              className="w-full px-3 py-2 rounded-xl bg-[#1A1815] border border-[#2F2A23] text-xs text-[#EDE6D8] outline-none"
+              className="w-full px-3 py-2 rounded-xl bg-surface border border-border text-xs text-text-primary outline-none"
             >
               <option value="">کل گروه (Party-Wide)</option>
               {participations.map(p => (
@@ -630,30 +630,30 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
 
           <div className="grid grid-cols-3 gap-2">
             <div>
-              <label className="block text-[11px] text-[#A39A89] mb-1">امتیاز اولیه</label>
+              <label className="block text-xs text-text-muted mb-1">امتیاز اولیه</label>
               <input
                 type="number"
                 value={createModal.initialValue}
                 onChange={e => setCreateModal(prev => ({ ...prev, initialValue: Number(e.target.value) }))}
-                className="w-full px-2 py-1.5 rounded-lg bg-[#1A1815] border border-[#2F2A23] text-center text-xs text-[#EDE6D8]"
+                className="w-full px-2 py-1.5 rounded-lg bg-surface border border-border text-center text-xs text-text-primary"
               />
             </div>
             <div>
-              <label className="block text-[11px] text-[#A39A89] mb-1">حداقل (Min)</label>
+              <label className="block text-xs text-text-muted mb-1">حداقل (Min)</label>
               <input
                 type="number"
                 value={createModal.min}
                 onChange={e => setCreateModal(prev => ({ ...prev, min: Number(e.target.value) }))}
-                className="w-full px-2 py-1.5 rounded-lg bg-[#1A1815] border border-[#2F2A23] text-center text-xs text-[#EDE6D8]"
+                className="w-full px-2 py-1.5 rounded-lg bg-surface border border-border text-center text-xs text-text-primary"
               />
             </div>
             <div>
-              <label className="block text-[11px] text-[#A39A89] mb-1">حداکثر (Max)</label>
+              <label className="block text-xs text-text-muted mb-1">حداکثر (Max)</label>
               <input
                 type="number"
                 value={createModal.max}
                 onChange={e => setCreateModal(prev => ({ ...prev, max: Number(e.target.value) }))}
-                className="w-full px-2 py-1.5 rounded-lg bg-[#1A1815] border border-[#2F2A23] text-center text-xs text-[#EDE6D8]"
+                className="w-full px-2 py-1.5 rounded-lg bg-surface border border-border text-center text-xs text-text-primary"
               />
             </div>
           </div>
@@ -664,9 +664,9 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
               id="visibleCheck"
               checked={createModal.visible}
               onChange={e => setCreateModal(prev => ({ ...prev, visible: e.target.checked }))}
-              className="w-4 h-4 accent-[#E0A030] rounded"
+              className="w-4 h-4 accent-accent rounded"
             />
-            <label htmlFor="visibleCheck" className="text-xs text-[#EDE6D8] font-bold cursor-pointer">
+            <label htmlFor="visibleCheck" className="text-xs text-text-primary font-bold cursor-pointer">
               قابل مشاهده برای بازیکنان (در غیر این صورت فقط برای DM نشان داده می‌شود)
             </label>
           </div>
@@ -675,14 +675,14 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
             <button
               type="button"
               onClick={() => setCreateModal(prev => ({ ...prev, isOpen: false }))}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-[#A39A89]"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-text-muted"
             >
               انصراف
             </button>
             <button
               type="submit"
               disabled={createModal.submitting}
-              className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-extrabold text-xs shadow-sm"
+              className="px-5 py-2.5 rounded-xl bg-accent text-on-accent font-extrabold text-xs shadow-sm"
             >
               {createModal.submitting ? 'در حال ثبت...' : 'ایجاد ردیاب شهرت'}
             </button>

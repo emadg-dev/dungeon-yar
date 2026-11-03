@@ -25,9 +25,9 @@ export const ResourcesTab: React.FC<ResourcesTabProps> = ({ character, onUpdate 
   return (
     <div className="space-y-4" dir="rtl">
       <div className="surface-card rounded-[14px] p-4 space-y-3">
-        <div className="flex items-center gap-2 border-b border-[#2F2A23] pb-2">
-          <Layers className="w-4 h-4 text-[#E0A030]" />
-          <h3 className="text-xs font-bold text-[#EDE6D8]">منابع و پیپ‌ها</h3>
+        <div className="flex items-center gap-2 border-b border-border pb-2">
+          <Layers className="w-4 h-4 text-accent" />
+          <h3 className="text-xs font-bold text-text-primary">منابع و پیپ‌ها</h3>
         </div>
         {character.customResources && character.customResources.length > 0 ? (
           <div className="space-y-3">
@@ -56,7 +56,7 @@ export const ResourcesTab: React.FC<ResourcesTabProps> = ({ character, onUpdate 
             ))}
           </div>
         ) : (
-          <div className="space-y-3 text-xs text-[#A39A89]">
+          <div className="space-y-3 text-xs text-text-muted">
             <PipTracker label="شکاف واقعیت / مومنت پوینت" current={Math.min(3, character.level)} max={Math.max(3, character.level)} resetType="short" onToggle={() => {}} />
             <PipTracker label="فرسودگی جادو / تابش فره" current={2} max={4} resetType="long" onToggle={() => {}} />
           </div>

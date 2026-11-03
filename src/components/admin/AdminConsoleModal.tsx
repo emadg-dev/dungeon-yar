@@ -214,7 +214,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
       onClose={onClose}
       title={
         <div className="flex items-center gap-2">
-          <Shield className="w-5 h-5 text-[#E0A030] shrink-0" />
+          <Shield className="w-5 h-5 text-accent shrink-0" />
           <span className="truncate">کنسول مدیریت سامانه {APP_NAME_FA}</span>
         </div>
       }
@@ -222,7 +222,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
       fullHeight
       maxWidth="max-w-4xl"
       headerExtra={
-        <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#C2512B]/20 text-[#C2512B] border border-[#C2512B]/35 font-bold shrink-0">
+        <span className="text-xs px-2 py-0.5 rounded-[6px] bg-danger/20 text-danger border border-danger/35 font-bold shrink-0">
           مدیر سیستم
         </span>
       }
@@ -232,8 +232,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
         {statusMsg && (
           <div className={`px-4 py-2.5 text-xs font-bold flex items-center gap-2 rounded-xl border ${
             statusMsg.type === 'success'
-              ? 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/30'
-              : 'bg-[#C2512B]/15 text-[#C2512B] border-[#C2512B]/30'
+              ? 'bg-success/15 text-success border-success/30'
+              : 'bg-danger/15 text-danger border-danger/30'
           }`}>
             {statusMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
             <span>{statusMsg.text}</span>
@@ -244,7 +244,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
         {/* Tabs Bar */}
         <ScrollableRow
           activeKey={activeTab}
-          wrapperClassName="border-b border-[#2F2A23] bg-[#1B1815]"
+          wrapperClassName="border-b border-border bg-surface"
           className="p-2 gap-1.5"
         >
           <button
@@ -252,8 +252,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
             onClick={() => setActiveTab('users')}
             className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'users'
-                ? 'bg-[#E0A030] text-[#171513] font-black'
-                : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
+                ? 'bg-accent text-text-muted font-black'
+                : 'text-text-muted hover:text-text-primary hover:bg-surface-2'
             }`}
           >
             <Users className="w-4 h-4 shrink-0" />
@@ -265,8 +265,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
             onClick={() => setActiveTab('campaigns')}
             className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'campaigns'
-                ? 'bg-[#E0A030] text-[#171513] font-black'
-                : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
+                ? 'bg-accent text-text-muted font-black'
+                : 'text-text-muted hover:text-text-primary hover:bg-surface-2'
             }`}
           >
             <Castle className="w-4 h-4 shrink-0" />
@@ -278,8 +278,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
             onClick={() => setActiveTab('settings')}
             className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'settings'
-                ? 'bg-[#E0A030] text-[#171513] font-black'
-                : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
+                ? 'bg-accent text-text-muted font-black'
+                : 'text-text-muted hover:text-text-primary hover:bg-surface-2'
             }`}
           >
             <Settings className="w-4 h-4 shrink-0" />
@@ -291,8 +291,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
             onClick={() => setActiveTab('storage')}
             className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'storage'
-                ? 'bg-[#E0A030] text-[#171513] font-black'
-                : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
+                ? 'bg-accent text-text-muted font-black'
+                : 'text-text-muted hover:text-text-primary hover:bg-surface-2'
             }`}
           >
             <HardDrive className="w-4 h-4 shrink-0" />
@@ -304,8 +304,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
             onClick={() => setActiveTab('cleanup')}
             className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
               activeTab === 'cleanup'
-                ? 'bg-[#E0A030] text-[#171513] font-black'
-                : 'text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#201D19]'
+                ? 'bg-accent text-text-muted font-black'
+                : 'text-text-muted hover:text-text-primary hover:bg-surface-2'
             }`}
           >
             <Trash2 className="w-4 h-4 shrink-0" />
@@ -316,10 +316,10 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
             <button
               onClick={() => loadTabData(activeTab)}
               disabled={loading}
-              className="p-2 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0"
+              className="p-2 rounded-[8px] bg-surface-2 text-text-muted hover:text-text-primary border border-border touch-target min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0"
               title="بارگذاری مجدد"
             >
-              <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? 'animate-spin text-[#E0A030]' : ''}`} />
+              <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? 'animate-spin text-accent' : ''}`} />
             </button>
           </div>
         </ScrollableRow>
@@ -335,24 +335,24 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                   value={userSearch}
                   onChange={(e) => setUserSearch(e.target.value)}
                   placeholder="جستجو بر اساس نام یا ایمیل کاربر..."
-                  className="py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] placeholder-[#736B5E] focus:border-[#E0A030] outline-none min-h-[44px]"
+                  className="py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary placeholder-text-disabled focus:border-accent outline-none min-h-[44px]"
                 />
-                <span className="text-xs text-[#A39A89] text-left">
+                <span className="text-xs text-text-muted text-end">
                   نمایش {filteredUsers.length} از {users.length} کاربر
                 </span>
               </div>
 
               {/* Reset Link Card if active */}
               {generatedReset && (
-                <div className="p-3.5 rounded-[12px] bg-[#201D19] border border-[#E0A030]/40 space-y-2">
+                <div className="p-3.5 rounded-[12px] bg-surface-2 border border-accent/40 space-y-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-[#E0A030] flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-accent flex items-center gap-1.5">
                       <KeyRound className="w-4 h-4" />
                       <span>لینک تغییر رمز یک‌بارمصرف (معتبر تا 24 ساعت)</span>
                     </span>
                     <button
                       onClick={() => setGeneratedReset(null)}
-                      className="text-xs text-[#A39A89] hover:text-[#EDE6D8]"
+                      className="text-xs text-text-muted hover:text-text-primary"
                     >
                       بستن
                     </button>
@@ -362,7 +362,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                       type="text"
                       readOnly
                       value={generatedReset.url}
-                      className="flex-1 py-1.5 px-3 rounded-[8px] bg-[#171513] border border-[#2F2A23] text-xs text-[#EDE6D8] text-left outline-none"
+                      className="flex-1 py-1.5 px-3 rounded-[8px] bg-surface border border-border text-xs text-text-primary text-end outline-none"
                       dir="ltr"
                     />
                     <button
@@ -381,36 +381,36 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                 {filteredUsers.map(u => (
                   <div
                     key={u.id}
-                    className="p-3.5 rounded-[12px] bg-[#201D19] border border-[#2F2A23] flex flex-col md:flex-row md:items-center justify-between gap-3"
+                    className="p-3.5 rounded-[12px] bg-surface-2 border border-border flex flex-col md:flex-row md:items-center justify-between gap-3"
                   >
                     <div className="space-y-1 min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-extrabold text-[#EDE6D8]">
+                        <span className="text-xs font-extrabold text-text-primary">
                           {u.displayName || 'کاربر بدون نام'}
                         </span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-[6px] font-bold border ${
+                        <span className={`text-xs px-2 py-0.5 rounded-[6px] font-bold border ${
                           u.status === 'active'
-                            ? 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/30'
-                            : 'bg-[#C2512B]/15 text-[#C2512B] border-[#C2512B]/30'
+                            ? 'bg-success/15 text-success border-success/30'
+                            : 'bg-danger/15 text-danger border-danger/30'
                         }`}>
                           {u.status === 'active' ? 'فعال' : 'غیرفعال'}
                         </span>
                         {u.platformRole === 'admin' && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#E0A030]/20 text-[#E0A030] border border-[#E0A030]/35 font-bold">
+                          <span className="text-xs px-2 py-0.5 rounded-[6px] bg-accent/20 text-accent border border-accent/35 font-bold">
                             مدیر پلتفرم
                           </span>
                         )}
-                        <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#171513] text-[#A39A89] border border-[#2F2A23]">
+                        <span className="text-xs px-2 py-0.5 rounded-[6px] bg-surface text-text-muted border border-border">
                           {u.campaignsCount} کمپین
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#171513] text-[#A39A89] border border-[#2F2A23]">
+                        <span className="text-xs px-2 py-0.5 rounded-[6px] bg-surface text-text-muted border border-border">
                           ذخیره: {formatBytes(u.storageUsedBytes)}
                         </span>
                       </div>
-                      <p className="text-[11px] text-[#A39A89] font-mono truncate text-left" dir="ltr">
+                      <p className="text-xs text-text-muted font-mono truncate text-end" dir="ltr">
                         {u.email}
                       </p>
-                      <div className="text-[10px] text-[#736B5E] flex items-center gap-3">
+                      <div className="text-xs text-text-disabled flex items-center gap-3">
                         <span>عضویت: {new Date(u.createdAt).toLocaleDateString('fa-IR-u-nu-latn')}</span>
                         {u.lastLoginAt && (
                           <span>آخرین ورود: {new Date(u.lastLoginAt).toLocaleDateString('fa-IR-u-nu-latn')}</span>
@@ -422,29 +422,29 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                     <div className="flex items-center gap-2 flex-wrap">
                       <button
                         onClick={() => handleGenerateResetLink(u.id)}
-                        className="py-1.5 px-2.5 rounded-[8px] bg-[#171513] border border-[#2F2A23] hover:border-[#E0A030] text-[11px] font-bold text-[#EDE6D8] flex items-center gap-1 touch-target min-w-[44px] min-h-[44px]"
+                        className="py-1.5 px-2.5 rounded-[8px] bg-surface border border-border hover:border-accent text-xs font-bold text-text-primary flex items-center gap-1 touch-target min-w-[44px] min-h-[44px]"
                         title="تولید لینک یکبارمصرف تغییر رمز"
                       >
-                        <KeyRound className="w-3.5 h-3.5 text-[#E0A030]" />
+                        <KeyRound className="w-3.5 h-3.5 text-accent" />
                         <span>لینک بازنشانی</span>
                       </button>
 
                       <button
                         onClick={() => handleRevokeSessions(u.id)}
-                        className="py-1.5 px-2.5 rounded-[8px] bg-[#171513] border border-[#2F2A23] hover:border-[#C2512B] text-[11px] font-bold text-[#EDE6D8] flex items-center gap-1 touch-target min-w-[44px] min-h-[44px]"
+                        className="py-1.5 px-2.5 rounded-[8px] bg-surface border border-border hover:border-danger text-xs font-bold text-text-primary flex items-center gap-1 touch-target min-w-[44px] min-h-[44px]"
                         title="لغو تمام نشست‌های فعال این کاربر"
                       >
-                        <Ban className="w-3.5 h-3.5 text-[#C2512B]" />
+                        <Ban className="w-3.5 h-3.5 text-danger" />
                         <span>خاتمه نشست‌ها</span>
                       </button>
 
                       {u.id !== currentUser.id && (
                         <button
                           onClick={() => handleToggleUserStatus(u.id)}
-                          className={`py-1.5 px-2.5 rounded-[8px] text-[11px] font-bold border flex items-center gap-1 touch-target min-w-[44px] min-h-[44px] ${
+                          className={`py-1.5 px-2.5 rounded-[8px] text-xs font-bold border flex items-center gap-1 touch-target min-w-[44px] min-h-[44px] ${
                             u.status === 'active'
-                              ? 'bg-[#C2512B]/15 text-[#C2512B] border-[#C2512B]/35 hover:bg-[#C2512B]/25'
-                              : 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/35 hover:bg-[#6F9E78]/25'
+                              ? 'bg-danger/15 text-danger border-danger/35 hover:bg-danger/25'
+                              : 'bg-success/15 text-success border-success/35 hover:bg-success/25'
                           }`}
                         >
                           <span>{u.status === 'active' ? 'غیرفعال‌سازی' : 'فعال‌سازی'}</span>
@@ -460,8 +460,8 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
           {/* TAB 2: CAMPAIGNS */}
           {activeTab === 'campaigns' && (
             <div className="space-y-4">
-              <div className="p-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#A39A89] flex items-center gap-2">
-                <Shield className="w-4 h-4 text-[#E0A030] shrink-0" />
+              <div className="p-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-muted flex items-center gap-2">
+                <Shield className="w-4 h-4 text-accent shrink-0" />
                 <span>
                   حفظ حریم خصوصی: مدیر سیستم به روایات محرمانه، یادداشت‌های خصوصی دی‌ام و محتوای داستانی کمپین‌ها دسترسی ندارد. فقط مشخصات کلان، اعضا و مدیریت وضعیت مجاز است.
                 </span>
@@ -473,9 +473,9 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                   value={campaignSearch}
                   onChange={(e) => setCampaignSearch(e.target.value)}
                   placeholder="جستجو بر اساس نام کمپین یا مالک..."
-                  className="py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] placeholder-[#736B5E] focus:border-[#E0A030] outline-none min-h-[44px]"
+                  className="py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary placeholder-text-disabled focus:border-accent outline-none min-h-[44px]"
                 />
-                <span className="text-xs text-[#A39A89] text-left">
+                <span className="text-xs text-text-muted text-end">
                   نمایش {filteredCampaigns.length} از {campaigns.length} کمپین
                 </span>
               </div>
@@ -484,34 +484,34 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                 {filteredCampaigns.map(c => (
                   <div
                     key={c.id}
-                    className="p-3.5 rounded-[12px] bg-[#201D19] border border-[#2F2A23] flex flex-col md:flex-row md:items-center justify-between gap-3"
+                    className="p-3.5 rounded-[12px] bg-surface-2 border border-border flex flex-col md:flex-row md:items-center justify-between gap-3"
                   >
                     <div className="space-y-1 min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-extrabold text-[#EDE6D8]">
+                        <span className="text-xs font-extrabold text-text-primary">
                           {c.name}
                         </span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-[6px] font-bold border ${
+                        <span className={`text-xs px-2 py-0.5 rounded-[6px] font-bold border ${
                           c.status === 'active'
-                            ? 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/30'
+                            ? 'bg-success/15 text-success border-success/30'
                             : c.status === 'archived'
-                            ? 'bg-[#736B5E]/20 text-[#A39A89] border-[#736B5E]/30'
-                            : 'bg-[#E0A030]/15 text-[#E0A030] border-[#E0A030]/30'
+                            ? 'bg-text-disabled/20 text-text-muted border-text-disabled/30'
+                            : 'bg-accent/15 text-accent border-accent/30'
                         }`}>
                           {c.status === 'active' ? 'فعال' : c.status === 'archived' ? 'بایگانی‌شده' : 'پیش‌نویس'}
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#171513] text-[#A39A89] border border-[#2F2A23]">
+                        <span className="text-xs px-2 py-0.5 rounded-[6px] bg-surface text-text-muted border border-border">
                           {c.memberCount} عضو
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#171513] text-[#A39A89] border border-[#2F2A23]">
+                        <span className="text-xs px-2 py-0.5 rounded-[6px] bg-surface text-text-muted border border-border">
                           ذخیره: {formatBytes(c.storageUsedBytes)}
                         </span>
                       </div>
-                      <p className="text-[11px] text-[#A39A89]">
+                      <p className="text-xs text-text-muted">
                         مالک: {c.ownerName} ({c.ownerEmail})
                       </p>
-                      <div className="text-[10px] text-[#736B5E] flex items-center gap-3">
-                        <span>شناسه: <code className="font-mono text-[#EDE6D8]">{c.id}</code></span>
+                      <div className="text-xs text-text-disabled flex items-center gap-3">
+                        <span>شناسه: <code className="font-mono text-text-primary">{c.id}</code></span>
                         <span>ایجاد: {new Date(c.createdAt).toLocaleDateString('fa-IR-u-nu-latn')}</span>
                         <span>آخرین فعالیت: {new Date(c.updatedAt).toLocaleDateString('fa-IR-u-nu-latn')}</span>
                       </div>
@@ -522,7 +522,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                       {c.status !== 'archived' ? (
                         <button
                           onClick={() => handleArchiveCampaign(c.id)}
-                          className="py-1.5 px-3 rounded-[8px] bg-[#171513] border border-[#2F2A23] hover:border-[#C2512B] text-xs font-bold text-[#C2512B] flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
+                          className="py-1.5 px-3 rounded-[8px] bg-surface border border-border hover:border-danger text-xs font-bold text-danger flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
                           title="بایگانی کردن کمپین"
                         >
                           <Archive className="w-3.5 h-3.5" />
@@ -531,7 +531,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                       ) : (
                         <button
                           onClick={() => handleRestoreCampaign(c.id)}
-                          className="py-1.5 px-3 rounded-[8px] bg-[#171513] border border-[#2F2A23] hover:border-[#6F9E78] text-xs font-bold text-[#6F9E78] flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
+                          className="py-1.5 px-3 rounded-[8px] bg-surface border border-border hover:border-success text-xs font-bold text-success flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
                           title="بازگردانی کمپین به حالت فعال"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
@@ -548,30 +548,30 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
           {/* TAB 3: SETTINGS */}
           {activeTab === 'settings' && (
             <form onSubmit={handleSaveSettings} className="space-y-4 max-w-2xl">
-              <div className="p-4 rounded-[12px] bg-[#201D19] border border-[#2F2A23] space-y-4">
-                <h4 className="text-xs font-extrabold text-[#EDE6D8]">پیکربندی سهمیه‌ها و دسترسی‌های سامانه</h4>
+              <div className="p-4 rounded-[12px] bg-surface-2 border border-border space-y-4">
+                <h4 className="text-xs font-extrabold text-text-primary">پیکربندی سهمیه‌ها و دسترسی‌های سامانه</h4>
 
                 {/* Allow Campaign Creation */}
-                <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-[10px] bg-[#171513] border border-[#2F2A23]">
+                <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-[10px] bg-surface border border-border">
                   <div>
-                    <span className="text-xs font-bold text-[#EDE6D8] block">مجوز ایجاد کمپین جدید توسط دی‌ام‌ها</span>
-                    <span className="text-[11px] text-[#A39A89]">در صورت غیرفعال بودن، فقط مدیر می‌تواند کمپین جدید بسازد</span>
+                    <span className="text-xs font-bold text-text-primary block">مجوز ایجاد کمپین جدید توسط دی‌ام‌ها</span>
+                    <span className="text-xs text-text-muted">در صورت غیرفعال بودن، فقط مدیر می‌تواند کمپین جدید بسازد</span>
                   </div>
                   <input
                     type="checkbox"
                     checked={settings.allowCampaignCreation}
                     onChange={(e) => setSettings({ ...settings, allowCampaignCreation: e.target.checked })}
-                    className="w-5 h-5 accent-[#E0A030] cursor-pointer"
+                    className="w-5 h-5 accent-accent cursor-pointer"
                   />
                 </div>
 
                 {/* Registration Mode */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-[#EDE6D8]">شیوه ثبت‌نام کاربران</label>
+                  <label className="block text-xs font-bold text-text-primary">شیوه ثبت‌نام کاربران</label>
                   <select
                     value={settings.registrationMode}
                     onChange={(e) => setSettings({ ...settings, registrationMode: e.target.value as any })}
-                    className="w-full py-2.5 px-3 rounded-[10px] bg-[#171513] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
+                    className="w-full py-2.5 px-3 rounded-[10px] bg-surface border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
                   >
                     <option value="invite">دعوت‌محور (فقط با داشتن کد دعوت معتبر)</option>
                     <option value="open">ثبت‌نام آزاد (برای همه کاربران بدون کد دعوت)</option>
@@ -580,44 +580,44 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
 
                 {/* Per User Media Quota */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-[#EDE6D8]">سهمیه رسانه برای هر کاربر (مگابایت)</label>
+                  <label className="block text-xs font-bold text-text-primary">سهمیه رسانه برای هر کاربر (مگابایت)</label>
                   <input
                     type="number"
                     min="1"
                     max="100"
                     value={Math.round(settings.perUserMediaQuotaBytes / (1024 * 1024))}
                     onChange={(e) => setSettings({ ...settings, perUserMediaQuotaBytes: Number(e.target.value) * 1024 * 1024 })}
-                    className="w-full py-2 px-3 rounded-[10px] bg-[#171513] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
+                    className="w-full py-2 px-3 rounded-[10px] bg-surface border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
                   />
-                  <p className="text-[10px] text-[#A39A89]">تصاویر آواتار و پرتره‌های اختصاصی کاربر</p>
+                  <p className="text-xs text-text-muted">تصاویر آواتار و پرتره‌های اختصاصی کاربر</p>
                 </div>
 
                 {/* Per Campaign Media Quota */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-[#EDE6D8]">سهمیه رسانه برای هر کمپین (مگابایت)</label>
+                  <label className="block text-xs font-bold text-text-primary">سهمیه رسانه برای هر کمپین (مگابایت)</label>
                   <input
                     type="number"
                     min="5"
                     max="500"
                     value={Math.round(settings.perCampaignMediaQuotaBytes / (1024 * 1024))}
                     onChange={(e) => setSettings({ ...settings, perCampaignMediaQuotaBytes: Number(e.target.value) * 1024 * 1024 })}
-                    className="w-full py-2 px-3 rounded-[10px] bg-[#171513] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
+                    className="w-full py-2 px-3 rounded-[10px] bg-surface border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
                   />
-                  <p className="text-[10px] text-[#A39A89]">تصاویر نقشه‌ها، دست‌نوشته‌ها و مدارک کمپین</p>
+                  <p className="text-xs text-text-muted">تصاویر نقشه‌ها، دست‌نوشته‌ها و مدارک کمپین</p>
                 </div>
 
                 {/* Storage Warning Threshold */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-[#EDE6D8]">آستانه هشدار سهمیه پایگاه داده D1 (مگابایت)</label>
+                  <label className="block text-xs font-bold text-text-primary">آستانه هشدار سهمیه پایگاه داده D1 (مگابایت)</label>
                   <input
                     type="number"
                     min="100"
                     max="1000"
                     value={Math.round(settings.storageWarningThresholdBytes / (1024 * 1024))}
                     onChange={(e) => setSettings({ ...settings, storageWarningThresholdBytes: Number(e.target.value) * 1024 * 1024 })}
-                    className="w-full py-2 px-3 rounded-[10px] bg-[#171513] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
+                    className="w-full py-2 px-3 rounded-[10px] bg-surface border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
                   />
-                  <p className="text-[10px] text-[#A39A89]">سقف رایگان پلن کلودفلر D1 معادل 1000 مگابایت (1 گیگابایت) است.</p>
+                  <p className="text-xs text-text-muted">سقف رایگان پلن کلودفلر D1 معادل 1000 مگابایت (1 گیگابایت) است.</p>
                 </div>
               </div>
 
@@ -635,32 +635,32 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
           {activeTab === 'storage' && storageStats && (
             <div className="space-y-4">
               {/* Overall Progress Card */}
-              <div className="p-4 rounded-[12px] bg-[#201D19] border border-[#2F2A23] space-y-3">
+              <div className="p-4 rounded-[12px] bg-surface-2 border border-border space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <HardDrive className="w-5 h-5 text-[#E0A030]" />
-                    <span className="text-xs font-extrabold text-[#EDE6D8]">وضعیت مصرف پایگاه داده Cloudflare D1</span>
+                    <HardDrive className="w-5 h-5 text-accent" />
+                    <span className="text-xs font-extrabold text-text-primary">وضعیت مصرف پایگاه داده Cloudflare D1</span>
                   </div>
                   <span className={`text-xs font-bold px-2.5 py-0.5 rounded-[6px] border ${
                     storageStats.isOverThreshold
-                      ? 'bg-[#C2512B]/20 text-[#C2512B] border-[#C2512B]/35'
-                      : 'bg-[#6F9E78]/20 text-[#6F9E78] border-[#6F9E78]/35'
+                      ? 'bg-danger/20 text-danger border-danger/35'
+                      : 'bg-success/20 text-success border-success/35'
                   }`}>
                     {storageStats.warningPercent}٪ از آستانه هشدار
                   </span>
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-full h-3 rounded-full bg-[#171513] overflow-hidden border border-[#2F2A23]">
+                <div className="w-full h-3 rounded-full bg-surface overflow-hidden border border-border">
                   <div
                     className={`h-full transition-all ${
-                      storageStats.isOverThreshold ? 'bg-[#C2512B]' : 'bg-[#E0A030]'
+                      storageStats.isOverThreshold ? 'bg-danger' : 'bg-accent'
                     }`}
                     style={{ width: `${Math.min(100, storageStats.warningPercent)}%` }}
                   />
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#A39A89]">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-text-muted">
                   <span>مصرف تخمینی: {formatBytes(storageStats.totalBytes)}</span>
                   <span>آستانه هشدار: {formatBytes(storageStats.thresholdBytes)}</span>
                 </div>
@@ -668,20 +668,20 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
 
               {/* Table Breakdown */}
               <div className="space-y-2">
-                <h4 className="text-xs font-bold text-[#EDE6D8]">تفکیک داده‌ها به تفکیک جدول‌های D1</h4>
+                <h4 className="text-xs font-bold text-text-primary">تفکیک داده‌ها به تفکیک جدول‌های D1</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {storageStats.tables.map(t => (
                     <div
                       key={t.table}
-                      className="p-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2"
+                      className="p-3 rounded-[10px] bg-surface-2 border border-border flex flex-wrap items-center justify-between gap-2"
                     >
                       <div>
-                        <span className="text-xs font-bold text-[#EDE6D8] block">{t.labelFa}</span>
-                        <code className="text-[10px] text-[#736B5E] font-mono">{t.table}</code>
+                        <span className="text-xs font-bold text-text-primary block">{t.labelFa}</span>
+                        <code className="text-xs text-text-disabled font-mono">{t.table}</code>
                       </div>
-                      <div className="text-left">
-                        <span className="text-xs font-extrabold text-[#E0A030] block">{t.count.toLocaleString('fa-IR-u-nu-latn')} رکورد</span>
-                        <span className="text-[10px] text-[#A39A89]">{formatBytes(t.estimatedBytes)}</span>
+                      <div className="text-end">
+                        <span className="text-xs font-extrabold text-accent block">{t.count.toLocaleString('fa-IR-u-nu-latn')} رکورد</span>
+                        <span className="text-xs text-text-muted">{formatBytes(t.estimatedBytes)}</span>
                       </div>
                     </div>
                   ))}
@@ -693,41 +693,41 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
           {/* TAB 5: ORPHAN CLEANUP */}
           {activeTab === 'cleanup' && cleanupReport && (
             <div className="space-y-4 max-w-2xl">
-              <div className="p-4 rounded-[12px] bg-[#201D19] border border-[#2F2A23] space-y-3">
+              <div className="p-4 rounded-[12px] bg-surface-2 border border-border space-y-3">
                 <div className="flex items-center gap-2">
-                  <Trash2 className="w-5 h-5 text-[#C2512B]" />
+                  <Trash2 className="w-5 h-5 text-danger" />
                   <div>
-                    <h4 className="text-xs font-extrabold text-[#EDE6D8]">ابزار پاک‌سازی هوشمند رکوردهای یتیم</h4>
-                    <p className="text-[11px] text-[#A39A89]">
+                    <h4 className="text-xs font-extrabold text-text-primary">ابزار پاک‌سازی هوشمند رکوردهای یتیم</h4>
+                    <p className="text-xs text-text-muted">
                       حذف نشست‌های منقضی، لینک‌های تغییر رمز گذشته، کدهای دعوت باطل‌شده و فایل‌های تصویری بدون ارجاع
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 pt-2">
-                  <div className="p-3 rounded-[10px] bg-[#171513] border border-[#2F2A23]">
-                    <span className="text-[11px] text-[#A39A89] block">تصاویر و فایل‌های یتیم</span>
-                    <span className="text-sm font-extrabold text-[#EDE6D8]">{cleanupReport.counts.orphanMedia.toLocaleString('fa-IR-u-nu-latn')} مورد</span>
+                  <div className="p-3 rounded-[10px] bg-surface border border-border">
+                    <span className="text-xs text-text-muted block">تصاویر و فایل‌های یتیم</span>
+                    <span className="text-sm font-extrabold text-text-primary">{cleanupReport.counts.orphanMedia.toLocaleString('fa-IR-u-nu-latn')} مورد</span>
                   </div>
 
-                  <div className="p-3 rounded-[10px] bg-[#171513] border border-[#2F2A23]">
-                    <span className="text-[11px] text-[#A39A89] block">کدهای دعوت منقضی</span>
-                    <span className="text-sm font-extrabold text-[#EDE6D8]">{cleanupReport.counts.expiredInvites.toLocaleString('fa-IR-u-nu-latn')} مورد</span>
+                  <div className="p-3 rounded-[10px] bg-surface border border-border">
+                    <span className="text-xs text-text-muted block">کدهای دعوت منقضی</span>
+                    <span className="text-sm font-extrabold text-text-primary">{cleanupReport.counts.expiredInvites.toLocaleString('fa-IR-u-nu-latn')} مورد</span>
                   </div>
 
-                  <div className="p-3 rounded-[10px] bg-[#171513] border border-[#2F2A23]">
-                    <span className="text-[11px] text-[#A39A89] block">نشست‌های باطل‌شده</span>
-                    <span className="text-sm font-extrabold text-[#EDE6D8]">{cleanupReport.counts.expiredSessions.toLocaleString('fa-IR-u-nu-latn')} مورد</span>
+                  <div className="p-3 rounded-[10px] bg-surface border border-border">
+                    <span className="text-xs text-text-muted block">نشست‌های باطل‌شده</span>
+                    <span className="text-sm font-extrabold text-text-primary">{cleanupReport.counts.expiredSessions.toLocaleString('fa-IR-u-nu-latn')} مورد</span>
                   </div>
 
-                  <div className="p-3 rounded-[10px] bg-[#171513] border border-[#2F2A23]">
-                    <span className="text-[11px] text-[#A39A89] block">لینک‌های تغییر رمز قدیمی</span>
-                    <span className="text-sm font-extrabold text-[#EDE6D8]">{cleanupReport.counts.oldPasswordResets.toLocaleString('fa-IR-u-nu-latn')} مورد</span>
+                  <div className="p-3 rounded-[10px] bg-surface border border-border">
+                    <span className="text-xs text-text-muted block">لینک‌های تغییر رمز قدیمی</span>
+                    <span className="text-sm font-extrabold text-text-primary">{cleanupReport.counts.oldPasswordResets.toLocaleString('fa-IR-u-nu-latn')} مورد</span>
                   </div>
                 </div>
 
-                <div className="pt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[#A39A89]">
-                  <span>مجموع رکوردهای قابل پاک‌سازی: <strong className="text-[#E0A030]">{cleanupReport.cleanedTotal}</strong></span>
+                <div className="pt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-text-muted">
+                  <span>مجموع رکوردهای قابل پاک‌سازی: <strong className="text-accent">{cleanupReport.cleanedTotal}</strong></span>
                   <span>آخرین بررسی: {new Date(cleanupReport.executedAt).toLocaleTimeString('fa-IR-u-nu-latn')}</span>
                 </div>
               </div>
@@ -737,7 +737,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                   type="button"
                   onClick={() => handleRunCleanup(true)}
                   disabled={cleanupExecuting}
-                  className="py-2.5 px-4 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] touch-target min-w-[44px] min-h-[44px]"
+                  className="py-2.5 px-4 rounded-[10px] bg-surface-2 border border-border hover:border-accent text-xs font-bold text-text-primary touch-target min-w-[44px] min-h-[44px]"
                 >
                   بررسی مجدد (پیش‌نمایش)
                 </button>
@@ -746,7 +746,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                   type="button"
                   onClick={() => handleRunCleanup(false)}
                   disabled={cleanupExecuting || cleanupReport.cleanedTotal === 0}
-                  className="py-2.5 px-4 rounded-[10px] bg-[#C2512B] text-white hover:bg-[#A84322] font-extrabold text-xs transition touch-target min-w-[44px] min-h-[44px] flex items-center gap-1.5"
+                  className="py-2.5 px-4 rounded-[10px] bg-danger text-white hover:bg-danger font-extrabold text-xs transition touch-target min-w-[44px] min-h-[44px] flex items-center gap-1.5"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>اجرای پاک‌سازی دائمی</span>

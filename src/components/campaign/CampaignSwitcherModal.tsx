@@ -31,10 +31,10 @@ export const CampaignSwitcherModal: React.FC<CampaignSwitcherModalProps> = ({
             onGoHome();
             onClose();
           }}
-          className="w-full p-3.5 rounded-2xl bg-[#E0A030]/10 border border-[#E0A030]/30 hover:bg-[#E0A030]/20 text-[#F2C265] font-bold text-sm flex flex-wrap items-center justify-between gap-2 transition-colors min-h-[48px]"
+          className="w-full p-3.5 rounded-2xl bg-accent/10 border border-accent/30 hover:bg-accent/20 text-accent-hover font-bold text-sm flex flex-wrap items-center justify-between gap-2 transition-colors min-h-[48px]"
         >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#E0A030]/20 flex items-center justify-center text-[#F2C265]">
+            <div className="w-8 h-8 rounded-xl bg-accent/20 flex items-center justify-center text-accent-hover">
               <Home className="w-4 h-4" />
             </div>
             <span>صفحه اصلی (داشبورد کمپین‌ها)</span>
@@ -42,15 +42,15 @@ export const CampaignSwitcherModal: React.FC<CampaignSwitcherModalProps> = ({
           <ChevronLeft className="w-4 h-4" />
         </button>
 
-        <div className="border-t border-[#2F2A23] pt-3">
+        <div className="border-t border-border pt-3">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2 px-1">
-            <span className="text-xs font-bold text-[#A39A89]">کمپین‌های من ({campaigns.length})</span>
+            <span className="text-xs font-bold text-text-muted">کمپین‌های من ({campaigns.length})</span>
             <button
               onClick={() => {
                 onClose();
                 onOpenCreateCampaign();
               }}
-              className="text-xs text-[#F2C265] font-bold hover:underline flex items-center gap-1"
+              className="text-xs text-accent-hover font-bold hover:underline flex items-center gap-1"
             >
               <Plus className="w-3.5 h-3.5" />
               کمپین جدید
@@ -69,23 +69,23 @@ export const CampaignSwitcherModal: React.FC<CampaignSwitcherModalProps> = ({
                   }}
                   className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-wrap items-center justify-between gap-2 min-h-[48px] ${
                     isActive
-                      ? 'bg-[#E0A030]/20 border-[#E0A030]/50 text-[#F2C265]'
-                      : 'bg-[#131110]/60 border-[#2F2A23] hover:border-[#3A342B] text-[#C9C0AE]'
+                      ? 'bg-accent/20 border-accent/50 text-accent-hover'
+                      : 'bg-bg/60 border-border hover:border-border-strong text-text-primary'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isActive ? 'bg-[#E0A030] text-[#0E0D0C] font-bold' : 'bg-[#201D19] text-[#A39A89]'}`}>
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isActive ? 'bg-accent text-on-accent font-bold' : 'bg-surface-2 text-text-muted'}`}>
                       <Shield className="w-4 h-4" />
                     </div>
                     <div>
                       <h4 className="text-sm font-bold">{camp.name}</h4>
-                      <p className="text-[11px] text-[#A39A89]">
+                      <p className="text-xs text-text-muted">
                         نقش: {camp.myRole === 'owner' ? 'مالک' : camp.myRole === 'co_dm' ? 'دستیار DM' : 'بازیکن'}
                       </p>
                     </div>
                   </div>
                   {isActive && (
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#E0A030] text-[#0E0D0C]">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-accent text-on-accent">
                       فعال
                     </span>
                   )}

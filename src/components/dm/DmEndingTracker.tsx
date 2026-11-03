@@ -125,37 +125,37 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl bg-[#171513] border border-[#E0A030]/30 shadow-lg">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl bg-surface border border-accent/30 shadow-lg">
         <div>
           <div className="flex items-center gap-2">
-            <Compass className="w-5 h-5 text-[#F2C265]" />
-            <h2 className="text-base font-black text-[#F2C265]">ردیاب پایان‌های هفت‌گانه زروانیا</h2>
+            <Compass className="w-5 h-5 text-accent-hover" />
+            <h2 className="text-base font-black text-accent-hover">ردیاب پایان‌های هفت‌گانه زروانیا</h2>
           </div>
-          <p className="text-xs text-[#A39A89] mt-1 leading-relaxed">
+          <p className="text-xs text-text-muted mt-1 leading-relaxed">
             محاسبه خودکار وضعیت سرنوشت جهان بر اساس حقیقت‌ها، محرک‌های آریامن، درصد اخگرها و آشفتگی
           </p>
         </div>
 
         {/* Status Pills */}
         <div className="flex items-center gap-2 flex-wrap text-xs font-bold">
-          <div className="px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#3A342B]">
-            حقیقت: <span className="text-[#F2C265] font-mono">{truthCount}/6</span>
+          <div className="px-3 py-1.5 rounded-xl bg-surface-2 border border-border-strong">
+            حقیقت: <span className="text-accent-hover font-mono">{truthCount}/6</span>
           </div>
           <div className={`px-3 py-1.5 rounded-xl border ${
             aryaman.state === 'returned'
-              ? 'bg-[#6F9E78]/15 border-[#6F9E78]/50 text-[#6F9E78]'
+              ? 'bg-success/15 border-success/50 text-success'
               : aryaman.state === 'hesitant'
-              ? 'bg-[#E0A030]/15 border-[#E0A030]/50 text-[#F2C265]'
-              : 'bg-[#C2512B]/15 border-[#C2512B]/50 text-[#E8836B]'
+              ? 'bg-accent/15 border-accent/50 text-accent-hover'
+              : 'bg-danger/15 border-danger/50 text-danger'
           }`}>
             آریامن: {aryaman.stateFa}
           </div>
           <div className={`px-3 py-1.5 rounded-xl border ${
             chaosScore >= 7
-              ? 'bg-[#C2512B]/15 border-[#C2512B] text-[#E8836B] animate-pulse font-black'
+              ? 'bg-danger/15 border-danger text-danger animate-pulse font-black'
               : chaosScore >= 4
-              ? 'bg-[#E0A030]/15 border-[#E0A030] text-[#F2C265]'
-              : 'bg-[#201D19] border-[#3A342B] text-[#C9C0AE]'
+              ? 'bg-accent/15 border-accent text-accent-hover'
+              : 'bg-surface-2 border-border-strong text-text-primary'
           }`}>
             آشفتگی: {chaosScore}/10 {chaosScore >= 7 ? '(سقوط حتمی!)' : chaosScore >= 4 ? '(زخم سرنوشت)' : ''}
           </div>
@@ -165,27 +165,27 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
       {/* Grid: 4 Core Trackers */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 1. Truth Sources (0 to 6) */}
-        <div className="p-4 rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-2">
-            <span className="text-xs font-black text-[#F2C265] flex items-center gap-1.5">
-              <Eye className="w-4 h-4 text-[#F2C265]" />
+        <div className="p-4 rounded-2xl bg-surface border border-border space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
+            <span className="text-xs font-black text-accent-hover flex items-center gap-1.5">
+              <Eye className="w-4 h-4 text-accent-hover" />
               حقیقت ({truthCount} از 6 منبع)
             </span>
-            <span className="text-[11px] text-[#A39A89]">کشف اسرار بنیادی</span>
+            <span className="text-xs text-text-muted">کشف اسرار بنیادی</span>
           </div>
           <div className="space-y-2">
             {(Object.keys(truthLabels) as Array<keyof CampaignEndingState['truthSources']>).map(k => (
               <label
                 key={k}
-                className="flex items-center gap-2.5 p-2 rounded-xl bg-[#181c28] border border-[#2F2A23] hover:border-[#3A342B] cursor-pointer transition select-none text-xs"
+                className="flex items-center gap-2.5 p-2 rounded-xl bg-info border border-border hover:border-border-strong cursor-pointer transition select-none text-xs"
               >
                 <input
                   type="checkbox"
                   checked={state.truthSources[k]}
                   onChange={() => toggleTruthSource(k)}
-                  className="w-4 h-4 rounded text-[#E0A030] focus:ring-0 cursor-pointer"
+                  className="w-4 h-4 rounded text-accent focus:ring-0 cursor-pointer"
                 />
-                <span className={state.truthSources[k] ? 'text-[#F2C265] font-bold' : 'text-[#A39A89]'}>
+                <span className={state.truthSources[k] ? 'text-accent-hover font-bold' : 'text-text-muted'}>
                   {truthLabels[k]}
                 </span>
               </label>
@@ -194,16 +194,16 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
         </div>
 
         {/* 2. Aryaman Triggers (0 to 5) */}
-        <div className="p-4 rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-2">
-            <span className="text-xs font-black text-[#F2C265] flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#F2C265]" />
+        <div className="p-4 rounded-2xl bg-surface border border-border space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
+            <span className="text-xs font-black text-accent-hover flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-accent-hover" />
               راه‌اندازهای آریامن ({aryaman.count} از 5)
             </span>
-            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border ${
-              aryaman.state === 'returned' ? 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/40' :
-              aryaman.state === 'hesitant' ? 'bg-[#E0A030]/15 text-[#F2C265] border-[#E0A030]/40' :
-              'bg-[#C2512B]/15 text-[#E8836B] border-[#C2512B]/40'
+            <span className={`text-xs font-bold px-2 py-0.5 rounded-lg border ${
+              aryaman.state === 'returned' ? 'bg-success/15 text-success border-success/40' :
+              aryaman.state === 'hesitant' ? 'bg-accent/15 text-accent-hover border-accent/40' :
+              'bg-danger/15 text-danger border-danger/40'
             }`}>
               {aryaman.stateFa}
             </span>
@@ -212,15 +212,15 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
             {(Object.keys(aryamanLabels) as Array<keyof CampaignEndingState['aryamanTriggers']>).map(k => (
               <label
                 key={k}
-                className="flex items-center gap-2.5 p-2 rounded-xl bg-[#181c28] border border-[#2F2A23] hover:border-[#3A342B] cursor-pointer transition select-none text-xs"
+                className="flex items-center gap-2.5 p-2 rounded-xl bg-info border border-border hover:border-border-strong cursor-pointer transition select-none text-xs"
               >
                 <input
                   type="checkbox"
                   checked={state.aryamanTriggers[k]}
                   onChange={() => toggleAryamanTrigger(k)}
-                  className="w-4 h-4 rounded text-[#E0A030] focus:ring-0 cursor-pointer"
+                  className="w-4 h-4 rounded text-accent focus:ring-0 cursor-pointer"
                 />
-                <span className={state.aryamanTriggers[k] ? 'text-[#F2C265] font-bold' : 'text-[#A39A89]'}>
+                <span className={state.aryamanTriggers[k] ? 'text-accent-hover font-bold' : 'text-text-muted'}>
                   {aryamanLabels[k]}
                 </span>
               </label>
@@ -229,13 +229,13 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
         </div>
 
         {/* 3. Embers & Mother Ember (0 to 100%) */}
-        <div className="p-4 rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-2">
-            <span className="text-xs font-black text-[#F2C265] flex items-center gap-1.5">
-              <Flame className="w-4 h-4 text-[#F2C265]" />
+        <div className="p-4 rounded-2xl bg-surface border border-border space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
+            <span className="text-xs font-black text-accent-hover flex items-center gap-1.5">
+              <Flame className="w-4 h-4 text-accent-hover" />
               اخگرها ({state.embersPercentage}٪ از 100٪)
             </span>
-            <label className="flex items-center gap-1 text-[11px] text-[#F2C265] cursor-pointer font-bold">
+            <label className="flex items-center gap-1 text-xs text-accent-hover cursor-pointer font-bold">
               <input
                 type="checkbox"
                 checked={state.motherEmberObtained}
@@ -245,17 +245,17 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                     motherEmberObtained: !state.motherEmberObtained
                   });
                 }}
-                className="w-3.5 h-3.5 rounded text-[#E0A030]"
+                className="w-3.5 h-3.5 rounded text-accent"
               />
               <span>اخگر مادر به‌دست آمد</span>
             </label>
           </div>
 
           {/* Embers progress bar */}
-          <div className="w-full h-2.5 bg-[#201D19] rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-surface-2 rounded-full overflow-hidden">
             <div
               className={`h-full transition-all ${
-                state.embersPercentage >= 60 ? 'bg-gradient-to-r from-[#E0A030] to-[#F2C265]' : 'bg-[#C97B4A]'
+                state.embersPercentage >= 60 ? 'bg-gradient-to-r from-accent to-accent-hover' : 'bg-warning'
               }`}
               style={{ width: `${state.embersPercentage}%` }}
             />
@@ -265,112 +265,112 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
             {state.emberSources.map((src, i) => (
               <label
                 key={i}
-                className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-[#181c28] border border-[#2F2A23] text-xs cursor-pointer select-none"
+                className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border text-xs cursor-pointer select-none"
               >
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={src.collected}
                     onChange={() => toggleEmberSource(i)}
-                    className="w-3.5 h-3.5 rounded text-[#E0A030]"
+                    className="w-3.5 h-3.5 rounded text-accent"
                   />
-                  <span className={src.collected ? 'text-[#EDE6D8] font-bold' : 'text-[#A39A89]'}>
+                  <span className={src.collected ? 'text-text-primary font-bold' : 'text-text-muted'}>
                     {src.name}
                   </span>
                 </div>
-                <span className="font-mono text-[11px] text-[#F2C265] font-bold">+{src.percentage}٪</span>
+                <span className="font-mono text-xs text-accent-hover font-bold">+{src.percentage}٪</span>
               </label>
             ))}
           </div>
         </div>
 
         {/* 4. Chaos Tracker (0 to 10) */}
-        <div className="p-4 rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-2">
-            <span className="text-xs font-black text-[#E8836B] flex items-center gap-1.5">
-              <AlertTriangle className="w-4 h-4 text-[#E8836B]" />
+        <div className="p-4 rounded-2xl bg-surface border border-border space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
+            <span className="text-xs font-black text-danger flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 text-danger" />
               آشفتگی ({chaosScore} از 10)
             </span>
-            <span className="text-[11px] text-[#A39A89]">
+            <span className="text-xs text-text-muted">
               {chaosScore >= 7 ? 'سقوط اجباری جهان' : chaosScore >= 4 ? 'زخم در پایان‌ها' : 'ثبات نسبی'}
             </span>
           </div>
 
           <div className="space-y-2 text-xs">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
-              <span className="text-[#C9C0AE] min-w-0 truncate">مهر کلید شکسته (+1 هر کدام، حداکثر 3):</span>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border">
+              <span className="text-text-primary min-w-0 truncate">مهر کلید شکسته (+1 هر کدام، حداکثر 3):</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => adjustChaos('brokenKeySeals', -1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
                 >-1</button>
-                <span className="font-mono font-bold text-[#F2C265]">{state.chaos.brokenKeySeals}</span>
+                <span className="font-mono font-bold text-accent-hover">{state.chaos.brokenKeySeals}</span>
                 <button
                   type="button"
                   onClick={() => adjustChaos('brokenKeySeals', +1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
                 >+1</button>
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
-              <span className="text-[#C9C0AE]">متحد اصلی کشته‌شده (+1 هر کدام، حداکثر 3):</span>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border">
+              <span className="text-text-primary">متحد اصلی کشته‌شده (+1 هر کدام، حداکثر 3):</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => adjustChaos('mainAlliesDead', -1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
                 >-1</button>
-                <span className="font-mono font-bold text-[#F2C265]">{state.chaos.mainAlliesDead}</span>
+                <span className="font-mono font-bold text-accent-hover">{state.chaos.mainAlliesDead}</span>
                 <button
                   type="button"
                   onClick={() => adjustChaos('mainAlliesDead', +1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
                 >+1</button>
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
-              <span className="text-[#C9C0AE]">فرقه/جناح دشمن‌شده (+1 هر کدام، حداکثر 3):</span>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border">
+              <span className="text-text-primary">فرقه/جناح دشمن‌شده (+1 هر کدام، حداکثر 3):</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => adjustChaos('ordersTurnedEnemy', -1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
                 >-1</button>
-                <span className="font-mono font-bold text-[#F2C265]">{state.chaos.ordersTurnedEnemy}</span>
+                <span className="font-mono font-bold text-accent-hover">{state.chaos.ordersTurnedEnemy}</span>
                 <button
                   type="button"
                   onClick={() => adjustChaos('ordersTurnedEnemy', +1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
                 >+1</button>
               </div>
             </div>
 
-            <label className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-[#181c28] border border-[#2F2A23] cursor-pointer select-none">
-              <span className="text-[#C9C0AE]">آستانه مهارنشده سنگ‌خواب یا وردان (+1):</span>
+            <label className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border cursor-pointer select-none">
+              <span className="text-text-primary">آستانه مهارنشده سنگ‌خواب یا وردان (+1):</span>
               <input
                 type="checkbox"
                 checked={state.chaos.unrestrainedThreshold}
                 onChange={toggleChaosThreshold}
-                className="w-4 h-4 rounded text-[#C2512B]"
+                className="w-4 h-4 rounded text-danger"
               />
             </label>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-[#181c28] border border-[#2F2A23]">
-              <span className="text-[#6F9E78]">آشتی دادن جناح یا نجات متحد (-1 کاهش):</span>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border">
+              <span className="text-success">آشتی دادن جناح یا نجات متحد (-1 کاهش):</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => adjustChaos('reconciledOrdersOrSavedAllies', -1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
                 >-1</button>
-                <span className="font-mono font-bold text-[#6F9E78]">{state.chaos.reconciledOrdersOrSavedAllies}</span>
+                <span className="font-mono font-bold text-success">{state.chaos.reconciledOrdersOrSavedAllies}</span>
                 <button
                   type="button"
                   onClick={() => adjustChaos('reconciledOrdersOrSavedAllies', +1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-[#201D19] text-[#C9C0AE] font-bold"
+                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
                 >+1</button>
               </div>
             </div>
@@ -379,8 +379,8 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
       </div>
 
       {/* Second Half Seal Checkbox & Method */}
-      <div className="p-4 rounded-2xl bg-[#171513] border border-[#E0A030]/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-        <label className="flex items-center gap-2 text-[#EDE6D8] font-bold cursor-pointer select-none">
+      <div className="p-4 rounded-2xl bg-surface border border-accent/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+        <label className="flex items-center gap-2 text-text-primary font-bold cursor-pointer select-none">
           <input
             type="checkbox"
             checked={state.secondHalfSealObtained}
@@ -390,15 +390,15 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                 secondHalfSealObtained: !state.secondHalfSealObtained
               });
             }}
-            className="w-4 h-4 rounded text-[#E0A030] cursor-pointer"
+            className="w-4 h-4 rounded text-accent cursor-pointer"
           />
-          <Key className="w-4 h-4 text-[#F2C265]" />
+          <Key className="w-4 h-4 text-accent-hover" />
           <span>نیمه دوم مهر آریامن به‌دست آمد (مهر کامل شد)</span>
         </label>
 
         {state.secondHalfSealObtained && (
           <div className="flex items-center gap-2">
-            <span className="text-[#A39A89] text-[11px]">نحوه دستیابی:</span>
+            <span className="text-text-muted text-xs">نحوه دستیابی:</span>
             <select
               value={state.secondHalfSealMethod}
               onChange={async (e) => {
@@ -407,7 +407,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                   secondHalfSealMethod: e.target.value as any
                 });
               }}
-              className="p-1.5 rounded-xl bg-[#181c28] border border-[#3A342B] text-xs text-[#F2C265]"
+              className="p-1.5 rounded-xl bg-info border border-border-strong text-xs text-accent-hover"
             >
               <option value="given">اهدایی و صلح‌آمیز</option>
               <option value="defeat">پس از شکست دشمن</option>
@@ -419,8 +419,8 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
 
       {/* 7 Endings Evaluation Table */}
       <div className="space-y-3">
-        <h3 className="text-sm font-black text-[#F2C265] flex items-center gap-2">
-          <Compass className="w-4 h-4 text-[#F2C265]" />
+        <h3 className="text-sm font-black text-accent-hover flex items-center gap-2">
+          <Compass className="w-4 h-4 text-accent-hover" />
           <span>ارزیابی سرنوشت و پایان‌های کمپین (Seven Endings)</span>
         </h3>
 
@@ -430,30 +430,30 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
               key={ending.id}
               className={`p-3.5 rounded-2xl border transition-all ${
                 ending.available
-                  ? 'bg-[#151928] border-[#E0A030]/50 shadow-md'
-                  : 'bg-[#10131e] border-[#2F2A23]/80 opacity-70'
+                  ? 'bg-info border-accent/50 shadow-md'
+                  : 'bg-info border-border/80 opacity-70'
               }`}
             >
               <div className="flex items-start sm:items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
                   <div className={`p-1.5 rounded-lg ${
-                    ending.available ? 'bg-[#E0A030]/20 text-[#F2C265]' : 'bg-[#201D19] text-[#8A8374]'
+                    ending.available ? 'bg-accent/20 text-accent-hover' : 'bg-surface-2 text-text-muted'
                   }`}>
                     {ending.available ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                   </div>
                   <div>
-                    <h4 className={`text-xs font-bold ${ending.available ? 'text-[#F2C265]' : 'text-[#A39A89]'}`}>
+                    <h4 className={`text-xs font-bold ${ending.available ? 'text-accent-hover' : 'text-text-muted'}`}>
                       {ending.name} ({ending.nameEn})
                     </h4>
-                    <span className="text-[11px] text-[#A39A89] block mt-0.5">{ending.notes}</span>
+                    <span className="text-xs text-text-muted block mt-0.5">{ending.notes}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md border ${
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-md border ${
                     ending.available
-                      ? 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/40'
-                      : 'bg-[#201D19]/60 text-[#A39A89] border-[#3A342B]'
+                      ? 'bg-success/15 text-success border-success/40'
+                      : 'bg-surface-2/60 text-text-muted border-border-strong'
                   }`}>
                     {ending.available ? 'دسترس‌پذیر' : 'قفل‌شده'}
                   </span>
@@ -461,14 +461,14 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
               </div>
 
               {/* Requirements row */}
-              <div className="mt-2 text-[11px] text-[#A39A89] bg-[#131110] p-2 rounded-xl border border-[#2F2A23]/80">
+              <div className="mt-2 text-xs text-text-muted bg-bg p-2 rounded-xl border border-border/80">
                 <strong>پیش‌نیاز:</strong> {ending.requirements}
               </div>
 
               {/* Wound notification if applicable */}
               {ending.available && ending.woundEffect && (
-                <div className="mt-2 text-[11px] text-[#F2C265] bg-[#E0A030]/15 p-2 rounded-xl border border-[#E0A030]/30 flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5 text-[#F2C265] shrink-0" />
+                <div className="mt-2 text-xs text-accent-hover bg-accent/15 p-2 rounded-xl border border-accent/30 flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 text-accent-hover shrink-0" />
                   <span>{ending.woundEffect}</span>
                 </div>
               )}

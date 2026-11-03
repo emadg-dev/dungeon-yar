@@ -160,17 +160,17 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title="تنظیمات اعلان‌ها و یادآوری‌ها">
-      <div className="space-y-6 pb-6 text-sm text-[#E2D8C3]" dir="rtl">
+      <div className="space-y-6 pb-6 text-sm text-text-primary" dir="rtl">
         {/* Web Push Notification Header & Status */}
-        <div className="p-4 rounded-xl bg-[#1A1815] border border-[#2F2A23] shadow-inner space-y-3">
+        <div className="p-4 rounded-xl bg-surface border border-border shadow-inner space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2 gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-lg bg-[#27221C] border border-[#3D352B] flex items-center justify-center text-[#E0A030]">
+              <div className="w-10 h-10 rounded-lg bg-surface-2 border border-accent flex items-center justify-center text-accent">
                 <Smartphone className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-[#F4EDE0]">اعلان‌های مرورگر (Web Push)</h4>
-                <p className="text-xs text-[#9E9080]">دریافت پیام حتی در زمان بسته بودن برنامه</p>
+                <h4 className="font-bold text-text-primary">اعلان‌های مرورگر (Web Push)</h4>
+                <p className="text-xs text-text-muted">دریافت پیام حتی در زمان بسته بودن برنامه</p>
               </div>
             </div>
 
@@ -181,7 +181,7 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 pushSubscribed
                   ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-700/60 hover:bg-emerald-900/60'
-                  : 'bg-[#E0A030] text-[#0E0D0C] hover:bg-[#F2C265] font-bold shadow-md'
+                  : 'bg-accent text-on-accent hover:bg-accent-hover font-bold shadow-md'
               } disabled:opacity-50`}
             >
               {pushLoading ? (
@@ -201,10 +201,10 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
           </div>
 
           {/* Honest Note for iOS Safari */}
-          <div className="p-2.5 rounded-lg bg-[#262017] border border-[#523B1E] flex items-start gap-2 text-xs text-[#D5B888]">
-            <Info className="w-4 h-4 shrink-0 text-[#E0A030] mt-0.5" />
+          <div className="p-2.5 rounded-lg bg-surface-2 border border-border-strong flex items-start gap-2 text-xs text-accent-hover">
+            <Info className="w-4 h-4 shrink-0 text-accent mt-0.5" />
             <div className="leading-relaxed">
-              <span className="font-bold text-[#F2C265]">نکته مهم کاربران آیفون و آیپد (iOS): </span>
+              <span className="font-bold text-accent-hover">نکته مهم کاربران آیفون و آیپد (iOS): </span>
               در سیستم‌عامل iOS، دریافت اعلان‌های مرورگر تنها زمانی امکان‌پذیر است که برنامه را از طریق گزینه{' '}
               <span className="font-semibold text-white">Share &gt; Add to Home Screen</span> به عنوان وب‌اپلیکیشن (PWA) بر روی صفحه گوشی خود نصب کرده باشید.
             </div>
@@ -214,15 +214,15 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
         {/* Per-type mute toggles grouped by category */}
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h4 className="font-bold text-xs uppercase tracking-wider text-[#A09382]">
+            <h4 className="font-bold text-xs uppercase tracking-wider text-text-muted">
               انواع اعلان‌ها و فیلتر بی‌صدا سازی
             </h4>
-            {saving && <span className="text-[11px] text-[#E0A030]">در حال ذخیره...</span>}
+            {saving && <span className="text-xs text-accent">در حال ذخیره...</span>}
           </div>
 
           {loading ? (
-            <div className="py-8 flex flex-col items-center justify-center gap-2 text-[#9E9080]">
-              <Loader2 className="w-6 h-6 animate-spin text-[#E0A030]" />
+            <div className="py-8 flex flex-col items-center justify-center gap-2 text-text-muted">
+              <Loader2 className="w-6 h-6 animate-spin text-accent" />
               <p className="text-xs">در حال بارگذاری تنظیمات...</p>
             </div>
           ) : (
@@ -233,31 +233,31 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
                 const Icon = cat.icon;
 
                 return (
-                  <div key={cat.key} className="rounded-xl border border-[#2F2A23] bg-[#161412] overflow-hidden">
-                    <div className="px-3.5 py-2.5 bg-[#1F1C18] border-b border-[#2F2A23] flex items-center gap-2 text-xs font-bold text-[#E2D8C3]">
-                      <Icon className="w-4 h-4 text-[#E0A030]" />
+                  <div key={cat.key} className="rounded-xl border border-border bg-surface overflow-hidden">
+                    <div className="px-3.5 py-2.5 bg-surface-2 border-b border-border flex items-center gap-2 text-xs font-bold text-text-primary">
+                      <Icon className="w-4 h-4 text-accent" />
                       <span>{cat.title}</span>
                     </div>
 
-                    <div className="divide-y divide-[#24201A]">
+                    <div className="divide-y divide-surface-2">
                       {itemsInCat.map((item) => {
                         const isEnabled = prefs?.types[item.type] !== false; // default true
 
                         return (
                           <div
                             key={item.type}
-                            className="p-3 flex flex-wrap items-center justify-between gap-2 gap-3 hover:bg-[#1C1915] transition-colors"
+                            className="p-3 flex flex-wrap items-center justify-between gap-2 gap-3 hover:bg-surface transition-colors"
                           >
                             <div className="min-w-0 flex-1">
-                              <div className="font-medium text-[#F4EDE0] text-xs sm:text-sm">{item.labelFa}</div>
-                              <p className="text-[11px] text-[#9E9080] line-clamp-1">{item.descriptionFa}</p>
+                              <div className="font-medium text-text-primary text-xs sm:text-sm">{item.labelFa}</div>
+                              <p className="text-xs text-text-muted line-clamp-1">{item.descriptionFa}</p>
                             </div>
 
                             <button
                               type="button"
                               onClick={() => toggleType(item.type)}
                               className={`w-12 h-6 rounded-full transition-colors relative p-0.5 shrink-0 ${
-                                isEnabled ? 'bg-[#E0A030]' : 'bg-[#2E2820]'
+                                isEnabled ? 'bg-accent' : 'bg-surface-2'
                               }`}
                               title={isEnabled ? 'فعال (کلیک برای غیرفعال‌سازی)' : 'غیرفعال (کلیک برای فعال‌سازی)'}
                             >
@@ -283,7 +283,7 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-[#26211B] hover:bg-[#342D24] text-[#E2D8C3] font-medium border border-[#3E352B] transition-colors"
+            className="w-full py-2.5 rounded-xl bg-surface-2 hover:bg-surface-3 text-text-primary font-medium border border-border-strong transition-colors"
           >
             بستن و بازگشت
           </button>

@@ -232,22 +232,22 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     <div className="space-y-4" dir="rtl">
       {/* Active Edit Grant Banner */}
       {activeGrant && (
-        <div className="surface-card rounded-[14px] p-3.5 bg-gradient-to-r from-[#E0A030]/25 via-[#1d1912] to-[#6F9E78]/25 border-2 border-[#E0A030] shadow-lg shadow-[#E0A030]/20 flex flex-col sm:flex-row items-center justify-between gap-3 animate-pulse">
+        <div className="surface-card rounded-[14px] p-3.5 bg-gradient-to-r from-accent/25 via-surface to-success/25 border-2 border-accent shadow-lg shadow-accent/20 flex flex-col sm:flex-row items-center justify-between gap-3 animate-pulse">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#E0A030] text-[#0E0D0C] flex items-center justify-center shrink-0 shadow-md">
+            <div className="w-10 h-10 rounded-full bg-accent text-on-accent flex items-center justify-center shrink-0 shadow-md">
               <Sparkles className="w-5 h-5 font-black" />
             </div>
             <div>
-              <h4 className="text-xs font-black text-[#F2C265]">
+              <h4 className="text-xs font-black text-accent-hover">
                 اجازه‌ی ویرایش دارید تا {formatExpiryTime(activeGrant.expires_at || activeGrant.expiresAt)}
               </h4>
-              <p className="text-[11px] text-[#EDE6D8]/90">
+              <p className="text-xs text-text-primary/90">
                 مجوز فعال: {presetLabels[activeGrant.preset] || activeGrant.reason || 'مجوز موقت راوی'}
                 {activeGrant.uses_left != null ? ` (${activeGrant.uses_left} بار ویرایش باقی‌مانده)` : ''}
               </p>
             </div>
           </div>
-          <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#E0A030]/20 text-[#F2C265] border border-[#E0A030]/40 font-bold shrink-0">
+          <span className="text-xs px-2.5 py-1 rounded-full bg-accent/20 text-accent-hover border border-accent/40 font-bold shrink-0">
             ویرایش مجاز
           </span>
         </div>
@@ -255,10 +255,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
       {/* DM Direct Edit Mode Active Banner */}
       {isDmEditMode && (
-        <div className="surface-card rounded-[14px] p-3 bg-[#E0A030]/15 border border-[#E0A030]/50 flex flex-wrap items-center justify-between gap-2 gap-2 flex-wrap">
+        <div className="surface-card rounded-[14px] p-3 bg-accent/15 border border-accent/50 flex flex-wrap items-center justify-between gap-2 gap-2 flex-wrap">
           <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-[#E0A030] shrink-0" />
-            <span className="text-xs text-[#F2C265] font-bold">
+            <Shield className="w-4 h-4 text-accent shrink-0" />
+            <span className="text-xs text-accent-hover font-bold">
               حالت ویرایش مستقیم دانجن مستر فعال است. تمام فیلدها مستقیماً قابل تغییر هستند و در تاریخچه ثبت می‌شوند.
             </span>
           </div>
@@ -266,7 +266,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={onToggleDmEditMode}
-              className="text-[10px] px-2.5 py-1 rounded-lg bg-[#E0A030] text-[#0E0D0C] font-black shrink-0 hover:bg-[#F2C265]"
+              className="text-xs px-2.5 py-1 rounded-lg bg-accent text-on-accent font-black shrink-0 hover:bg-accent-hover"
             >
               خروج از حالت DM
             </button>
@@ -275,14 +275,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       )}
       {/* Level-Up Ready Banner */}
       {levelUpAvailable && (
-        <div className="surface-card rounded-[14px] p-3.5 bg-gradient-to-r from-[#E0A030]/20 via-[#181c26] to-[#6F9E78]/20 border-2 border-[#E0A030] shadow-lg shadow-[#E0A030]/15 flex flex-col sm:flex-row items-center justify-between gap-3 animate-pulse">
+        <div className="surface-card rounded-[14px] p-3.5 bg-gradient-to-r from-accent/20 via-info to-success/20 border-2 border-accent shadow-lg shadow-accent/15 flex flex-col sm:flex-row items-center justify-between gap-3 animate-pulse">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#E0A030] text-[#0E0D0C] flex items-center justify-center shrink-0 shadow-md">
+            <div className="w-10 h-10 rounded-full bg-accent text-on-accent flex items-center justify-center shrink-0 shadow-md">
               <ArrowUpCircle className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xs font-black text-[#F2C265]">ارتقای سطح آماده است!</h3>
-              <p className="text-[11px] text-[#EDE6D8]/90">
+              <h3 className="text-xs font-black text-accent-hover">ارتقای سطح آماده است!</h3>
+              <p className="text-xs text-text-primary/90">
                 شما به شرایط لازم برای صعود به سطح {character.level + 1} دست یافته‌اید.
               </p>
             </div>
@@ -291,7 +291,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={onOpenLevelUp}
-              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] font-black text-xs transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] min-h-[40px] shadow-md shadow-[#E0A030]/20"
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-warning to-accent hover:from-accent hover:to-accent-hover text-on-accent font-black text-xs transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] min-h-[40px] shadow-md shadow-accent/20"
             >
               <Sparkles className="w-4 h-4" />
               <span>صعود به سطح {character.level + 1}</span>
@@ -302,14 +302,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
       {/* Pending Change Warning */}
       {pendingChange && (
-        <div className="surface-card rounded-[14px] p-3 bg-[#7FB4D6]/10 border border-[#7FB4D6]/40 flex flex-wrap items-center justify-between gap-2 gap-2">
+        <div className="surface-card rounded-[14px] p-3 bg-info/10 border border-info/40 flex flex-wrap items-center justify-between gap-2 gap-2">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-[#7FB4D6] shrink-0" />
-            <span className="text-xs text-[#7FB4D6] font-bold">
+            <AlertTriangle className="w-4 h-4 text-info shrink-0" />
+            <span className="text-xs text-info font-bold">
               یک درخواست {pendingChange.type === 'level_up' ? 'ارتقای سطح' : 'تغییر برگه'} در انتظار بررسی دانجن مستر است.
             </span>
           </div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#7FB4D6]/20 text-[#7FB4D6] font-bold">
+          <span className="text-xs px-2 py-0.5 rounded-full bg-info/20 text-info font-bold">
             در صف بررسی
           </span>
         </div>
@@ -370,11 +370,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               decoding="async"
               width={96}
               height={96}
-              className="w-20 h-20 sm:w-24 sm:h-24 rounded-[12px] object-cover border border-[#2F2A23] shadow-md"
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-[12px] object-cover border border-border shadow-md"
             />
             <button
               onClick={() => setIsEditingBasics(!isEditingBasics)}
-              className="absolute -bottom-1.5 -end-1.5 p-2 rounded-[10px] bg-[#E0A030] text-[#0E0D0C] shadow-md hover:bg-[#F2C265] transition touch-target min-w-[44px]"
+              className="absolute -bottom-1.5 -end-1.5 p-2 rounded-[10px] bg-accent text-on-accent shadow-md hover:bg-accent-hover transition touch-target min-w-[44px]"
               title="ویرایش مشخصات"
               aria-label="ویرایش مشخصات"
             >
@@ -386,73 +386,73 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             {isEditingBasics ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-2">
                 <div>
-                  <label className="text-xs text-[#A39A89] block mb-1">نام کاراکتر:</label>
+                  <label className="text-xs text-text-muted block mb-1">نام کاراکتر:</label>
                   <input
                     type="text"
                     value={character.name}
                     onChange={(e) => onUpdate({ ...character, name: e.target.value })}
-                    className="w-full py-2 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                    className="w-full py-2 px-3 rounded-[12px] bg-surface-2 border border-border text-sm text-text-primary focus:border-accent focus:outline-none"
                   />
                 </div>
                 <div>
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                    <label className="text-xs text-[#A39A89] block">کلاس:</label>
-                    {isBasicsLocked && <Lock className="w-3 h-3 text-[#E0A030]" />}
+                    <label className="text-xs text-text-muted block">کلاس:</label>
+                    {isBasicsLocked && <Lock className="w-3 h-3 text-accent" />}
                   </div>
                   {isBasicsLocked ? (
                     <button
                       type="button"
                       onClick={() => onOpenLockedField?.('className')}
-                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
+                      className="w-full py-2 px-3 rounded-[12px] bg-surface border border-border text-sm text-text-muted text-start flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
                     >
                       <span>{character.className}</span>
-                      <span className="text-[10px] text-[#E0A030] bg-[#E0A030]/10 px-1.5 py-0.5 rounded">قفل DM</span>
+                      <span className="text-xs text-accent bg-accent/10 px-1.5 py-0.5 rounded">قفل DM</span>
                     </button>
                   ) : (
                     <input
                       type="text"
                       value={character.className}
                       onChange={(e) => onUpdate({ ...character, className: e.target.value })}
-                      className="w-full py-2 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                      className="w-full py-2 px-3 rounded-[12px] bg-surface-2 border border-border text-sm text-text-primary focus:border-accent focus:outline-none"
                     />
                   )}
                 </div>
                 <div>
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                    <label className="text-xs text-[#A39A89] block">نژاد / تبار:</label>
-                    {isBasicsLocked && <Lock className="w-3 h-3 text-[#E0A030]" />}
+                    <label className="text-xs text-text-muted block">نژاد / تبار:</label>
+                    {isBasicsLocked && <Lock className="w-3 h-3 text-accent" />}
                   </div>
                   {isBasicsLocked ? (
                     <button
                       type="button"
                       onClick={() => onOpenLockedField?.('race')}
-                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
+                      className="w-full py-2 px-3 rounded-[12px] bg-surface border border-border text-sm text-text-muted text-start flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
                     >
                       <span>{character.race}</span>
-                      <span className="text-[10px] text-[#E0A030] bg-[#E0A030]/10 px-1.5 py-0.5 rounded">قفل DM</span>
+                      <span className="text-xs text-accent bg-accent/10 px-1.5 py-0.5 rounded">قفل DM</span>
                     </button>
                   ) : (
                     <input
                       type="text"
                       value={character.race}
                       onChange={(e) => onUpdate({ ...character, race: e.target.value })}
-                      className="w-full py-2 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                      className="w-full py-2 px-3 rounded-[12px] bg-surface-2 border border-border text-sm text-text-primary focus:border-accent focus:outline-none"
                     />
                   )}
                 </div>
                 <div>
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                    <label className="text-xs text-[#A39A89] block">سطح (Level):</label>
-                    {isBasicsLocked && <Lock className="w-3 h-3 text-[#E0A030]" />}
+                    <label className="text-xs text-text-muted block">سطح (Level):</label>
+                    {isBasicsLocked && <Lock className="w-3 h-3 text-accent" />}
                   </div>
                   {isBasicsLocked ? (
                     <button
                       type="button"
                       onClick={() => onOpenLockedField?.('level')}
-                      className="w-full py-2 px-3 rounded-[12px] bg-[#1a1714] border border-[#2F2A23] text-sm text-[#A39A89] text-start flex flex-wrap items-center justify-between gap-2 font-mono dice-ltr touch-target min-w-[44px]"
+                      className="w-full py-2 px-3 rounded-[12px] bg-surface border border-border text-sm text-text-muted text-start flex flex-wrap items-center justify-between gap-2 font-mono dice-ltr touch-target min-w-[44px]"
                     >
                       <span>{character.level}</span>
-                      <span className="text-[10px] text-[#E0A030] bg-[#E0A030]/10 px-1.5 py-0.5 rounded font-sans">قفل DM</span>
+                      <span className="text-xs text-accent bg-accent/10 px-1.5 py-0.5 rounded font-sans">قفل DM</span>
                     </button>
                   ) : (
                     <input
@@ -463,7 +463,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                       value={character.level}
                       onFocus={(e) => e.target.select()}
                       onChange={(e) => onUpdate({ ...character, level: parseInt(e.target.value) || 1 })}
-                      className="w-full py-2 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                      className="w-full py-2 px-3 rounded-[12px] bg-surface-2 border border-border text-sm text-text-primary focus:border-accent focus:outline-none"
                     />
                   )}
                 </div>
@@ -471,48 +471,48 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             ) : (
               <div>
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
-                  <h2 className="text-lg sm:text-xl font-black text-[#EDE6D8]">{character.name}</h2>
-                  <span className="px-2 py-0.5 rounded-[8px] text-xs font-bold bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30">
+                  <h2 className="text-lg sm:text-xl font-black text-text-primary">{character.name}</h2>
+                  <span className="px-2 py-0.5 rounded-[8px] text-xs font-bold bg-accent/15 text-accent border border-accent/30">
                     سطح {character.level}
                   </span>
                 </div>
-                <p className="text-xs text-[#A39A89] font-medium">
+                <p className="text-xs text-text-muted font-medium">
                   {character.className} • {character.race}
                 </p>
                 {character.background && (
-                  <p className="text-[11px] text-[#A39A89] mt-0.5">
-                    پس‌زمینه: <span className="text-[#EDE6D8]">{character.background}</span>
+                  <p className="text-xs text-text-muted mt-0.5">
+                    پس‌زمینه: <span className="text-text-primary">{character.background}</span>
                   </p>
                 )}
               </div>
             )}
 
             {/* Rest Buttons Side-by-Side (Mobile-First Thumb-Zone) */}
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-3 pt-3 border-t border-[#2F2A23]">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-3 pt-3 border-t border-border">
               <button
                 type="button"
                 onClick={() => onOpenRestModal('short')}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-[12px] bg-[#201D19] hover:bg-[#201D19]/80 text-[#EDE6D8] text-xs font-bold border border-[#2F2A23] transition touch-target min-w-[44px]"
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-[12px] bg-surface-2 hover:bg-surface-2/80 text-text-primary text-xs font-bold border border-border transition touch-target min-w-[44px]"
               >
-                <Moon className="w-4 h-4 text-[#E0A030]" />
+                <Moon className="w-4 h-4 text-accent" />
                 استراحت کوتاه
               </button>
 
               <button
                 type="button"
                 onClick={() => onOpenRestModal('long')}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-[12px] bg-[#201D19] hover:bg-[#201D19]/80 text-[#EDE6D8] text-xs font-bold border border-[#2F2A23] transition touch-target min-w-[44px]"
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-[12px] bg-surface-2 hover:bg-surface-2/80 text-text-primary text-xs font-bold border border-border transition touch-target min-w-[44px]"
               >
-                <Sun className="w-4 h-4 text-[#E0A030]" />
+                <Sun className="w-4 h-4 text-accent" />
                 استراحت بلند
               </button>
 
               <button
                 type="button"
                 onClick={() => onOpenRestModal('special')}
-                className="flex items-center gap-1.5 px-3 py-2.5 rounded-[12px] bg-[#E0A030]/10 hover:bg-[#E0A030]/20 text-[#E0A030] text-xs font-bold border border-[#E0A030]/30 transition touch-target min-w-[44px]"
+                className="flex items-center gap-1.5 px-3 py-2.5 rounded-[12px] bg-accent/10 hover:bg-accent/20 text-accent text-xs font-bold border border-accent/30 transition touch-target min-w-[44px]"
               >
-                <Sparkles className="w-4 h-4 text-[#E0A030]" />
+                <Sparkles className="w-4 h-4 text-accent" />
                 شهد بهار
               </button>
 
@@ -521,13 +521,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   type="button"
                   onClick={handleExportJson}
                   title="خروجی JSON"
-                  className="p-2.5 rounded-[12px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] text-xs transition touch-target min-w-[44px]"
+                  className="p-2.5 rounded-[12px] bg-surface-2 text-text-muted hover:text-text-primary border border-border text-xs transition touch-target min-w-[44px]"
                 >
                   <Download className="w-4 h-4" />
                 </button>
                 <label
                   title="درون‌ریزی JSON"
-                  className="p-2.5 rounded-[12px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] text-xs transition cursor-pointer touch-target min-w-[44px]"
+                  className="p-2.5 rounded-[12px] bg-surface-2 text-text-muted hover:text-text-primary border border-border text-xs transition cursor-pointer touch-target min-w-[44px]"
                 >
                   <Upload className="w-4 h-4" />
                   <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
@@ -539,27 +539,27 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       </div>
 
       {/* Sheet Lock & Integrity Indicator */}
-      <div className="surface-card rounded-[14px] p-3 border border-[#2F2A23] flex flex-col sm:flex-row items-center justify-between gap-2.5">
+      <div className="surface-card rounded-[14px] p-3 border border-border flex flex-col sm:flex-row items-center justify-between gap-2.5">
         <div className="flex items-center gap-2.5 text-start w-full sm:w-auto">
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
             Boolean(sheetLocked)
-              ? 'bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30'
-              : 'bg-[#6F9E78]/15 text-[#6F9E78] border border-[#6F9E78]/30'
+              ? 'bg-accent/15 text-accent border border-accent/30'
+              : 'bg-success/15 text-success border border-success/30'
           }`}>
             <Lock className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-xs font-bold text-[#EDE6D8]">
+              <span className="text-xs font-bold text-text-primary">
                 {Boolean(sheetLocked) ? 'برگه کاراکتر قفل است' : 'ویرایش آزاد فعال است'}
               </span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                Boolean(sheetLocked) ? 'bg-[#E0A030]/15 text-[#E0A030]' : 'bg-[#6F9E78]/15 text-[#6F9E78]'
+              <span className={`text-xs px-1.5 py-0.2 rounded font-mono ${
+                Boolean(sheetLocked) ? 'bg-accent/15 text-accent' : 'bg-success/15 text-success'
               }`}>
                 {Boolean(sheetLocked) ? 'Locked Core' : 'Respec Window'}
               </span>
             </div>
-            <p className="text-[11px] text-[#A39A89]">
+            <p className="text-xs text-text-muted">
               {Boolean(sheetLocked)
                 ? 'مشخصات بنیادین جهت یکپارچگی قوانین قفل هستند؛ تغییرات اساسی نیازمند تأیید راوی است.'
                 : 'پنجره ویرایش آزاد فعال است؛ می‌توانید مشخصات بنیادین را تغییر دهید.'}
@@ -572,7 +572,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={onOpenSheetChangeRequest}
-              className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] min-h-[44px] shrink-0"
+              className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-surface-2 border border-border hover:border-accent text-xs font-bold text-accent transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] min-h-[44px] shrink-0"
             >
               <Shield className="w-3.5 h-3.5" />
               <span>درخواست تغییر به DM</span>
@@ -587,8 +587,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   onClick={onToggleDmEditMode}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 min-h-[44px] ${
                     isDmEditMode
-                      ? 'bg-[#E0A030] text-[#0E0D0C]'
-                      : 'bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] hover:border-[#E0A030]'
+                      ? 'bg-accent text-on-accent'
+                      : 'bg-surface-2 border border-border text-text-primary hover:border-accent'
                   }`}
                   title="حالت ویرایش مستقیم DM"
                 >
@@ -600,7 +600,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 <button
                   type="button"
                   onClick={onOpenEditGrantModal}
-                  className="px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-[#F2C265] text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
+                  className="px-3 py-1.5 rounded-xl bg-surface-2 border border-border hover:border-accent text-accent-hover text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
                   title="صدور مجوز ویرایش موقت به بازیکن"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
@@ -614,27 +614,27 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
       {/* DM Recent Changes Feed */}
       {dmHistoryEvents && dmHistoryEvents.length > 0 && (
-        <div className="surface-card rounded-[14px] p-3.5 border border-[#2F2A23] space-y-2.5">
-          <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-[#2F2A23]">
-            <h3 className="text-xs font-bold text-[#EDE6D8] flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-[#E0A030]" />
+        <div className="surface-card rounded-[14px] p-3.5 border border-border space-y-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-border">
+            <h3 className="text-xs font-bold text-text-primary flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-accent" />
               <span>تغییرات اخیر راوی (DM)</span>
             </h3>
-            <span className="text-[10px] text-[#A39A89]">آخرین اصلاحات و مجوزها</span>
+            <span className="text-xs text-text-muted">آخرین اصلاحات و مجوزها</span>
           </div>
           <div className="space-y-1.5 max-h-48 overflow-y-auto no-scrollbar">
             {dmHistoryEvents.slice(0, 5).map((ev: any, idx: number) => (
               <div
                 key={ev.id || idx}
-                className="p-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 text-xs gap-2"
+                className="p-2.5 rounded-xl bg-surface-2 border border-border flex flex-wrap items-center justify-between gap-2 text-xs gap-2"
               >
                 <div className="min-w-0">
-                  <div className="text-xs font-bold text-[#F2C265] truncate">{ev.title || 'ویرایش DM'}</div>
+                  <div className="text-xs font-bold text-accent-hover truncate">{ev.title || 'ویرایش DM'}</div>
                   {ev.description && (
-                    <div className="text-[11px] text-[#A39A89] truncate">{ev.description}</div>
+                    <div className="text-xs text-text-muted truncate">{ev.description}</div>
                   )}
                 </div>
-                <span className="text-[10px] text-[#8A8374] shrink-0 font-mono">
+                <span className="text-xs text-text-muted shrink-0 font-mono">
                   {ev.createdAt ? new Date(ev.createdAt).toLocaleDateString('fa-IR-u-nu-latn') : ''}
                 </span>
               </div>
@@ -645,12 +645,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
       {/* 2×2 Stat Grid on Mobile (AC, Speed, Initiative, Hit Dice) + Skill Points */}
       <div>
-        <h3 className="text-xs font-bold text-[#A39A89] mb-2 px-1">شاخص‌های بنیادین مبارزه</h3>
+        <h3 className="text-xs font-bold text-text-muted mb-2 px-1">شاخص‌های بنیادین مبارزه</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {/* 1. AC */}
           <div className="surface-card rounded-[14px] p-3 flex flex-col items-center justify-center text-center">
-            <Shield className="w-4 h-4 text-[#E0A030] mb-1" />
-            <span className="text-[11px] font-bold text-[#A39A89]">درجه زره (AC)</span>
+            <Shield className="w-4 h-4 text-accent mb-1" />
+            <span className="text-xs font-bold text-text-muted">درجه زره (AC)</span>
             {isCombatStatsLocked ? (
               <button
                 type="button"
@@ -658,8 +658,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 className="w-full flex items-center justify-center gap-1 my-0.5 touch-target min-w-[44px] cursor-pointer"
                 title="برای درخواست تغییر لمس کنید"
               >
-                <span className="text-2xl font-extrabold text-[#EDE6D8] font-mono dice-ltr">{character.ac}</span>
-                <Lock className="w-3 h-3 text-[#E0A030]/70" />
+                <span className="text-2xl font-extrabold text-text-primary font-mono dice-ltr">{character.ac}</span>
+                <Lock className="w-3 h-3 text-accent/70" />
               </button>
             ) : (
               <input
@@ -668,16 +668,16 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 value={character.ac}
                 onFocus={(e) => e.target.select()}
                 onChange={(e) => onUpdate({ ...character, ac: parseInt(e.target.value) || 10 })}
-                className="w-16 text-2xl font-extrabold text-[#EDE6D8] bg-transparent text-center font-mono my-0.5 focus:outline-none dice-ltr"
+                className="w-16 text-2xl font-extrabold text-text-primary bg-transparent text-center font-mono my-0.5 focus:outline-none dice-ltr"
               />
             )}
-            <span className="text-[10px] text-[#A39A89]">پوشش دفاعی</span>
+            <span className="text-xs text-text-muted">پوشش دفاعی</span>
           </div>
 
           {/* 2. Speed */}
           <div className="surface-card rounded-[14px] p-3 flex flex-col items-center justify-center text-center">
-            <Footprints className="w-4 h-4 text-[#7FB4D6] mb-1" />
-            <span className="text-[11px] font-bold text-[#A39A89]">سرعت حرکت</span>
+            <Footprints className="w-4 h-4 text-info mb-1" />
+            <span className="text-xs font-bold text-text-muted">سرعت حرکت</span>
             {isCombatStatsLocked ? (
               <button
                 type="button"
@@ -685,9 +685,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 className="w-full flex items-center justify-center gap-1 my-0.5 touch-target min-w-[44px] cursor-pointer"
                 title="برای درخواست تغییر لمس کنید"
               >
-                <span className="text-2xl font-extrabold text-[#EDE6D8] font-mono dice-ltr">{character.speed}</span>
-                <span className="text-[11px] text-[#A39A89]">متر</span>
-                <Lock className="w-3 h-3 text-[#E0A030]/70" />
+                <span className="text-2xl font-extrabold text-text-primary font-mono dice-ltr">{character.speed}</span>
+                <span className="text-xs text-text-muted">متر</span>
+                <Lock className="w-3 h-3 text-accent/70" />
               </button>
             ) : (
               <div className="flex items-baseline gap-1 my-0.5">
@@ -698,55 +698,55 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   value={character.speed}
                   onFocus={(e) => e.target.select()}
                   onChange={(e) => onUpdate({ ...character, speed: parseFloat(e.target.value) || 9 })}
-                  className="w-12 text-2xl font-extrabold text-[#EDE6D8] bg-transparent text-center font-mono focus:outline-none dice-ltr"
+                  className="w-12 text-2xl font-extrabold text-text-primary bg-transparent text-center font-mono focus:outline-none dice-ltr"
                 />
-                <span className="text-[11px] text-[#A39A89]">متر</span>
+                <span className="text-xs text-text-muted">متر</span>
               </div>
             )}
-            <span className="text-[10px] text-[#A39A89]">30 فوت</span>
+            <span className="text-xs text-text-muted">30 فوت</span>
           </div>
 
           {/* 3. Initiative */}
           <div className="surface-card rounded-[14px] p-3 flex flex-col items-center justify-center text-center">
-            <Zap className="w-4 h-4 text-[#E0A030] mb-1" />
-            <span className="text-[11px] font-bold text-[#A39A89]">ابتکار عمل</span>
+            <Zap className="w-4 h-4 text-accent mb-1" />
+            <span className="text-xs font-bold text-text-muted">ابتکار عمل</span>
             <button
               type="button"
               onClick={() => onRollCheck(20, 1, totalInitiative, 'ابتکار عمل (Initiative)')}
-              className="text-2xl font-extrabold text-[#E0A030] font-mono my-0.5 hover:scale-105 active:scale-95 transition cursor-pointer touch-target min-w-[44px] dice-ltr"
+              className="text-2xl font-extrabold text-accent font-mono my-0.5 hover:scale-105 active:scale-95 transition cursor-pointer touch-target min-w-[44px] dice-ltr"
               title="لمس برای پرتاب ابتکار عمل"
             >
               {totalInitiative >= 0 ? `+${totalInitiative}` : totalInitiative}
             </button>
-            <span className="text-[10px] text-[#A39A89]">چابکی + پاداش</span>
+            <span className="text-xs text-text-muted">چابکی + پاداش</span>
           </div>
 
           {/* 4. Hit Dice */}
           <div className="surface-card rounded-[14px] p-3 flex flex-col items-center justify-center text-center">
-            <Heart className="w-4 h-4 text-[#6F9E78] mb-1" />
-            <span className="text-[11px] font-bold text-[#A39A89]">تاس‌های جان</span>
+            <Heart className="w-4 h-4 text-success mb-1" />
+            <span className="text-xs font-bold text-text-muted">تاس‌های جان</span>
             <div className="flex items-center gap-1.5 my-0.5">
               <button
                 type="button"
                 onClick={() => adjustHitDice(-1)}
-                className="w-7 h-7 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px] flex items-center justify-center"
+                className="w-7 h-7 rounded-[8px] bg-surface-2 border border-border text-xs font-bold text-text-muted hover:text-text-primary touch-target min-w-[44px] flex items-center justify-center"
                 title="مصرف 1 تاس جان"
               >
                 -
               </button>
-              <span className="font-mono text-base font-extrabold text-[#EDE6D8] dice-ltr px-1">
+              <span className="font-mono text-base font-extrabold text-text-primary dice-ltr px-1">
                 {character.hitDice?.current ?? character.level}/{character.level}
               </span>
               <button
                 type="button"
                 onClick={() => adjustHitDice(1)}
-                className="w-7 h-7 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px] flex items-center justify-center"
+                className="w-7 h-7 rounded-[8px] bg-surface-2 border border-border text-xs font-bold text-text-muted hover:text-text-primary touch-target min-w-[44px] flex items-center justify-center"
                 title="بازیابی 1 تاس جان"
               >
                 +
               </button>
             </div>
-            <span className="text-[10px] text-[#A39A89]">{character.hitDice?.die || 'd8'}</span>
+            <span className="text-xs text-text-muted">{character.hitDice?.die || 'd8'}</span>
           </div>
         </div>
       </div>
@@ -756,12 +756,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         {/* Skill Points (امتیاز مهارت زروانیا) */}
         <div className="surface-card rounded-[14px] p-3.5 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-[10px] bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-[10px] bg-accent/15 text-accent border border-accent/30 flex items-center justify-center shrink-0">
               <Flame className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-xs font-extrabold text-[#EDE6D8]">امتیاز مهارت (Skill Points)</h4>
-              <p className="text-[10px] text-[#A39A89]">برای حرکات ویژه و تقویت ضربات</p>
+              <h4 className="text-xs font-extrabold text-text-primary">امتیاز مهارت (Skill Points)</h4>
+              <p className="text-xs text-text-muted">برای حرکات ویژه و تقویت ضربات</p>
             </div>
           </div>
 
@@ -769,18 +769,18 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={() => adjustSkillPoints(-1)}
-              className="w-9 h-9 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-bold text-sm touch-target min-w-[44px] flex items-center justify-center"
+              className="w-9 h-9 rounded-[10px] bg-surface-2 border border-border text-text-primary font-bold text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="کاهش امتیاز مهارت"
             >
               -
             </button>
-            <span className="font-mono text-xl font-extrabold text-[#E0A030] min-w-[28px] text-center dice-ltr">
+            <span className="font-mono text-xl font-extrabold text-accent min-w-[28px] text-center dice-ltr">
               {character.skillPoints}
             </span>
             <button
               type="button"
               onClick={() => adjustSkillPoints(1)}
-              className="w-9 h-9 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-bold text-sm touch-target min-w-[44px] flex items-center justify-center"
+              className="w-9 h-9 rounded-[10px] bg-surface-2 border border-border text-text-primary font-bold text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="افزایش امتیاز مهارت"
             >
               +
@@ -793,14 +793,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <div className="flex items-center gap-2.5">
             <div className={`w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0 border ${
               character.exhaustion > 0
-                ? 'bg-[#C2512B]/20 text-[#C2512B] border-[#C2512B]/40'
-                : 'bg-[#201D19] text-[#A39A89] border-[#2F2A23]'
+                ? 'bg-danger/20 text-danger border-danger/40'
+                : 'bg-surface-2 text-text-muted border-border'
             }`}>
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-xs font-extrabold text-[#EDE6D8]">خستگی و فرسودگی</h4>
-              <p className="text-[10px] text-[#A39A89]">
+              <h4 className="text-xs font-extrabold text-text-primary">خستگی و فرسودگی</h4>
+              <p className="text-xs text-text-muted">
                 {exhaustionEffects[character.exhaustion]}
               </p>
             </div>
@@ -810,18 +810,18 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <button
               type="button"
               onClick={() => adjustExhaustion(-1)}
-              className="w-9 h-9 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#EDE6D8] font-bold text-sm touch-target min-w-[44px] flex items-center justify-center"
+              className="w-9 h-9 rounded-[10px] bg-surface-2 border border-border text-text-primary font-bold text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="کاهش سطح خستگی"
             >
               -
             </button>
-            <span className="font-mono text-xl font-extrabold text-[#EDE6D8] min-w-[28px] text-center dice-ltr">
+            <span className="font-mono text-xl font-extrabold text-text-primary min-w-[28px] text-center dice-ltr">
               {character.exhaustion}
             </span>
             <button
               type="button"
               onClick={() => adjustExhaustion(1)}
-              className="w-9 h-9 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#C2512B] font-bold text-sm touch-target min-w-[44px] flex items-center justify-center"
+              className="w-9 h-9 rounded-[10px] bg-surface-2 border border-border text-danger font-bold text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="افزایش سطح خستگی"
             >
               +
@@ -832,12 +832,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
       {/* Class Resources as Rows of Pips (Divine Smite, Reality Fatigue, Moment Points) */}
       <div className="surface-card rounded-[14px] p-4 space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-2">
-          <h3 className="text-xs font-bold text-[#EDE6D8] flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-[#E0A030]" />
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
+          <h3 className="text-xs font-bold text-text-primary flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4 text-accent" />
             منابع کلاسی و پیپ‌های جادویی
           </h3>
-          <span className="text-[10px] text-[#A39A89]">بازیابی خودکار هنگام استراحت</span>
+          <span className="text-xs text-text-muted">بازیابی خودکار هنگام استراحت</span>
         </div>
 
         {/* Built-in default resources based on class or customResources */}

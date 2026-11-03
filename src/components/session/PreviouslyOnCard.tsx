@@ -41,19 +41,19 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
     // If no recaps exist yet, show an inviting prompt for DMs / authorized authors
     return (
       <div 
-        className="surface-card rounded-[16px] p-4 border border-[#2F2A23] bg-gradient-to-br from-[#1C1814] via-[#171410] to-[#120F0C] relative overflow-hidden shadow-lg transition"
+        className="surface-card rounded-[16px] p-4 border border-border bg-gradient-to-br from-surface via-surface to-bg relative overflow-hidden shadow-lg transition"
         dir="rtl"
       >
         <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-[10px] bg-[#E0A030]/10 border border-[#E0A030]/25 text-[#E0A030] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-[10px] bg-accent/10 border border-accent/25 text-accent flex items-center justify-center">
               <BookOpen className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-[11px] font-bold text-[#E0A030] uppercase tracking-wider block">
+              <span className="text-xs font-bold text-accent uppercase tracking-wider block">
                 وقایع و سرگذشت
               </span>
-              <h3 className="text-sm font-extrabold text-[#EDE6D8]">
+              <h3 className="text-sm font-extrabold text-text-primary">
                 قبلاً در «{campaign?.name || 'این ماجراجویی'}»...
               </h3>
             </div>
@@ -61,23 +61,23 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
           <button
             type="button"
             onClick={onOpenArchive}
-            className="text-xs text-[#A39A89] hover:text-[#EDE6D8] flex items-center gap-1 transition px-2 py-1 rounded-lg hover:bg-white/5 touch-target min-w-[44px]"
+            className="text-xs text-text-muted hover:text-text-primary flex items-center gap-1 transition px-2 py-1 rounded-lg hover:bg-white/5 touch-target min-w-[44px]"
           >
             <Archive className="w-3.5 h-3.5" />
             <span>آرشیو</span>
           </button>
         </div>
 
-        <p className="text-xs text-[#A39A89] mt-3 leading-relaxed">
+        <p className="text-xs text-text-muted mt-3 leading-relaxed">
           هنوز خلاصه‌ای برای جلسات پیشین ثبت نشده است. پس از پایان هر جلسه، رویدادهای مهم و دستاوردهای گروه در اینجا به نمایش درمی‌آید.
         </p>
 
         {canCreate && onOpenCreateRecap && (
-          <div className="mt-3 pt-3 border-t border-[#2F2A23]/60 flex justify-end">
+          <div className="mt-3 pt-3 border-t border-border/60 flex justify-end">
             <button
               type="button"
               onClick={onOpenCreateRecap}
-              className="py-2 px-3.5 rounded-[10px] bg-[#2A2318] hover:bg-[#342C1E] border border-[#E0A030]/30 hover:border-[#E0A030] text-[#F2C265] text-xs font-bold flex items-center gap-1.5 transition touch-target min-w-[44px]"
+              className="py-2 px-3.5 rounded-[10px] bg-surface-2 hover:bg-surface-3 border border-accent/30 hover:border-accent text-accent-hover text-xs font-bold flex items-center gap-1.5 transition touch-target min-w-[44px]"
             >
               <Feather className="w-3.5 h-3.5" />
               <span>نگارش خلاصه رویدادها</span>
@@ -110,22 +110,22 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
 
   return (
     <div 
-      className="surface-card rounded-[16px] p-4 sm:p-5 border border-[#2F2A23] bg-gradient-to-br from-[#1C1814] via-[#171410] to-[#120F0C] relative overflow-hidden shadow-lg transition card-gold-top"
+      className="surface-card rounded-[16px] p-4 sm:p-5 border border-border bg-gradient-to-br from-surface via-surface to-bg relative overflow-hidden shadow-lg transition card-gold-top"
       dir="rtl"
     >
       {/* Header Accent Pill */}
       <div className="flex flex-wrap items-center justify-between gap-2 gap-2 mb-2.5">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#E0A030] flex items-center justify-center shadow-inner">
+          <div className="w-8 h-8 rounded-[10px] bg-accent/15 border border-accent/30 text-accent flex items-center justify-center shadow-inner">
             <BookOpen className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[10px] sm:text-[11px] font-black text-[#E0A030] tracking-wide">
+              <span className="text-xs sm:text-xs font-black text-accent tracking-wide">
                 قبلاً در «{campaign?.name || 'زروانیا'}»...
               </span>
               {recap.sessionNumber !== undefined && (
-                <span className="px-2 py-0.5 rounded-full bg-[#201C16] border border-[#383125] text-[#F2C265] text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded-full bg-surface-2 border border-border text-accent-hover text-xs font-bold">
                   جلسه {recap.sessionNumber}
                 </span>
               )}
@@ -138,7 +138,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
             <button
               type="button"
               onClick={() => onEditRecap(recap)}
-              className="p-1.5 rounded-lg text-[#A39A89] hover:text-[#EDE6D8] hover:bg-white/5 transition touch-target min-w-[44px]"
+              className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition touch-target min-w-[44px]"
               title="ویرایش خلاصه"
             >
               <Edit3 className="w-3.5 h-3.5" />
@@ -147,9 +147,9 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
           <button
             type="button"
             onClick={onOpenArchive}
-            className="py-1 px-2.5 rounded-[8px] bg-white/5 hover:bg-white/10 text-[#C9C0AE] hover:text-[#EDE6D8] text-xs font-semibold flex items-center gap-1 transition touch-target min-w-[44px]"
+            className="py-1 px-2.5 rounded-[8px] bg-white/5 hover:bg-white/10 text-text-primary hover:text-text-primary text-xs font-semibold flex items-center gap-1 transition touch-target min-w-[44px]"
           >
-            <Archive className="w-3.5 h-3.5 text-[#E0A030]" />
+            <Archive className="w-3.5 h-3.5 text-accent" />
             <span>آرشیو</span>
           </button>
         </div>
@@ -157,10 +157,10 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
 
       {/* Recap Title & Meta */}
       <div className="space-y-1">
-        <h3 className="text-sm sm:text-base font-black text-[#EDE6D8] leading-snug">
+        <h3 className="text-sm sm:text-base font-black text-text-primary leading-snug">
           {recap.title}
         </h3>
-        <div className="flex items-center gap-2 text-[11px] text-[#A39A89] flex-wrap">
+        <div className="flex items-center gap-2 text-xs text-text-muted flex-wrap">
           {recap.authorName && (
             <span>به قلم <strong>{recap.authorName}</strong></span>
           )}
@@ -179,7 +179,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
       </div>
 
       {/* Recap Body: Excerpt or Full */}
-      <div className="mt-3 text-xs sm:text-[13px] text-[#D8CFBF] leading-relaxed whitespace-pre-line">
+      <div className="mt-3 text-xs sm:text-[13px] text-text-muted leading-relaxed whitespace-pre-line">
         {isExpanded ? (
           <div className="space-y-2">
             {recap.body.split('\n\n').map((paragraph, idx) => (
@@ -196,7 +196,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="mt-2 text-xs font-bold text-[#E0A030] hover:text-[#F2C265] flex items-center gap-1 transition touch-target min-w-[44px]"
+          className="mt-2 text-xs font-bold text-accent hover:text-accent-hover flex items-center gap-1 transition touch-target min-w-[44px]"
         >
           <span>{isExpanded ? 'خلاصه کردن متن' : 'مطالعه کامل سرگذشت'}</span>
           {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -205,15 +205,15 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
 
       {/* Linked Entities (NPCs, Locations, Quests) */}
       {hasLinked && (
-        <div className="mt-3 pt-3 border-t border-[#2F2A23]/60 space-y-2">
-          <span className="text-[10px] font-extrabold text-[#A39A89] uppercase tracking-wider block">
+        <div className="mt-3 pt-3 border-t border-border/60 space-y-2">
+          <span className="text-xs font-extrabold text-text-muted uppercase tracking-wider block">
             پیوندهای ذکرشده در جلسه:
           </span>
           <div className="flex flex-wrap gap-1.5">
             {linkedLocs.map(loc => (
               <span
                 key={loc.id}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#1F271E] border border-[#2D3F2B] text-[#93C48B] text-[10px] font-medium"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success border border-success text-success text-xs font-medium"
               >
                 <MapPin className="w-2.5 h-2.5" />
                 <span>{loc.name}</span>
@@ -222,7 +222,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
             {linkedNpcs.map(npc => (
               <span
                 key={npc.id}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#271E2B] border border-[#3E2947] text-[#C48BC0] text-[10px] font-medium"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-role-codm border border-role-codm text-role-codm text-xs font-medium"
               >
                 <UserIcon className="w-2.5 h-2.5" />
                 <span>{npc.name}</span>
@@ -231,7 +231,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
             {linkedQuests.map(q => (
               <span
                 key={q.id}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#2A2318] border border-[#3F331F] text-[#F2C265] text-[10px] font-medium"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-2 border border-accent text-accent-hover text-xs font-medium"
               >
                 <Scroll className="w-2.5 h-2.5" />
                 <span>{q.title}</span>

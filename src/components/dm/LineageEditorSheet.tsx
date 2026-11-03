@@ -160,50 +160,50 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
       onClose={onClose}
       title={lineage ? `ویرایش نژاد: ${lineage.name}` : 'افزودن نژاد جدید'}
     >
-      <form onSubmit={handleSubmit} className="space-y-4 py-2 text-right" dir="rtl">
+      <form onSubmit={handleSubmit} className="space-y-4 py-2 text-start" dir="rtl">
         {error && (
-          <div className="p-3 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs font-bold">
+          <div className="p-3 rounded-xl bg-danger/15 border border-danger/30 text-danger text-xs font-bold">
             {error}
           </div>
         )}
 
         {/* Basic Fields */}
-        <div className="space-y-3 p-3.5 rounded-2xl bg-[#1A1815] border border-[#2F2A23]">
-          <h4 className="text-xs font-extrabold text-[#F2C265] flex items-center gap-1.5">
+        <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
+          <h4 className="text-xs font-extrabold text-accent-hover flex items-center gap-1.5">
             <User className="w-4 h-4" />
             <span>مشخصات پایه نژاد / تبار</span>
           </h4>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">نام نژاد *</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">نام نژاد *</label>
             <input
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="مثال: دیوان‌تبار، پری‌زاد، آدمی..."
               required
-              className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[44px]"
+              className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">توصیف و زمینه تاریخی</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">توصیف و زمینه تاریخی</label>
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
               rows={3}
               placeholder="ویژگی‌های ظاهری، خاستگاه و فرهنگ نژاد..."
-              className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl p-3 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] resize-y"
+              className="w-full bg-surface-2 border border-border rounded-xl p-3 text-xs text-text-primary focus:outline-none focus:border-accent resize-y"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">اندازه و جثه (Size)</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">اندازه و جثه (Size)</label>
               <select
                 value={size}
                 onChange={e => setSize(e.target.value)}
-                className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-2.5 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[44px]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-2.5 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
               >
                 <option value="متوسط (Medium)">متوسط (Medium)</option>
                 <option value="کوچک (Small)">کوچک (Small)</option>
@@ -212,7 +212,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">سرعت پایه (فوت)</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">سرعت پایه (فوت)</label>
               <input
                 type="number"
                 value={speed}
@@ -220,25 +220,25 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
                 min={10}
                 max={60}
                 step={5}
-                className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[44px]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
               />
             </div>
           </div>
         </div>
 
         {/* Ability Score Bonuses */}
-        <div className="space-y-3 p-3.5 rounded-2xl bg-[#1A1815] border border-[#2F2A23]">
+        <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h4 className="text-xs font-extrabold text-[#F2C265] flex items-center gap-1.5">
+            <h4 className="text-xs font-extrabold text-accent-hover flex items-center gap-1.5">
               <Sparkles className="w-4 h-4" />
               <span>پاداش ویژگی‌ها (Ability Score Bonuses)</span>
             </h4>
-            <div className="flex items-center gap-1 bg-[#201D19] p-1 rounded-xl border border-[#2F2A23]">
+            <div className="flex items-center gap-1 bg-surface-2 p-1 rounded-xl border border-border">
               <button
                 type="button"
                 onClick={() => setBonusMode('fixed')}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition ${
-                  bonusMode === 'fixed' ? 'bg-[#E0A030] text-[#0E0D0C]' : 'text-[#A39A89]'
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+                  bonusMode === 'fixed' ? 'bg-accent text-on-accent' : 'text-text-muted'
                 }`}
               >
                 مقادیر ثابت
@@ -246,8 +246,8 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
               <button
                 type="button"
                 onClick={() => setBonusMode('choose')}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition ${
-                  bonusMode === 'choose' ? 'bg-[#E0A030] text-[#0E0D0C]' : 'text-[#A39A89]'
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+                  bonusMode === 'choose' ? 'bg-accent text-on-accent' : 'text-text-muted'
                 }`}
               >
                 انتخاب بازیکن
@@ -258,8 +258,8 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
           {bonusMode === 'fixed' ? (
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               {ABILITY_LABELS.map(ab => (
-                <div key={ab.key} className="bg-[#201D19] p-2 rounded-xl border border-[#2F2A23] text-center">
-                  <span className="text-[10px] text-[#A39A89] block mb-1">{ab.key.toUpperCase()}</span>
+                <div key={ab.key} className="bg-surface-2 p-2 rounded-xl border border-border text-center">
+                  <span className="text-xs text-text-muted block mb-1">{ab.key.toUpperCase()}</span>
                   <input
                     type="number"
                     value={fixedBonuses[ab.key] ?? 0}
@@ -269,7 +269,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
                     })}
                     min={-2}
                     max={4}
-                    className="w-full text-center bg-[#171513] border border-[#2F2A23] rounded-lg py-1 text-xs text-[#F2C265] font-bold"
+                    className="w-full text-center bg-surface border border-border rounded-lg py-1 text-xs text-accent-hover font-bold"
                   />
                 </div>
               ))}
@@ -277,25 +277,25 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
           ) : (
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
-                <label className="block text-[#A39A89] text-[11px] mb-1">تعداد ویژگی‌های انتخابی</label>
+                <label className="block text-text-muted text-xs mb-1">تعداد ویژگی‌های انتخابی</label>
                 <input
                   type="number"
                   value={chooseCount}
                   onChange={e => setChooseCount(parseInt(e.target.value, 10) || 1)}
                   min={1}
                   max={6}
-                  className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8]"
+                  className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
                 />
               </div>
               <div>
-                <label className="block text-[#A39A89] text-[11px] mb-1">مقدار افزایش هر ویژگی</label>
+                <label className="block text-text-muted text-xs mb-1">مقدار افزایش هر ویژگی</label>
                 <input
                   type="number"
                   value={chooseValue}
                   onChange={e => setChooseValue(parseInt(e.target.value, 10) || 1)}
                   min={1}
                   max={3}
-                  className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8]"
+                  className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
                 />
               </div>
             </div>
@@ -303,16 +303,16 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
         </div>
 
         {/* Traits */}
-        <div className="space-y-3 p-3.5 rounded-2xl bg-[#1A1815] border border-[#2F2A23]">
+        <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h4 className="text-xs font-extrabold text-[#F2C265] flex items-center gap-1.5">
+            <h4 className="text-xs font-extrabold text-accent-hover flex items-center gap-1.5">
               <Shield className="w-4 h-4" />
               <span>قابلیت‌ها و خصلت‌های نژادی (Traits)</span>
             </h4>
             <button
               type="button"
               onClick={handleAddTrait}
-              className="px-2.5 py-1 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#F2C265] text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
+              className="px-2.5 py-1 rounded-xl bg-surface-3 hover:bg-surface-3 text-accent-hover text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>افزودن خصلت</span>
@@ -321,7 +321,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
 
           <div className="space-y-2">
             {traits.map((tr, idx) => (
-              <div key={idx} className="p-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] space-y-2">
+              <div key={idx} className="p-2.5 rounded-xl bg-surface-2 border border-border space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
                   <input
                     type="text"
@@ -332,12 +332,12 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
                       setTraits(updated);
                     }}
                     placeholder="نام خصلت (مثال: دید در تاریکی، سرسختی کویر)"
-                    className="flex-1 bg-[#171513] border border-[#2F2A23] rounded-lg px-2.5 py-1.5 text-xs text-[#EDE6D8]"
+                    className="flex-1 bg-surface border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary"
                   />
                   <button
                     type="button"
                     onClick={() => handleRemoveTrait(idx)}
-                    className="p-1.5 rounded-lg text-[#C2512B] hover:bg-[#C2512B]/10"
+                    className="p-1.5 rounded-lg text-danger hover:bg-danger/10"
                     title="حذف"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -352,7 +352,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
                   }}
                   rows={2}
                   placeholder="شرح مکانیکی یا روایی خصلت..."
-                  className="w-full bg-[#171513] border border-[#2F2A23] rounded-lg p-2 text-xs text-[#EDE6D8] resize-y"
+                  className="w-full bg-surface border border-border rounded-lg p-2 text-xs text-text-primary resize-y"
                 />
               </div>
             ))}
@@ -360,15 +360,15 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
         </div>
 
         {/* Senses, Languages, Resistances */}
-        <div className="space-y-3 p-3.5 rounded-2xl bg-[#1A1815] border border-[#2F2A23]">
-          <h4 className="text-xs font-extrabold text-[#F2C265] flex items-center gap-1.5">
+        <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
+          <h4 className="text-xs font-extrabold text-accent-hover flex items-center gap-1.5">
             <Eye className="w-4 h-4" />
             <span>حواس، زبان‌ها و مقاومت‌ها</span>
           </h4>
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">دید در تاریکی (Darkvision)</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">دید در تاریکی (Darkvision)</label>
               <input
                 type="number"
                 value={darkvision}
@@ -377,67 +377,67 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
                 max={120}
                 step={30}
                 placeholder="0 یا 60 فوت"
-                className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] min-h-[44px]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary min-h-[44px]"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">مقاومت به آسیب (Resistances)</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">مقاومت به آسیب (Resistances)</label>
               <input
                 type="text"
                 value={resistancesText}
                 onChange={e => setResistancesText(e.target.value)}
                 placeholder="آتشین، سم، سرمایی (جداشده با کاما)"
-                className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] min-h-[44px]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary min-h-[44px]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">زبان‌ها</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">زبان‌ها</label>
             <input
               type="text"
               value={languagesText}
               onChange={e => setLanguagesText(e.target.value)}
               placeholder="مشترک، ورنایی، دیوانی..."
-              className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] min-h-[44px]"
+              className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary min-h-[44px]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">مهارت‌های اولیه نژادی</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">مهارت‌های اولیه نژادی</label>
               <input
                 type="text"
                 value={skillsText}
                 onChange={e => setSkillsText(e.target.value)}
                 placeholder="ادراک، پنهان‌کاری..."
-                className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] min-h-[44px]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary min-h-[44px]"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">سلاح‌های مجاز نژادی</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">سلاح‌های مجاز نژادی</label>
               <input
                 type="text"
                 value={weaponsText}
                 onChange={e => setWeaponsText(e.target.value)}
                 placeholder="کمان کوتاه، شمشیر بلند..."
-                className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] min-h-[44px]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary min-h-[44px]"
               />
             </div>
           </div>
         </div>
 
         {/* Sublineages */}
-        <div className="space-y-3 p-3.5 rounded-2xl bg-[#1A1815] border border-[#2F2A23]">
+        <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h4 className="text-xs font-extrabold text-[#F2C265] flex items-center gap-1.5">
+            <h4 className="text-xs font-extrabold text-accent-hover flex items-center gap-1.5">
               <BookOpen className="w-4 h-4" />
               <span>زیرنژادها / تیره‌ها (Sublineages)</span>
             </h4>
             <button
               type="button"
               onClick={handleAddSublineage}
-              className="px-2.5 py-1 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#F2C265] text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
+              className="px-2.5 py-1 rounded-xl bg-surface-3 hover:bg-surface-3 text-accent-hover text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>افزودن تیره</span>
@@ -445,7 +445,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
           </div>
 
           {sublineages.map((sub, idx) => (
-            <div key={idx} className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23] space-y-2">
+            <div key={idx} className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
                 <input
                   type="text"
@@ -456,12 +456,12 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
                     setSublineages(updated);
                   }}
                   placeholder="نام تیره (مثال: دیوانزاد خاکی، پری کویر)"
-                  className="flex-1 bg-[#171513] border border-[#2F2A23] rounded-lg px-2.5 py-1.5 text-xs text-[#EDE6D8]"
+                  className="flex-1 bg-surface border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary"
                 />
                 <button
                   type="button"
                   onClick={() => handleRemoveSublineage(idx)}
-                  className="p-1.5 rounded-lg text-[#C2512B] hover:bg-[#C2512B]/10"
+                  className="p-1.5 rounded-lg text-danger hover:bg-danger/10"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -475,7 +475,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
                 }}
                 rows={2}
                 placeholder="توصیف تیره و خصلت‌های اختصاصی..."
-                className="w-full bg-[#171513] border border-[#2F2A23] rounded-lg p-2 text-xs text-[#EDE6D8]"
+                className="w-full bg-surface border border-border rounded-lg p-2 text-xs text-text-primary"
               />
             </div>
           ))}
@@ -494,7 +494,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="py-3 px-4 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] font-bold text-xs min-h-[44px]"
+            className="py-3 px-4 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary font-bold text-xs min-h-[44px]"
           >
             انصراف
           </button>

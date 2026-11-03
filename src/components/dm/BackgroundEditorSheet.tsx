@@ -115,180 +115,180 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
       onClose={onClose}
       title={background ? `ویرایش پیشینه: ${background.name}` : 'افزودن پیشینه جدید'}
     >
-      <form onSubmit={handleSubmit} className="space-y-4 py-2 text-right" dir="rtl">
+      <form onSubmit={handleSubmit} className="space-y-4 py-2 text-start" dir="rtl">
         {error && (
-          <div className="p-3 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs font-bold">
+          <div className="p-3 rounded-xl bg-danger/15 border border-danger/30 text-danger text-xs font-bold">
             {error}
           </div>
         )}
 
         {/* Basic Fields */}
-        <div className="space-y-3 p-3.5 rounded-2xl bg-[#1A1815] border border-[#2F2A23]">
-          <h4 className="text-xs font-extrabold text-[#F2C265] flex items-center gap-1.5">
+        <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
+          <h4 className="text-xs font-extrabold text-accent-hover flex items-center gap-1.5">
             <BookOpen className="w-4 h-4" />
             <span>مشخصات پایه پیشینه (Background)</span>
           </h4>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">نام پیشینه *</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">نام پیشینه *</label>
             <input
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="مثال: کاتب آتشکده، راهزن کویر، پناه‌جوی ورنا..."
               required
-              className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] min-h-[44px]"
+              className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">توصیف گذشته و جایگاه اجتماعی</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">توصیف گذشته و جایگاه اجتماعی</label>
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
               rows={3}
               placeholder="شخصیت در چه محیطی پرورش یافته و با چه تجربیاتی وارد جهان ماجراجویی شده است..."
-              className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl p-3 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] resize-y"
+              className="w-full bg-surface-2 border border-border rounded-xl p-3 text-xs text-text-primary focus:outline-none focus:border-accent resize-y"
             />
           </div>
         </div>
 
         {/* Proficiencies & Equipment */}
-        <div className="space-y-3 p-3.5 rounded-2xl bg-[#1A1815] border border-[#2F2A23]">
-          <h4 className="text-xs font-extrabold text-[#F2C265] flex items-center gap-1.5">
+        <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
+          <h4 className="text-xs font-extrabold text-accent-hover flex items-center gap-1.5">
             <Wrench className="w-4 h-4" />
             <span>مهارت‌ها، افزارها و تجهیزات اولیه</span>
           </h4>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">مهارت‌های مهارتی (2 مهارت)</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">مهارت‌های مهارتی (2 مهارت)</label>
               <input
                 type="text"
                 value={skillProficienciesText}
                 onChange={e => setSkillProficienciesText(e.target.value)}
                 placeholder="تاریخ، ادراک (جداشده با کاما)"
-                className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] min-h-[44px]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary min-h-[44px]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">مهارت در افزارها / سازها</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">مهارت در افزارها / سازها</label>
               <input
                 type="text"
                 value={toolProficienciesText}
                 onChange={e => setToolProficienciesText(e.target.value)}
                 placeholder="ابزار جعل سند، ست نقاشی..."
-                className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] min-h-[44px]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary min-h-[44px]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">زبان‌های آموخته‌شده</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">زبان‌های آموخته‌شده</label>
             <input
               type="text"
               value={languagesText}
               onChange={e => setLanguagesText(e.target.value)}
               placeholder="یک زبان اختیاری، دیوانی کهن..."
-              className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] min-h-[44px]"
+              className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary min-h-[44px]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">تجهیزات آغازین (هر خط یک آیتم)</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">تجهیزات آغازین (هر خط یک آیتم)</label>
             <textarea
               value={equipmentText}
               onChange={e => setEquipmentText(e.target.value)}
               rows={3}
               placeholder="یک بطری جوهر تیره&#10;لباس‌های سفر ساده&#10;کیسه حاوی 10 سکه نقره"
-              className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl p-3 text-xs text-[#EDE6D8] resize-y"
+              className="w-full bg-surface-2 border border-border rounded-xl p-3 text-xs text-text-primary resize-y"
             />
           </div>
         </div>
 
         {/* Feature */}
-        <div className="space-y-3 p-3.5 rounded-2xl bg-[#1A1815] border border-[#2F2A23]">
-          <h4 className="text-xs font-extrabold text-[#F2C265] flex items-center gap-1.5">
+        <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
+          <h4 className="text-xs font-extrabold text-accent-hover flex items-center gap-1.5">
             <Sparkles className="w-4 h-4" />
             <span>ویژگی اختصاصی پیشینه (Feature)</span>
           </h4>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">نام ویژگی</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">نام ویژگی</label>
             <input
               type="text"
               value={featureName}
               onChange={e => setFeatureName(e.target.value)}
               placeholder="مثال: پناهگاه نیایشگاه، اعتبار صنفی، راه‌های مخفی..."
-              className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] min-h-[44px]"
+              className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary min-h-[44px]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">شرح اثر مکانیکی یا مزیّت روایی</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">شرح اثر مکانیکی یا مزیّت روایی</label>
             <textarea
               value={featureDescription}
               onChange={e => setFeatureDescription(e.target.value)}
               rows={3}
               placeholder="شخصیت می‌تواند در آتشکده‌های منطقه برای گروه اقامت و درمان مجانی بیابد..."
-              className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl p-3 text-xs text-[#EDE6D8] resize-y"
+              className="w-full bg-surface-2 border border-border rounded-xl p-3 text-xs text-text-primary resize-y"
             />
           </div>
         </div>
 
         {/* Personality Tables */}
-        <div className="space-y-3 p-3.5 rounded-2xl bg-[#1A1815] border border-[#2F2A23]">
-          <h4 className="text-xs font-extrabold text-[#F2C265] flex items-center gap-1.5">
+        <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
+          <h4 className="text-xs font-extrabold text-accent-hover flex items-center gap-1.5">
             <Heart className="w-4 h-4" />
             <span>جداول شخصیت (Personality, Ideals, Bonds, Flaws)</span>
           </h4>
-          <p className="text-[11px] text-[#A39A89]">
+          <p className="text-xs text-text-muted">
             گزینه‌ها را به صورت خط‌به‌خط وارد کنید تا در برگه شخصیت به عنوان تاس تصادفی یا انتخابی استفاده شوند.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-bold text-[#EDE6D8] mb-1">ویژگی‌های رفتاری (Traits)</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">ویژگی‌های رفتاری (Traits)</label>
               <textarea
                 value={traitsText}
                 onChange={e => setTraitsText(e.target.value)}
                 rows={3}
                 placeholder="من همیشه به نشانه‌های آتش احترام می‌گذارم.&#10;هیچ رازی را بدون بها فاش نمی‌کنم."
-                className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl p-2.5 text-xs text-[#EDE6D8] resize-y"
+                className="w-full bg-surface-2 border border-border rounded-xl p-2.5 text-xs text-text-primary resize-y"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-[#EDE6D8] mb-1">آرمان‌ها و اصول (Ideals)</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">آرمان‌ها و اصول (Ideals)</label>
               <textarea
                 value={idealsText}
                 onChange={e => setIdealsText(e.target.value)}
                 rows={3}
                 placeholder="دانش: علم باید برای آیندگان حفظ شود.&#10;عدالت: هیچ پیمانی نباید شکسته شود."
-                className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl p-2.5 text-xs text-[#EDE6D8] resize-y"
+                className="w-full bg-surface-2 border border-border rounded-xl p-2.5 text-xs text-text-primary resize-y"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-[#EDE6D8] mb-1">پیوندها و علایق (Bonds)</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">پیوندها و علایق (Bonds)</label>
               <textarea
                 value={bondsText}
                 onChange={e => setBondsText(e.target.value)}
                 rows={3}
                 placeholder="زندگی‌ام را به نگهبانی از کتیبه کهن اختصاص داده‌ام."
-                className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl p-2.5 text-xs text-[#EDE6D8] resize-y"
+                className="w-full bg-surface-2 border border-border rounded-xl p-2.5 text-xs text-text-primary resize-y"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-[#EDE6D8] mb-1">نقایص و ضعف‌ها (Flaws)</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">نقایص و ضعف‌ها (Flaws)</label>
               <textarea
                 value={flawsText}
                 onChange={e => setFlawsText(e.target.value)}
                 rows={3}
                 placeholder="در برابر دست‌نوشته‌های نایاب نمی‌توانم جلوی وسوسه خود را بگیرم."
-                className="w-full bg-[#201D19] border border-[#2F2A23] rounded-xl p-2.5 text-xs text-[#EDE6D8] resize-y"
+                className="w-full bg-surface-2 border border-border rounded-xl p-2.5 text-xs text-text-primary resize-y"
               />
             </div>
           </div>
@@ -307,7 +307,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="py-3 px-4 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] font-bold text-xs min-h-[44px]"
+            className="py-3 px-4 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary font-bold text-xs min-h-[44px]"
           >
             انصراف
           </button>

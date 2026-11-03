@@ -209,31 +209,31 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
         )}
 
         {/* SECTION 1: WRITE OR PASTE RECAP */}
-        <div className="p-4 rounded-[14px] bg-[#171310] border border-[#2F2A23] space-y-3 card-gold-top">
+        <div className="p-4 rounded-[14px] bg-surface border border-border space-y-3 card-gold-top">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-[8px] bg-[#E0A030]/15 text-[#E0A030] flex items-center justify-center font-black text-xs">
+            <div className="w-7 h-7 rounded-[8px] bg-accent/15 text-accent flex items-center justify-center font-black text-xs">
               ۱
             </div>
-            <h3 className="text-xs sm:text-sm font-extrabold text-[#EDE6D8]">
+            <h3 className="text-xs sm:text-sm font-extrabold text-text-primary">
               نگارش یا الصاق خلاصه وقایع (Recap)
             </h3>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-bold text-[#A39A89]">عنوان سرگذشت</label>
+            <label className="text-xs font-bold text-text-muted">عنوان سرگذشت</label>
             <input
               type="text"
               value={recapTitle}
               onChange={(e) => setRecapTitle(e.target.value)}
               placeholder="مثال: نبرد در دشت ساعت‌ها و کشف بلور زمان"
-              className="w-full px-3 py-2.5 rounded-[10px] bg-[#120F0D] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+              className="w-full px-3 py-2.5 rounded-[10px] bg-bg border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
             />
           </div>
 
           <div className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <label className="text-[11px] font-bold text-[#A39A89]">شرح وقایع و ماجراها</label>
-              <div className="flex items-center gap-1.5 text-[10px] text-[#A39A89]">
+              <label className="text-xs font-bold text-text-muted">شرح وقایع و ماجراها</label>
+              <div className="flex items-center gap-1.5 text-xs text-text-muted">
                 <span>پشتیبانی از پاراگراف‌بندی و نشانه‌گذاری</span>
               </div>
             </div>
@@ -242,28 +242,28 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
               value={recapBody}
               onChange={(e) => setRecapBody(e.target.value)}
               placeholder="شرح ماجراجویی‌های این جلسه را اینجا بنویسید یا الصاق کنید..."
-              className="w-full p-3 rounded-[10px] bg-[#120F0D] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] leading-relaxed"
+              className="w-full p-3 rounded-[10px] bg-bg border border-border text-xs text-text-primary focus:outline-none focus:border-accent leading-relaxed"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-2 pt-1">
             <div>
-              <label className="text-[10px] font-bold text-[#A39A89] block mb-1">محدوده نمایش</label>
+              <label className="text-xs font-bold text-text-muted block mb-1">محدوده نمایش</label>
               <select
                 value={visibility}
                 onChange={(e) => setVisibility(e.target.value as any)}
-                className="w-full px-2.5 py-2 rounded-[8px] bg-[#120F0D] border border-[#2F2A23] text-xs text-[#EDE6D8]"
+                className="w-full px-2.5 py-2 rounded-[8px] bg-bg border border-border text-xs text-text-primary"
               >
                 <option value="party">نمایش برای همه گروه (Party)</option>
                 <option value="dm_only">محرمانه دانجن مستر (DM Only)</option>
               </select>
             </div>
             <div>
-              <label className="text-[10px] font-bold text-[#A39A89] block mb-1">وضعیت انتشار</label>
+              <label className="text-xs font-bold text-text-muted block mb-1">وضعیت انتشار</label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as any)}
-                className="w-full px-2.5 py-2 rounded-[8px] bg-[#120F0D] border border-[#2F2A23] text-xs text-[#EDE6D8]"
+                className="w-full px-2.5 py-2 rounded-[8px] bg-bg border border-border text-xs text-text-primary"
               >
                 <option value="published">انتشار عمومی در کمپین</option>
                 <option value="draft">ذخیره به عنوان پیش‌نویس</option>
@@ -273,22 +273,22 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
         </div>
 
         {/* SECTION 2: AWARD XP OR MILESTONE LEVEL-UP FLAGS */}
-        <div className="p-4 rounded-[14px] bg-[#171310] border border-[#2F2A23] space-y-3">
+        <div className="p-4 rounded-[14px] bg-surface border border-border space-y-3">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-[8px] bg-[#E0A030]/15 text-[#E0A030] flex items-center justify-center font-black text-xs">
+            <div className="w-7 h-7 rounded-[8px] bg-accent/15 text-accent flex items-center justify-center font-black text-xs">
               ۲
             </div>
-            <h3 className="text-xs sm:text-sm font-extrabold text-[#EDE6D8]">
+            <h3 className="text-xs sm:text-sm font-extrabold text-text-primary">
               اعطای پاداش پیشرفت (XP یا مایلیستون)
             </h3>
           </div>
 
-          <div className="flex rounded-[10px] bg-[#120F0D] p-1 border border-[#2F2A23]">
+          <div className="flex rounded-[10px] bg-bg p-1 border border-border">
             <button
               type="button"
               onClick={() => setRewardMode('xp')}
               className={`flex-1 py-1.5 text-xs font-bold rounded-[8px] transition ${
-                rewardMode === 'xp' ? 'bg-[#E0A030] text-[#120F0C]' : 'text-[#A39A89]'
+                rewardMode === 'xp' ? 'bg-accent text-on-accent' : 'text-text-muted'
               }`}
             >
               امتیاز تجربه (XP)
@@ -297,7 +297,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
               type="button"
               onClick={() => setRewardMode('milestone')}
               className={`flex-1 py-1.5 text-xs font-bold rounded-[8px] transition ${
-                rewardMode === 'milestone' ? 'bg-[#E0A030] text-[#120F0C]' : 'text-[#A39A89]'
+                rewardMode === 'milestone' ? 'bg-accent text-on-accent' : 'text-text-muted'
               }`}
             >
               صعود مایلیستون
@@ -306,7 +306,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
               type="button"
               onClick={() => setRewardMode('none')}
               className={`flex-1 py-1.5 text-xs font-bold rounded-[8px] transition ${
-                rewardMode === 'none' ? 'bg-[#E0A030] text-[#120F0C]' : 'text-[#A39A89]'
+                rewardMode === 'none' ? 'bg-accent text-on-accent' : 'text-text-muted'
               }`}
             >
               بدون پاداش
@@ -316,7 +316,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
           {rewardMode === 'xp' && (
             <div className="space-y-3 pt-2">
               <div>
-                <label className="text-[11px] font-bold text-[#A39A89] block mb-1">
+                <label className="text-xs font-bold text-text-muted block mb-1">
                   میزان XP برای هر یک از اعضای گروه
                 </label>
                 <div className="flex items-center gap-2">
@@ -326,7 +326,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                     step="50"
                     value={xpAmount}
                     onChange={(e) => setXpAmount(Math.max(0, parseInt(e.target.value || '0', 10)))}
-                    className="w-32 px-3 py-2 rounded-[8px] bg-[#120F0D] border border-[#2F2A23] text-xs text-[#EDE6D8] font-bold"
+                    className="w-32 px-3 py-2 rounded-[8px] bg-bg border border-border text-xs text-text-primary font-bold"
                   />
                   <div className="flex items-center gap-1">
                     {[100, 250, 500, 1000].map(amt => (
@@ -334,7 +334,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                         key={amt}
                         type="button"
                         onClick={() => setXpAmount(amt)}
-                        className="px-2 py-1.5 rounded-[6px] bg-white/5 hover:bg-white/10 text-[10px] font-bold text-[#E0A030] transition"
+                        className="px-2 py-1.5 rounded-[6px] bg-white/5 hover:bg-white/10 text-xs font-bold text-accent transition"
                       >
                         +{amt}
                       </button>
@@ -344,12 +344,12 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
               </div>
 
               <div>
-                <label className="text-[11px] font-bold text-[#A39A89] block mb-1">دلیل اعطا</label>
+                <label className="text-xs font-bold text-text-muted block mb-1">دلیل اعطا</label>
                 <input
                   type="text"
                   value={xpReason}
                   onChange={(e) => setXpReason(e.target.value)}
-                  className="w-full px-3 py-2 rounded-[8px] bg-[#120F0D] border border-[#2F2A23] text-xs text-[#EDE6D8]"
+                  className="w-full px-3 py-2 rounded-[8px] bg-bg border border-border text-xs text-text-primary"
                 />
               </div>
             </div>
@@ -357,7 +357,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
 
           {rewardMode === 'milestone' && (
             <div className="space-y-2 pt-2">
-              <span className="text-[11px] text-[#A39A89] block">
+              <span className="text-xs text-text-muted block">
                 کاراکترهایی که مجوز ارتقای سطح (Level-Up) به آن‌ها اعطا می‌شود را انتخاب کنید:
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -369,24 +369,24 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                       key={p.id}
                       type="button"
                       onClick={() => toggleMilestonePart(p.id)}
-                      className={`p-2.5 rounded-[10px] border flex flex-wrap items-center justify-between gap-2 transition text-right ${
+                      className={`p-2.5 rounded-[10px] border flex flex-wrap items-center justify-between gap-2 transition text-start ${
                         isChecked 
-                          ? 'bg-[#E0A030]/15 border-[#E0A030] text-[#EDE6D8]' 
-                          : 'bg-[#120F0D] border-[#2F2A23] text-[#A39A89]'
+                          ? 'bg-accent/15 border-accent text-text-primary' 
+                          : 'bg-bg border-border text-text-muted'
                       }`}
                     >
                       <div className="flex items-center gap-2">
                         <div className={`w-4 h-4 rounded flex items-center justify-center text-xs ${
-                          isChecked ? 'bg-[#E0A030] text-[#120F0C]' : 'border border-[#736A5B]'
+                          isChecked ? 'bg-accent text-on-accent' : 'border border-border-strong'
                         }`}>
                           {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
                         </div>
                         <div>
-                          <div className="text-xs font-bold text-[#EDE6D8]">{char?.name || p.characterName}</div>
-                          <div className="text-[10px] text-[#736A5B]">سطح {p.level} {p.className}</div>
+                          <div className="text-xs font-bold text-text-primary">{char?.name || p.characterName}</div>
+                          <div className="text-xs text-text-muted">سطح {p.level} {p.className}</div>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-[#F2C265]">
+                      <span className="text-xs font-bold text-accent-hover">
                         {isChecked ? 'آماده ارتقا' : ''}
                       </span>
                     </button>
@@ -398,30 +398,30 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
         </div>
 
         {/* SECTION 3: HIGHLIGHTS PER CHARACTER */}
-        <div className="p-4 rounded-[14px] bg-[#171310] border border-[#2F2A23] space-y-3">
+        <div className="p-4 rounded-[14px] bg-surface border border-border space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-[8px] bg-[#E0A030]/15 text-[#E0A030] flex items-center justify-center font-black text-xs">
+              <div className="w-7 h-7 rounded-[8px] bg-accent/15 text-accent flex items-center justify-center font-black text-xs">
                 ۳
               </div>
-              <h3 className="text-xs sm:text-sm font-extrabold text-[#EDE6D8]">
+              <h3 className="text-xs sm:text-sm font-extrabold text-text-primary">
                 رویدادهای برجسته کاراکترها (Highlights)
               </h3>
             </div>
-            <span className="text-[10px] text-[#736A5B]">ثبت خودکار در گاه‌شمار شخصیت</span>
+            <span className="text-xs text-text-muted">ثبت خودکار در گاه‌شمار شخصیت</span>
           </div>
 
           <div className="space-y-3 pt-1">
             {characters.map(char => {
               const hl = characterHighlights[char.id] || { text: '', visible: true };
               return (
-                <div key={char.id} className="p-3 rounded-[10px] bg-[#120F0D] border border-[#2F2A23] space-y-2">
+                <div key={char.id} className="p-3 rounded-[10px] bg-bg border border-border space-y-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-[#EDE6D8]">{char.name}</span>
+                    <span className="text-xs font-bold text-text-primary">{char.name}</span>
                     <button
                       type="button"
                       onClick={() => toggleHighlightVisible(char.id)}
-                      className={`text-[10px] font-medium px-2 py-0.5 rounded transition ${
+                      className={`text-xs font-medium px-2 py-0.5 rounded transition ${
                         hl.visible ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-800/40' : 'bg-gray-800 text-gray-400'
                       }`}
                     >
@@ -433,7 +433,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                     value={hl.text}
                     onChange={(e) => handleHighlightChange(char.id, e.target.value)}
                     placeholder="اقدام شجاعانه، دیالوگ ماندگار یا دستاورد شاخص در این جلسه..."
-                    className="w-full px-3 py-2 rounded-[8px] bg-[#171310] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+                    className="w-full px-3 py-2 rounded-[8px] bg-surface border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
                   />
                 </div>
               );
@@ -442,19 +442,19 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
         </div>
 
         {/* SECTION 4: LINK REVEALED ENTITIES */}
-        <div className="p-4 rounded-[14px] bg-[#171310] border border-[#2F2A23] space-y-3">
+        <div className="p-4 rounded-[14px] bg-surface border border-border space-y-3">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-[8px] bg-[#E0A030]/15 text-[#E0A030] flex items-center justify-center font-black text-xs">
+            <div className="w-7 h-7 rounded-[8px] bg-accent/15 text-accent flex items-center justify-center font-black text-xs">
               ۴
             </div>
-            <h3 className="text-xs sm:text-sm font-extrabold text-[#EDE6D8]">
+            <h3 className="text-xs sm:text-sm font-extrabold text-text-primary">
               پیوند با مکان‌ها، شخصیت‌ها و ماموریت‌ها
             </h3>
           </div>
 
           {locations.length > 0 && (
             <div className="space-y-1.5">
-              <span className="text-[10px] font-bold text-[#A39A89] block">مکان‌های مورد بازدید:</span>
+              <span className="text-xs font-bold text-text-muted block">مکان‌های مورد بازدید:</span>
               <div className="flex flex-wrap gap-1.5">
                 {locations.map(loc => {
                   const sel = linkedLocIds.includes(loc.id);
@@ -463,8 +463,8 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                       key={loc.id}
                       type="button"
                       onClick={() => toggleLocation(loc.id)}
-                      className={`px-2.5 py-1 rounded-[8px] text-[11px] font-medium border flex items-center gap-1 transition ${
-                        sel ? 'bg-[#93C48B]/20 text-[#93C48B] border-[#93C48B]' : 'bg-[#120F0D] text-[#A39A89] border-[#2F2A23]'
+                      className={`px-2.5 py-1 rounded-[8px] text-xs font-medium border flex items-center gap-1 transition ${
+                        sel ? 'bg-success/20 text-success border-success' : 'bg-bg text-text-muted border-border'
                       }`}
                     >
                       <MapPin className="w-3 h-3" />
@@ -478,7 +478,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
 
           {npcs.length > 0 && (
             <div className="space-y-1.5 pt-1">
-              <span className="text-[10px] font-bold text-[#A39A89] block">شخصیت‌های غیربازیکن (NPC) ملاقات‌شده:</span>
+              <span className="text-xs font-bold text-text-muted block">شخصیت‌های غیربازیکن (NPC) ملاقات‌شده:</span>
               <div className="flex flex-wrap gap-1.5">
                 {npcs.map(npc => {
                   const sel = linkedNpcIds.includes(npc.id);
@@ -487,8 +487,8 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                       key={npc.id}
                       type="button"
                       onClick={() => toggleNpc(npc.id)}
-                      className={`px-2.5 py-1 rounded-[8px] text-[11px] font-medium border flex items-center gap-1 transition ${
-                        sel ? 'bg-[#C48BC0]/20 text-[#C48BC0] border-[#C48BC0]' : 'bg-[#120F0D] text-[#A39A89] border-[#2F2A23]'
+                      className={`px-2.5 py-1 rounded-[8px] text-xs font-medium border flex items-center gap-1 transition ${
+                        sel ? 'bg-role-codm/20 text-role-codm border-role-codm' : 'bg-bg text-text-muted border-border'
                       }`}
                     >
                       <UserIcon className="w-3 h-3" />
@@ -502,7 +502,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
 
           {campaignNotes.length > 0 && (
             <div className="space-y-1.5 pt-1">
-              <span className="text-[10px] font-bold text-[#A39A89] block">یادداشت‌ها و خطوط داستانی:</span>
+              <span className="text-xs font-bold text-text-muted block">یادداشت‌ها و خطوط داستانی:</span>
               <div className="flex flex-wrap gap-1.5">
                 {campaignNotes.map(note => {
                   const sel = linkedQuestIds.includes(note.id);
@@ -511,8 +511,8 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                       key={note.id}
                       type="button"
                       onClick={() => toggleQuest(note.id)}
-                      className={`px-2.5 py-1 rounded-[8px] text-[11px] font-medium border flex items-center gap-1 transition ${
-                        sel ? 'bg-[#E0A030]/20 text-[#F2C265] border-[#E0A030]' : 'bg-[#120F0D] text-[#A39A89] border-[#2F2A23]'
+                      className={`px-2.5 py-1 rounded-[8px] text-xs font-medium border flex items-center gap-1 transition ${
+                        sel ? 'bg-accent/20 text-accent-hover border-accent' : 'bg-bg text-text-muted border-border'
                       }`}
                     >
                       <Scroll className="w-3 h-3" />

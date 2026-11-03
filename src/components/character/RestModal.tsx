@@ -37,7 +37,7 @@ export const RestModal: React.FC<RestModalProps> = ({
         'بازیابی پیپ‌های سلاح‌های ویژه.'
       ],
       icon: Moon,
-      color: 'text-[#E0A030]'
+      color: 'text-accent'
     },
     long: {
       title: 'استراحت بلند و شبانه (8 ساعت)',
@@ -48,7 +48,7 @@ export const RestModal: React.FC<RestModalProps> = ({
         'یک درجه از سطح خستگی و فرسودگی کاسته می‌شود.'
       ],
       icon: Sun,
-      color: 'text-[#E0A030]'
+      color: 'text-accent'
     },
     special: {
       title: 'اردوی بهاری پریان (شهد بهار)',
@@ -58,7 +58,7 @@ export const RestModal: React.FC<RestModalProps> = ({
         'تقویت روحیه و اعطای الهام به تمام یاران گروه.'
       ],
       icon: Sparkles,
-      color: 'text-[#E0A030]'
+      color: 'text-accent'
     }
   };
 
@@ -72,7 +72,7 @@ export const RestModal: React.FC<RestModalProps> = ({
       title="استراحت و بازیابی قوا"
       subtitle="ثبت استراحت در کاروانسرا یا طبیعت زروانیا"
     >
-      <form onSubmit={handleSubmit} className="space-y-4 text-xs text-[#EDE6D8]" dir="rtl">
+      <form onSubmit={handleSubmit} className="space-y-4 text-xs text-text-primary" dir="rtl">
         {/* Short / Long / Special Radio Options */}
         <div className="grid grid-cols-3 gap-2">
           {[
@@ -89,25 +89,25 @@ export const RestModal: React.FC<RestModalProps> = ({
                 onClick={() => setRestType(opt.id as any)}
                 className={`py-2.5 px-2 rounded-[12px] border transition flex flex-col items-center justify-center gap-1.5 touch-target min-w-[44px] ${
                   isSelected
-                    ? 'bg-[#E0A030]/15 border-[#E0A030] text-[#E0A030] shadow-sm'
-                    : 'bg-[#201D19] border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8]'
+                    ? 'bg-accent/15 border-accent text-accent shadow-sm'
+                    : 'bg-surface-2 border-border text-text-muted hover:text-text-primary'
                 }`}
               >
                 <OptIcon className="w-4 h-4" />
-                <span className="font-extrabold text-[11px] truncate">{opt.label}</span>
+                <span className="font-extrabold text-xs truncate">{opt.label}</span>
               </button>
             );
           })}
         </div>
 
         {/* Clear Summary of What Resets */}
-        <div className="surface-2-card rounded-[12px] p-3 border border-[#2F2A23] space-y-2">
-          <div className="flex items-center gap-2 border-b border-[#2F2A23] pb-1.5">
+        <div className="surface-2-card rounded-[12px] p-3 border border-border space-y-2">
+          <div className="flex items-center gap-2 border-b border-border pb-1.5">
             <Icon className={`w-4 h-4 ${activeSummary.color}`} />
-            <h4 className="font-extrabold text-xs text-[#EDE6D8]">{activeSummary.title}</h4>
+            <h4 className="font-extrabold text-xs text-text-primary">{activeSummary.title}</h4>
           </div>
 
-          <ul className="space-y-1 text-[11px] text-[#EDE6D8]/80 list-disc list-inside leading-relaxed">
+          <ul className="space-y-1 text-xs text-text-primary/80 list-disc list-inside leading-relaxed">
             {activeSummary.resets.map((item, idx) => (
               <li key={idx}>{item}</li>
             ))}
@@ -116,30 +116,30 @@ export const RestModal: React.FC<RestModalProps> = ({
 
         {/* Hit Dice Spend Stepper for Short Rest */}
         {restType === 'short' && (
-          <div className="surface-2-card rounded-[12px] p-3 border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
+          <div className="surface-2-card rounded-[12px] p-3 border border-border flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Heart className="w-4 h-4 text-[#6F9E78]" />
+              <Heart className="w-4 h-4 text-success" />
               <div>
-                <span className="font-extrabold text-xs text-[#EDE6D8] block">تاس‌های جان برای مصرف:</span>
-                <span className="text-[10px] text-[#A39A89]">ترمیم جان با پرتاب تاس جان + بنیه</span>
+                <span className="font-extrabold text-xs text-text-primary block">تاس‌های جان برای مصرف:</span>
+                <span className="text-xs text-text-muted">ترمیم جان با پرتاب تاس جان + بنیه</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 bg-[#0E0D0C] p-1 rounded-[10px] border border-[#2F2A23]">
+            <div className="flex items-center gap-1.5 bg-bg p-1 rounded-[10px] border border-border">
               <button
                 type="button"
                 onClick={() => setHitDiceToSpend(Math.max(0, hitDiceToSpend - 1))}
-                className="w-8 h-8 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
+                className="w-8 h-8 rounded-[8px] bg-surface-2 text-text-muted hover:text-text-primary font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
               >
                 -
               </button>
-              <span className="font-mono text-sm font-extrabold text-[#EDE6D8] min-w-[24px] text-center dice-ltr">
+              <span className="font-mono text-sm font-extrabold text-text-primary min-w-[24px] text-center dice-ltr">
                 {hitDiceToSpend}
               </span>
               <button
                 type="button"
                 onClick={() => setHitDiceToSpend(hitDiceToSpend + 1)}
-                className="w-8 h-8 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
+                className="w-8 h-8 rounded-[8px] bg-surface-2 text-text-muted hover:text-text-primary font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
               >
                 +
               </button>
@@ -149,13 +149,13 @@ export const RestModal: React.FC<RestModalProps> = ({
 
         {/* Additional Rest Notes */}
         <div>
-          <label className="text-xs text-[#A39A89] block mb-1">یادداشت استراحت (اختیاری):</label>
+          <label className="text-xs text-text-muted block mb-1">یادداشت استراحت (اختیاری):</label>
           <input
             type="text"
             placeholder="مثلاً: نگهبانی سامان در برج دیده‌بانی کاروانسرا..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full py-2 px-3 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+            className="w-full py-2 px-3 rounded-[12px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent focus:outline-none"
           />
         </div>
 
@@ -164,7 +164,7 @@ export const RestModal: React.FC<RestModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="py-2.5 px-4 rounded-[12px] text-xs text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
+            className="py-2.5 px-4 rounded-[12px] text-xs text-text-muted hover:text-text-primary touch-target min-w-[44px]"
           >
             انصراف
           </button>

@@ -119,15 +119,15 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
       subtitle={`شخصیت: ${characterName}`}
     >
       <div className="space-y-4 py-2 text-start" dir="rtl">
-        <div className="p-3.5 rounded-xl bg-[#171513] border border-[#E0A030]/40 flex items-start gap-2.5 text-xs text-[#EDE6D8]">
-          <KeyRound className="w-5 h-5 text-[#E0A030] shrink-0 mt-0.5" />
+        <div className="p-3.5 rounded-xl bg-surface border border-accent/40 flex items-start gap-2.5 text-xs text-text-primary">
+          <KeyRound className="w-5 h-5 text-accent shrink-0 mt-0.5" />
           <p className="leading-relaxed">
             با صدور این مجوز، بازیکن می‌تواند فیلدهای مشخص‌شده را در محدوده زمانی یا دفعات تعیین‌شده بدون نیاز به مداخله شما اصلاح نماید.
           </p>
         </div>
 
         {error && (
-          <div className="p-3 rounded-xl bg-[#C2512B]/20 border border-[#C2512B] text-xs text-[#E8836B]">
+          <div className="p-3 rounded-xl bg-danger/20 border border-danger text-xs text-danger">
             {error}
           </div>
         )}
@@ -135,7 +135,7 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
         <form onSubmit={handleGrant} className="space-y-4">
           {/* Scope Selection */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-[#EDE6D8]">نوع مجوز:</label>
+            <label className="block text-xs font-bold text-text-primary">نوع مجوز:</label>
             <ScrollableRow activeKey={scope} className="gap-2">
               <button
                 type="button"
@@ -143,8 +143,8 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
                 onClick={() => setScope('preset')}
                 className={`py-2 px-3 rounded-xl text-xs font-bold border transition min-h-[44px] whitespace-nowrap shrink-0 snap-start flex-1 flex items-center justify-center ${
                   scope === 'preset'
-                    ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
-                    : 'bg-[#201D19] border-[#2F2A23] text-[#A39A89]'
+                    ? 'bg-accent/20 border-accent text-accent-hover'
+                    : 'bg-surface-2 border-border text-text-muted'
                 }`}
               >
                 <span className="whitespace-nowrap shrink-0">پکیج از پیش‌تعریف‌شده (Preset)</span>
@@ -155,8 +155,8 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
                 onClick={() => setScope('fields')}
                 className={`py-2 px-3 rounded-xl text-xs font-bold border transition min-h-[44px] whitespace-nowrap shrink-0 snap-start flex-1 flex items-center justify-center ${
                   scope === 'fields'
-                    ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
-                    : 'bg-[#201D19] border-[#2F2A23] text-[#A39A89]'
+                    ? 'bg-accent/20 border-accent text-accent-hover'
+                    : 'bg-surface-2 border-border text-text-muted'
                 }`}
               >
                 <span className="whitespace-nowrap shrink-0">انتخاب دستی فیلدها (Custom)</span>
@@ -167,7 +167,7 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
           {/* Preset Options */}
           {scope === 'preset' ? (
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-[#EDE6D8]">انتخاب قالب مجوز:</label>
+              <label className="block text-xs font-bold text-text-primary">انتخاب قالب مجوز:</label>
               <div className="space-y-1.5 max-h-48 overflow-y-auto no-scrollbar">
                 {presets.map(p => {
                   const isSelected = selectedPreset === p.id;
@@ -177,15 +177,15 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
                       onClick={() => setSelectedPreset(p.id)}
                       className={`p-3 rounded-xl border cursor-pointer transition ${
                         isSelected
-                          ? 'bg-[#E0A030]/15 border-[#E0A030]'
-                          : 'bg-[#201D19] border-[#2F2A23] hover:border-[#2F2A23]/80'
+                          ? 'bg-accent/15 border-accent'
+                          : 'bg-surface-2 border-border hover:border-border/80'
                       }`}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-xs font-bold text-[#EDE6D8]">{p.label}</span>
-                        {isSelected && <Check className="w-4 h-4 text-[#E0A030]" />}
+                        <span className="text-xs font-bold text-text-primary">{p.label}</span>
+                        {isSelected && <Check className="w-4 h-4 text-accent" />}
                       </div>
-                      <p className="text-[11px] text-[#A39A89] mt-0.5">{p.desc}</p>
+                      <p className="text-xs text-text-muted mt-0.5">{p.desc}</p>
                     </div>
                   );
                 })}
@@ -194,7 +194,7 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
           ) : (
             /* Custom Fields Picker */
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-[#EDE6D8]">فیلدهای مجاز برای ویرایش:</label>
+              <label className="block text-xs font-bold text-text-primary">فیلدهای مجاز برای ویرایش:</label>
               <div className="grid grid-cols-2 gap-1.5 max-h-44 overflow-y-auto no-scrollbar">
                 {availableCustomFields.map(f => {
                   const isChecked = selectedFields.includes(f.id);
@@ -205,12 +205,12 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
                       onClick={() => toggleField(f.id)}
                       className={`p-2 rounded-xl text-xs font-bold border text-start flex flex-wrap items-center justify-between gap-2 transition ${
                         isChecked
-                          ? 'bg-[#E0A030]/15 border-[#E0A030] text-[#F2C265]'
-                          : 'bg-[#201D19] border-[#2F2A23] text-[#A39A89]'
+                          ? 'bg-accent/15 border-accent text-accent-hover'
+                          : 'bg-surface-2 border-border text-text-muted'
                       }`}
                     >
                       <span className="truncate">{f.label}</span>
-                      {isChecked && <Check className="w-3.5 h-3.5 text-[#E0A030] shrink-0" />}
+                      {isChecked && <Check className="w-3.5 h-3.5 text-accent shrink-0" />}
                     </button>
                   );
                 })}
@@ -221,11 +221,11 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
           {/* Expiration and Uses Count */}
           <div className="grid grid-cols-2 gap-3 pt-1">
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">مدت زمان اعتبار:</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">مدت زمان اعتبار:</label>
               <select
                 value={durationHours}
                 onChange={e => setDurationHours(Number(e.target.value))}
-                className="w-full py-2 px-3 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+                className="w-full py-2 px-3 rounded-xl bg-surface-2 border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
               >
                 <option value={1}>۱ ساعت</option>
                 <option value={4}>۴ ساعت (طول جلسه)</option>
@@ -235,11 +235,11 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#EDE6D8] mb-1">تعداد دفعات اعمال:</label>
+              <label className="block text-xs font-bold text-text-primary mb-1">تعداد دفعات اعمال:</label>
               <select
                 value={usesCount}
                 onChange={e => setUsesCount(Number(e.target.value))}
-                className="w-full py-2 px-3 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+                className="w-full py-2 px-3 rounded-xl bg-surface-2 border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
               >
                 <option value={1}>۱ بار (یک‌بار مصرف)</option>
                 <option value={3}>۳ بار ویرایش</option>
@@ -250,13 +250,13 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
 
           {/* Reason */}
           <div>
-            <label className="block text-xs font-bold text-[#EDE6D8] mb-1">علت یا یادداشت مجوز:</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">علت یا یادداشت مجوز:</label>
             <input
               type="text"
               value={reason}
               onChange={e => setReason(e.target.value)}
               placeholder="مثال: توافق داستانی در استراحت، تست ویژگی جدید..."
-              className="w-full py-2 px-3 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+              className="w-full py-2 px-3 rounded-xl bg-surface-2 border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
             />
           </div>
 
@@ -265,7 +265,7 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] font-black text-xs transition flex items-center justify-center gap-2 shadow-md shadow-[#E0A030]/20 min-h-[44px]"
+              className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-warning to-accent hover:from-accent hover:to-accent-hover text-on-accent font-black text-xs transition flex items-center justify-center gap-2 shadow-md shadow-accent/20 min-h-[44px]"
             >
               <KeyRound className="w-4 h-4" />
               <span>{loading ? 'در حال ثبت...' : 'صدور مجوز ویرایش'}</span>
@@ -273,7 +273,7 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="py-3 px-4 rounded-xl bg-[#201D19] hover:bg-[#2F2A23] text-[#EDE6D8] text-xs font-bold border border-[#2F2A23] transition min-h-[44px]"
+              className="py-3 px-4 rounded-xl bg-surface-2 hover:bg-surface-3 text-text-primary text-xs font-bold border border-border transition min-h-[44px]"
             >
               انصراف
             </button>

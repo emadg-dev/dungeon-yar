@@ -14,13 +14,13 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({ isOnline, offlineC
       className="fixed bottom-16 inset-x-3 z-30 max-w-sm mx-auto"
       dir="rtl"
     >
-      <div className="p-2.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/40 text-[#F2C265] text-xs shadow-xl backdrop-blur-md flex flex-wrap items-center justify-between gap-2 gap-2">
+      <div className="p-2.5 rounded-xl bg-accent/15 border border-accent/40 text-accent-hover text-xs shadow-xl backdrop-blur-md flex flex-wrap items-center justify-between gap-2 gap-2">
         <div className="flex items-center gap-2">
-          <WifiOff className="w-4 h-4 text-[#F2C265] shrink-0" />
+          <WifiOff className="w-4 h-4 text-accent-hover shrink-0" />
           <span>حالت آفلاین (داده‌ها در حافظه دستگاه ذخیره می‌شوند)</span>
         </div>
         {offlineChangesCount > 0 && (
-          <span className="px-1.5 py-0.5 rounded bg-[#E0A030] text-[#0E0D0C] font-black text-[10px]">
+          <span className="px-1.5 py-0.5 rounded bg-accent text-on-accent font-black text-xs">
             {offlineChangesCount} تغییر در صف
           </span>
         )}

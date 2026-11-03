@@ -125,11 +125,11 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       }}
     >
       <div
-        className={`w-full ${maxWidth} z-[101] glass-card bg-[#171513]/95 ${
+        className={`w-full ${maxWidth} z-[101] glass-card bg-surface/95 ${
           centered
-            ? 'border border-[#E0A030]/30 rounded-2xl my-auto animate-in zoom-in-95'
-            : 'border-t sm:border border-[#E0A030]/25 rounded-t-3xl sm:rounded-2xl animate-in slide-in-from-bottom'
-        } shadow-2xl flex flex-col text-[#EDE6D8] duration-200 overflow-hidden ${
+            ? 'border border-accent/30 rounded-2xl my-auto animate-in zoom-in-95'
+            : 'border-t sm:border border-accent/25 rounded-t-3xl sm:rounded-2xl animate-in slide-in-from-bottom'
+        } shadow-2xl flex flex-col text-text-primary duration-200 overflow-hidden ${
           fullHeight ? 'h-[92dvh] sm:h-[88dvh]' : 'max-h-[90dvh] sm:max-h-[88dvh]'
         }`}
         style={(!centered && dragOffset > 0) ? { transform: `translateY(${dragOffset}px)`, transition: 'none' } : undefined}
@@ -138,32 +138,32 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         {/* Mobile Drag Indicator Bar (only for bottom sheet mode) */}
         {!centered && (
           <div 
-            className="w-full flex justify-center pt-2.5 pb-2 sm:hidden shrink-0 bg-[#131110]/90 cursor-grab active:cursor-grabbing touch-none select-none"
+            className="w-full flex justify-center pt-2.5 pb-2 sm:hidden shrink-0 bg-bg/90 cursor-grab active:cursor-grabbing touch-none select-none"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
           >
-            <div className="w-12 h-1.5 rounded-full bg-[#A39A89]/50" />
+            <div className="w-12 h-1.5 rounded-full bg-surface-2/50" />
           </div>
         )}
 
         {/* Header */}
         <div 
-          className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-5 py-3 border-b border-[#2F2A23] shrink-0 bg-[#131110]/90 touch-none select-none"
+          className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-5 py-3 border-b border-border shrink-0 bg-bg/90 touch-none select-none"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="flex items-center gap-2 min-w-0 pr-1 flex-1">
+          <div className="flex items-center gap-2 min-w-0 pe-1 flex-1">
             <div className="min-w-0 flex-1">
               {typeof title === 'string' ? (
-                <h3 className="text-sm sm:text-base font-bold text-[#F2C265] truncate">{title}</h3>
+                <h3 className="text-sm sm:text-base font-bold text-accent-hover truncate">{title}</h3>
               ) : (
                 title
               )}
               {subtitle && (
                 typeof subtitle === 'string' ? (
-                  <p className="text-[11px] text-[#A39A89] mt-0.5 truncate">{subtitle}</p>
+                  <p className="text-xs text-text-muted mt-0.5 truncate">{subtitle}</p>
                 ) : (
                   subtitle
                 )
@@ -174,7 +174,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 rounded-xl text-[#A39A89] hover:text-[#EDE6D8] hover:bg-[#2A2621] transition touch-target min-w-[44px] shrink-0"
+            className="p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-surface-2 transition touch-target min-w-[44px] shrink-0"
             title="بستن"
           >
             <X className="w-5 h-5" />
@@ -188,7 +188,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
         {/* Sticky Footer */}
         {footer ? (
-          <div className="shrink-0 p-3 sm:p-4 border-t border-[#2F2A23] bg-[#131110]/90 backdrop-blur-sm pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+          <div className="shrink-0 p-3 sm:p-4 border-t border-border bg-bg/90 backdrop-blur-sm pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
             {footer}
           </div>
         ) : (

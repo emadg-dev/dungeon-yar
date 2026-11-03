@@ -236,14 +236,14 @@ export const AccountModal: React.FC<AccountModalProps> = ({
       onClose={onClose}
       title={
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#E0A030] flex items-center justify-center font-black text-xs shrink-0">
+          <div className="w-8 h-8 rounded-[10px] bg-accent/15 border border-accent/30 text-accent flex items-center justify-center font-black text-xs shrink-0">
             {(currentUser.displayName || currentUser.name)?.[0] || 'ح'}
           </div>
           <div className="min-w-0">
-            <h2 className="text-sm font-extrabold text-[#EDE6D8] truncate">
+            <h2 className="text-sm font-extrabold text-text-primary truncate">
               مدیریت حساب کاربری
             </h2>
-            <p className="text-[11px] text-[#A39A89] truncate">
+            <p className="text-xs text-text-muted truncate">
               {currentUser.email} • {currentUser.role === 'dm' ? 'دانجن مستر' : 'ماجراجو'}
             </p>
           </div>
@@ -256,7 +256,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
         {/* Tab strip */}
         <ScrollableRow
           activeKey={activeTab}
-          wrapperClassName="rounded-[12px] bg-[#201D19] p-1 border border-[#2F2A23]"
+          wrapperClassName="rounded-[12px] bg-surface-2 p-1 border border-border"
           className="gap-1"
         >
           <button
@@ -265,8 +265,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({
             onClick={() => setActiveTab('profile')}
             className={`py-1.5 px-3 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
               activeTab === 'profile'
-                ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                : 'text-text-muted hover:text-text-primary'
             }`}
           >
             <UserIcon className="w-3.5 h-3.5 shrink-0" />
@@ -278,8 +278,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({
             onClick={() => setActiveTab('security')}
             className={`py-1.5 px-3 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
               activeTab === 'security'
-                ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                : 'text-text-muted hover:text-text-primary'
             }`}
           >
             <KeyRound className="w-3.5 h-3.5 shrink-0" />
@@ -291,8 +291,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({
             onClick={() => setActiveTab('sessions')}
             className={`py-1.5 px-3 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
               activeTab === 'sessions'
-                ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                : 'text-text-muted hover:text-text-primary'
             }`}
           >
             <Smartphone className="w-3.5 h-3.5 shrink-0" />
@@ -304,8 +304,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({
             onClick={() => setActiveTab('data')}
             className={`py-1.5 px-3 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
               activeTab === 'data'
-                ? 'bg-[#E0A030] text-[#0E0D0C] font-extrabold shadow-sm'
-                : 'text-[#A39A89] hover:text-[#EDE6D8]'
+                ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                : 'text-text-muted hover:text-text-primary'
             }`}
           >
             <Download className="w-3.5 h-3.5 shrink-0" />
@@ -318,14 +318,14 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           <div
             className={`p-3 rounded-[10px] text-xs flex items-center gap-2 ${
               statusMessage.type === 'success'
-                ? 'bg-[#6F9E78]/15 text-[#6F9E78] border border-[#6F9E78]/30'
-                : 'bg-[#C2512B]/15 text-[#EDE6D8] border border-[#C2512B]/35'
+                ? 'bg-success/15 text-success border border-success/30'
+                : 'bg-danger/15 text-text-primary border border-danger/35'
             }`}
           >
             {statusMessage.type === 'success' ? (
               <CheckCircle2 className="w-4 h-4 shrink-0" />
             ) : (
-              <AlertCircle className="w-4 h-4 text-[#C2512B] shrink-0" />
+              <AlertCircle className="w-4 h-4 text-danger shrink-0" />
             )}
             <span>{statusMessage.text}</span>
           </div>
@@ -336,12 +336,12 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           <div className="space-y-4">
             <form onSubmit={handleUpdateProfile} className="space-y-3">
               <div className="space-y-1">
-                <label className="block text-xs font-bold text-[#EDE6D8]">نام نمایشی در کمپین</label>
+                <label className="block text-xs font-bold text-text-primary">نام نمایشی در کمپین</label>
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
+                  className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
                   placeholder="مثال: پردیس"
                 />
               </div>
@@ -357,9 +357,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({
 
             {/* Active Character Selector (if user owns characters) */}
             {characters.length > 0 && (
-              <div className="pt-3 border-t border-[#2F2A23] space-y-2">
-                <label className="block text-xs font-bold text-[#EDE6D8]">کاراکتر فعال شما:</label>
-                <p className="text-[11px] text-[#A39A89]">
+              <div className="pt-3 border-t border-border space-y-2">
+                <label className="block text-xs font-bold text-text-primary">کاراکتر فعال شما:</label>
+                <p className="text-xs text-text-muted">
                   برگه کاراکتر و منابع بازی بر اساس این شخصیت فعال نمایش داده می‌شوند.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -370,16 +370,16 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                       onClick={() => onSelectActiveCharacter(c.id)}
                       className={`text-start p-2.5 rounded-[10px] border flex flex-wrap items-center justify-between gap-2 transition-all touch-target min-w-[44px] ${
                         activeCharacterId === c.id
-                          ? 'bg-[#E0A030]/15 text-[#E0A030] border-[#E0A030]/50 font-bold'
-                          : 'bg-[#201D19] text-[#EDE6D8] border-[#2F2A23] hover:border-[#E0A030]/40'
+                          ? 'bg-accent/15 text-accent border-accent/50 font-bold'
+                          : 'bg-surface-2 text-text-primary border-border hover:border-accent/40'
                       }`}
                     >
                       <div className="truncate">
                         <span className="block truncate text-xs">{c.name}</span>
-                        <span className="text-[10px] text-[#A39A89]">{c.className} • سطح {c.level}</span>
+                        <span className="text-xs text-text-muted">{c.className} • سطح {c.level}</span>
                       </div>
                       {activeCharacterId === c.id && (
-                        <Check className="w-4 h-4 text-[#E0A030] shrink-0" />
+                        <Check className="w-4 h-4 text-accent shrink-0" />
                       )}
                     </button>
                   ))}
@@ -394,38 +394,38 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           <div className="space-y-5">
             {/* Change Password */}
             <form onSubmit={handleChangePassword} className="space-y-3">
-              <h4 className="text-xs font-extrabold text-[#EDE6D8]">تغییر رمز عبور</h4>
+              <h4 className="text-xs font-extrabold text-text-primary">تغییر رمز عبور</h4>
               <div className="space-y-1">
-                <label className="block text-[11px] text-[#A39A89]">رمز عبور فعلی</label>
+                <label className="block text-xs text-text-muted">رمز عبور فعلی</label>
                 <input
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   autoComplete="current-password"
                   dir="ltr"
-                  className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none text-left min-h-[44px]"
+                  className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-[11px] text-[#A39A89]">رمز عبور جدید (حداقل 8 نویسه)</label>
+                <label className="block text-xs text-text-muted">رمز عبور جدید (حداقل 8 نویسه)</label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   autoComplete="new-password"
                   dir="ltr"
-                  className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none text-left min-h-[44px]"
+                  className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-[11px] text-[#A39A89]">تکرار رمز عبور جدید</label>
+                <label className="block text-xs text-text-muted">تکرار رمز عبور جدید</label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   autoComplete="new-password"
                   dir="ltr"
-                  className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none text-left min-h-[44px]"
+                  className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
                 />
               </div>
               <button
@@ -438,10 +438,10 @@ export const AccountModal: React.FC<AccountModalProps> = ({
             </form>
 
             {/* Change Email */}
-            <form onSubmit={handleChangeEmail} className="pt-4 border-t border-[#2F2A23] space-y-3">
-              <h4 className="text-xs font-extrabold text-[#EDE6D8]">تغییر نشانی رایانامه (ایمیل)</h4>
+            <form onSubmit={handleChangeEmail} className="pt-4 border-t border-border space-y-3">
+              <h4 className="text-xs font-extrabold text-text-primary">تغییر نشانی رایانامه (ایمیل)</h4>
               <div className="space-y-1">
-                <label className="block text-[11px] text-[#A39A89]">ایمیل جدید</label>
+                <label className="block text-xs text-text-muted">ایمیل جدید</label>
                 <input
                   type="email"
                   value={newEmail}
@@ -449,23 +449,23 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   placeholder="new@example.com"
                   dir="ltr"
                   inputMode="email"
-                  className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none text-left min-h-[44px]"
+                  className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-[11px] text-[#A39A89]">تأیید با رمز عبور فعلی</label>
+                <label className="block text-xs text-text-muted">تأیید با رمز عبور فعلی</label>
                 <input
                   type="password"
                   value={emailCurrentPassword}
                   onChange={(e) => setEmailCurrentPassword(e.target.value)}
                   dir="ltr"
-                  className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none text-left min-h-[44px]"
+                  className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
                 />
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="py-2 px-4 rounded-[10px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#EDE6D8] touch-target min-w-[44px] min-h-[44px]"
+                className="py-2 px-4 rounded-[10px] bg-surface-2 border border-border hover:border-accent text-xs font-bold text-text-primary touch-target min-w-[44px] min-h-[44px]"
               >
                 ثبت ایمیل جدید
               </button>
@@ -476,15 +476,15 @@ export const AccountModal: React.FC<AccountModalProps> = ({
         {/* Tab 3: Active Sessions List */}
         {activeTab === 'sessions' && (
           <div className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#2F2A23]">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border">
               <div>
-                <h4 className="text-xs font-bold text-[#EDE6D8]">نشست‌های فعال دستگاه‌ها</h4>
-                <p className="text-[10px] text-[#A39A89]">مدیریت دسترسی‌های فعال به حساب کاربری</p>
+                <h4 className="text-xs font-bold text-text-primary">نشست‌های فعال دستگاه‌ها</h4>
+                <p className="text-xs text-text-muted">مدیریت دسترسی‌های فعال به حساب کاربری</p>
               </div>
               <button
                 type="button"
                 onClick={handleLogoutAll}
-                className="text-[11px] text-[#C2512B] hover:underline font-bold"
+                className="text-xs text-danger hover:underline font-bold"
               >
                 خروج از همه دستگاه‌ها
               </button>
@@ -494,24 +494,24 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               {sessions.map(s => (
                 <div
                   key={s.id}
-                  className="p-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-2"
+                  className="p-3 rounded-[10px] bg-surface-2 border border-border flex flex-wrap items-center justify-between gap-2 gap-2"
                 >
                   <div className="space-y-0.5 min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold text-[#EDE6D8] truncate">
+                      <span className="text-xs font-bold text-text-primary truncate">
                         {s.userAgent?.includes('Mobile') ? 'گوشی تلفن همراه' : 'رایانه یا مرورگر وب'}
                       </span>
                       {s.isCurrent && (
-                        <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#6F9E78]/20 text-[#6F9E78] font-bold border border-[#6F9E78]/30">
+                        <span className="text-xs px-1.5 py-0.2 rounded-[6px] bg-success/20 text-success font-bold border border-success/30">
                           این دستگاه
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-[#A39A89] truncate" dir="ltr">
+                    <p className="text-xs text-text-muted truncate" dir="ltr">
                       {s.userAgent?.substring(0, 50)}...
                     </p>
-                    <span className="text-[10px] text-[#A39A89] flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-[#A39A89]" />
+                    <span className="text-xs text-text-muted flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-text-muted" />
                       آخرین فعالیت: {new Date(s.lastSeenAt).toLocaleDateString('fa-IR-u-nu-latn')} {new Date(s.lastSeenAt).toLocaleTimeString('fa-IR-u-nu-latn', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
@@ -520,7 +520,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleRevokeSession(s.id)}
-                      className="p-2 rounded-[8px] bg-[#171513] text-[#A39A89] hover:text-[#C2512B] border border-[#2F2A23] touch-target min-w-[44px]"
+                      className="p-2 rounded-[8px] bg-surface text-text-muted hover:text-danger border border-border touch-target min-w-[44px]"
                       title="خاتمه دادن به این نشست"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -535,9 +535,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({
         {/* Tab 4: Data Export & Logout */}
         {activeTab === 'data' && (
           <div className="space-y-4">
-            <div className="p-3.5 rounded-[12px] bg-[#201D19] border border-[#2F2A23] space-y-2">
-              <h4 className="text-xs font-bold text-[#EDE6D8]">خروجی گرفتن از تمام اطلاعات (JSON)</h4>
-              <p className="text-[11px] text-[#A39A89] leading-relaxed">
+            <div className="p-3.5 rounded-[12px] bg-surface-2 border border-border space-y-2">
+              <h4 className="text-xs font-bold text-text-primary">خروجی گرفتن از تمام اطلاعات (JSON)</h4>
+              <p className="text-xs text-text-muted leading-relaxed">
                 می‌توانید تمام شخصیت‌ها، یادداشت‌های خصوصی و مشخصات بازی خود را به صورت پرونده ساختاریافته JSON دریافت و ذخیره کنید.
               </p>
               <button
@@ -551,56 +551,56 @@ export const AccountModal: React.FC<AccountModalProps> = ({
             </div>
 
             {/* Danger Zone: Account Deletion */}
-            <div className="p-3.5 rounded-[12px] bg-[#C2512B]/10 border border-[#C2512B]/35 space-y-3">
-              <div className="flex items-center gap-2 text-[#C2512B]">
+            <div className="p-3.5 rounded-[12px] bg-danger/10 border border-danger/35 space-y-3">
+              <div className="flex items-center gap-2 text-danger">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <h4 className="text-xs font-extrabold">منطقه خطر: حذف حساب کاربری</h4>
               </div>
-              <p className="text-[11px] text-[#A39A89] leading-relaxed">
+              <p className="text-xs text-text-muted leading-relaxed">
                 با حذف حساب، نشست‌های شما منقضی شده و دسترسی شما قطع می‌شود. نحوه مدیریت داده‌ها را انتخاب کنید:
               </p>
 
               <div className="space-y-2">
-                <label className="flex items-start gap-2 p-2.5 rounded-[8px] bg-[#171513] border border-[#2F2A23] cursor-pointer">
+                <label className="flex items-start gap-2 p-2.5 rounded-[8px] bg-surface border border-border cursor-pointer">
                   <input
                     type="radio"
                     name="deleteMode"
                     value="anonymize"
                     checked={deleteMode === 'anonymize'}
                     onChange={() => setDeleteMode('anonymize')}
-                    className="mt-0.5 accent-[#E0A030]"
+                    className="mt-0.5 accent-accent"
                   />
-                  <div className="text-[11px]">
-                    <strong className="text-[#EDE6D8] block">ناشناس‌سازی (توصیه‌شده برای حفظ کمپین‌ها)</strong>
-                    <span className="text-[#A39A89]">نام شما به «کاربر حذف‌شده» تبدیل می‌شود تا رکورد بازی و یادداشت‌های ثبت‌شده برای بقیه بازیکنان و کمپین خراب نشود. کمپین‌های تحت مالکیت شما به دستیار DM یا حالت بایگانی منتقل می‌گردد.</span>
+                  <div className="text-xs">
+                    <strong className="text-text-primary block">ناشناس‌سازی (توصیه‌شده برای حفظ کمپین‌ها)</strong>
+                    <span className="text-text-muted">نام شما به «کاربر حذف‌شده» تبدیل می‌شود تا رکورد بازی و یادداشت‌های ثبت‌شده برای بقیه بازیکنان و کمپین خراب نشود. کمپین‌های تحت مالکیت شما به دستیار DM یا حالت بایگانی منتقل می‌گردد.</span>
                   </div>
                 </label>
 
-                <label className="flex items-start gap-2 p-2.5 rounded-[8px] bg-[#171513] border border-[#2F2A23] cursor-pointer">
+                <label className="flex items-start gap-2 p-2.5 rounded-[8px] bg-surface border border-border cursor-pointer">
                   <input
                     type="radio"
                     name="deleteMode"
                     value="remove_all"
                     checked={deleteMode === 'remove_all'}
                     onChange={() => setDeleteMode('remove_all')}
-                    className="mt-0.5 accent-[#C2512B]"
+                    className="mt-0.5 accent-danger"
                   />
-                  <div className="text-[11px]">
-                    <strong className="text-[#EDE6D8] block">حذف کامل حساب و کاراکترها</strong>
-                    <span className="text-[#A39A89]">حساب کاربری و تمام شخصیت‌های اختصاصی شما غیرفعال و نشانه‌گذاری حذف می‌شوند.</span>
+                  <div className="text-xs">
+                    <strong className="text-text-primary block">حذف کامل حساب و کاراکترها</strong>
+                    <span className="text-text-muted">حساب کاربری و تمام شخصیت‌های اختصاصی شما غیرفعال و نشانه‌گذاری حذف می‌شوند.</span>
                   </div>
                 </label>
               </div>
 
               <div className="space-y-1.5 pt-1">
-                <label className="block text-[11px] text-[#EDE6D8] font-bold">برای تأیید، رمز عبور فعلی خود را وارد کنید:</label>
+                <label className="block text-xs text-text-primary font-bold">برای تأیید، رمز عبور فعلی خود را وارد کنید:</label>
                 <input
                   type="password"
                   value={deletePassword}
                   onChange={(e) => setDeletePassword(e.target.value)}
                   placeholder="رمز عبور فعلی"
                   dir="ltr"
-                  className="w-full py-2 px-3 rounded-[8px] bg-[#171513] border border-[#C2512B]/40 text-xs text-[#EDE6D8] focus:border-[#C2512B] outline-none min-h-[44px]"
+                  className="w-full py-2 px-3 rounded-[8px] bg-surface border border-danger/40 text-xs text-text-primary focus:border-danger outline-none min-h-[44px]"
                 />
               </div>
 
@@ -614,27 +614,27 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     }
                     setShowDeleteConfirm(true);
                   }}
-                  className="py-2 px-3 rounded-[8px] bg-[#C2512B]/20 text-[#C2512B] hover:bg-[#C2512B]/30 border border-[#C2512B]/40 text-xs font-bold touch-target min-w-[44px] min-h-[44px] flex items-center gap-1.5"
+                  className="py-2 px-3 rounded-[8px] bg-danger/20 text-danger hover:bg-danger/30 border border-danger/40 text-xs font-bold touch-target min-w-[44px] min-h-[44px] flex items-center gap-1.5"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>درخواست حذف حساب کاربری</span>
                 </button>
               ) : (
-                <div className="p-3 rounded-[8px] bg-[#171513] border border-[#C2512B] space-y-2">
-                  <span className="text-xs font-bold text-[#C2512B] block">آیا 100٪ مطمئن هستید؟ این عملیات غیرقابل بازگشت است.</span>
+                <div className="p-3 rounded-[8px] bg-surface border border-danger space-y-2">
+                  <span className="text-xs font-bold text-danger block">آیا 100٪ مطمئن هستید؟ این عملیات غیرقابل بازگشت است.</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       disabled={deleting}
                       onClick={handleDeleteAccount}
-                      className="py-1.5 px-3 rounded-[6px] bg-[#C2512B] text-white hover:bg-[#A84322] font-bold text-xs touch-target min-w-[44px] min-h-[40px]"
+                      className="py-1.5 px-3 rounded-[6px] bg-danger text-white hover:bg-danger font-bold text-xs touch-target min-w-[44px] min-h-[40px]"
                     >
                       {deleting ? 'در حال حذف...' : 'بله، حسابم را حذف کن'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="py-1.5 px-3 rounded-[6px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] text-xs font-bold touch-target min-w-[44px] min-h-[40px]"
+                      className="py-1.5 px-3 rounded-[6px] bg-surface-2 text-text-muted hover:text-text-primary text-xs font-bold touch-target min-w-[44px] min-h-[40px]"
                     >
                       انصراف
                     </button>
@@ -644,10 +644,10 @@ export const AccountModal: React.FC<AccountModalProps> = ({
             </div>
 
             {/* App Version & Check for updates row */}
-            <div className="pt-3 border-t border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
+            <div className="pt-3 border-t border-border flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#E0A030]" />
-                <span className="text-xs font-bold text-[#EDE6D8]">
+                <span className="w-2 h-2 rounded-full bg-accent" />
+                <span className="text-xs font-bold text-text-primary">
                   نسخه {toPersianDigits(APP_VERSION)}
                 </span>
               </div>
@@ -655,7 +655,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                 type="button"
                 onClick={handleModalCheckUpdates}
                 disabled={isCheckingUpdates}
-                className="py-1.5 px-3 rounded-[8px] bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-xs font-bold text-[#E0A030] disabled:opacity-50 transition flex items-center gap-1.5 touch-target min-h-[44px]"
+                className="py-1.5 px-3 rounded-[8px] bg-surface-2 border border-border hover:border-accent text-xs font-bold text-accent disabled:opacity-50 transition flex items-center gap-1.5 touch-target min-h-[44px]"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isCheckingUpdates ? 'animate-spin' : ''}`} />
                 <span>{isCheckingUpdates ? 'در حال بررسی...' : 'بررسی به‌روزرسانی'}</span>
@@ -669,9 +669,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   onLogout();
                   onClose();
                 }}
-                className="w-full py-2.5 rounded-[10px] bg-[#201D19] text-[#EDE6D8] hover:text-[#C2512B] hover:bg-[#201D19]/80 border border-[#2F2A23] font-extrabold text-xs transition touch-target min-w-[44px] flex items-center justify-center gap-2 min-h-[44px]"
+                className="w-full py-2.5 rounded-[10px] bg-surface-2 text-text-primary hover:text-danger hover:bg-surface-2/80 border border-border font-extrabold text-xs transition touch-target min-w-[44px] flex items-center justify-center gap-2 min-h-[44px]"
               >
-                <LogOut className="w-4 h-4 text-[#A39A89]" />
+                <LogOut className="w-4 h-4 text-text-muted" />
                 <span>خروج از حساب کاربری</span>
               </button>
             </div>

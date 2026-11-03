@@ -161,24 +161,24 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
             className="overflow-hidden flex items-center justify-center select-none pointer-events-none"
             aria-live="polite"
           >
-            <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#171513]/90 border border-[#E0A030]/30 shadow-lg backdrop-blur-md">
+            <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-surface/90 border border-accent/30 shadow-lg backdrop-blur-md">
               {isSuccess ? (
-                <Check className="w-4 h-4 text-[#6F9E78] stroke-[2.5]" />
+                <Check className="w-4 h-4 text-success stroke-[2.5]" />
               ) : isRefreshing ? (
-                <RefreshCw className="w-4 h-4 text-[#E0A030] animate-spin stroke-[2.5]" />
+                <RefreshCw className="w-4 h-4 text-accent animate-spin stroke-[2.5]" />
               ) : isPastThreshold ? (
                 <RefreshCw 
-                  className="w-4 h-4 text-[#F2C265] stroke-[2.5] transition-transform" 
+                  className="w-4 h-4 text-accent-hover stroke-[2.5] transition-transform" 
                   style={{ transform: `rotate(${rotationDeg}deg)` }}
                 />
               ) : (
                 <ArrowDown 
-                  className="w-4 h-4 text-[#A39A89] transition-transform"
+                  className="w-4 h-4 text-text-muted transition-transform"
                   style={{ transform: `translateY(${Math.min(4, pullDistance * 0.1)}px)` }}
                 />
               )}
 
-              <span className="text-[11px] font-bold text-[#EDE6D8]">
+              <span className="text-xs font-bold text-text-primary">
                 {isSuccess
                   ? 'اطلاعات به‌روز شد'
                   : isRefreshing

@@ -430,10 +430,10 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
       onClose={onClose}
       title={
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-[#E0A030]/20 text-[#F2C265] flex items-center justify-center font-bold text-xs shrink-0">
+          <div className="w-7 h-7 rounded-lg bg-accent/20 text-accent-hover flex items-center justify-center font-bold text-xs shrink-0">
             {currentStep}
           </div>
-          <span className="font-bold text-sm text-[#F2C265] truncate">ویزارد آفرینش کاراکتر {APP_NAME_FA}</span>
+          <span className="font-bold text-sm text-accent-hover truncate">ویزارد آفرینش کاراکتر {APP_NAME_FA}</span>
         </div>
       }
       subtitle={`کمپین: ${campaign.name} (سطح ${campaign.settings?.startingLevel || 1})`}
@@ -444,10 +444,10 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
           type="button"
           onClick={handleSaveDraft}
           disabled={isSavingDraft || isSubmitting}
-          className="px-2.5 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030]/50 text-xs font-bold text-[#C9C0AE] hover:text-[#F2C265] transition-all flex items-center gap-1.5 min-h-[44px]"
+          className="px-2.5 py-1.5 rounded-xl bg-surface-2 border border-border hover:border-accent/50 text-xs font-bold text-text-primary hover:text-accent-hover transition-all flex items-center gap-1.5 min-h-[44px]"
           title="ذخیره موقت جهت ادامه در آینده"
         >
-          <Save className="w-3.5 h-3.5 text-[#E0A030]" />
+          <Save className="w-3.5 h-3.5 text-accent" />
           <span className="hidden sm:inline">ذخیره موقت</span>
         </button>
       }
@@ -458,10 +458,10 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             type="button"
             onClick={handlePrevStep}
             disabled={currentStep === 1 || isSubmitting}
-            className={`px-4 py-2.5 rounded-xl border border-[#2F2A23] text-xs font-bold transition-all flex items-center gap-1 min-h-[44px] ${
+            className={`px-4 py-2.5 rounded-xl border border-border text-xs font-bold transition-all flex items-center gap-1 min-h-[44px] ${
               currentStep === 1
-                ? 'opacity-40 bg-[#171513] text-[#8A8374] cursor-not-allowed'
-                : 'bg-[#201D19] text-[#EDE6D8] hover:border-[#E0A030]'
+                ? 'opacity-40 bg-surface text-text-muted cursor-not-allowed'
+                : 'bg-surface-2 text-text-primary hover:border-accent'
             }`}
           >
             <ChevronRight className="w-4 h-4" />
@@ -473,7 +473,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             type="button"
             onClick={handleSaveDraft}
             disabled={isSavingDraft || isSubmitting}
-            className="px-3.5 py-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030]/50 text-xs font-bold text-[#E0A030] transition-all flex items-center gap-1.5 min-h-[44px]"
+            className="px-3.5 py-2.5 rounded-xl bg-surface-2 border border-border hover:border-accent/50 text-xs font-bold text-accent transition-all flex items-center gap-1.5 min-h-[44px]"
           >
             <Save className="w-4 h-4" />
             <span>ذخیره و ادامه بعداً</span>
@@ -484,7 +484,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             <button
               type="button"
               onClick={handleNextStep}
-              className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-bold hover:bg-[#F2C265] transition-all flex items-center gap-1 min-h-[44px] shadow-lg shadow-[#E0A030]/20"
+              className="px-5 py-2.5 rounded-xl bg-accent text-on-accent text-xs font-bold hover:bg-accent-hover transition-all flex items-center gap-1 min-h-[44px] shadow-lg shadow-accent/20"
             >
               <span>گام بعدی</span>
               <ChevronLeft className="w-4 h-4" />
@@ -494,7 +494,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-6 py-2.5 rounded-xl bg-[#6F9E78] text-[#0E0D0C] text-xs font-bold hover:bg-[#85B88E] transition-all flex items-center gap-1.5 min-h-[44px] shadow-lg shadow-[#6F9E78]/20"
+              className="px-6 py-2.5 rounded-xl bg-success text-on-accent text-xs font-bold hover:bg-success transition-all flex items-center gap-1.5 min-h-[44px] shadow-lg shadow-success/20"
             >
               <Check className="w-4 h-4" />
               <span>{isSubmitting ? 'در حال ثبت...' : 'تایید نهایی و آفرینش'}</span>
@@ -506,11 +506,11 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
       {/* ------------------------------------------------------------- */}
       {/* 1. Stepper Bar                                                */}
       {/* ------------------------------------------------------------- */}
-      <div className="shrink-0 pb-1 border-b border-[#2F2A23]">
+      <div className="shrink-0 pb-1 border-b border-border">
         <ScrollableRow
           activeKey={currentStep}
           wrapperClassName="w-full"
-          className="pb-1 text-[11px] font-medium text-[#8A8374] gap-1.5"
+          className="pb-1 text-xs font-medium text-text-muted gap-1.5"
         >
           {[
             { step: 1, title: 'هویت' },
@@ -532,13 +532,13 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                 onClick={() => setCurrentStep(s.step)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 snap-start whitespace-nowrap min-h-[44px] ${
                   isActive
-                    ? 'bg-[#E0A030]/20 text-[#F2C265] font-bold border border-[#E0A030]/40'
+                    ? 'bg-accent/20 text-accent-hover font-bold border border-accent/40'
                     : isDone
-                    ? 'text-[#6F9E78]'
-                    : 'hover:text-[#EDE6D8]'
+                    ? 'text-success'
+                    : 'hover:text-text-primary'
                 }`}
               >
-                {isDone ? <Check className="w-3.5 h-3.5 text-[#6F9E78] shrink-0" /> : <span className="shrink-0">{s.step}.</span>}
+                {isDone ? <Check className="w-3.5 h-3.5 text-success shrink-0" /> : <span className="shrink-0">{s.step}.</span>}
                 <span className="whitespace-nowrap shrink-0">{s.title}</span>
               </button>
             );
@@ -550,19 +550,19 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
       {/* 2. Feedback Toasts & Errors                                   */}
       {/* ------------------------------------------------------------- */}
       {errorMsg && (
-        <div className="rounded-xl bg-[#C2512B]/20 border border-[#C2512B]/40 px-4 py-2.5 flex items-center gap-2 text-xs text-[#E8836B]">
+        <div className="rounded-xl bg-danger/20 border border-danger/40 px-4 py-2.5 flex items-center gap-2 text-xs text-danger">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
 
       {toastNotice && (
-        <div className="rounded-xl bg-[#6F9E78]/20 border border-[#6F9E78]/40 px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[#95C29E]">
+        <div className="rounded-xl bg-success/20 border border-success/40 px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-success">
           <div className="flex items-center gap-2">
             <Check className="w-4 h-4" />
             <span>{toastNotice}</span>
           </div>
-          <button onClick={() => setToastNotice(null)} className="text-[10px] text-[#A39A89]">بستن</button>
+          <button onClick={() => setToastNotice(null)} className="text-xs text-text-muted">بستن</button>
         </div>
       )}
 
@@ -575,31 +575,31 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         {/* ============================================================ */}
         {currentStep === 1 && (
           <section className="space-y-5 animate-in fade-in duration-200">
-            <div className="border-b border-[#2F2A23] pb-3">
-              <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
-                <User className="w-5 h-5 text-[#E0A030]" />
+            <div className="border-b border-border pb-3">
+              <h3 className="text-lg font-bold text-accent-hover flex items-center gap-2">
+                <User className="w-5 h-5 text-accent" />
                 گام 1: هویت، نام و تبار کاراکتر
               </h3>
-              <p className="text-xs text-[#A39A89] mt-1">
+              <p className="text-xs text-text-muted mt-1">
                 نام قهرمان و تصویر چهره او را مشخص کنید. تبار و نژاد، توانایی‌های سرشتی شخصیت را معین می‌کنند.
               </p>
             </div>
 
             {/* Character Name */}
             <div>
-              <label className="block text-xs font-bold text-[#C9C0AE] mb-1.5">نام کاراکتر *</label>
+              <label className="block text-xs font-bold text-text-primary mb-1.5">نام کاراکتر *</label>
               <input
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="مثلاً: ارسباران، سودابه، زروان‌داد..."
-                className="w-full bg-[#171513] border border-[#2F2A23] rounded-xl px-3.5 py-2.5 text-sm text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                className="w-full bg-surface border border-border rounded-xl px-3.5 py-2.5 text-sm text-text-primary focus:border-accent focus:outline-none"
               />
             </div>
 
             {/* Portrait Selection / Upload */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-[#C9C0AE]">پرتره و چهره کاراکتر (سقف 150 کیلوبایت)</label>
+              <label className="block text-xs font-bold text-text-primary">پرتره و چهره کاراکتر (سقف 150 کیلوبایت)</label>
               <div className="flex items-center gap-4">
                 <img
                   src={portraitUrl}
@@ -608,7 +608,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                   decoding="async"
                   width={64}
                   height={64}
-                  className="w-16 h-16 rounded-2xl object-cover border-2 border-[#E0A030]/40 shadow-md shrink-0"
+                  className="w-16 h-16 rounded-2xl object-cover border-2 border-accent/40 shadow-md shrink-0"
                 />
                 <div className="flex-1 space-y-2">
                   <div className="flex flex-wrap gap-2">
@@ -618,7 +618,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                         type="button"
                         onClick={() => setPortraitUrl(url)}
                         className={`w-10 h-10 rounded-xl overflow-hidden border-2 transition-all ${
-                          portraitUrl === url ? 'border-[#E0A030] scale-105' : 'border-[#2F2A23] opacity-60 hover:opacity-100'
+                          portraitUrl === url ? 'border-accent scale-105' : 'border-border opacity-60 hover:opacity-100'
                         }`}
                       >
                         <img
@@ -634,8 +634,8 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                     ))}
                   </div>
 
-                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030]/40 text-xs text-[#C9C0AE] cursor-pointer">
-                    <Upload className="w-3.5 h-3.5 text-[#E0A030]" />
+                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-2 border border-border hover:border-accent/40 text-xs text-text-primary cursor-pointer">
+                    <Upload className="w-3.5 h-3.5 text-accent" />
                     <span>بارگذاری تصویر دلخواه (خودکار فشرده‌سازی)</span>
                     <input
                       type="file"
@@ -662,10 +662,10 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             {availableLineages.length > 0 ? (
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="block text-xs font-bold text-[#C9C0AE]">
+                  <label className="block text-xs font-bold text-text-primary">
                     انتخاب تبار و نژاد (Lineage)
                   </label>
-                  <span className="text-[11px] text-[#A39A89]">
+                  <span className="text-xs text-text-muted">
                     {availableLineages.length} تبار در دسترس در کمپین
                   </span>
                 </div>
@@ -679,21 +679,21 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                         onClick={() => setSelectedLineageId(lin.id)}
                         className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
                           isSelected
-                            ? 'bg-[#E0A030]/15 border-[#E0A030] shadow-md shadow-[#E0A030]/10'
-                            : 'bg-[#171513] border-[#2F2A23] hover:border-[#3A342B]'
+                            ? 'bg-accent/15 border-accent shadow-md shadow-accent/10'
+                            : 'bg-surface border-border hover:border-border-strong'
                         }`}
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <h4 className="text-sm font-bold text-[#EDE6D8]">{lin.name}</h4>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#201D19] text-[#A39A89]">
+                          <h4 className="text-sm font-bold text-text-primary">{lin.name}</h4>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-surface-2 text-text-muted">
                             سرعت: {lin.speed} فوت
                           </span>
                         </div>
-                        <p className="text-xs text-[#A39A89] mt-1.5 line-clamp-2">
+                        <p className="text-xs text-text-muted mt-1.5 line-clamp-2">
                           {lin.description || 'تبار کهن فلات و مرزهای زروانیا.'}
                         </p>
                         {lin.abilityBonuses && (
-                          <div className="mt-2 text-[11px] text-[#F2C265] font-semibold">
+                          <div className="mt-2 text-xs text-accent-hover font-semibold">
                             {lin.abilityBonuses.mode === 'fixed' && lin.abilityBonuses.fixed && (
                               <span>
                                 پاداش: {Object.entries(lin.abilityBonuses.fixed).map(([k, v]) => `+${v} ${k.toUpperCase()}`).join('، ')}
@@ -707,21 +707,21 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                 </div>
               </div>
             ) : (
-              <div className="rounded-xl p-3 bg-[#171513] border border-[#2F2A23] text-xs text-[#A39A89] flex items-center gap-2">
-                <Info className="w-4 h-4 text-[#E0A030]" />
+              <div className="rounded-xl p-3 bg-surface border border-border text-xs text-text-muted flex items-center gap-2">
+                <Info className="w-4 h-4 text-accent" />
                 <span>این کمپین نژاد ویژه‌ای تعریف نکرده است؛ نژاد استاندارد «آدمی (Human)» اعمال خواهد شد.</span>
               </div>
             )}
 
             {/* Appearance notes */}
             <div>
-              <label className="block text-xs font-bold text-[#C9C0AE] mb-1.5">ویژگی‌های ظاهری و پوشش</label>
+              <label className="block text-xs font-bold text-text-primary mb-1.5">ویژگی‌های ظاهری و پوشش</label>
               <textarea
                 value={appearance}
                 onChange={e => setAppearance(e.target.value)}
                 placeholder="قد، رنگ مو و چشمان، زخم‌های کهنه، نوع جامه یا زره..."
                 rows={2}
-                className="w-full bg-[#171513] border border-[#2F2A23] rounded-xl px-3.5 py-2 text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                className="w-full bg-surface border border-border rounded-xl px-3.5 py-2 text-xs text-text-primary focus:border-accent focus:outline-none"
               />
             </div>
           </section>
@@ -732,20 +732,20 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         {/* ============================================================ */}
         {currentStep === 2 && (
           <section className="space-y-5 animate-in fade-in duration-200">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#2F2A23] pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
               <div>
-                <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
-                  <Swords className="w-5 h-5 text-[#E0A030]" />
+                <h3 className="text-lg font-bold text-accent-hover flex items-center gap-2">
+                  <Swords className="w-5 h-5 text-accent" />
                   گام 2: کلاس بازی (Class)
                 </h3>
-                <p className="text-xs text-[#A39A89] mt-1">
+                <p className="text-xs text-text-muted mt-1">
                   کلاس، نقش رزمی، نحوه بقا و ویژگی‌های جادویی شما را تعیین می‌کند.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowClassCompare(true)}
-                className="px-3 py-1.5 rounded-xl bg-[#E0A030]/15 border border-[#E0A030]/40 text-[#F2C265] text-xs font-bold hover:bg-[#E0A030]/25 transition-all flex items-center gap-1.5 min-h-[44px]"
+                className="px-3 py-1.5 rounded-xl bg-accent/15 border border-accent/40 text-accent-hover text-xs font-bold hover:bg-accent/25 transition-all flex items-center gap-1.5 min-h-[44px]"
               >
                 <Scale className="w-3.5 h-3.5" />
                 <span>مقایسه کلاس‌ها</span>
@@ -761,28 +761,28 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                     onClick={() => setSelectedClassName(cls.name)}
                     className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
                       isSelected
-                        ? 'bg-[#E0A030]/15 border-[#E0A030] shadow-lg shadow-[#E0A030]/10 scale-[1.01]'
-                        : 'bg-[#171513] border-[#2F2A23] hover:border-[#3A342B]'
+                        ? 'bg-accent/15 border-accent shadow-lg shadow-accent/10 scale-[1.01]'
+                        : 'bg-surface border-border hover:border-border-strong'
                     }`}
                   >
                     <div>
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <h4 className="text-base font-bold text-[#EDE6D8]">{cls.name}</h4>
-                          <span className="text-[11px] text-[#F2C265]">{cls.title || ''}</span>
+                          <h4 className="text-base font-bold text-text-primary">{cls.name}</h4>
+                          <span className="text-xs text-accent-hover">{cls.title || ''}</span>
                         </div>
-                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#201D19] text-[#C9C0AE] font-mono">
+                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-surface-2 text-text-primary font-mono">
                           Hit Die: {cls.hitDie || 'd8'}
                         </span>
                       </div>
-                      <p className="text-xs text-[#A39A89] mt-2 line-clamp-3 leading-relaxed">
+                      <p className="text-xs text-text-muted mt-2 line-clamp-3 leading-relaxed">
                         {cls.description || cls.notes || 'کلاس اختصاصی در دنیای زروانیا.'}
                       </p>
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#8A8374]">
+                    <div className="mt-3 pt-2.5 border-t border-border flex flex-wrap items-center justify-between gap-2 text-xs text-text-muted">
                       <span>پرتاب نجات: {(cls.saves || []).join('، ')}</span>
-                      <span className="text-[#E0A030] font-semibold">
+                      <span className="text-accent font-semibold">
                         {cls.spellcasting ? 'جادوگر' : 'رزمی/تکنیکی'}
                       </span>
                     </div>
@@ -798,12 +798,12 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         {/* ============================================================ */}
         {currentStep === 3 && (
           <section className="space-y-5 animate-in fade-in duration-200">
-            <div className="border-b border-[#2F2A23] pb-3">
-              <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
-                <Dice5 className="w-5 h-5 text-[#E0A030]" />
+            <div className="border-b border-border pb-3">
+              <h3 className="text-lg font-bold text-accent-hover flex items-center gap-2">
+                <Dice5 className="w-5 h-5 text-accent" />
                 گام 3: ویژگی‌های پایه (Ability Scores)
               </h3>
-              <p className="text-xs text-[#A39A89] mt-1">
+              <p className="text-xs text-text-muted mt-1">
                 روش تعیین امتیازات خود را انتخاب کرده و امتیازات را تخصیص دهید.
               </p>
             </div>
@@ -826,8 +826,8 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                     onClick={() => setAbilityMethod(m)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 min-h-[44px] ${
                       isSelected
-                        ? 'bg-[#E0A030] text-[#0E0D0C] shadow-md'
-                        : 'bg-[#171513] text-[#A39A89] border border-[#2F2A23] hover:text-[#EDE6D8]'
+                        ? 'bg-accent text-on-accent shadow-md'
+                        : 'bg-surface text-text-muted border border-border hover:text-text-primary'
                     }`}
                   >
                     {labels[m] || m}
@@ -838,17 +838,17 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
 
             {/* Point Buy Budget Live Display */}
             {abilityMethod === 'point_buy' && (
-              <div className="p-3.5 rounded-2xl bg-[#171513] border border-[#E0A030]/30 flex flex-wrap items-center justify-between gap-2">
+              <div className="p-3.5 rounded-2xl bg-surface border border-accent/30 flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <span className="text-xs text-[#A39A89]">بودجه مصرف‌شده:</span>
+                  <span className="text-xs text-text-muted">بودجه مصرف‌شده:</span>
                   <div className="flex items-baseline gap-1 mt-0.5">
-                    <span className={`text-lg font-bold ${currentPointBuyCost > 27 ? 'text-[#D66138]' : 'text-[#F2C265]'}`}>
+                    <span className={`text-lg font-bold ${currentPointBuyCost > 27 ? 'text-danger-hover' : 'text-accent-hover'}`}>
                       {currentPointBuyCost}
                     </span>
-                    <span className="text-xs text-[#8A8374]">/ 27 امتیاز</span>
+                    <span className="text-xs text-text-muted">/ 27 امتیاز</span>
                   </div>
                 </div>
-                <div className="text-[11px] text-[#A39A89] text-left">
+                <div className="text-xs text-text-muted text-end">
                   امتیاز 8 تا 15 مجاز است.
                 </div>
               </div>
@@ -856,14 +856,14 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
 
             {/* Roll Server-Side 4d6 Drop Lowest */}
             {abilityMethod === 'roll' && (
-              <div className="p-4 rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-3">
+              <div className="p-4 rounded-2xl bg-surface border border-border space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-[#EDE6D8]">تاس‌های ریخته‌شده سرور:</span>
+                  <span className="text-xs font-bold text-text-primary">تاس‌های ریخته‌شده سرور:</span>
                   <button
                     type="button"
                     onClick={handleRollAbilities}
                     disabled={isRolling}
-                    className="px-3 py-1.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-bold hover:bg-[#F2C265] transition-all flex items-center gap-1.5"
+                    className="px-3 py-1.5 rounded-xl bg-accent text-on-accent text-xs font-bold hover:bg-accent-hover transition-all flex items-center gap-1.5"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isRolling ? 'animate-spin' : ''}`} />
                     <span>ریختن تاس جدید (4d6)</span>
@@ -873,16 +873,16 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                 {serverRolls ? (
                   <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 pt-2">
                     {serverRolls.scores.map((score, i) => (
-                      <div key={i} className="p-2 rounded-xl bg-[#201D19] border border-[#2F2A23] text-center">
-                        <span className="text-base font-bold text-[#F2C265]">{score}</span>
-                        <span className="block text-[10px] text-[#8A8374]">
+                      <div key={i} className="p-2 rounded-xl bg-surface-2 border border-border text-center">
+                        <span className="text-base font-bold text-accent-hover">{score}</span>
+                        <span className="block text-xs text-text-muted">
                           {serverRolls.dice[i]?.join('+')}
                         </span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-[#A39A89]">هنوز تاسی ریخته نشده است. دکمه بالا را بزنید.</p>
+                  <p className="text-xs text-text-muted">هنوز تاسی ریخته نشده است. دکمه بالا را بزنید.</p>
                 )}
               </div>
             )}
@@ -898,17 +898,17 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                 return (
                   <div
                     key={key}
-                    className="p-3.5 rounded-2xl bg-[#171513] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2"
+                    className="p-3.5 rounded-2xl bg-surface border border-border flex flex-wrap items-center justify-between gap-2"
                   >
                     <div>
-                      <h4 className="text-xs font-bold text-[#EDE6D8]">{ABILITY_LABELS_FA[key]}</h4>
+                      <h4 className="text-xs font-bold text-text-primary">{ABILITY_LABELS_FA[key]}</h4>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-sm font-bold text-[#F2C265] font-mono">{finalVal}</span>
-                        <span className="text-xs px-2 py-0.5 rounded-md bg-[#201D19] text-[#6F9E78] font-bold font-mono">
+                        <span className="text-sm font-bold text-accent-hover font-mono">{finalVal}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-md bg-surface-2 text-success font-bold font-mono">
                           {modStr}
                         </span>
                         {finalVal > baseVal && (
-                          <span className="text-[10px] text-[#E0A030] font-medium">
+                          <span className="text-xs text-accent font-medium">
                             (+{finalVal - baseVal} تبار)
                           </span>
                         )}
@@ -926,7 +926,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                             }
                           }}
                           disabled={baseVal <= 8}
-                          className="w-7 h-7 rounded-lg bg-[#201D19] text-[#EDE6D8] disabled:opacity-30 flex items-center justify-center font-bold"
+                          className="w-7 h-7 rounded-lg bg-surface-2 text-text-primary disabled:opacity-30 flex items-center justify-center font-bold"
                         >
                           -
                         </button>
@@ -939,7 +939,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                             }
                           }}
                           disabled={baseVal >= 15}
-                          className="w-7 h-7 rounded-lg bg-[#201D19] text-[#EDE6D8] disabled:opacity-30 flex items-center justify-center font-bold"
+                          className="w-7 h-7 rounded-lg bg-surface-2 text-text-primary disabled:opacity-30 flex items-center justify-center font-bold"
                         >
                           +
                         </button>
@@ -953,7 +953,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                           const val = parseInt(e.target.value, 10);
                           setBaseScores(prev => ({ ...prev, [key]: val }));
                         }}
-                        className="bg-[#201D19] border border-[#2F2A23] text-xs font-mono text-[#F2C265] rounded-lg px-2 py-1 focus:outline-none"
+                        className="bg-surface-2 border border-border text-xs font-mono text-accent-hover rounded-lg px-2 py-1 focus:outline-none"
                       >
                         {STANDARD_ARRAY.map(score => (
                           <option key={score} value={score}>{score}</option>
@@ -971,7 +971,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                           const val = Math.max(3, Math.min(18, parseInt(e.target.value, 10) || 10));
                           setBaseScores(prev => ({ ...prev, [key]: val }));
                         }}
-                        className="w-14 bg-[#201D19] border border-[#2F2A23] text-xs font-mono text-[#F2C265] rounded-lg px-2 py-1 text-center"
+                        className="w-14 bg-surface-2 border border-border text-xs font-mono text-accent-hover rounded-lg px-2 py-1 text-center"
                       />
                     )}
                   </div>
@@ -986,12 +986,12 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         {/* ============================================================ */}
         {currentStep === 4 && (
           <section className="space-y-5 animate-in fade-in duration-200">
-            <div className="border-b border-[#2F2A23] pb-3">
-              <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-[#E0A030]" />
+            <div className="border-b border-border pb-3">
+              <h3 className="text-lg font-bold text-accent-hover flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-accent" />
                 گام 4: پیشینه و مهارت‌ها (Background & Skills)
               </h3>
-              <p className="text-xs text-[#A39A89] mt-1">
+              <p className="text-xs text-text-muted mt-1">
                 پیشینه، زندگی قبل از ماجراجویی شماست. مهارت‌ها با برچسب منبع مشخص می‌شوند.
               </p>
             </div>
@@ -999,7 +999,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             {/* Background selection */}
             {availableBackgrounds.length > 0 && (
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-[#C9C0AE]">انتخاب پیشینه (Background)</label>
+                <label className="block text-xs font-bold text-text-primary">انتخاب پیشینه (Background)</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {availableBackgrounds.map(bg => {
                     const isSelected = selectedBackgroundId === bg.id;
@@ -1009,15 +1009,15 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                         onClick={() => setSelectedBackgroundId(bg.id)}
                         className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
                           isSelected
-                            ? 'bg-[#E0A030]/15 border-[#E0A030] shadow-md shadow-[#E0A030]/10'
-                            : 'bg-[#171513] border-[#2F2A23] hover:border-[#3A342B]'
+                            ? 'bg-accent/15 border-accent shadow-md shadow-accent/10'
+                            : 'bg-surface border-border hover:border-border-strong'
                         }`}
                       >
-                        <h4 className="text-sm font-bold text-[#EDE6D8]">{bg.name}</h4>
-                        <p className="text-xs text-[#A39A89] mt-1 line-clamp-2">{bg.description}</p>
+                        <h4 className="text-sm font-bold text-text-primary">{bg.name}</h4>
+                        <p className="text-xs text-text-muted mt-1 line-clamp-2">{bg.description}</p>
                         <div className="mt-2 flex flex-wrap gap-1">
                           {(bg.skillProficiencies || []).map(sk => (
-                            <span key={sk} className="text-[10px] px-2 py-0.5 rounded-md bg-[#201D19] text-[#F2C265]">
+                            <span key={sk} className="text-xs px-2 py-0.5 rounded-md bg-surface-2 text-accent-hover">
                               {sk} [پیشینه]
                             </span>
                           ))}
@@ -1032,10 +1032,10 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             {/* Class Skill Choices */}
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="block text-xs font-bold text-[#C9C0AE]">
+                <label className="block text-xs font-bold text-text-primary">
                   انتخاب مهارت‌های کلاس ({selectedClassSkills.length} از {activeClass?.skillChoices?.count || 2} مورد)
                 </label>
-                <span className="text-[11px] text-[#A39A89]">
+                <span className="text-xs text-text-muted">
                   مجاز: {(activeClass?.skillChoices?.options || []).join('، ')}
                 </span>
               </div>
@@ -1059,12 +1059,12 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                       }}
                       className={`p-2.5 rounded-xl border text-xs font-medium text-start transition-all flex flex-wrap items-center justify-between gap-2 ${
                         isChecked
-                          ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
-                          : 'bg-[#171513] border-[#2F2A23] text-[#C9C0AE] hover:border-[#3A342B]'
+                          ? 'bg-accent/20 border-accent text-accent-hover'
+                          : 'bg-surface border-border text-text-primary hover:border-border-strong'
                       }`}
                     >
                       <span>{opt}</span>
-                      <span className="text-[10px] opacity-70">[کلاس]</span>
+                      <span className="text-xs opacity-70">[کلاس]</span>
                     </button>
                   );
                 })}
@@ -1072,14 +1072,14 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             </div>
 
             {/* All Active Proficiencies with Tags */}
-            <div className="p-4 rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-2">
-              <h4 className="text-xs font-bold text-[#EDE6D8]">مهارت‌های فعال کاراکتر و منابع آن‌ها:</h4>
+            <div className="p-4 rounded-2xl bg-surface border border-border space-y-2">
+              <h4 className="text-xs font-bold text-text-primary">مهارت‌های فعال کاراکتر و منابع آن‌ها:</h4>
               <div className="flex flex-wrap gap-2 pt-1">
                 {skillValidation.taggedProficiencies.map(tp => {
                   const badgeColors: Record<TaggedProficiency['source'], string> = {
-                    class: 'bg-[#E0A030]/20 text-[#F2C265] border-[#E0A030]/40',
-                    background: 'bg-[#9B72CF]/20 text-[#9B72CF] border-[#9B72CF]/40',
-                    lineage: 'bg-[#6F9E78]/20 text-[#6F9E78] border-[#6F9E78]/40'
+                    class: 'bg-accent/20 text-accent-hover border-accent/40',
+                    background: 'bg-role-codm/20 text-role-codm border-role-codm/40',
+                    lineage: 'bg-success/20 text-success border-success/40'
                   };
                   const sourceLabels: Record<TaggedProficiency['source'], string> = {
                     class: 'کلاس',
@@ -1092,7 +1092,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                       className={`px-2.5 py-1 rounded-lg border text-xs font-medium flex items-center gap-1.5 ${badgeColors[tp.source]}`}
                     >
                       <span>{tp.key}</span>
-                      <span className="text-[10px] opacity-80 font-bold">[{sourceLabels[tp.source]}]</span>
+                      <span className="text-xs opacity-80 font-bold">[{sourceLabels[tp.source]}]</span>
                     </span>
                   );
                 })}
@@ -1106,38 +1106,38 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         {/* ============================================================ */}
         {currentStep === 5 && (
           <section className="space-y-5 animate-in fade-in duration-200">
-            <div className="border-b border-[#2F2A23] pb-3">
-              <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
-                <Shield className="w-5 h-5 text-[#E0A030]" />
+            <div className="border-b border-border pb-3">
+              <h3 className="text-lg font-bold text-accent-hover flex items-center gap-2">
+                <Shield className="w-5 h-5 text-accent" />
                 گام 5: تجهیزات و اسلحه آغازین (Equipment)
               </h3>
-              <p className="text-xs text-[#A39A89] mt-1">
+              <p className="text-xs text-text-muted mt-1">
                 سلاح آغازین و تجهیزات رزمی خود را تعیین کنید. پیش‌نمایش زنده‌ی زره (AC) و جان در پایین مشخص است.
               </p>
             </div>
 
             {/* Live Stats Preview Bar */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3.5 rounded-2xl bg-[#171513] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
+              <div className="p-3.5 rounded-2xl bg-surface border border-border flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-[#E0A030]" />
-                  <span className="text-xs text-[#A39A89]">درجه زره (AC پیش‌نمایش):</span>
+                  <Shield className="w-5 h-5 text-accent" />
+                  <span className="text-xs text-text-muted">درجه زره (AC پیش‌نمایش):</span>
                 </div>
-                <span className="text-lg font-bold text-[#F2C265] font-mono">{liveAc}</span>
+                <span className="text-lg font-bold text-accent-hover font-mono">{liveAc}</span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#171513] border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
+              <div className="p-3.5 rounded-2xl bg-surface border border-border flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <Heart className="w-5 h-5 text-[#D66138]" />
-                  <span className="text-xs text-[#A39A89]">جان اولیه (Max HP):</span>
+                  <Heart className="w-5 h-5 text-danger-hover" />
+                  <span className="text-xs text-text-muted">جان اولیه (Max HP):</span>
                 </div>
-                <span className="text-lg font-bold text-[#EDE6D8] font-mono">{liveHp}</span>
+                <span className="text-lg font-bold text-text-primary font-mono">{liveHp}</span>
               </div>
             </div>
 
             {/* Special-vs-Showy Starter Weapon Selection */}
             <div className="space-y-3">
-              <label className="block text-xs font-bold text-[#C9C0AE]">
+              <label className="block text-xs font-bold text-text-primary">
                 انتخاب اسلحه ویژه یا نمایشی (Tradeoff Trade)
               </label>
 
@@ -1150,34 +1150,34 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                       onClick={() => setSelectedStarterWeaponId(w.id)}
                       className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
                         isSelected
-                          ? 'bg-[#E0A030]/15 border-[#E0A030] shadow-md shadow-[#E0A030]/10'
-                          : 'bg-[#171513] border-[#2F2A23] hover:border-[#3A342B]'
+                          ? 'bg-accent/15 border-accent shadow-md shadow-accent/10'
+                          : 'bg-surface border-border hover:border-border-strong'
                       }`}
                     >
                       <div>
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <h4 className="text-sm font-bold text-[#EDE6D8]">{w.name}</h4>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                            w.kind === 'special' ? 'bg-[#9B72CF]/20 text-[#9B72CF]' : 'bg-[#E0A030]/20 text-[#F2C265]'
+                          <h4 className="text-sm font-bold text-text-primary">{w.name}</h4>
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                            w.kind === 'special' ? 'bg-role-codm/20 text-role-codm' : 'bg-accent/20 text-accent-hover'
                           }`}>
                             {w.kind === 'special' ? 'سلاح ویژه (جادویی)' : 'سلاح نمایشی (باوقار)'}
                           </span>
                         </div>
-                        <div className="mt-1 text-xs text-[#8A8374] font-mono">
+                        <div className="mt-1 text-xs text-text-muted font-mono">
                           آسیب: {w.damageDice} ({w.damageType})
                         </div>
-                        <p className="text-xs text-[#A39A89] mt-2 leading-relaxed">
+                        <p className="text-xs text-text-muted mt-2 leading-relaxed">
                           {w.tradeoffFa}
                         </p>
                       </div>
 
                       {w.specialAbility && (
-                        <div className="mt-3 pt-2 border-t border-[#2F2A23] text-[11px] text-[#9B72CF]">
+                        <div className="mt-3 pt-2 border-t border-border text-xs text-role-codm">
                           ⚡ {w.specialAbility.name}: {w.specialAbility.description}
                         </div>
                       )}
                       {w.showyBonus && (
-                        <div className="mt-3 pt-2 border-t border-[#2F2A23] text-[11px] text-[#F2C265]">
+                        <div className="mt-3 pt-2 border-t border-border text-xs text-accent-hover">
                           👑 {w.showyBonus.description}
                         </div>
                       )}
@@ -1194,21 +1194,21 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         {/* ============================================================ */}
         {currentStep === 6 && isCaster && (
           <section className="space-y-5 animate-in fade-in duration-200">
-            <div className="border-b border-[#2F2A23] pb-3">
-              <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
-                <Wand2 className="w-5 h-5 text-[#E0A030]" />
+            <div className="border-b border-border pb-3">
+              <h3 className="text-lg font-bold text-accent-hover flex items-center gap-2">
+                <Wand2 className="w-5 h-5 text-accent" />
                 گام 6: وردها و جادوها (Spellcasting)
               </h3>
-              <p className="text-xs text-[#A39A89] mt-1">
+              <p className="text-xs text-text-muted mt-1">
                 ترفندهای جادویی آغازین (Cantrips) و اسپل‌های آماده شده را تعیین کنید.
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#171513] border border-[#2F2A23] space-y-2">
-              <span className="text-xs font-bold text-[#EDE6D8]">اسلات‌های جادویی سطح 1:</span>
-              <div className="flex items-center gap-2 pt-1 font-mono text-sm text-[#F2C265]">
+            <div className="p-4 rounded-2xl bg-surface border border-border space-y-2">
+              <span className="text-xs font-bold text-text-primary">اسلات‌های جادویی سطح 1:</span>
+              <div className="flex items-center gap-2 pt-1 font-mono text-sm text-accent-hover">
                 {computeSlots(activeClass?.name || '', 1).map((cnt, lvl) => (
-                  <span key={lvl} className="px-3 py-1 rounded-xl bg-[#201D19] border border-[#2F2A23]">
+                  <span key={lvl} className="px-3 py-1 rounded-xl bg-surface-2 border border-border">
                     اسلات سطح {lvl + 1}: {cnt} بار
                   </span>
                 ))}
@@ -1216,12 +1216,12 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-[#C9C0AE]">
+              <label className="block text-xs font-bold text-text-primary">
                 ترفندهای جادویی پیشنهادی کلاس {activeClass?.name}:
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {((activeClass?.spellcasting as any)?.spells?.cantrips || ['شراره فره', 'لمس درمان', 'نور']).map((can: string) => (
-                  <div key={can} className="p-3 rounded-xl bg-[#171513] border border-[#2F2A23] text-xs text-[#EDE6D8]">
+                  <div key={can} className="p-3 rounded-xl bg-surface border border-border text-xs text-text-primary">
                     {can}
                   </div>
                 ))}
@@ -1235,48 +1235,48 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         {/* ============================================================ */}
         {currentStep === 7 && (
           <section className="space-y-5 animate-in fade-in duration-200">
-            <div className="border-b border-[#2F2A23] pb-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="border-b border-border pb-3 flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
-                  <Award className="w-5 h-5 text-[#E0A030]" />
+                <h3 className="text-lg font-bold text-accent-hover flex items-center gap-2">
+                  <Award className="w-5 h-5 text-accent" />
                   گام 7: پیش‌داستان و انگیزه‌ها (اختیاری)
                 </h3>
-                <p className="text-xs text-[#A39A89] mt-1">
+                <p className="text-xs text-text-muted mt-1">
                   می‌توانید این گام را رد کرده و بعداً در بخش پرونده شخصیت تکمیل نمایید.
                 </p>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#C9C0AE] mb-1.5">خاستگاه و زادگاه</label>
+              <label className="block text-xs font-bold text-text-primary mb-1.5">خاستگاه و زادگاه</label>
               <input
                 type="text"
                 value={origin}
                 onChange={e => setOrigin(e.target.value)}
                 placeholder="روستای جنگلی ورنا، بارگاه پادشاهی، بیابان‌های هامون..."
-                className="w-full bg-[#171513] border border-[#2F2A23] rounded-xl px-3.5 py-2.5 text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                className="w-full bg-surface border border-border rounded-xl px-3.5 py-2.5 text-xs text-text-primary focus:border-accent focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#C9C0AE] mb-1.5">اهداف و آرمان‌ها</label>
+              <label className="block text-xs font-bold text-text-primary mb-1.5">اهداف و آرمان‌ها</label>
               <input
                 type="text"
                 value={goals}
                 onChange={e => setGoals(e.target.value)}
                 placeholder="یافتن برادر گم‌شده، کشف کتابچه باستانی زروان..."
-                className="w-full bg-[#171513] border border-[#2F2A23] rounded-xl px-3.5 py-2.5 text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                className="w-full bg-surface border border-border rounded-xl px-3.5 py-2.5 text-xs text-text-primary focus:border-accent focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#C9C0AE] mb-1.5">خلاصه پیش‌داستان</label>
+              <label className="block text-xs font-bold text-text-primary mb-1.5">خلاصه پیش‌داستان</label>
               <textarea
                 value={backstorySummary}
                 onChange={e => setBackstorySummary(e.target.value)}
                 rows={3}
                 placeholder="داستان سفر قهرمان به آستانه کمپین..."
-                className="w-full bg-[#171513] border border-[#2F2A23] rounded-xl px-3.5 py-2 text-xs text-[#EDE6D8] focus:border-[#E0A030] focus:outline-none"
+                className="w-full bg-surface border border-border rounded-xl px-3.5 py-2 text-xs text-text-primary focus:border-accent focus:outline-none"
               />
             </div>
           </section>
@@ -1287,18 +1287,18 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         {/* ============================================================ */}
         {currentStep === 8 && (
           <section className="space-y-5 animate-in fade-in duration-200">
-            <div className="border-b border-[#2F2A23] pb-3">
-              <h3 className="text-lg font-bold text-[#F2C265] flex items-center gap-2">
-                <Check className="w-5 h-5 text-[#6F9E78]" />
+            <div className="border-b border-border pb-3">
+              <h3 className="text-lg font-bold text-accent-hover flex items-center gap-2">
+                <Check className="w-5 h-5 text-success" />
                 گام 8: بازبینی نهایی و تایید (Review & Submit)
               </h3>
-              <p className="text-xs text-[#A39A89] mt-1">
+              <p className="text-xs text-text-muted mt-1">
                 اطلاعات شناسنامه و مقادیر بازتولید شده توسط موتور قوانین را بررسی کنید.
               </p>
             </div>
 
             {/* Character Summary Card */}
-            <div className="p-4 rounded-2xl bg-[#171513] border border-[#E0A030]/30 shadow-lg space-y-4">
+            <div className="p-4 rounded-2xl bg-surface border border-accent/30 shadow-lg space-y-4">
               <div className="flex items-center gap-3.5">
                 <img
                   src={portraitUrl}
@@ -1307,11 +1307,11 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                   decoding="async"
                   width={64}
                   height={64}
-                  className="w-16 h-16 rounded-2xl object-cover border-2 border-[#E0A030]/40 shrink-0"
+                  className="w-16 h-16 rounded-2xl object-cover border-2 border-accent/40 shrink-0"
                 />
                 <div>
-                  <h4 className="text-lg font-bold text-[#EDE6D8]">{name || 'بی‌نام'}</h4>
-                  <div className="flex items-center gap-2 mt-1 text-xs text-[#F2C265]">
+                  <h4 className="text-lg font-bold text-text-primary">{name || 'بی‌نام'}</h4>
+                  <div className="flex items-center gap-2 mt-1 text-xs text-accent-hover">
                     <span>کلاس: {activeClass?.name}</span>
                     <span>•</span>
                     <span>تبار: {activeLineage?.name || 'آدمی'}</span>
@@ -1322,18 +1322,18 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
               </div>
 
               {/* Combat preview strip */}
-              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#2F2A23]">
-                <div className="text-center p-2 rounded-xl bg-[#201D19]">
-                  <span className="block text-[10px] text-[#A39A89]">درجه زره (AC)</span>
-                  <span className="text-base font-bold text-[#F2C265] font-mono">{liveAc}</span>
+              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border">
+                <div className="text-center p-2 rounded-xl bg-surface-2">
+                  <span className="block text-xs text-text-muted">درجه زره (AC)</span>
+                  <span className="text-base font-bold text-accent-hover font-mono">{liveAc}</span>
                 </div>
-                <div className="text-center p-2 rounded-xl bg-[#201D19]">
-                  <span className="block text-[10px] text-[#A39A89]">بیشینه جان (HP)</span>
-                  <span className="text-base font-bold text-[#EDE6D8] font-mono">{liveHp}</span>
+                <div className="text-center p-2 rounded-xl bg-surface-2">
+                  <span className="block text-xs text-text-muted">بیشینه جان (HP)</span>
+                  <span className="text-base font-bold text-text-primary font-mono">{liveHp}</span>
                 </div>
-                <div className="text-center p-2 rounded-xl bg-[#201D19]">
-                  <span className="block text-[10px] text-[#A39A89]">ابتکار عمل</span>
-                  <span className="text-base font-bold text-[#6F9E78] font-mono">
+                <div className="text-center p-2 rounded-xl bg-surface-2">
+                  <span className="block text-xs text-text-muted">ابتکار عمل</span>
+                  <span className="text-base font-bold text-success font-mono">
                     {abilityModifier(finalAbilities.dex || 10) >= 0 ? `+${abilityModifier(finalAbilities.dex || 10)}` : abilityModifier(finalAbilities.dex || 10)}
                   </span>
                 </div>
@@ -1342,17 +1342,17 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
               {/* Ability Scores Review */}
               <div className="grid grid-cols-6 gap-1.5 pt-2 text-center">
                 {ABILITY_KEYS.map(k => (
-                  <div key={k} className="p-1.5 rounded-lg bg-[#201D19] border border-[#2F2A23]">
-                    <span className="block text-[9px] text-[#8A8374] uppercase">{k}</span>
-                    <span className="text-xs font-bold text-[#EDE6D8] font-mono">{finalAbilities[k]}</span>
+                  <div key={k} className="p-1.5 rounded-lg bg-surface-2 border border-border">
+                    <span className="block text-[9px] text-text-muted uppercase">{k}</span>
+                    <span className="text-xs font-bold text-text-primary font-mono">{finalAbilities[k]}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Status notice */}
-            <div className="p-3.5 rounded-2xl bg-[#201D19] border border-[#2F2A23] text-xs text-[#A39A89] space-y-1">
-              <span className="font-bold text-[#C9C0AE]">وضعیت پس از ثبت:</span>
+            <div className="p-3.5 rounded-2xl bg-surface-2 border border-border text-xs text-text-muted space-y-1">
+              <span className="font-bold text-text-primary">وضعیت پس از ثبت:</span>
               <p>
                 {campaign.settings?.approval?.onCreate
                   ? 'کمپین نیازمند تأیید دانجن مستر است. کاراکتر در صف تأیید قرار خواهد گرفت.'
@@ -1370,8 +1370,8 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         isOpen={showClassCompare}
         onClose={() => setShowClassCompare(false)}
         title={
-          <span className="flex items-center gap-2 text-[#F2C265]">
-            <Scale className="w-4 h-4 text-[#F2C265]" />
+          <span className="flex items-center gap-2 text-accent-hover">
+            <Scale className="w-4 h-4 text-accent-hover" />
             <span>مقایسه کلاس‌های مجاز کمپین</span>
           </span>
         }
@@ -1379,13 +1379,13 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
       >
         <div className="space-y-3">
           {allowedClasses.map(cls => (
-            <div key={cls.id || cls.name} className="p-3.5 rounded-2xl bg-[#141210] border border-[#2F2A23]">
+            <div key={cls.id || cls.name} className="p-3.5 rounded-2xl bg-bg border border-border">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h4 className="text-sm font-bold text-[#EDE6D8]">{cls.name}</h4>
-                <span className="text-xs text-[#F2C265] font-mono">تاس جان: {cls.hitDie}</span>
+                <h4 className="text-sm font-bold text-text-primary">{cls.name}</h4>
+                <span className="text-xs text-accent-hover font-mono">تاس جان: {cls.hitDie}</span>
               </div>
-              <p className="text-xs text-[#A39A89] mt-1 line-clamp-2">{cls.description || cls.notes}</p>
-              <div className="mt-2 flex items-center gap-3 text-[11px] text-[#8A8374]">
+              <p className="text-xs text-text-muted mt-1 line-clamp-2">{cls.description || cls.notes}</p>
+              <div className="mt-2 flex items-center gap-3 text-xs text-text-muted">
                 <span>سیوها: {(cls.saves || []).join('، ')}</span>
                 <span>•</span>
                 <span>زره: {cls.armorProf || 'متنوع'}</span>

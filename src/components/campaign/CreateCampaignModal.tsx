@@ -57,26 +57,26 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
     <BottomSheet isOpen={isOpen} onClose={onClose} title="ایجاد کمپین جدید">
       <form onSubmit={handleSubmit} className="space-y-4 py-2 text-start" dir="rtl">
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-[#C2512B]/15 border border-[#C2512B]/30 text-[#E8836B] text-xs">
+          <div className="p-3 rounded-xl bg-danger/15 border border-danger/30 text-danger text-xs">
             {errorMsg}
           </div>
         )}
 
         <div>
-          <label className="block text-xs font-bold text-[#C9C0AE] mb-1">نام کمپین *</label>
+          <label className="block text-xs font-bold text-text-primary mb-1">نام کمپین *</label>
           <input
             type="text"
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="مثلاً: زروانیا: رازهای ورنا، سیاه‌چال اژدها..."
-            className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl px-3 py-2.5 text-sm text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+            className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:border-accent"
             required
           />
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-[#C9C0AE] mb-1">بسته‌ی محتوای اولیه (Content Pack)</label>
-          <p className="text-[11px] text-[#A39A89] mb-2">
+          <label className="block text-xs font-bold text-text-primary mb-1">بسته‌ی محتوای اولیه (Content Pack)</label>
+          <p className="text-xs text-text-muted mb-2">
             محتوای بسته به‌صورت مستقل درون کمپین شما کپی می‌شود (Copy-on-use) و تغییرات بعدی کمپین‌های دیگر بر آن بی‌اثر است.
           </p>
 
@@ -85,83 +85,83 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
               onClick={() => setSelectedPack('pack-zorvania')}
               className={`p-3 rounded-xl border cursor-pointer transition-all ${
                 selectedPack === 'pack-zorvania'
-                  ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
-                  : 'bg-[#131110]/60 border-[#2F2A23] text-[#A39A89] hover:border-[#3A342B]'
+                  ? 'bg-accent/20 border-accent text-accent-hover'
+                  : 'bg-bg/60 border-border text-text-muted hover:border-border-strong'
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
-                <Sparkles className="w-4 h-4 text-[#F2C265]" />
+                <Sparkles className="w-4 h-4 text-accent-hover" />
                 <h4 className="text-xs font-bold">زروانیا</h4>
               </div>
-              <p className="text-[10px] line-clamp-2">کلاس‌های اختصاصی، لور ورنا، سلاح‌های عهد و تقویم 365 روزه</p>
+              <p className="text-xs line-clamp-2">کلاس‌های اختصاصی، لور ورنا، سلاح‌های عهد و تقویم 365 روزه</p>
             </div>
 
             <div
               onClick={() => setSelectedPack('pack-srd-5e')}
               className={`p-3 rounded-xl border cursor-pointer transition-all ${
                 selectedPack === 'pack-srd-5e'
-                  ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
-                  : 'bg-[#131110]/60 border-[#2F2A23] text-[#A39A89] hover:border-[#3A342B]'
+                  ? 'bg-accent/20 border-accent text-accent-hover'
+                  : 'bg-bg/60 border-border text-text-muted hover:border-border-strong'
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
-                <BookOpen className="w-4 h-4 text-[#7FB4D6]" />
+                <BookOpen className="w-4 h-4 text-info" />
                 <h4 className="text-xs font-bold">پایه 5e</h4>
               </div>
-              <p className="text-[10px] line-clamp-2">ساختار خالص مکانیک D&D 5e، 6 ویژگی، مهارت‌ها و شرایط استاندارد</p>
+              <p className="text-xs line-clamp-2">ساختار خالص مکانیک D&D 5e، 6 ویژگی، مهارت‌ها و شرایط استاندارد</p>
             </div>
 
             <div
               onClick={() => setSelectedPack('empty')}
               className={`p-3 rounded-xl border cursor-pointer transition-all ${
                 selectedPack === 'empty'
-                  ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265]'
-                  : 'bg-[#131110]/60 border-[#2F2A23] text-[#A39A89] hover:border-[#3A342B]'
+                  ? 'bg-accent/20 border-accent text-accent-hover'
+                  : 'bg-bg/60 border-border text-text-muted hover:border-border-strong'
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
-                <Layers className="w-4 h-4 text-[#6F9E78]" />
+                <Layers className="w-4 h-4 text-success" />
                 <h4 className="text-xs font-bold">کمپین خالی</h4>
               </div>
-              <p className="text-[10px] line-clamp-2">شروع از پایه بدون هیچ الگوی پیش‌ساخته، تنظیم تمام قواعد توسط DM</p>
+              <p className="text-xs line-clamp-2">شروع از پایه بدون هیچ الگوی پیش‌ساخته، تنظیم تمام قواعد توسط DM</p>
             </div>
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-[#C9C0AE] mb-1">فضاسازی و لحن ماجراجویی (Tone)</label>
+          <label className="block text-xs font-bold text-text-primary mb-1">فضاسازی و لحن ماجراجویی (Tone)</label>
           <input
             type="text"
             value={tone}
             onChange={e => setTone(e.target.value)}
             placeholder="مثلاً: حماسی اساطیری، بقا در تاریکی، رمزآلود..."
-            className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl px-3 py-2 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030]"
+            className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-[#C9C0AE] mb-1">شرح و مقدمه کمپین</label>
+          <label className="block text-xs font-bold text-text-primary mb-1">شرح و مقدمه کمپین</label>
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
             placeholder="شرح کوتاه از داستان و سرآغاز ماجرا..."
             rows={3}
-            className="w-full bg-[#131110] border border-[#2F2A23] rounded-xl p-3 text-xs text-[#EDE6D8] focus:outline-none focus:border-[#E0A030] leading-relaxed"
+            className="w-full bg-bg border border-border rounded-xl p-3 text-xs text-text-primary focus:outline-none focus:border-accent leading-relaxed"
           />
         </div>
 
-        <div className="flex justify-end gap-2 pt-2 border-t border-[#2F2A23]">
+        <div className="flex justify-end gap-2 pt-2 border-t border-border">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] min-h-[44px]"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold text-text-muted hover:text-text-primary min-h-[44px]"
           >
             انصراف
           </button>
           <button
             type="submit"
             disabled={isSubmitting || !name.trim()}
-            className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] font-bold text-xs hover:bg-[#F2C265] disabled:opacity-50 transition-colors flex items-center gap-2 min-h-[44px] shadow-lg shadow-[#E0A030]/20"
+            className="px-5 py-2.5 rounded-xl bg-accent text-on-accent font-bold text-xs hover:bg-accent-hover disabled:opacity-50 transition-colors flex items-center gap-2 min-h-[44px] shadow-lg shadow-accent/20"
           >
             <Shield className="w-4 h-4" />
             <span>{isSubmitting ? 'در حال ایجاد...' : 'ساخت کمپین و ورود'}</span>

@@ -67,11 +67,11 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
 
   const hpPercent = Math.min(100, Math.round((character.hp.current / Math.max(1, character.hp.max)) * 100));
   const hpColor =
-    hpPercent > 50 ? 'bg-[#6F9E78]' : hpPercent > 20 ? 'bg-[#E0A030]' : 'bg-[#C2512B]';
+    hpPercent > 50 ? 'bg-success' : hpPercent > 20 ? 'bg-accent' : 'bg-danger';
 
   return (
     <div
-      className="sticky top-[49px] sm:top-[53px] z-20 glass-panel border-b border-[#2F2A23] px-2.5 sm:px-4 py-1.5 transition-all duration-150"
+      className="sticky top-[49px] sm:top-[53px] z-20 glass-panel border-b border-border px-2.5 sm:px-4 py-1.5 transition-all duration-150"
       dir="rtl"
     >
       <div className="max-w-7xl mx-auto flex flex-col gap-1.5">
@@ -86,29 +86,29 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
               decoding="async"
               width={36}
               height={36}
-              className={`rounded-[10px] object-cover border border-[#2F2A23] shrink-0 transition-all duration-150 ${
+              className={`rounded-[10px] object-cover border border-border shrink-0 transition-all duration-150 ${
                 isScrolled ? 'w-7 h-7' : 'w-9 h-9 sm:w-10 sm:h-10'
               }`}
             />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 truncate">
-                <span className="font-extrabold text-xs sm:text-sm text-[#EDE6D8] truncate">
+                <span className="font-extrabold text-xs sm:text-sm text-text-primary truncate">
                   {character.name}
                 </span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded-[6px] bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30 font-bold shrink-0">
+                <span className="text-xs px-1.5 py-0.2 rounded-[6px] bg-accent/15 text-accent border border-accent/30 font-bold shrink-0">
                   سطح {character.level}
                 </span>
               </div>
 
               {!isScrolled && (
-                <div className="flex items-center gap-2 text-[11px] text-[#A39A89] mt-0.5 truncate">
+                <div className="flex items-center gap-2 text-xs text-text-muted mt-0.5 truncate">
                   <span>{character.className}</span>
                   <span>·</span>
-                  <span className="inline-flex items-center gap-1 text-[#EDE6D8] font-bold">
-                    <Shield className="w-3 h-3 text-[#E0A030]" /> AC {character.ac}
+                  <span className="inline-flex items-center gap-1 text-text-primary font-bold">
+                    <Shield className="w-3 h-3 text-accent" /> AC {character.ac}
                   </span>
                   {character.exhaustion > 0 && (
-                    <span className="inline-flex items-center gap-0.5 text-[#C2512B] font-bold">
+                    <span className="inline-flex items-center gap-0.5 text-danger font-bold">
                       <AlertTriangle className="w-3 h-3" /> خستگی {character.exhaustion}
                     </span>
                   )}
@@ -122,21 +122,21 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
             <button
               type="button"
               onClick={() => adjustHp(-1)}
-              className="touch-target min-w-[44px]-lg w-12 h-12 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#C2512B] hover:border-[#C2512B]/60 font-black text-sm active:scale-95"
+              className="touch-target min-w-[44px]-lg w-12 h-12 rounded-[12px] bg-surface-2 border border-border text-danger hover:border-danger/60 font-black text-sm active:scale-95"
               title="کاهش 1 جان"
             >
               -1
             </button>
 
             {/* HP Value Display */}
-            <div className="flex flex-col items-center justify-center px-2 py-1 rounded-[12px] bg-[#201D19] border border-[#2F2A23] min-w-[62px] min-h-[48px]">
+            <div className="flex flex-col items-center justify-center px-2 py-1 rounded-[12px] bg-surface-2 border border-border min-w-[62px] min-h-[48px]">
               <div className="flex items-center gap-1">
-                <Heart className="w-3 h-3 text-[#C2512B] fill-[#C2512B]/30" />
-                <span className="font-mono font-extrabold text-sm text-[#EDE6D8] dice-ltr">
+                <Heart className="w-3 h-3 text-danger fill-danger/30" />
+                <span className="font-mono font-extrabold text-sm text-text-primary dice-ltr">
                   {character.hp.current}/{character.hp.max}
                 </span>
               </div>
-              <div className="w-full h-1 bg-[#171513] rounded-full overflow-hidden mt-1">
+              <div className="w-full h-1 bg-surface rounded-full overflow-hidden mt-1">
                 <div
                   className={`h-full rounded-full transition-all duration-200 ${hpColor}`}
                   style={{ width: `${hpPercent}%` }}
@@ -147,7 +147,7 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
             <button
               type="button"
               onClick={() => adjustHp(1)}
-              className="touch-target min-w-[44px]-lg w-12 h-12 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-[#6F9E78] hover:border-[#6F9E78]/60 font-black text-sm active:scale-95"
+              className="touch-target min-w-[44px]-lg w-12 h-12 rounded-[12px] bg-surface-2 border border-border text-success hover:border-success/60 font-black text-sm active:scale-95"
               title="افزایش 1 جان"
             >
               +1

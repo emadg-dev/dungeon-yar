@@ -187,36 +187,36 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
 
   return (
     <div 
-      className="relative w-full h-[65vh] sm:h-[75vh] max-h-[800px] bg-[#0E0C0A] rounded-[16px] overflow-hidden select-none border border-[#2F2A23] shadow-inner flex flex-col justify-center items-center"
+      className="relative w-full h-[65vh] sm:h-[75vh] max-h-[800px] bg-bg rounded-[16px] overflow-hidden select-none border border-border shadow-inner flex flex-col justify-center items-center"
       dir="ltr"
     >
       {/* Top Floating Control Toolbar */}
-      <div className="absolute top-3 end-3 z-30 flex items-center gap-1.5 bg-[#171410]/85 backdrop-blur-md p-1.5 rounded-[12px] border border-[#2F2A23] shadow-lg">
+      <div className="absolute top-3 end-3 z-30 flex items-center gap-1.5 bg-surface/85 backdrop-blur-md p-1.5 rounded-[12px] border border-border shadow-lg">
         <button
           type="button"
           onClick={handleZoomIn}
-          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-[#EDE6D8] hover:bg-white/10 active:bg-white/20 transition touch-target min-w-[44px]"
+          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-primary hover:bg-white/10 active:bg-white/20 transition touch-target min-w-[44px]"
           title="بزرگ‌نمایی (+)"
           aria-label="بزرگ‌نمایی"
         >
-          <ZoomIn className="w-4 h-4 text-[#E0A030]" />
+          <ZoomIn className="w-4 h-4 text-accent" />
         </button>
 
         <button
           type="button"
           onClick={handleZoomOut}
           disabled={scale <= 1}
-          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-[#EDE6D8] hover:bg-white/10 active:bg-white/20 disabled:opacity-40 transition touch-target min-w-[44px]"
+          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-primary hover:bg-white/10 active:bg-white/20 disabled:opacity-40 transition touch-target min-w-[44px]"
           title="کوچک‌نمایی (-)"
           aria-label="کوچک‌نمایی"
         >
-          <ZoomOut className="w-4 h-4 text-[#E0A030]" />
+          <ZoomOut className="w-4 h-4 text-accent" />
         </button>
 
         <button
           type="button"
           onClick={handleResetZoom}
-          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-[#EDE6D8] hover:bg-white/10 active:bg-white/20 transition touch-target min-w-[44px]"
+          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-primary hover:bg-white/10 active:bg-white/20 transition touch-target min-w-[44px]"
           title="اندازه پیش‌فرض (دو لمس سریع)"
           aria-label="اندازه پیش‌فرض"
         >
@@ -227,7 +227,7 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center rounded-[8px] text-[#A39A89] hover:text-white hover:bg-rose-500/20 active:bg-rose-500/30 transition touch-target min-w-[44px]"
+            className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-muted hover:text-white hover:bg-rose-500/20 active:bg-rose-500/30 transition touch-target min-w-[44px]"
             title="بستن"
             aria-label="بستن پنجره"
           >
@@ -238,7 +238,7 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
 
       {/* Floating Zoom Indicator Pill */}
       {scale > 1 && (
-        <div className="absolute bottom-3 start-3 z-30 bg-[#171410]/80 backdrop-blur-md px-2.5 py-1 rounded-full border border-[#2F2A23] text-[11px] font-bold text-[#F2C265] shadow-md pointer-events-none">
+        <div className="absolute bottom-3 start-3 z-30 bg-surface/80 backdrop-blur-md px-2.5 py-1 rounded-full border border-border text-xs font-bold text-accent-hover shadow-md pointer-events-none">
           {Math.round(scale * 100)}%
         </div>
       )}

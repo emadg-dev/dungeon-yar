@@ -96,27 +96,27 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
 
     if (isRevoked) {
       return (
-        <span className="text-[10px] px-1.5 py-0.5 rounded-[6px] bg-[#C2512B]/20 text-[#C2512B] border border-[#C2512B]/40 font-bold">
+        <span className="text-xs px-1.5 py-0.5 rounded-[6px] bg-danger/20 text-danger border border-danger/40 font-bold">
           باطل‌شده
         </span>
       );
     }
     if (isExpired) {
       return (
-        <span className="text-[10px] px-1.5 py-0.5 rounded-[6px] bg-[#C97B4A]/20 text-[#C97B4A] border border-[#C97B4A]/40 font-bold">
+        <span className="text-xs px-1.5 py-0.5 rounded-[6px] bg-warning/20 text-warning border border-warning/40 font-bold">
           منقضی‌شده
         </span>
       );
     }
     if (isUsed) {
       return (
-        <span className="text-[10px] px-1.5 py-0.5 rounded-[6px] bg-[#A39A89]/20 text-[#A39A89] border border-[#A39A89]/40 font-bold">
+        <span className="text-xs px-1.5 py-0.5 rounded-[6px] bg-surface-2/20 text-text-muted border border-text-muted/40 font-bold">
           مصرف‌شده
         </span>
       );
     }
     return (
-      <span className="text-[10px] px-1.5 py-0.5 rounded-[6px] bg-[#6F9E78]/20 text-[#6F9E78] border border-[#6F9E78]/40 font-bold">
+      <span className="text-xs px-1.5 py-0.5 rounded-[6px] bg-success/20 text-success border border-success/40 font-bold">
         فعال و معتبر
       </span>
     );
@@ -125,13 +125,13 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
   return (
     <div className="space-y-4" dir="rtl">
       {/* Top Header & Actions */}
-      <div className="surface-card rounded-[14px] p-4 border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-3">
+      <div className="surface-card rounded-[14px] p-4 border border-border flex flex-wrap items-center justify-between gap-2 gap-3">
         <div>
-          <h3 className="text-sm font-extrabold text-[#EDE6D8] flex items-center gap-1.5">
-            <KeyRound className="w-4 h-4 text-[#E0A030]" />
+          <h3 className="text-sm font-extrabold text-text-primary flex items-center gap-1.5">
+            <KeyRound className="w-4 h-4 text-accent" />
             <span>کدهای دعوت و پیوند‌های ثبت‌نام</span>
           </h3>
-          <p className="text-[11px] text-[#A39A89] mt-0.5">
+          <p className="text-xs text-text-muted mt-0.5">
             صدور دعوت‌نامه با امکان انتساب خودکار کاراکتر به ماجراجو در زمان ثبت‌نام
           </p>
         </div>
@@ -151,8 +151,8 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
         <div
           className={`p-3 rounded-[10px] text-xs flex flex-wrap items-center justify-between gap-2 ${
             message.type === 'success'
-              ? 'bg-[#6F9E78]/15 text-[#6F9E78] border border-[#6F9E78]/30 font-bold'
-              : 'bg-[#C2512B]/15 text-[#EDE6D8] border border-[#C2512B]/35'
+              ? 'bg-success/15 text-success border border-success/30 font-bold'
+              : 'bg-danger/15 text-text-primary border border-danger/35'
           }`}
         >
           <span>{message.text}</span>
@@ -164,22 +164,22 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
 
       {/* Newly Created Invite Card with Copy Warning */}
       {newlyCreatedInvite && (
-        <div className="surface-card rounded-[14px] p-4 border-2 border-[#E0A030] bg-[#E0A030]/10 space-y-3">
+        <div className="surface-card rounded-[14px] p-4 border-2 border-accent bg-accent/10 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-black text-[#E0A030] flex items-center gap-1.5">
+            <span className="text-xs font-black text-accent flex items-center gap-1.5">
               <Sparkles className="w-4 h-4" />
               کد دعوت با موفقیت تولید شد
             </span>
             <button
               type="button"
               onClick={() => setNewlyCreatedInvite(null)}
-              className="p-1 text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
+              className="p-1 text-text-muted hover:text-text-primary touch-target min-w-[44px]"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <p className="text-xs text-[#EDE6D8]/90 leading-relaxed">
+          <p className="text-xs text-text-primary/90 leading-relaxed">
             پیوند مستقیم ثبت‌نام زیر را کپی کرده و برای بازیکن مورد نظر ارسال کنید:
           </p>
 
@@ -189,7 +189,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
               readOnly
               value={newlyCreatedInvite.inviteLink || `${window.location.origin}/#register?code=${newlyCreatedInvite.code}`}
               dir="ltr"
-              className="flex-1 py-2 px-3 rounded-[8px] bg-[#171513] border border-[#2F2A23] text-xs font-mono text-[#EDE6D8] select-all min-h-[44px]"
+              className="flex-1 py-2 px-3 rounded-[8px] bg-surface border border-border text-xs font-mono text-text-primary select-all min-h-[44px]"
             />
             <button
               type="button"
@@ -202,13 +202,13 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
           </div>
 
           {newlyCreatedInvite.code && (
-            <div className="text-[11px] text-[#A39A89] flex items-center gap-2 pt-1">
+            <div className="text-xs text-text-muted flex items-center gap-2 pt-1">
               <span>کد کوتاه:</span>
-              <span className="font-mono text-[#E0A030] font-bold">{newlyCreatedInvite.code}</span>
+              <span className="font-mono text-accent font-bold">{newlyCreatedInvite.code}</span>
               <button
                 type="button"
                 onClick={() => copyText(newlyCreatedInvite.code!, false)}
-                className="text-[10px] text-[#A39A89] hover:text-[#EDE6D8] underline"
+                className="text-xs text-text-muted hover:text-text-primary underline"
               >
                 {copiedCode ? 'کپی شد' : 'کپی کد'}
               </button>
@@ -219,27 +219,27 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
 
       {/* Create Invite Form */}
       {showCreateForm && (
-        <form onSubmit={handleCreateInvite} className="surface-card rounded-[14px] p-4 border border-[#2F2A23] space-y-3.5">
-          <h4 className="text-xs font-extrabold text-[#EDE6D8]">مشخصات دعوت‌نامه جدید</h4>
+        <form onSubmit={handleCreateInvite} className="surface-card rounded-[14px] p-4 border border-border space-y-3.5">
+          <h4 className="text-xs font-extrabold text-text-primary">مشخصات دعوت‌نامه جدید</h4>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-[#EDE6D8]">عنوان / یادداشت دعوت</label>
+              <label className="block text-xs font-bold text-text-primary">عنوان / یادداشت دعوت</label>
               <input
                 type="text"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder="مثال: دعوت علی (بازیکن سامان)"
-                className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
+                className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-[#EDE6D8]">کاراکتر انتسابی خودکار (اختیاری)</label>
+              <label className="block text-xs font-bold text-text-primary">کاراکتر انتسابی خودکار (اختیاری)</label>
               <select
                 value={assignCharacterId}
                 onChange={(e) => setAssignCharacterId(e.target.value)}
-                className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
+                className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
               >
                 <option value="">بدون کاراکتر اولیه (انتخاب بعدی توسط DM)</option>
                 {characters.map((c) => (
@@ -251,26 +251,26 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-[#EDE6D8]">مدت اعتبار (روز)</label>
+              <label className="block text-xs font-bold text-text-primary">مدت اعتبار (روز)</label>
               <input
                 type="number"
                 min="1"
                 max="365"
                 value={expiresInDays}
                 onChange={(e) => setExpiresInDays(parseInt(e.target.value, 10) || 30)}
-                className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
+                className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-[#EDE6D8]">حداکثر دفعات مجاز استفاده</label>
+              <label className="block text-xs font-bold text-text-primary">حداکثر دفعات مجاز استفاده</label>
               <input
                 type="number"
                 min="1"
                 max="50"
                 value={maxUses}
                 onChange={(e) => setMaxUses(parseInt(e.target.value, 10) || 1)}
-                className="w-full py-2 px-3 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-xs text-[#EDE6D8] focus:border-[#E0A030] outline-none min-h-[44px]"
+                className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
               />
             </div>
           </div>
@@ -279,7 +279,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
             <button
               type="button"
               onClick={() => setShowCreateForm(false)}
-              className="py-2 px-4 rounded-[10px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] text-xs font-bold touch-target min-w-[44px] min-h-[44px]"
+              className="py-2 px-4 rounded-[10px] bg-surface-2 text-text-muted hover:text-text-primary text-xs font-bold touch-target min-w-[44px] min-h-[44px]"
             >
               انصراف
             </button>
@@ -297,22 +297,22 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
       {/* Invites List */}
       <div className="space-y-2">
         {invites.length === 0 ? (
-          <div className="surface-card rounded-[14px] p-8 text-center text-xs text-[#A39A89]">
+          <div className="surface-card rounded-[14px] p-8 text-center text-xs text-text-muted">
             {loading ? 'در حال بارگذاری دعوت‌ها...' : 'هیچ کد دعوتی صادر نشده است.'}
           </div>
         ) : (
           invites.map((inv) => (
             <div
               key={inv.id}
-              className="surface-card rounded-[12px] p-3.5 border border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-3"
+              className="surface-card rounded-[12px] p-3.5 border border-border flex flex-wrap items-center justify-between gap-2 gap-3"
             >
               <div className="space-y-1 min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-xs text-[#EDE6D8] truncate">{inv.label || 'دعوت'}</span>
+                  <span className="font-extrabold text-xs text-text-primary truncate">{inv.label || 'دعوت'}</span>
                   {getStatusBadge(inv)}
                 </div>
 
-                <div className="text-[11px] text-[#A39A89] flex items-center gap-2 flex-wrap">
+                <div className="text-xs text-text-muted flex items-center gap-2 flex-wrap">
                   <span>مصرف: {inv.usedCount} از {inv.maxUses} بار</span>
                   <span>•</span>
                   <span>
@@ -321,7 +321,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
                   {inv.assignCharacterId && (
                     <>
                       <span>•</span>
-                      <span className="text-[#E0A030]">
+                      <span className="text-accent">
                         کاراکتر: {characters.find(c => c.id === inv.assignCharacterId)?.name || 'اختصاصی'}
                       </span>
                     </>
@@ -334,7 +334,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
                 <button
                   type="button"
                   onClick={() => handleRevoke(inv.id)}
-                  className="p-2 rounded-[8px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#C2512B] touch-target min-w-[44px]"
+                  className="p-2 rounded-[8px] bg-surface-2 border border-border text-text-muted hover:text-danger touch-target min-w-[44px]"
                   title="ابطال این دعوت‌نامه"
                 >
                   <Trash2 className="w-4 h-4" />

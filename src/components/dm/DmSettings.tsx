@@ -37,25 +37,25 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
   return (
     <div className="space-y-6">
       {/* Seed Database Card */}
-      <div className="bg-[#171513] border border-[#E0A030]/25 rounded-2xl p-5 shadow-xl">
+      <div className="bg-surface border border-accent/25 rounded-2xl p-5 shadow-xl">
         <div className="flex items-center gap-3 mb-3">
-          <div className="p-2.5 rounded-xl bg-[#E0A030]/10 text-[#F2C265] border border-[#E0A030]/30">
+          <div className="p-2.5 rounded-xl bg-accent/10 text-accent-hover border border-accent/30">
             <Database className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-[#F2C265]">درون‌ریزی داده‌های پیش‌فرض زروانیا (Seed Data)</h3>
-            <p className="text-xs text-[#A39A89]">
+            <h3 className="text-sm font-bold text-accent-hover">درون‌ریزی داده‌های پیش‌فرض زروانیا (Seed Data)</h3>
+            <p className="text-xs text-text-muted">
               بارگذاری یا بازنشانی 6 ماجراجوی اصلی (سامان، پردیس، شیده، مانا، هامون، سیاوش)، هیولاها، سلاح‌ها و قوانین
             </p>
           </div>
         </div>
 
-        <p className="text-xs text-[#C9C0AE] leading-relaxed bg-[#201D19] p-3 rounded-xl border border-[#2F2A23] mb-4">
+        <p className="text-xs text-text-primary leading-relaxed bg-surface-2 p-3 rounded-xl border border-border mb-4">
           این عملیات در حالت محلی حافظه مرورگر را به روز می‌کند و در صورت اتصال به بک‌اند Cloudflare D1، اطلاعات را مستقیماً وارد سرور می‌نماید (Idempotent).
         </p>
 
         {importMessage && (
-          <div className="p-3 mb-4 rounded-xl bg-[#6F9E78]/15 border border-[#6F9E78]/50 text-[#6F9E78] text-xs font-bold flex items-center gap-2">
+          <div className="p-3 mb-4 rounded-xl bg-success/15 border border-success/50 text-success text-xs font-bold flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4" />
             {importMessage}
           </div>
@@ -64,7 +64,7 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
         <button
           onClick={() => setShowConfirmSheet(true)}
           disabled={importLoading}
-          className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-[#C97B4A] to-[#E0A030] hover:from-[#E0A030] hover:to-[#F2C265] text-[#0E0D0C] font-bold text-xs shadow-lg transition flex items-center gap-2 cursor-pointer disabled:opacity-50 touch-target min-w-[44px]"
+          className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-warning to-accent hover:from-accent hover:to-accent-hover text-on-accent font-bold text-xs shadow-lg transition flex items-center gap-2 cursor-pointer disabled:opacity-50 touch-target min-w-[44px]"
         >
           {importLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
           درون‌ریزی و همگام‌سازی اطلاعات پیش‌فرض
@@ -72,28 +72,28 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
       </div>
 
       {/* Backend & Environment Status */}
-      <div className="bg-[#171513] border border-[#2F2A23] rounded-2xl p-5 shadow-xl">
+      <div className="bg-surface border border-border rounded-2xl p-5 shadow-xl">
         <div className="flex items-center gap-3 mb-3">
-          <div className="p-2.5 rounded-xl bg-[#201D19] text-[#C9C0AE]">
+          <div className="p-2.5 rounded-xl bg-surface-2 text-text-primary">
             <Server className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-[#EDE6D8]">وضعیت لایه ارتباطی دیتا (Api Adapter)</h3>
-            <p className="text-xs text-[#A39A89]">محیط اجرایی فعال فعلی اپلیکیشن</p>
+            <h3 className="text-sm font-bold text-text-primary">وضعیت لایه ارتباطی دیتا (Api Adapter)</h3>
+            <p className="text-xs text-text-muted">محیط اجرایی فعال فعلی اپلیکیشن</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <div className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23]">
-            <span className="text-[#8A8374] block mb-1">حالت جاری فعال:</span>
-            <span className="font-bold text-[#F2C265] text-sm">
+          <div className="p-3 rounded-xl bg-surface-2 border border-border">
+            <span className="text-text-muted block mb-1">حالت جاری فعال:</span>
+            <span className="font-bold text-accent-hover text-sm">
               {isHttpMode ? 'متصل به سرور ابری (Cloudflare Pages HttpApi)' : 'پیش‌نمایش محلی مرورگر (LocalApi)'}
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-[#201D19] border border-[#2F2A23]">
-            <span className="text-[#8A8374] block mb-1">کد دعوت ثبت‌نام کمپین:</span>
-            <span className="font-mono font-bold text-[#EDE6D8] text-sm">
+          <div className="p-3 rounded-xl bg-surface-2 border border-border">
+            <span className="text-text-muted block mb-1">کد دعوت ثبت‌نام کمپین:</span>
+            <span className="font-mono font-bold text-text-primary text-sm">
               ZORVANIA-1405
             </span>
           </div>
@@ -101,13 +101,13 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
       </div>
 
       {/* User Management */}
-      <div className="bg-[#171513] border border-[#2F2A23] rounded-2xl p-5 shadow-xl">
-        <div className="flex items-center gap-2 mb-4 pb-2 border-b border-[#2F2A23]">
-          <Users className="w-5 h-5 text-[#F2C265]" />
-          <h3 className="text-sm font-bold text-[#F2C265]">مدیریت کاربران و سطوح دسترسی ({users.length})</h3>
+      <div className="bg-surface border border-border rounded-2xl p-5 shadow-xl">
+        <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border">
+          <Users className="w-5 h-5 text-accent-hover" />
+          <h3 className="text-sm font-bold text-accent-hover">مدیریت کاربران و سطوح دسترسی ({users.length})</h3>
         </div>
 
-        <div className="divide-y divide-[#2F2A23]">
+        <div className="divide-y divide-border">
           {users.map(u => (
             <div key={u.id} className="py-3 flex flex-wrap items-center justify-between gap-2 gap-3">
               <div className="flex items-center gap-3">
@@ -118,18 +118,18 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
                   decoding="async"
                   width={40}
                   height={40}
-                  className="w-10 h-10 rounded-xl object-cover border border-[#E0A030]/30"
+                  className="w-10 h-10 rounded-xl object-cover border border-accent/30"
                 />
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-xs text-[#EDE6D8]">{u.name}</span>
+                    <span className="font-bold text-xs text-text-primary">{u.name}</span>
                     {u.role === 'dm' && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#E0A030]/15 text-[#F2C265] font-bold border border-[#E0A030]/30">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-accent/15 text-accent-hover font-bold border border-accent/30">
                         دانجن مستر
                       </span>
                     )}
                   </div>
-                  <span className="text-[11px] text-[#A39A89] font-mono">{u.email}</span>
+                  <span className="text-xs text-text-muted font-mono">{u.email}</span>
                 </div>
               </div>
 
@@ -138,7 +138,7 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
                 <select
                   value={u.role}
                   onChange={(e) => onUpdateUserRole(u.id, e.target.value as 'dm' | 'player')}
-                  className="bg-[#201D19] border border-[#3A342B] text-xs text-[#EDE6D8] py-1.5 px-2.5 rounded-xl focus:outline-none focus:border-[#E0A030]"
+                  className="bg-surface-2 border border-border-strong text-xs text-text-primary py-1.5 px-2.5 rounded-xl focus:outline-none focus:border-accent"
                 >
                   <option value="player">نقش: بازیکن (Player)</option>
                   <option value="dm">نقش: دانجن مستر (DM)</option>

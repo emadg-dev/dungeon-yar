@@ -34,7 +34,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({
       onClick={onClick}
       className={`surface-card p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-150 relative overflow-hidden ${
         hasGoldTop ? 'card-gold-top' : ''
-      } ${onClick ? 'cursor-pointer hover:border-[#E0A030]/40 active:scale-[0.99]' : ''} ${className}`}
+      } ${onClick ? 'cursor-pointer hover:border-accent/40 active:scale-[0.99]' : ''} ${className}`}
       style={{
         borderColor: rarityBorderColor || undefined,
         borderTopColor: regionAccent || undefined,
@@ -62,12 +62,12 @@ export const EntityCard: React.FC<EntityCardProps> = ({
                 decoding="async"
                 width={48}
                 height={48}
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-[10px] object-cover border border-[#2F2A23] shrink-0"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-[10px] object-cover border border-border shrink-0"
               />
             )}
             <div className="min-w-0 flex-1">
-              <h4 className="font-extrabold text-sm sm:text-base text-[#EDE6D8] truncate">{title}</h4>
-              {subtitle && <p className="text-xs text-[#A39A89] truncate mt-0.5">{subtitle}</p>}
+              <h4 className="font-extrabold text-sm sm:text-base text-text-primary truncate">{title}</h4>
+              {subtitle && <p className="text-xs text-text-muted truncate mt-0.5">{subtitle}</p>}
             </div>
           </div>
 
@@ -75,15 +75,15 @@ export const EntityCard: React.FC<EntityCardProps> = ({
         </div>
 
         {/* Stats Row (HP, AC, CR, etc.) */}
-        {stats && <div className="py-2 border-t border-[#2F2A23]/60 mb-2">{stats}</div>}
+        {stats && <div className="py-2 border-t border-border/60 mb-2">{stats}</div>}
 
         {/* Custom Body / Description Content */}
-        {children && <div className="text-xs text-[#A39A89] leading-relaxed mb-3">{children}</div>}
+        {children && <div className="text-xs text-text-muted leading-relaxed mb-3">{children}</div>}
       </div>
 
       {/* Bottom Actions Bar */}
       {actions && (
-        <div className="flex flex-wrap items-center justify-between gap-2 gap-2 pt-2 border-t border-[#2F2A23]/80">
+        <div className="flex flex-wrap items-center justify-between gap-2 gap-2 pt-2 border-t border-border/80">
           {actions}
         </div>
       )}

@@ -45,19 +45,19 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
       title="تقویم باستانی زروانیا"
       subtitle={`سال ${calendar.year} پ.ر.ن. (پیش از روشنایی نو)`}
     >
-      <div className="space-y-4 text-[#EDE6D8]">
+      <div className="space-y-4 text-text-primary">
         {/* Current Date Banner */}
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-[#2A1A0D]/60 via-[#181c28] to-[#171513] border border-[#E0A030]/40 shadow-lg">
-          <div className="flex items-center gap-2 text-[#F2C265] text-xs font-bold mb-1">
-            <Clock className="w-4 h-4 text-[#F2C265] shrink-0" />
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-surface-2/60 via-info to-surface border border-accent/40 shadow-lg">
+          <div className="flex items-center gap-2 text-accent-hover text-xs font-bold mb-1">
+            <Clock className="w-4 h-4 text-accent-hover shrink-0" />
             <span>زمان جاری در جهان زروانیا</span>
           </div>
-          <div className="text-lg font-black text-[#F2C265]">
+          <div className="text-lg font-black text-accent-hover">
             {formatWorldDate(calendar)}
           </div>
           {calendar.currentFestival && (
-            <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#E0A030]/20 border border-[#E0A030]/50 text-[#F2C265] text-xs font-bold animate-pulse">
-              <Sparkles className="w-3.5 h-3.5 text-[#F2C265] shrink-0" />
+            <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-accent/20 border border-accent/50 text-accent-hover text-xs font-bold animate-pulse">
+              <Sparkles className="w-3.5 h-3.5 text-accent-hover shrink-0" />
               <span>{calendar.currentFestival}</span>
             </div>
           )}
@@ -65,25 +65,25 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
 
         {/* Off-Day folk belief note */}
         {currentOffDayDef && (
-          <div className="p-3.5 rounded-xl bg-[#9B72CF]/15 border border-[#9B72CF]/40 text-[#9B72CF] text-xs space-y-1">
-            <div className="font-bold flex items-center gap-1.5 text-[#9B72CF]">
+          <div className="p-3.5 rounded-xl bg-role-codm/15 border border-role-codm/40 text-role-codm text-xs space-y-1">
+            <div className="font-bold flex items-center gap-1.5 text-role-codm">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>روز برون‌گاه: {currentOffDayDef.name}</span>
             </div>
-            <p className="text-[#C9C0AE] leading-relaxed">{currentOffDayDef.folkBelief}</p>
+            <p className="text-text-primary leading-relaxed">{currentOffDayDef.folkBelief}</p>
           </div>
         )}
 
         {/* DM Controls: Advance Time */}
         {isDm && (
-          <div className="p-3.5 rounded-xl bg-[#141822] border border-[#3A342B]/80 space-y-2.5">
-            <span className="text-xs font-bold text-[#F2C265] block">پیشبرد زمان توسط دانجن مستر:</span>
+          <div className="p-3.5 rounded-xl bg-info border border-border-strong/80 space-y-2.5">
+            <span className="text-xs font-bold text-accent-hover block">پیشبرد زمان توسط دانجن مستر:</span>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 disabled={advancing}
                 onClick={() => handleAdvance(1)}
-                className="py-2.5 px-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] active:bg-[#C97B4A] active:text-[#0E0D0C] text-xs font-bold text-[#EDE6D8] transition border border-[#3A342B] flex items-center justify-center gap-1 touch-target min-w-[44px] cursor-pointer"
+                className="py-2.5 px-2 rounded-xl bg-surface-2 hover:bg-surface-2 active:bg-warning active:text-on-accent text-xs font-bold text-text-primary transition border border-border-strong flex items-center justify-center gap-1 touch-target min-w-[44px] cursor-pointer"
               >
                 <span>+1 روز</span>
               </button>
@@ -91,7 +91,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
                 type="button"
                 disabled={advancing}
                 onClick={() => handleAdvance(7)}
-                className="py-2.5 px-2 rounded-xl bg-[#201D19] hover:bg-[#2A2621] active:bg-[#C97B4A] active:text-[#0E0D0C] text-xs font-bold text-[#EDE6D8] transition border border-[#3A342B] flex items-center justify-center gap-1 touch-target min-w-[44px] cursor-pointer"
+                className="py-2.5 px-2 rounded-xl bg-surface-2 hover:bg-surface-2 active:bg-warning active:text-on-accent text-xs font-bold text-text-primary transition border border-border-strong flex items-center justify-center gap-1 touch-target min-w-[44px] cursor-pointer"
               >
                 <span>+7 روز (1 هفته)</span>
               </button>
@@ -99,7 +99,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
                 type="button"
                 disabled={advancing}
                 onClick={() => handleAdvance(30)}
-                className="py-2.5 px-2 rounded-xl bg-[#E0A030]/20 hover:bg-[#E0A030]/30 border border-[#E0A030]/40 text-xs font-bold text-[#F2C265] transition flex items-center justify-center gap-1 touch-target min-w-[44px] cursor-pointer"
+                className="py-2.5 px-2 rounded-xl bg-accent/20 hover:bg-accent/30 border border-accent/40 text-xs font-bold text-accent-hover transition flex items-center justify-center gap-1 touch-target min-w-[44px] cursor-pointer"
               >
                 <FastForward className="w-3.5 h-3.5 shrink-0" />
                 <span>+1 ماه (30 روز)</span>
@@ -110,8 +110,8 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
 
         {/* 12 Months & Festivals Overview */}
         <div className="space-y-2">
-          <h4 className="text-xs font-bold text-[#A39A89] flex items-center gap-1">
-            <BookOpen className="w-3.5 h-3.5 text-[#F2C265] shrink-0" />
+          <h4 className="text-xs font-bold text-text-muted flex items-center gap-1">
+            <BookOpen className="w-3.5 h-3.5 text-accent-hover shrink-0" />
             <span>ماه‌های 12گانه و جشن‌های آغاز ماه (30 روزه)</span>
           </h4>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-56 overflow-y-auto p-1 scrollbar-none">
@@ -122,15 +122,15 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
                   key={m.id}
                   className={`p-2.5 rounded-xl border text-xs transition ${
                     isCurrent
-                      ? 'bg-[#E0A030]/20 border-[#E0A030] text-[#F2C265] font-bold shadow-md'
-                      : 'bg-[#141822] border-[#2F2A23] text-[#C9C0AE]'
+                      ? 'bg-accent/20 border-accent text-accent-hover font-bold shadow-md'
+                      : 'bg-info border-border text-text-primary'
                   }`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="font-black">{m.name}</span>
-                    <span className="text-[10px] px-1 py-0.2 rounded bg-[#201D19] text-[#A39A89]">{m.season}</span>
+                    <span className="text-xs px-1 py-0.2 rounded bg-surface-2 text-text-muted">{m.season}</span>
                   </div>
-                  <div className="text-[11px] text-[#F2C265]/80 mt-1">
+                  <div className="text-xs text-accent-hover/80 mt-1">
                     روز 1: جشن {m.festival}
                   </div>
                 </div>
@@ -141,18 +141,18 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
 
         {/* 5 Off-Days of Vapasān */}
         <div className="space-y-2">
-          <h4 className="text-xs font-bold text-[#9B72CF] flex items-center gap-1">
-            <Sparkles className="w-3.5 h-3.5 text-[#9B72CF] shrink-0" />
+          <h4 className="text-xs font-bold text-role-codm flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5 text-role-codm shrink-0" />
             <span>5 روز برون‌گاه پس از 30 واپسان (خارج از سال‌شمار)</span>
           </h4>
           <div className="space-y-1.5 max-h-48 overflow-y-auto p-1">
             {CALENDAR_OFF_DAYS.map(off => (
               <div
                 key={off.id}
-                className="p-2.5 rounded-xl bg-[#141622] border border-[#9B72CF]/20 text-xs space-y-1"
+                className="p-2.5 rounded-xl bg-info border border-role-codm/20 text-xs space-y-1"
               >
-                <div className="font-bold text-[#9B72CF]">{off.name}</div>
-                <div className="text-[11px] text-[#A39A89] leading-relaxed">{off.folkBelief}</div>
+                <div className="font-bold text-role-codm">{off.name}</div>
+                <div className="text-xs text-text-muted leading-relaxed">{off.folkBelief}</div>
               </div>
             ))}
           </div>
