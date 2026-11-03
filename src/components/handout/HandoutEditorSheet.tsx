@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Upload, FileText, Image as ImageIcon, Map as MapIcon, Eye, EyeOff, Users, AlertCircle, Check } from 'lucide-react';
 import { Handout, HandoutKind, HandoutVisibility } from '../../types';
 import { compressImageToWebp, formatBytes, base64ToFile } from '../../utils/imageCompress';
+import { BottomSheet } from '../mobile/BottomSheet';
 
 interface HandoutEditorSheetProps {
   isOpen: boolean;
@@ -138,25 +139,16 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in" dir="rtl">
-      <div className="w-full max-w-2xl max-h-[90vh] flex flex-col bg-[#14120E] border border-[#2F2A23] rounded-t-[20px] sm:rounded-[20px] shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-2 p-4 border-b border-[#2F2A23] bg-[#1A1612]">
-          <h2 className="text-base font-bold text-[#EDE6D8]">
-            {initialHandout ? 'ویرایش سند یا نقشه' : 'افزودن سند یا نقشه جدید'}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-[8px] bg-[#241F18] hover:bg-[#322A21] text-[#A39A89] hover:text-[#EDE6D8] flex items-center justify-center transition"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+  if (!isOpen) return null;
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4">
+  return (
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      title={initialHandout ? 'ویرایش سند یا نقشه' : 'افزودن سند یا نقشه جدید'}
+      maxWidth="max-w-2xl"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 text-start">
           {uploadError && (
             <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-[10px] text-xs text-rose-300 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
@@ -419,7 +411,6 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </BottomSheet>
   );
 };

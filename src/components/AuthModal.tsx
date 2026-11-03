@@ -4,6 +4,7 @@ import { APP_NAME_FA } from '../config/app';
 import { SEED_USERS } from '../data/seed';
 import { api } from '../services/api';
 import { Shield, Sparkles, KeyRound, Mail, UserPlus, LogIn, Eye, EyeOff, X, HelpCircle, Check, AlertCircle } from 'lucide-react';
+import { BottomSheet } from './mobile/BottomSheet';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -129,21 +130,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0E0D0C]/95 backdrop-blur-md p-3 sm:p-6 overflow-y-auto"
-      dir="rtl"
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`درگاه احراز هویت ${APP_NAME_FA}`}
+      subtitle={
+        mode === 'login' ? 'ورود ماجراجویان و دانجن مستر به گاهشمار وقایع' :
+        mode === 'register' ? 'عضویت در کارزار با کد دعوت دانجن مستر' :
+        mode === 'reset' ? 'تنظیم رمز عبور جدید از طریق پیوند اختصاصی' :
+        'فراموشی رمز عبور و بازیابی دسترسی'
+      }
+      maxWidth="max-w-xl"
     >
-      <div className="w-full max-w-2xl surface-card card-gold-top min-h-[75vh] p-5 sm:p-7 space-y-5 my-auto relative shadow-2xl">
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-4 start-4 p-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
-          title="بستن"
-        >
-          <X className="w-4 h-4" />
-        </button>
+      <div className="space-y-4">
 
         {/* Seal Mark & Logo Wordmark */}
         <div className="text-center pt-2">
@@ -462,6 +464,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </BottomSheet>
   );
 };

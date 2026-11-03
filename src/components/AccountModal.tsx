@@ -9,6 +9,7 @@ import {
   LogOut, Shield, Check, AlertCircle, Trash2, Globe, Clock, CheckCircle2, RefreshCw 
 } from 'lucide-react';
 import { ScrollableRow } from './ui/ScrollableRow';
+import { BottomSheet } from './mobile/BottomSheet';
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -227,36 +228,30 @@ export const AccountModal: React.FC<AccountModalProps> = ({
     }
   };
 
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0E0D0C]/95 backdrop-blur-md p-3 sm:p-6 overflow-y-auto"
-      dir="rtl"
-    >
-      <div className="w-full max-w-3xl min-h-[75vh] surface-card card-gold-top min-h-[75vh] p-5 sm:p-7 space-y-5 my-auto relative shadow-2xl">
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-4 start-4 p-2 rounded-[10px] bg-[#201D19] border border-[#2F2A23] text-[#A39A89] hover:text-[#EDE6D8] touch-target min-w-[44px]"
-          title="بستن"
-        >
-          <X className="w-4 h-4" />
-        </button>
+  if (!isOpen) return null;
 
-        {/* Title */}
-        <div className="flex items-center gap-3 pt-1">
-          <div className="w-10 h-10 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#E0A030] flex items-center justify-center font-black">
+  return (
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      title={
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-[10px] bg-[#E0A030]/15 border border-[#E0A030]/30 text-[#E0A030] flex items-center justify-center font-black text-xs shrink-0">
             {(currentUser.displayName || currentUser.name)?.[0] || 'ح'}
           </div>
-          <div>
-            <h2 className="text-base font-extrabold text-[#EDE6D8]">
+          <div className="min-w-0">
+            <h2 className="text-sm font-extrabold text-[#EDE6D8] truncate">
               مدیریت حساب کاربری
             </h2>
-            <p className="text-xs text-[#A39A89]">
+            <p className="text-[11px] text-[#A39A89] truncate">
               {currentUser.email} • {currentUser.role === 'dm' ? 'دانجن مستر' : 'ماجراجو'}
             </p>
           </div>
         </div>
+      }
+      maxWidth="max-w-2xl"
+    >
+      <div className="space-y-4">
 
         {/* Tab strip */}
         <ScrollableRow
@@ -683,6 +678,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </BottomSheet>
   );
 };

@@ -117,8 +117,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     <div 
       className={`fixed inset-0 z-[100] flex ${
         centered 
-          ? 'items-center justify-center p-3 sm:p-4' 
-          : 'items-end sm:items-center justify-center p-0 sm:p-4'
+          ? 'items-center justify-center p-3 sm:p-4 pt-[max(1rem,env(safe-area-inset-top,0px))]' 
+          : 'items-end sm:items-center justify-center p-0 sm:p-4 pt-[max(0.75rem,env(safe-area-inset-top,0px))]'
       } bg-black/85 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto`}
       onClick={(e) => {
         if (e.target === e.currentTarget) handleClose();

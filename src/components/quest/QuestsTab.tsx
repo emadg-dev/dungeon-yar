@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { DmQuestEditorModal } from './DmQuestEditorModal';
 import { ScrollableRow } from '../ui/ScrollableRow';
+import { BottomSheet } from '../mobile/BottomSheet';
 
 interface QuestsTabProps {
   quests: Quest[];
@@ -521,24 +522,20 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
 
       {/* Completion & Rewards Confirmation Modal */}
       {completingQuest && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm" dir="rtl">
-          <div className="w-full sm:max-w-md bg-[#14120E] border border-[#2F2A23] rounded-t-[20px] sm:rounded-[18px] p-5 space-y-4 shadow-2xl">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#6F9E78]/20 border border-[#6F9E78]/40 text-[#6F9E78] flex items-center justify-center">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-black text-[#EDE6D8]">تکمیل مأموریت: {completingQuest.title}</h3>
-                <p className="text-[11px] text-[#A39A89]">علامت‌زدن به عنوان پیروزی و پایان موفقیت‌آمیز</p>
-              </div>
-            </div>
-
+        <BottomSheet
+          isOpen={true}
+          onClose={() => setCompletingQuest(null)}
+          title={`تکمیل مأموریت: ${completingQuest.title}`}
+          subtitle="علامت‌زدن به عنوان پیروزی و پایان موفقیت‌آمیز"
+          maxWidth="max-w-md"
+        >
+          <div className="space-y-4 text-start">
             <p className="text-xs text-[#EDE6D8] leading-relaxed">
               با تکمیل این مأموریت، تمامی اهداف آن محقق شده علامت می‌خورند و وضعیت مأموریت به «تکمیل شده» تغییر می‌یابد.
             </p>
 
             {completingQuest.rewardRef?.xp ? (
-              <label className="p-3 rounded-[10px] bg-[#1A1713] border border-[#6F9E78]/30 flex items-center gap-3 cursor-pointer touch-target min-w-[44px]">
+              <label className="p-3 rounded-xl bg-[#1A1713] border border-[#6F9E78]/30 flex items-center gap-3 cursor-pointer touch-target min-w-[44px]">
                 <input
                   type="checkbox"
                   checked={grantRewardsOnComplete}
@@ -561,7 +558,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                 type="button"
                 onClick={() => setCompletingQuest(null)}
                 disabled={actionLoading}
-                className="py-2.5 px-4 rounded-[12px] bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] transition touch-target min-w-[44px] min-h-[44px]"
+                className="py-2.5 px-4 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#A39A89] hover:text-[#EDE6D8] transition touch-target min-w-[44px] min-h-[44px]"
               >
                 انصراف
               </button>
@@ -569,14 +566,14 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                 type="button"
                 onClick={handleConfirmComplete}
                 disabled={actionLoading}
-                className="py-2.5 px-6 rounded-[12px] bg-[#6F9E78] text-[#0E0D0C] text-xs font-black shadow-lg hover:brightness-110 transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
+                className="py-2.5 px-6 rounded-xl bg-[#6F9E78] text-[#0E0D0C] text-xs font-black shadow-lg hover:brightness-110 transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
               >
                 <Check className="w-4 h-4" />
                 <span>{actionLoading ? 'در حال ثبت...' : 'تأیید و پایان مأموریت'}</span>
               </button>
             </div>
           </div>
-        </div>
+        </BottomSheet>
       )}
     </div>
   );

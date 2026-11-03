@@ -949,7 +949,6 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
     }
   };
 
-  return (
   if (!isOpen) return null;
 
   return (

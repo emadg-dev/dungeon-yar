@@ -3,6 +3,7 @@ import { X, Eye, EyeOff, Users, Copy, Check, FileText, Image as ImageIcon, Map a
 import { Handout, MapPin } from '../../types';
 import { MobileImageViewer } from './MobileImageViewer';
 import { MapViewer } from './MapViewer';
+import { BottomSheet } from '../mobile/BottomSheet';
 
 interface HandoutViewerModalProps {
   handout: Handout;
@@ -68,86 +69,78 @@ export const HandoutViewerModal: React.FC<HandoutViewerModalProps> = ({
   // Resolve media image URL (supports mediaUrl or fallback)
   const imageUrl = handout.mediaUrl || (handout.mediaId ? `/api/media/${handout.mediaId}` : '');
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in" dir="rtl">
-      <div className="relative w-full max-w-3xl min-h-[75vh] max-h-[92vh] flex flex-col bg-[#14120E] border border-[#2F2A23] rounded-[20px] shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-2 p-3.5 sm:p-4 border-b border-[#2F2A23] bg-[#1A1612]">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-[10px] bg-[#241F18] border border-[#3A3327] flex items-center justify-center shrink-0">
-              {kindIcon}
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-base font-bold text-[#EDE6D8] truncate">{handout.title}</h2>
-              <div className="flex items-center gap-2 text-[11px] text-[#A39A89]">
-                <span>{kindLabel}</span>
-                {isDm && (
-                  <>
-                    <span>•</span>
-                    <span
-                      className={`inline-flex items-center gap-1 font-medium ${
-                        handout.visibility === 'revealed'
-                          ? 'text-emerald-400'
-                          : handout.visibility === 'selected'
-                          ? 'text-sky-400'
-                          : 'text-rose-400'
-                      }`}
-                    >
-                      {handout.visibility === 'revealed' && <Eye className="w-3 h-3" />}
-                      {handout.visibility === 'selected' && <Users className="w-3 h-3" />}
-                      {handout.visibility === 'hidden' && <EyeOff className="w-3 h-3" />}
-                      {handout.visibility === 'revealed'
-                        ? 'آشکار برای همه'
-                        : handout.visibility === 'selected'
-                        ? 'بازیکنان منتخب'
-                        : 'مخفی از بازیکنان'}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+  if (!isOpen) return null;
 
-          <div className="flex items-center gap-1.5 shrink-0">
-            {/* DM Quick Reveal / Hide Action */}
-            {isDm && onToggleReveal && (
-              <button
-                type="button"
-                onClick={() => handleToggleVisibility(handout.visibility === 'revealed' ? 'hidden' : 'revealed')}
-                disabled={isUpdatingVisibility}
-                className={`px-3 py-1.5 rounded-[8px] text-xs font-semibold flex items-center gap-1.5 transition touch-target min-w-[44px] ${
+  return (
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      title={
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-[#241F18] border border-[#3A3327] flex items-center justify-center shrink-0">
+            {kindIcon}
+          </div>
+          <h2 className="text-sm font-bold text-[#EDE6D8] truncate">{handout.title}</h2>
+        </div>
+      }
+      subtitle={
+        <div className="flex items-center gap-2 text-[11px] text-[#A39A89]">
+          <span>{kindLabel}</span>
+          {isDm && (
+            <>
+              <span>•</span>
+              <span
+                className={`inline-flex items-center gap-1 font-medium ${
                   handout.visibility === 'revealed'
-                    ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30'
-                    : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
+                    ? 'text-emerald-400'
+                    : handout.visibility === 'selected'
+                    ? 'text-sky-400'
+                    : 'text-rose-400'
                 }`}
               >
-                {handout.visibility === 'revealed' ? (
-                  <>
-                    <EyeOff className="w-3.5 h-3.5" />
-                    <span>مخفی‌سازی</span>
-                  </>
-                ) : (
-                  <>
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>آشکارسازی</span>
-                  </>
-                )}
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-9 h-9 rounded-[10px] bg-[#241F18] hover:bg-[#322A21] text-[#A39A89] hover:text-[#EDE6D8] flex items-center justify-center transition touch-target min-w-[44px]"
-              aria-label="بستن"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+                {handout.visibility === 'revealed' && <Eye className="w-3 h-3" />}
+                {handout.visibility === 'selected' && <Users className="w-3 h-3" />}
+                {handout.visibility === 'hidden' && <EyeOff className="w-3 h-3" />}
+                {handout.visibility === 'revealed'
+                  ? 'آشکار برای همه'
+                  : handout.visibility === 'selected'
+                  ? 'بازیکنان منتخب'
+                  : 'مخفی از بازیکنان'}
+              </span>
+            </>
+          )}
         </div>
-
-        {/* Content Body */}
-        <div className="flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 space-y-4">
+      }
+      headerExtra={
+        isDm && onToggleReveal ? (
+          <button
+            type="button"
+            onClick={() => handleToggleVisibility(handout.visibility === 'revealed' ? 'hidden' : 'revealed')}
+            disabled={isUpdatingVisibility}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition touch-target min-w-[44px] ${
+              handout.visibility === 'revealed'
+                ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30'
+                : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
+            }`}
+          >
+            {handout.visibility === 'revealed' ? (
+              <>
+                <EyeOff className="w-3.5 h-3.5" />
+                <span>مخفی‌سازی</span>
+              </>
+            ) : (
+              <>
+                <Eye className="w-3.5 h-3.5" />
+                <span>آشکارسازی</span>
+              </>
+            )}
+          </button>
+        ) : undefined
+      }
+      maxWidth="max-w-3xl"
+      fullHeight={handout.kind === 'map' || handout.kind === 'image'}
+    >
+      <div className="space-y-4">
           {/* Selected Recipients Info (if DM and selected) */}
           {isDm && handout.visibility === 'selected' && handout.recipients && handout.recipients.length > 0 && (
             <div className="p-2.5 bg-sky-950/30 border border-sky-800/40 rounded-[10px] text-xs text-sky-200 flex items-center gap-2">
@@ -239,8 +232,7 @@ export const HandoutViewerModal: React.FC<HandoutViewerModalProps> = ({
               ))}
             </div>
           )}
-        </div>
       </div>
-    </div>
+    </BottomSheet>
   );
 };

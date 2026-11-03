@@ -5,6 +5,7 @@ import {
   FileText, Shield, RefreshCw, Search, Clock, User,
   Filter, CheckCircle2, AlertTriangle, Eye, ChevronDown, ChevronUp
 } from 'lucide-react';
+import { BottomSheet } from '../mobile/BottomSheet';
 
 interface DmAuditLogViewerProps {
   campaignId: string;
@@ -70,29 +71,22 @@ export const DmAuditLogViewer: React.FC<DmAuditLogViewerProps> = ({
     return 'bg-[#201D19] text-[#A39A89] border-[#2F2A23]';
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in" dir="rtl">
-      <div className="w-full max-w-3xl bg-[#171513] border border-[#2F2A23] rounded-[16px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-2 p-4 border-b border-[#2F2A23] bg-[#201D19]/60">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-[10px] bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-extrabold text-[#EDE6D8]">دفتر لاگ و رهگیری رویدادهای کمپین</h2>
-              <p className="text-[11px] text-[#A39A89]">
-                ثبت تغییرات امنیتی، اقدامات اعضا، دستکاری برگه‌ها و وضعیت نبردها
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="py-1.5 px-3 rounded-[8px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] text-xs font-bold touch-target min-w-[44px] min-h-[44px]"
-          >
-            بستن
-          </button>
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      title={
+        <div className="flex items-center gap-2">
+          <FileText className="w-4 h-4 text-[#E0A030]" />
+          <span>دفتر لاگ و رهگیری رویدادهای کمپین</span>
         </div>
+      }
+      subtitle="ثبت تغییرات امنیتی، اقدامات اعضا، دستکاری برگه‌ها و وضعیت نبردها"
+      maxWidth="max-w-3xl"
+    >
+      <div className="space-y-4">
 
         {/* Filter bar */}
         <div className="p-3 border-b border-[#2F2A23] bg-[#1B1815] flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -194,6 +188,6 @@ export const DmAuditLogViewer: React.FC<DmAuditLogViewerProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </BottomSheet>
   );
 };

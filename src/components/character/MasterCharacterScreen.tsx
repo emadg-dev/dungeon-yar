@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { BackstoryEditor } from './BackstoryEditor';
 import { ScrollableRow } from '../ui/ScrollableRow';
+import { BottomSheet } from '../mobile/BottomSheet';
 import { 
   computeCharacterStats, 
   groupHistoryByCampaign, 
@@ -668,22 +669,19 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
 
       {/* Legacy Join Modal Dialog */}
       {legacyJoinOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" dir="rtl">
-          <div className="bg-[#171513] border border-purple-500/40 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#2F2A23]">
-              <div className="flex items-center gap-2 text-purple-300">
-                <RefreshCw className="w-5 h-5 text-purple-400" />
-                <h3 className="text-base font-bold text-[#EDE6D8]">ورود میراثی به کمپین جدید</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setLegacyJoinOpen(false)}
-                className="text-[#8A8374] hover:text-[#EDE6D8] text-sm p-1"
-              >
-                ✕
-              </button>
+        <BottomSheet
+          isOpen={true}
+          onClose={() => setLegacyJoinOpen(false)}
+          title={
+            <div className="flex items-center gap-2 text-purple-300">
+              <RefreshCw className="w-5 h-5 text-purple-400" />
+              <span>ورود میراثی به کمپین جدید</span>
             </div>
-
+          }
+          subtitle={`انتقال کاراکتر ${charData.name} با حفظ هویت و ایجاد حضور تازه`}
+          maxWidth="max-w-lg"
+        >
+          <div className="space-y-4 text-start">
             <p className="text-xs text-[#A39A89] leading-relaxed">
               با قابلیت ورود میراثی (Legacy Join)، هویت و خاطرات <strong>{charData.name}</strong> از کمپین پیشین حفظ می‌شود، اما یک وضعیت بازی (Participation) تازه متناسب با قوانین و سطح ورود کمپین مقصد برای وی شکل می‌گیرد.
             </p>
@@ -756,7 +754,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#2F2A23]">
                 <button
                   type="button"
                   onClick={() => setLegacyJoinOpen(false)}
@@ -774,7 +772,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
               </div>
             </form>
           </div>
-        </div>
+        </BottomSheet>
       )}
 
       {/* A4 RTL Printable Sheet and Backstory (visible only during window.print()) */}

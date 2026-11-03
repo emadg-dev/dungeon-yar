@@ -531,7 +531,7 @@ export const Header: React.FC<HeaderProps> = ({
             aria-label="منوی اصلی"
             className="fixed top-0 inset-inline-end-0 z-50 w-[min(22rem,92vw)] h-full bg-[#171513]/98 backdrop-blur-xl border-s border-[#2F2A23] shadow-2xl overflow-y-auto overscroll-contain transition-transform duration-200 ease-out"
           >
-            <div className="flex items-center justify-between p-3 border-b border-[#2F2A23] sticky top-0 bg-[#171513]/98 z-10">
+            <div className="flex items-center justify-between px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] border-b border-[#2F2A23] sticky top-0 bg-[#171513]/98 z-10">
               <div>
                 <h2 className="text-xs font-black text-[#EDE6D8]">{APP_NAME_FA}</h2>
                 <span className="text-[10px] text-[#A39A89]">منوی اصلی</span>
