@@ -145,7 +145,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
         );
       case 'done':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-neutral-800 text-neutral-400 border border-neutral-700">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-2 text-text-muted border border-border">
             برگزار شده
           </span>
         );
@@ -166,7 +166,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
   return (
     <div className="rounded-2xl bg-gradient-to-b from-surface-2 to-surface border border-border p-4 sm:p-5 shadow-xl text-start transition-all" dir="rtl">
       {/* Header bar: Session # and Status */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-white/5">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-border">
         <div className="flex items-center gap-2">
           <span className="px-2.5 py-0.5 rounded-lg bg-accent/15 text-accent-hover border border-accent/25 text-xs font-extrabold tracking-wide">
             جلسه {session.number}
@@ -178,7 +178,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
             <Button
               type="button"
               onClick={() => onEditSession(session)}
-              className="p-1.5 rounded-lg hover:bg-white/5 text-text-muted hover:text-text-primary transition-colors"
+              className="p-1.5 rounded-lg hover:bg-surface-2 text-text-muted hover:text-text-primary transition-colors"
               title="ویرایش مشخصات جلسه"
             >
               <Edit3 className="w-4 h-4" />
@@ -208,7 +208,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
               <CalendarIcon className="w-4 h-4 text-accent" />
               <span>{dt.weekday}، {dt.date}</span>
             </div>
-            <div className="flex items-center gap-1.5 text-text-primary font-semibold bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
+            <div className="flex items-center gap-1.5 text-text-primary font-semibold bg-surface-2 px-3 py-1.5 rounded-xl border border-border">
               <Clock className="w-4 h-4 text-text-muted" />
               <span>ساعت {dt.time}</span>
               <span className="text-xs text-text-muted">({session.durationMinutes} دقیقه)</span>
@@ -270,7 +270,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
 
       {/* Date Poll Section (if active) */}
       {poll && poll.status === 'open' && (
-        <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
+        <div className="mt-4 pt-4 border-t border-border space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-accent animate-ping" />
@@ -289,7 +289,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
               return (
                 <div
                   key={tally.optionId}
-                  className="p-3 rounded-xl bg-surface border border-white/5 space-y-2.5"
+                  className="p-3 rounded-xl bg-surface border border-border space-y-2.5"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -316,7 +316,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
 
                   {/* Voting buttons for players & DM */}
                   {userCanVote && (
-                    <div className="grid grid-cols-3 gap-2 pt-1 border-t border-white/5">
+                    <div className="grid grid-cols-3 gap-2 pt-1 border-t border-border">
                       <Button
                         type="button"
                         disabled={isSubmitting}
@@ -324,7 +324,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                         className={`min-h-[44px] py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                           myVote === 'yes'
                             ? 'bg-success text-on-accent shadow-md ring-2 ring-success/40'
-                            : 'bg-white/5 hover:bg-white/10 text-success border border-success/30'
+                            : 'bg-surface-2 hover:bg-surface-3 text-success border border-success/30'
                         }`}
                       >
                         <Check className="w-3.5 h-3.5" />
@@ -338,7 +338,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                         className={`min-h-[44px] py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                           myVote === 'maybe'
                             ? 'bg-accent text-on-accent shadow-md ring-2 ring-accent/40'
-                            : 'bg-white/5 hover:bg-white/10 text-accent-hover border border-accent/30'
+                            : 'bg-surface-2 hover:bg-surface-3 text-accent-hover border border-accent/30'
                         }`}
                       >
                         <HelpCircle className="w-3.5 h-3.5" />
@@ -352,7 +352,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                         className={`min-h-[44px] py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                           myVote === 'no'
                             ? 'bg-danger text-on-danger shadow-md ring-2 ring-danger/40'
-                            : 'bg-white/5 hover:bg-white/10 text-danger border border-danger/30'
+                            : 'bg-surface-2 hover:bg-surface-3 text-danger border border-danger/30'
                         }`}
                       >
                         <X className="w-3.5 h-3.5" />
@@ -383,7 +383,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
 
       {/* RSVP Section (When session has scheduledAt) */}
       {session.scheduledAt && session.status !== 'done' && session.status !== 'cancelled' && (
-        <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
+        <div className="mt-4 pt-4 border-t border-border space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-text-primary">وضعیت حضور شما:</span>
@@ -491,7 +491,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                       value={noteText}
                       onChange={(e) => setNoteText(e.target.value)}
                       placeholder="مثال: شاید نیم‌ساعت تاخیر داشته باشم"
-                      className="flex-1 bg-bg border border-white/10 rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent"
+                      className="flex-1 bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent"
                     />
                     <Button
                       type="button"
@@ -512,7 +512,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
               </div>
             </div>
           ) : (
-            <div className="text-xs text-text-muted italic bg-white/5 p-2.5 rounded-xl text-center">
+            <div className="text-xs text-text-muted italic bg-surface-2 p-2.5 rounded-xl text-center">
               تماشاچیان مجاز به ثبت حضور نیستند.
             </div>
           )}
@@ -521,7 +521,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
 
       {/* DM Footer Actions */}
       {isDm && (
-        <div className="mt-4 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
+        <div className="mt-4 pt-3 border-t border-border flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             {session.status !== 'done' && onOpenAttendance && (
               <Button

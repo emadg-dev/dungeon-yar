@@ -783,12 +783,12 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
       <div className="hidden print:block font-sans text-black bg-white p-8 leading-relaxed max-w-[210mm] mx-auto" dir="rtl">
         <div className="border-b-2 border-black pb-4 mb-6 flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-black text-black">{charData.name}</h1>
-            <p className="text-xs text-gray-700 mt-1">
+            <h1 className="text-2xl font-black text-text-primary">{charData.name}</h1>
+            <p className="text-xs text-text-muted mt-1">
               نژاد یا تبار: {charData.race || 'نامشخص'} | وضعیت: {charData.status === 'active' ? 'فعال' : charData.status} | پلتفرم {APP_NAME_FA}
             </p>
             {participations.length > 0 && (
-              <p className="text-xs text-gray-600 mt-0.5">
+              <p className="text-xs text-text-muted mt-0.5">
                 کمپین‌های مرتبط: {participations.map(p => `${p.campaignName || 'کمپین'} (${p.className || 'ماجراجو'} سطح ${p.level})`).join('، ')}
               </p>
             )}
@@ -799,26 +799,26 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
               alt={charData.name} 
               width={80}
               height={80}
-              className="w-20 h-20 object-cover border border-black rounded"
+              className="w-20 h-20 object-cover border border-border rounded"
             />
           )}
         </div>
 
         {charData.appearance && (
           <div className="mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-1.5 text-gray-900">سیمای ظاهری</h2>
-            <p className="text-xs text-gray-800 leading-normal whitespace-pre-wrap">{charData.appearance}</p>
+            <h2 className="text-xs font-bold uppercase tracking-wider border-b border-border pb-1 mb-1.5 text-text-primary">سیمای ظاهری</h2>
+            <p className="text-xs text-text-primary leading-normal whitespace-pre-wrap">{charData.appearance}</p>
           </div>
         )}
 
         {(charData.backstory?.summary || charData.backstory?.origin) && (
           <div className="mb-4 space-y-2">
-            <h2 className="text-xs font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-1.5 text-gray-900">خلاصه پیشینه و خاستگاه</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider border-b border-border pb-1 mb-1.5 text-text-primary">خلاصه پیشینه و خاستگاه</h2>
             {charData.backstory?.summary && (
-              <p className="text-xs text-gray-800 whitespace-pre-wrap"><strong>چکیده:</strong> {charData.backstory.summary}</p>
+              <p className="text-xs text-text-primary whitespace-pre-wrap"><strong>چکیده:</strong> {charData.backstory.summary}</p>
             )}
             {charData.backstory?.origin && (
-              <p className="text-xs text-gray-800 whitespace-pre-wrap"><strong>خاستگاه و ریشه‌ها:</strong> {charData.backstory.origin}</p>
+              <p className="text-xs text-text-primary whitespace-pre-wrap"><strong>خاستگاه و ریشه‌ها:</strong> {charData.backstory.origin}</p>
             )}
           </div>
         )}

@@ -482,7 +482,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Bell className="w-4 h-4" />
               {unreadNotificationsCount > 0 && (
-                <span className="absolute -top-1 -end-1 min-w-[18px] h-[18px] px-1 rounded-full bg-danger text-white text-xs font-bold flex items-center justify-center border border-bg shadow-sm animate-pulse">
+                <span className="absolute -top-1 -end-1 min-w-[18px] h-[18px] px-1 rounded-full bg-danger text-on-danger text-xs font-bold flex items-center justify-center border border-bg shadow-sm animate-pulse">
                   {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
                 </span>
               )}
@@ -538,7 +538,7 @@ export const Header: React.FC<HeaderProps> = ({
       {mobileMenuOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-200"
+            className="fixed inset-0 z-40 bg-overlay/60 backdrop-blur-sm transition-opacity duration-200"
             onClick={closeMenu}
             aria-hidden="true"
           />

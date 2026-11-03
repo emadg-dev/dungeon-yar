@@ -196,7 +196,7 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
         <Button
           type="button"
           onClick={handleZoomIn}
-          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-primary hover:bg-white/10 active:bg-white/20 transition touch-target min-w-[44px]"
+          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-primary hover:bg-surface-2 active:bg-surface-3 transition touch-target min-w-[44px]"
           title="بزرگ‌نمایی (+)"
           aria-label="بزرگ‌نمایی"
         >
@@ -207,7 +207,7 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
           type="button"
           onClick={handleZoomOut}
           disabled={scale <= 1}
-          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-primary hover:bg-white/10 active:bg-white/20 disabled:opacity-40 transition touch-target min-w-[44px]"
+          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-primary hover:bg-surface-2 active:bg-surface-3 disabled:opacity-40 transition touch-target min-w-[44px]"
           title="کوچک‌نمایی (-)"
           aria-label="کوچک‌نمایی"
         >
@@ -217,7 +217,7 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
         <Button
           type="button"
           onClick={handleResetZoom}
-          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-primary hover:bg-white/10 active:bg-white/20 transition touch-target min-w-[44px]"
+          className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-primary hover:bg-surface-2 active:bg-surface-3 transition touch-target min-w-[44px]"
           title="اندازه پیش‌فرض (دو لمس سریع)"
           aria-label="اندازه پیش‌فرض"
         >

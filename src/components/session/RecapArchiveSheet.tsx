@@ -148,7 +148,7 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
                       <Button
                         type="button"
                         onClick={() => onEditRecap(activeRecap)}
-                        className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition touch-target min-w-[44px]"
+                        className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-2 transition touch-target min-w-[44px]"
                         title="ویرایش"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -170,7 +170,7 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
                 <Button
                   type="button"
                   onClick={() => setSelectedRecapId(null)}
-                  className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition touch-target min-w-[44px]"
+                  className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-2 transition touch-target min-w-[44px]"
                   title="بستن پنجره مطالعه"
                 >
                   <X className="w-4 h-4" />

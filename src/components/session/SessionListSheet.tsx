@@ -91,7 +91,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
       <div className="space-y-4 pb-20 text-start" dir="rtl">
         {/* Top Control Bar: Tabs & New Session Button */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <ScrollableRow activeKey={activeTab} wrapperClassName="bg-bg p-1 rounded-xl border border-white/10 shrink-0" className="gap-1">
+          <ScrollableRow activeKey={activeTab} wrapperClassName="bg-bg p-1 rounded-xl border border-border shrink-0" className="gap-1">
             <Button
               type="button"
               data-scroll-key="upcoming"
@@ -196,7 +196,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                               onClose();
                               onEditSession(s);
                             }}
-                            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
+                            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-2 transition-colors"
                             title="ویرایش جلسه"
                           >
                             <Edit3 className="w-4 h-4" />
@@ -224,7 +224,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                         <CalendarIcon className="w-3.5 h-3.5" />
                         <span>{dt.weekday}، {dt.date}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-text-primary bg-white/5 px-2.5 py-1 rounded-lg">
+                      <div className="flex items-center gap-1 text-text-primary bg-surface-2 px-2.5 py-1 rounded-lg">
                         <Clock className="w-3.5 h-3.5 text-text-muted" />
                         <span>ساعت {dt.time}</span>
                         <span className="text-xs text-text-muted">({s.durationMinutes} د)</span>
@@ -282,7 +282,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                   )}
 
                   {/* Footer Stats: RSVP / Attendance */}
-                  <div className="pt-2 border-t border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="pt-2 border-t border-border flex flex-wrap items-center justify-between gap-2 text-xs">
                     {s.status === 'done' ? (
                       <div className="flex items-center gap-1.5 text-success font-bold">
                         <CheckCircle2 className="w-3.5 h-3.5" />
