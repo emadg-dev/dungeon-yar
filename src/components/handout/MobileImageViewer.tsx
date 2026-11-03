@@ -228,7 +228,7 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
           <Button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-muted hover:text-white hover:bg-rose-500/20 active:bg-rose-500/30 transition touch-target min-w-[44px]"
+            className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-muted hover:text-text-primary hover:bg-danger/20 active:bg-danger/30 transition touch-target min-w-[44px]"
             title="بستن"
             aria-label="بستن پنجره"
           >

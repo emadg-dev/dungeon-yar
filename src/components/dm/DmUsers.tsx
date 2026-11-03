@@ -285,7 +285,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
             <Button
               type="button"
               onClick={() => copyToClipboard(resetLinkData.resetLink)}
-              className="py-2 px-3.5 rounded-[8px] btn-primary-amber text-xs font-bold touch-target min-w-[44px] flex items-center gap-1 shrink-0 min-h-[44px]"
+              className="py-2 px-3.5 rounded-[8px] btn-primary text-xs font-bold touch-target min-w-[44px] flex items-center gap-1 shrink-0 min-h-[44px]"
             >
               {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               <span>{copiedLink ? 'کپی شد' : 'کپی لینک'}</span>

@@ -32,7 +32,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
     <div
       aria-hidden="true"
       style={inlineStyles}
-      className={`bg-stone-800/60 animate-pulse ${variantStyles[variant]} ${className}`}
+      className={`bg-surface-3/60 animate-pulse ${variantStyles[variant]} ${className}`}
       {...rest}
     />
   );

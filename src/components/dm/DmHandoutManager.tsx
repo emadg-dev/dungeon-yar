@@ -286,9 +286,9 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
       </div>
 
       {actionError && (
-        <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-[10px] text-xs text-rose-300 flex flex-wrap items-center justify-between gap-2">
+        <div className="p-3 bg-danger/10 border border-danger/30 rounded-[10px] text-xs text-danger flex flex-wrap items-center justify-between gap-2">
           <span>{actionError}</span>
-          <Button type="button" onClick={() => setActionError(null)} className="text-rose-300 hover:text-white">
+          <Button type="button" onClick={() => setActionError(null)} className="text-danger hover:text-text-primary">
             ×
           </Button>
         </div>
@@ -444,10 +444,10 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${
                           isRevealed
-                            ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                            ? 'bg-success/15 text-success border border-success/30'
                             : isSelected
-                            ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30'
-                            : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                            ? 'bg-info/15 text-info border border-info/30'
+                            : 'bg-danger/15 text-danger border border-danger/30'
                         }`}
                       >
                         {isRevealed && <Eye className="w-2.5 h-2.5" />}
@@ -471,7 +471,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                         <span>{handout.tags.map(t => `#${t}`).join(' ')}</span>
                       )}
                       {isSelected && handout.recipients && (
-                        <span className="text-sky-300">
+                        <span className="text-info">
                           ({handout.recipients.length} بازیکن مجاز)
                         </span>
                       )}
@@ -509,8 +509,8 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                     onClick={() => (isRevealed ? handleQuickHide(handout) : handleQuickReveal(handout))}
                     className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
                       isRevealed
-                        ? 'bg-rose-500/15 text-rose-300 hover:bg-rose-500/25 border border-rose-500/30'
-                        : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/40'
+                        ? 'bg-danger/15 text-danger hover:bg-danger/25 border border-danger/30'
+                        : 'bg-success/20 text-success hover:bg-success/30 border border-success/40'
                     }`}
                     title={isRevealed ? 'مخفی‌سازی از بازیکنان' : 'آشکارسازی فوری برای همه بازیکنان'}
                   >
@@ -522,7 +522,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                   <Button
                     type="button"
                     onClick={() => handleOpenRecipientModal(handout)}
-                    className="p-1.5 rounded-[8px] bg-bg hover:bg-surface-2 text-sky-400 border border-sky-800/40 touch-target min-w-[44px]"
+                    className="p-1.5 rounded-[8px] bg-bg hover:bg-surface-2 text-info border border-info/40 touch-target min-w-[44px]"
                     title="انتخاب بازیکنان مجاز"
                   >
                     <Users className="w-3.5 h-3.5" />
@@ -555,7 +555,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                   <Button
                     type="button"
                     onClick={() => handleDeleteHandout(handout.id)}
-                    className="p-1.5 rounded-[8px] bg-bg hover:bg-rose-500/20 text-text-muted hover:text-rose-400 border border-border touch-target min-w-[44px]"
+                    className="p-1.5 rounded-[8px] bg-bg hover:bg-danger/20 text-text-muted hover:text-danger border border-border touch-target min-w-[44px]"
                     title="حذف سند"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -606,7 +606,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
           onClose={() => setRecipientModalHandout(null)}
           title={
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-sky-400" />
+              <Users className="w-4 h-4 text-info" />
               <span>انتخاب بازیکنان برای «{recipientModalHandout.title}»</span>
             </div>
           }
@@ -625,7 +625,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                       key={char.id}
                       className={`flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl border cursor-pointer transition ${
                         isChecked
-                          ? 'bg-sky-950/40 border-sky-600/50 text-white'
+                          ? 'bg-info/20 border-info/50 text-text-primary'
                           : 'bg-surface border-border text-text-muted'
                       }`}
                     >
@@ -638,7 +638,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                               prev.includes(char.id) ? prev.filter(id => id !== char.id) : [...prev, char.id]
                             )
                           }
-                          className="w-4 h-4 rounded text-sky-500 focus:ring-sky-500 bg-bg border-border"
+                          className="w-4 h-4 rounded text-info focus:ring-info bg-bg border-border"
                         />
                         <span className="text-xs font-bold truncate">{char.name}</span>
                       </div>
@@ -662,7 +662,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
               <Button
                 type="button"
                 onClick={handleSaveRecipients}
-                className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-xs font-black text-black shadow-md transition touch-target min-w-[44px] min-h-[44px]"
+                className="px-5 py-2.5 rounded-xl bg-info hover:bg-info/90 text-xs font-black text-on-accent shadow-md transition touch-target min-w-[44px] min-h-[44px]"
               >
                 ثبت و اشتراک‌گذاری
               </Button>

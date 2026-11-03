@@ -105,7 +105,7 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4 pb-20 text-start" dir="rtl">
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300 flex items-center gap-2">
+          <div className="p-3 rounded-xl bg-danger/10 border border-danger/30 text-xs text-danger flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>{errorMsg}</span>
           </div>
@@ -132,7 +132,7 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
             <Button
               type="button"
               onClick={() => handleSelectAll(false)}
-              className="text-rose-400 hover:underline font-semibold"
+              className="text-danger hover:underline font-semibold"
             >
               عدم انتخاب
             </Button>
@@ -184,7 +184,7 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
                   {isAttended ? (
                     <span className="text-success">حاضر</span>
                   ) : (
-                    <span className="text-rose-400">غایب</span>
+                    <span className="text-danger">غایب</span>
                   )}
                 </div>
               </div>

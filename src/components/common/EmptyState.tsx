@@ -56,7 +56,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         <Button
           type="button"
           onClick={onAction}
-          className="mt-2 py-2.5 px-5 btn-primary-amber text-xs touch-target min-w-[44px]"
+          className="mt-2 py-2.5 px-5 btn-primary text-xs touch-target min-w-[44px]"
         >
           {actionLabel}
         </Button>

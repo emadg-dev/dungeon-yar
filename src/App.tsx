@@ -333,6 +333,10 @@ export default function App() {
         document.documentElement.classList.remove('light');
         document.documentElement.classList.add('dark');
       }
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', theme === 'light' ? '#F7F4EE' : '#0E0D0C');
+      }
     }
     try {
       localStorage.setItem('zorvania_theme', theme);
@@ -1769,7 +1773,7 @@ export default function App() {
                           characterId: myCharacters[0]?.id || null
                         });
                       }}
-                      className="py-2.5 px-6 rounded-[12px] btn-primary-amber font-extrabold text-xs shadow-lg transition touch-target min-w-[44px]"
+                      className="py-2.5 px-6 rounded-[12px] btn-primary font-extrabold text-xs shadow-lg transition touch-target min-w-[44px]"
                     >
                       ورود با شخصیت موجود
                     </Button>
@@ -2298,7 +2302,7 @@ export default function App() {
                   setSessionExpiredSheetOpen(false);
                   setAuthModalState({ isOpen: true, mode: 'login' });
                 }}
-                className="w-full py-3 rounded-[12px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[48px]"
+                className="w-full py-3 rounded-[12px] btn-primary font-extrabold text-xs touch-target min-w-[44px] min-h-[48px]"
               >
                 ورود مجدد به حساب کاربری
               </Button>

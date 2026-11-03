@@ -29,15 +29,15 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 
   const getBarColor = () => {
     if (color === 'auto-hp') {
-      if (percent > 50) return 'bg-emerald-500';
-      if (percent > 20) return 'bg-amber-500';
-      return 'bg-red-500';
+      if (percent > 50) return 'bg-success';
+      if (percent > 20) return 'bg-warning';
+      return 'bg-danger';
     }
     const colorStyles = {
-      accent: 'bg-amber-500',
-      success: 'bg-emerald-500',
-      danger: 'bg-red-500',
-      warning: 'bg-yellow-500',
+      accent: 'bg-primary',
+      success: 'bg-success',
+      danger: 'bg-danger',
+      warning: 'bg-warning',
     };
     return colorStyles[color];
   };
@@ -45,10 +45,10 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   return (
     <div className={`space-y-1 w-full ${className}`}>
       {(label || showValueText) && (
-        <div className="flex items-center justify-between text-xs font-semibold text-stone-300">
+        <div className="flex items-center justify-between text-xs font-semibold text-text-primary">
           {label && <span>{label}</span>}
           {showValueText && (
-            <span dir="ltr" className="font-mono text-stone-400">
+            <span dir="ltr" className="font-mono text-text-muted">
               {value} / {max}
             </span>
           )}
@@ -61,7 +61,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         aria-valuemin={0}
         aria-valuemax={max}
         aria-label={label || 'نوار پیشرفت'}
-        className={`w-full ${heightStyles[height]} bg-stone-800 rounded-full overflow-hidden p-0.5 border border-stone-800`}
+        className={`w-full ${heightStyles[height]} bg-surface-3 rounded-full overflow-hidden p-0.5 border border-border`}
       >
         <div
           style={{ width: `${percent}%` }}

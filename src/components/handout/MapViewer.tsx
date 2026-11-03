@@ -204,7 +204,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
                   >
                     <MapPinIcon className="w-4 h-4 fill-current" />
                     {!isRevealed && isDm && (
-                      <span className="absolute -top-1 -end-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-bg" />
+                      <span className="absolute -top-1 -end-1 w-2.5 h-2.5 bg-danger rounded-full border border-bg" />
                     )}
                   </div>
                 </div>
@@ -257,8 +257,8 @@ export const MapViewer: React.FC<MapViewerProps> = ({
                 <span
                   className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 ${
                     selectedPin.revealed
-                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                      ? 'bg-success/15 text-success border border-success/30'
+                      : 'bg-danger/15 text-danger border border-danger/30'
                   }`}
                 >
                   {selectedPin.revealed ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
@@ -289,7 +289,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
                   <Button
                     type="button"
                     onClick={handleDeleteCurrentPin}
-                    className="p-1.5 rounded-[8px] text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 touch-target min-w-[44px]"
+                    className="p-1.5 rounded-[8px] text-danger hover:text-danger-hover hover:bg-danger/20 touch-target min-w-[44px]"
                     title="حذف نشانگر"
                   >
                     <Trash2 className="w-4 h-4" />

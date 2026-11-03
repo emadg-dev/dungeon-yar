@@ -1116,7 +1116,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
             type="button"
             onClick={handleSaveAll}
             disabled={isSaving}
-            className="px-5 py-2 rounded-xl btn-primary-amber font-extrabold shadow-md flex items-center gap-1.5 min-h-[44px]"
+            className="px-5 py-2 rounded-xl btn-primary font-extrabold shadow-md flex items-center gap-1.5 min-h-[44px]"
           >
             <Save className="w-4 h-4" />
             <span>{isSaving ? 'در حال ذخیره‌سازی...' : 'ذخیره کلاس'}</span>
@@ -1198,7 +1198,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
               <Button
                 type="button"
                 onClick={handleSaveLevelFeatures}
-                className="px-4 py-1.5 rounded-xl btn-primary-amber font-bold text-xs min-h-[44px]"
+                className="px-4 py-1.5 rounded-xl btn-primary font-bold text-xs min-h-[44px]"
               >
                 تأیید سطح {editingLevel}
               </Button>

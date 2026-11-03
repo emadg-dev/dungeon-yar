@@ -151,7 +151,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
         );
       case 'cancelled':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-danger/20 text-danger border border-danger/30">
             لغو شده
           </span>
         );
@@ -220,7 +220,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
             )}
           </div>
         ) : (
-          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs font-semibold text-amber-300">
+          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
             <Hourglass className="w-4 h-4" />
             <span>تاریخ نهایی در نظرسنجی زیر در حال انتخاب است</span>
           </div>
@@ -308,7 +308,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                       <span className="px-2 py-0.5 rounded-md bg-accent/15 text-accent-hover font-bold">
                         {tally.maybe} شاید
                       </span>
-                      <span className="px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-400 font-bold">
+                      <span className="px-2 py-0.5 rounded-md bg-danger/15 text-danger font-bold">
                         {tally.no} نه
                       </span>
                     </div>
@@ -351,8 +351,8 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                         onClick={() => handleVoteSubmit(tally.optionId, 'no')}
                         className={`min-h-[44px] py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                           myVote === 'no'
-                            ? 'bg-rose-600 text-white shadow-md ring-2 ring-rose-500/40'
-                            : 'bg-white/5 hover:bg-white/10 text-rose-400 border border-rose-500/30'
+                            ? 'bg-danger text-on-danger shadow-md ring-2 ring-danger/40'
+                            : 'bg-white/5 hover:bg-white/10 text-danger border border-danger/30'
                         }`}
                       >
                         <X className="w-3.5 h-3.5" />
@@ -400,7 +400,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                 </span>
               )}
               {currentRsvp === 'no' && (
-                <span className="text-xs font-bold text-rose-400 flex items-center gap-1">
+                <span className="text-xs font-bold text-danger flex items-center gap-1">
                   <XCircle className="w-3.5 h-3.5" />
                   نمی‌توانید حضور داشته باشید
                 </span>
@@ -420,7 +420,7 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                 {maybeCount} شاید
               </span>
               <span className="text-text-muted">·</span>
-              <span className="text-rose-400 font-bold" title="غایبان">
+              <span className="text-danger font-bold" title="غایبان">
                 {noCount} نه
               </span>
             </div>
@@ -464,8 +464,8 @@ export const NextSessionCard: React.FC<NextSessionCardProps> = ({
                   onClick={() => handleRsvpSubmit('no')}
                   className={`min-h-[46px] py-2.5 px-3 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 ${
                     currentRsvp === 'no'
-                      ? 'bg-rose-600 text-white shadow-lg ring-2 ring-rose-500/50'
-                      : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                      ? 'bg-danger text-on-danger shadow-lg ring-2 ring-danger/50'
+                      : 'bg-danger/10 hover:bg-danger/20 text-danger border border-danger/30'
                   }`}
                 >
                   <XCircle className="w-4 h-4" />

@@ -17,7 +17,7 @@ export const PipTracker: React.FC<PipTrackerProps> = ({
   onChange,
   label,
   size = 'md',
-  activeColor = 'bg-amber-500 border-amber-400 shadow-[0_0_8px_rgba(224,160,48,0.4)]',
+  activeColor = 'bg-primary border-primary shadow-[0_0_8px_rgb(var(--color-primary-rgb)/0.4)]',
   readOnly = false,
   className = '',
 }) => {
@@ -38,9 +38,9 @@ export const PipTracker: React.FC<PipTrackerProps> = ({
   return (
     <div className={`space-y-1.5 ${className}`}>
       {label && (
-        <div className="flex items-center justify-between text-xs font-semibold text-stone-300">
+        <div className="flex items-center justify-between text-xs font-semibold text-text-primary">
           <span>{label}</span>
-          <span dir="ltr" className="font-mono text-stone-400 text-[11px]">
+          <span dir="ltr" className="font-mono text-text-muted text-[11px]">
             {current} / {max}
           </span>
         </div>
@@ -58,10 +58,10 @@ export const PipTracker: React.FC<PipTrackerProps> = ({
               onClick={() => handlePipClick(index)}
               aria-label={`${index} از ${max}`}
               style={{ touchAction: 'manipulation' }}
-              className={`${pipSize} rounded-md border transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
+              className={`${pipSize} rounded-md border transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-focus-ring ${
                 isFilled
                   ? activeColor
-                  : 'bg-stone-900 border-stone-800 hover:border-stone-700'
+                  : 'bg-surface-2 border-border hover:border-border-strong'
               } ${readOnly ? 'cursor-default pointer-events-none' : 'cursor-pointer active:scale-90'}`}
             />
           );

@@ -354,7 +354,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               <Button 
                 type="submit"
                 disabled={loading}
-                className="py-2.5 px-4 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[44px] flex items-center justify-center gap-1.5"
+                className="py-2.5 px-4 rounded-[10px] btn-primary font-extrabold text-xs touch-target min-w-[44px] min-h-[44px] flex items-center justify-center gap-1.5"
               >
                 <Check className="w-3.5 h-3.5" />
                 <span>ذخیره تغییرات نام</span>
@@ -466,7 +466,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               <Button 
                 type="submit"
                 disabled={loading}
-                className="py-2.5 px-4 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[44px]"
+                className="py-2.5 px-4 rounded-[10px] btn-primary font-extrabold text-xs touch-target min-w-[44px] min-h-[44px]"
               >
                 به‌روزرسانی رمز عبور
               </Button>
@@ -578,7 +578,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               <Button 
                 type="button"
                 onClick={handleExportData}
-                className="py-2 px-3 rounded-[8px] btn-primary-amber font-bold text-xs touch-target min-w-[44px] flex items-center gap-1.5 min-h-[44px]"
+                className="py-2 px-3 rounded-[8px] btn-primary font-bold text-xs touch-target min-w-[44px] flex items-center gap-1.5 min-h-[44px]"
               >
                 <Download className="w-4 h-4" />
                 <span>دانلود نسخه پشتیبان داده‌ها</span>

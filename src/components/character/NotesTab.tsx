@@ -285,7 +285,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
           <Button
             type="button"
             onClick={() => setShowAddModal(true)}
-            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] btn-primary-amber text-xs font-bold transition touch-target min-w-[44px] shrink-0"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] btn-primary text-xs font-bold transition touch-target min-w-[44px] shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>یادداشت نو</span>
@@ -438,7 +438,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
                 <Button
                   type="button"
                   onClick={handleSaveEdit}
-                  className="py-2 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target min-w-[44px]"
+                  className="py-2 px-5 rounded-[12px] btn-primary font-bold text-xs touch-target min-w-[44px]"
                 >
                   ذخیره تغییرات
                 </Button>
@@ -528,7 +528,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
               </Button>
               <Button
                 type="submit"
-                className="py-2 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target min-w-[44px]"
+                className="py-2 px-5 rounded-[12px] btn-primary font-bold text-xs touch-target min-w-[44px]"
               >
                 ثبت یادداشت
               </Button>

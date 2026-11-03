@@ -274,7 +274,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                     <Button
                       type="button"
                       onClick={() => rollWeaponDamage(w)}
-                      className="py-2.5 px-3 rounded-[12px] btn-primary-amber text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] shadow-md"
+                      className="py-2.5 px-3 rounded-[12px] btn-primary text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] shadow-md"
                     >
                       <Flame className="w-4 h-4" />
                       <span>صدمه</span>

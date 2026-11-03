@@ -153,7 +153,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-start">
           {uploadError && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-[10px] text-xs text-rose-300 flex items-center gap-2">
+            <div className="p-3 bg-danger/10 border border-danger/30 rounded-[10px] text-xs text-danger flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{uploadError}</span>
             </div>
@@ -207,7 +207,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
           {/* Title */}
           <div>
             <label className="block text-xs font-semibold text-text-muted mb-1">
-              عنوان سند / نقشه <span className="text-rose-400">*</span>
+              عنوان سند / نقشه <span className="text-danger">*</span>
             </label>
             <Input noWrapper
               type="text"
@@ -290,7 +290,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                 </div>
               )}
               {compressionInfo && !isCompressing && (
-                <div className="text-xs text-emerald-400 flex items-center gap-1.5">
+                <div className="text-xs text-success flex items-center gap-1.5">
                   <Check className="w-3.5 h-3.5" />
                   {compressionInfo}
                 </div>
@@ -307,7 +307,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                 onClick={() => setVisibility('hidden')}
                 className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target min-w-[44px] ${
                   visibility === 'hidden'
-                    ? 'bg-rose-500/15 border-rose-500 text-rose-300 font-bold'
+                    ? 'bg-danger/15 border-danger text-danger font-bold'
                     : 'bg-surface border-border text-text-muted'
                 }`}
               >
@@ -320,7 +320,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                 onClick={() => setVisibility('revealed')}
                 className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target min-w-[44px] ${
                   visibility === 'revealed'
-                    ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 font-bold'
+                    ? 'bg-success/15 border-success text-success font-bold'
                     : 'bg-surface border-border text-text-muted'
                 }`}
               >
@@ -333,7 +333,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                 onClick={() => setVisibility('selected')}
                 className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target min-w-[44px] ${
                   visibility === 'selected'
-                    ? 'bg-sky-500/15 border-sky-500 text-sky-300 font-bold'
+                    ? 'bg-info/15 border-info text-info font-bold'
                     : 'bg-surface border-border text-text-muted'
                 }`}
               >
@@ -345,8 +345,8 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
 
           {/* If Selected: choose recipients */}
           {visibility === 'selected' && (
-            <div className="p-3 bg-surface border border-sky-800/40 rounded-[12px] space-y-2">
-              <span className="text-xs font-semibold text-sky-300 block">
+            <div className="p-3 bg-surface border border-info/40 rounded-[12px] space-y-2">
+              <span className="text-xs font-semibold text-info block">
                 انتخاب شخصیت‌های مجاز به دیدن این سند:
               </span>
               {campaignCharacters.length === 0 ? (
@@ -360,7 +360,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                         key={char.id}
                         className={`flex items-center gap-2 p-2 rounded-[8px] border cursor-pointer transition ${
                           isChecked
-                            ? 'bg-sky-950/40 border-sky-600/50 text-white'
+                            ? 'bg-info/20 border-info/50 text-text-primary'
                             : 'bg-bg border-border text-text-muted'
                         }`}
                       >
@@ -368,7 +368,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => handleToggleRecipient(char.id)}
-                          className="w-4 h-4 rounded text-sky-500 focus:ring-sky-500 bg-bg border-border"
+                          className="w-4 h-4 rounded text-info focus:ring-info bg-bg border-border"
                         />
                         <span className="text-xs font-medium truncate">{char.name}</span>
                         {char.playerName && (

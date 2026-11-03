@@ -370,7 +370,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                      />
                     <Button 
                       onClick={handleCopyResetLink}
-                      className="py-1.5 px-3 rounded-[8px] btn-primary-amber text-xs font-bold flex items-center gap-1 touch-target min-w-[44px] min-h-[40px]"
+                      className="py-1.5 px-3 rounded-[8px] btn-primary text-xs font-bold flex items-center gap-1 touch-target min-w-[44px] min-h-[40px]"
                     >
                       {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                       <span>{copiedLink ? 'کپی شد' : 'کپی لینک'}</span>
@@ -627,7 +627,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
               <Button 
                 type="submit"
                 disabled={settingsSaving}
-                className="py-2.5 px-5 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[44px]"
+                className="py-2.5 px-5 rounded-[10px] btn-primary font-extrabold text-xs touch-target min-w-[44px] min-h-[44px]"
               >
                 {settingsSaving ? 'در حال ذخیره‌سازی...' : 'ذخیره تغییرات تنظیمات'}
               </Button>

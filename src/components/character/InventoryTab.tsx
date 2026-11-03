@@ -445,7 +445,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 setShowAddItem(true);
               }
             }}
-            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] btn-primary-amber text-xs font-bold transition touch-target min-w-[44px] shrink-0"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] btn-primary text-xs font-bold transition touch-target min-w-[44px] shrink-0"
           >
             {isInventoryLocked ? <Lock className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
             <span>{isInventoryLocked ? 'افزودن شیء (قفل DM)' : 'ثبت شیء نو'}</span>
@@ -543,7 +543,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
               <Button
                 type="button"
                 onClick={() => setSelectedItemDetail(null)}
-                className="py-2.5 px-5 rounded-[12px] btn-primary-amber text-xs font-bold touch-target min-w-[44px]"
+                className="py-2.5 px-5 rounded-[12px] btn-primary text-xs font-bold touch-target min-w-[44px]"
               >
                 بستن
               </Button>
@@ -632,7 +632,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             </Button>
             <Button
               type="submit"
-              className="py-2.5 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target min-w-[44px]"
+              className="py-2.5 px-5 rounded-[12px] btn-primary font-bold text-xs touch-target min-w-[44px]"
             >
               افزودن به کوله
             </Button>

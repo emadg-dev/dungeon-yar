@@ -93,10 +93,10 @@ export const HandoutViewerModal: React.FC<HandoutViewerModalProps> = ({
               <span
                 className={`inline-flex items-center gap-1 font-medium ${
                   handout.visibility === 'revealed'
-                    ? 'text-emerald-400'
+                    ? 'text-success'
                     : handout.visibility === 'selected'
-                    ? 'text-sky-400'
-                    : 'text-rose-400'
+                    ? 'text-info'
+                    : 'text-danger'
                 }`}
               >
                 {handout.visibility === 'revealed' && <Eye className="w-3 h-3" />}
@@ -120,8 +120,8 @@ export const HandoutViewerModal: React.FC<HandoutViewerModalProps> = ({
             disabled={isUpdatingVisibility}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition touch-target min-w-[44px] ${
               handout.visibility === 'revealed'
-                ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30'
-                : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
+                ? 'bg-danger/20 text-danger hover:bg-danger/30'
+                : 'bg-success/20 text-success hover:bg-success/30'
             }`}
           >
             {handout.visibility === 'revealed' ? (
@@ -144,8 +144,8 @@ export const HandoutViewerModal: React.FC<HandoutViewerModalProps> = ({
       <div className="space-y-4">
           {/* Selected Recipients Info (if DM and selected) */}
           {isDm && handout.visibility === 'selected' && handout.recipients && handout.recipients.length > 0 && (
-            <div className="p-2.5 bg-sky-950/30 border border-sky-800/40 rounded-[10px] text-xs text-sky-200 flex items-center gap-2">
-              <Users className="w-4 h-4 shrink-0 text-sky-400" />
+            <div className="p-2.5 bg-info/10 border border-info/30 rounded-[10px] text-xs text-info flex items-center gap-2">
+              <Users className="w-4 h-4 shrink-0 text-info" />
               <span>
                 آشکار شده برای:{' '}
                 {handout.recipients.map(rId => characterNamesById[rId] || 'شخصیت بازیکن').join('، ')}
@@ -166,7 +166,7 @@ export const HandoutViewerModal: React.FC<HandoutViewerModalProps> = ({
                   onClick={handleCopyText}
                   className="px-2.5 py-1 rounded-[6px] bg-surface-2 hover:bg-surface-3 text-xs text-text-muted flex items-center gap-1.5 transition touch-target min-w-[44px]"
                 >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copied ? 'کپی شد' : 'کپی متن'}</span>
                 </Button>
               </div>

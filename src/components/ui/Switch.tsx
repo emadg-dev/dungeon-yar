@@ -37,12 +37,12 @@ export const Switch: React.FC<SwitchProps> = ({
       {(label || description) && (
         <div className="min-w-0 flex-1">
           {label && (
-            <label htmlFor={switchId} className="block text-sm font-medium text-stone-200 cursor-pointer">
+            <label htmlFor={switchId} className="block text-sm font-medium text-text-primary cursor-pointer">
               {label}
             </label>
           )}
           {description && (
-            <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">{description}</p>
+            <p className="text-xs text-text-muted mt-0.5 leading-relaxed">{description}</p>
           )}
         </div>
       )}
@@ -64,12 +64,12 @@ export const Switch: React.FC<SwitchProps> = ({
           }
         }}
         style={{ touchAction: 'manipulation' }}
-        className={`w-12 h-7 p-0.5 rounded-full transition-colors duration-200 ease-in-out relative shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950 ${
-          checked ? 'bg-amber-500' : 'bg-stone-800'
+        className={`w-12 h-7 p-0.5 rounded-full transition-colors duration-200 ease-in-out relative shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${
+          checked ? 'bg-primary' : 'bg-surface-3'
         }`}
       >
         <span
-          className={`block w-6 h-6 rounded-full bg-stone-100 shadow-md transform transition-transform duration-200 ease-in-out ${
+          className={`block w-6 h-6 rounded-full bg-white shadow-md transform transition-transform duration-200 ease-in-out ${
             checked ? '-translate-x-5' : 'translate-x-0'
           }`}
         />

@@ -71,7 +71,7 @@ export const Chip: React.FC<ChipProps> = ({
             onRemove();
           }}
           aria-label={`حذف ${label}`}
-          className="hover:text-red-400 transition-colors p-0.5 rounded-full hover:bg-stone-800"
+          className="hover:text-danger transition-colors p-0.5 rounded-full hover:bg-surface-3"
         >
           <X className="w-3.5 h-3.5" />
         </button>

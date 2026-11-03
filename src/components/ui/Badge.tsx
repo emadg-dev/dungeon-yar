@@ -17,7 +17,7 @@ const variantStyles: Record<BadgeVariant, string> = {
   warning: 'bg-warning/15 text-warning border-warning/30',
   info: 'bg-info/15 text-info border-info/30',
   owner: 'bg-accent/15 text-role-owner border-accent/40',
-  codm: 'bg-purple-500/15 text-role-codm border-purple-500/40',
+  codm: 'bg-role-codm/15 text-role-codm border-role-codm/40',
   player: 'bg-success/15 text-role-player border-success/40',
   spectator: 'bg-surface-2 text-role-spectator border-border',
 };

@@ -253,26 +253,26 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
             return (
               <div
                 key={key}
-                className={`flex flex-wrap items-center justify-between gap-2 p-2 rounded-[10px] border transition ${
+                className={`flex items-center justify-between gap-1 p-2 rounded-[10px] border transition ${
                   isProf
                     ? 'bg-accent/10 border-accent/40 text-text-primary'
                     : 'bg-surface-2 border-border text-text-muted'
                 }`}
               >
-                <label className="flex items-center gap-1.5 cursor-pointer touch-target min-w-[44px] select-none">
+                <label className="flex items-center gap-1.5 cursor-pointer touch-target min-w-[44px] select-none whitespace-nowrap shrink-0">
                   <Input noWrapper
                     type="checkbox"
                     checked={isProf}
                     onChange={() => handleToggleSavingThrow(key)}
                     className="w-4 h-4 rounded text-accent accent-accent cursor-pointer"
                   />
-                  <span className="text-xs font-bold">{abilityLabels[key].shortFa}</span>
+                  <span className="text-xs font-bold whitespace-nowrap">{abilityLabels[key].shortFa}</span>
                 </label>
 
                 <Button
                   type="button"
                   onClick={() => onRollCheck(20, 1, saveBonus, `تست نجات ${abilityLabels[key].fa}`)}
-                  className="font-mono font-extrabold text-xs px-2 py-1 rounded-[8px] bg-surface hover:bg-accent/20 text-accent transition cursor-pointer touch-target min-w-[44px] dice-ltr border border-border"
+                  className="font-mono font-extrabold text-xs px-2 py-1 rounded-[8px] bg-surface hover:bg-accent/20 text-accent transition cursor-pointer touch-target min-w-[44px] dice-ltr border border-border shrink-0"
                 >
                   {formatModifier(saveBonus)}
                 </Button>
@@ -419,7 +419,7 @@ export const AbilitiesTab: React.FC<AbilitiesTabProps> = ({
             </Button>
             <Button
               type="submit"
-              className="py-2.5 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target min-w-[44px]"
+              className="py-2.5 px-5 rounded-[12px] btn-primary font-bold text-xs touch-target min-w-[44px]"
             >
               افزودن مهارت
             </Button>

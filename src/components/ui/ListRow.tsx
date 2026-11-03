@@ -42,9 +42,9 @@ export const ListRow: React.FC<ListRowProps> = ({
           : undefined
       }
       style={{ touchAction: isClickable ? 'manipulation' : undefined }}
-      className={`min-h-[52px] p-3 sm:p-3.5 rounded-xl border border-stone-800/80 bg-stone-900/50 flex items-center justify-between gap-3 transition-all duration-150 outline-none ${
+      className={`min-h-[52px] p-3 sm:p-3.5 rounded-xl border border-border bg-surface-2/50 flex items-center justify-between gap-3 transition-all duration-150 outline-none ${
         isClickable && !disabled
-          ? 'cursor-pointer hover:bg-stone-850 hover:border-amber-500/30 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-amber-400'
+          ? 'cursor-pointer hover:bg-surface-3 hover:border-primary/30 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-focus-ring'
           : ''
       } ${disabled ? 'opacity-40 pointer-events-none' : ''} ${className}`}
     >
@@ -52,11 +52,11 @@ export const ListRow: React.FC<ListRowProps> = ({
         {leading && <div className="shrink-0">{leading}</div>}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h4 className="font-bold text-sm text-stone-100 truncate">{title}</h4>
+            <h4 className="font-bold text-sm text-text-primary truncate">{title}</h4>
             {badge && <span className="shrink-0">{badge}</span>}
           </div>
           {subtitle && (
-            <p className="text-xs text-stone-400 truncate mt-0.5 leading-relaxed">{subtitle}</p>
+            <p className="text-xs text-text-muted truncate mt-0.5 leading-relaxed">{subtitle}</p>
           )}
         </div>
       </div>
@@ -64,7 +64,7 @@ export const ListRow: React.FC<ListRowProps> = ({
       <div className="flex items-center gap-2 shrink-0">
         {trailing}
         {isClickable && showChevron && (
-          <ChevronLeft className="w-4 h-4 text-stone-400 shrink-0" aria-hidden="true" />
+          <ChevronLeft className="w-4 h-4 text-text-muted shrink-0" aria-hidden="true" />
         )}
       </div>
     </div>

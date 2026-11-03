@@ -256,7 +256,7 @@ export const DevUiGallery: React.FC = () => {
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-stone-800">
+              <div className="pt-2 border-t border-border">
                 <span className="block text-xs font-semibold text-text-muted mb-2">انتخابگر رادیویی</span>
                 <RadioGroup
                   value={radioVal}
@@ -275,14 +275,14 @@ export const DevUiGallery: React.FC = () => {
         {activeTab === 'cards' && (
           <section className="space-y-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <StatCard label="سلامت فعلی" value={38} subValue={45} icon={<Heart className="w-4 h-4 text-red-400" />} />
+              <StatCard label="سلامت فعلی" value={38} subValue={45} icon={<Heart className="w-4 h-4 text-danger" />} />
               <StatCard label="کلاس زره (AC)" value={16} modifier={2} icon={<Shield className="w-4 h-4 text-accent" />} />
               <StatCard label="سرعت حرکت" value="30" subValue="فوت" />
               <StatCard label="ابتکار نبرد" value="+3" modifier="مدافع" />
             </div>
 
             <Card variant="surface" hasGoldTop>
-              <h3 className="font-bold text-base text-stone-100 mb-1">کارت ویژه با نوار بالایی طلا (card-gold-top)</h3>
+              <h3 className="font-bold text-base text-text-primary mb-1">کارت ویژه با نوار بالایی طلا (card-gold-top)</h3>
               <p className="text-xs text-text-muted leading-relaxed">
                 این کارت دارای خط ظریف گرادینت کهربایی در لبه بالایی است که برای عناصر مهم مانند کاراکتر فعال، جلسه بعدی و ماموریت‌های افسانه‌ای کاربرد دارد.
               </p>

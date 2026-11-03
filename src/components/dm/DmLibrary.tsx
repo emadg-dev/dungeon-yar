@@ -960,7 +960,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <Button
               type="button"
               onClick={handleBatchCopyToCurrentCampaign}
-              className="px-3 py-1.5 rounded-xl btn-primary-amber text-xs font-bold shadow-md flex items-center gap-1 min-h-[44px]"
+              className="px-3 py-1.5 rounded-xl btn-primary text-xs font-bold shadow-md flex items-center gap-1 min-h-[44px]"
             >
               <Copy className="w-3.5 h-3.5" />
               <span>کپی به این کمپین</span>
@@ -1031,7 +1031,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   setDetailItem(null);
                   openImportSheet([ref], { scopeType: 'campaign', scopeId: currentCampaignId });
                 }}
-                className="flex-1 py-2.5 px-3 rounded-xl btn-primary-amber font-extrabold text-xs shadow-md flex items-center justify-center gap-1.5 min-h-[44px]"
+                className="flex-1 py-2.5 px-3 rounded-xl btn-primary font-extrabold text-xs shadow-md flex items-center justify-center gap-1.5 min-h-[44px]"
               >
                 <Copy className="w-4 h-4" />
                 <span>کپی به این کمپین</span>
@@ -1171,7 +1171,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 <Button
                   type="button"
                   onClick={handleImportGoToStep2}
-                  className="w-full py-3 rounded-xl btn-primary-amber font-extrabold text-xs shadow-md mt-4 min-h-[48px]"
+                  className="w-full py-3 rounded-xl btn-primary font-extrabold text-xs shadow-md mt-4 min-h-[48px]"
                 >
                   مرحله بعد: تنظیمات انتقال
                 </Button>
@@ -1265,7 +1265,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   <Button
                     type="button"
                     onClick={handleImportGoToStep3}
-                    className="flex-1 py-3 rounded-xl btn-primary-amber font-extrabold text-xs shadow-md min-h-[48px]"
+                    className="flex-1 py-3 rounded-xl btn-primary font-extrabold text-xs shadow-md min-h-[48px]"
                   >
                     محاسبه پیش‌نمایش (Preview Dry-Run)
                   </Button>
@@ -1298,7 +1298,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                       <Button
                         type="button"
                         onClick={() => setImportSheet(prev => ({ ...prev, isOpen: false }))}
-                        className="py-2.5 px-6 rounded-xl btn-primary-amber text-xs font-bold min-h-[44px]"
+                        className="py-2.5 px-6 rounded-xl btn-primary text-xs font-bold min-h-[44px]"
                       >
                         بستن پنجره
                       </Button>
@@ -1350,7 +1350,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                         type="button"
                         disabled={importSheet.isExecuting}
                         onClick={handleExecuteImport}
-                        className="flex-1 py-3 rounded-xl btn-primary-amber font-extrabold text-xs shadow-md min-h-[48px]"
+                        className="flex-1 py-3 rounded-xl btn-primary font-extrabold text-xs shadow-md min-h-[48px]"
                       >
                         {importSheet.isExecuting ? 'در حال کلون...' : 'تأیید و اجرای کلون (Run)'}
                       </Button>
@@ -1425,7 +1425,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               <Button
                 type="button"
                 onClick={handleApplyLinkedDiff}
-                className="flex-1 py-3 rounded-xl btn-primary-amber text-xs font-extrabold shadow-md min-h-[48px]"
+                className="flex-1 py-3 rounded-xl btn-primary text-xs font-extrabold shadow-md min-h-[48px]"
               >
                 اعمال تغییرات برگزیده
               </Button>
@@ -1495,7 +1495,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   <Button
                     type="button"
                     onClick={handleRunImportPack}
-                    className="w-full py-2.5 rounded-xl btn-primary-amber text-xs font-extrabold shadow-md mt-2 min-h-[44px]"
+                    className="w-full py-2.5 rounded-xl btn-primary text-xs font-extrabold shadow-md mt-2 min-h-[44px]"
                   >
                     درون‌ریزی نهایی به کمپین
                   </Button>
@@ -1567,7 +1567,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               type="button"
               disabled={!templateName.trim()}
               onClick={handleSaveCampaignAsTemplate}
-              className="w-full py-3 rounded-xl btn-primary-amber font-extrabold text-xs shadow-md min-h-[48px]"
+              className="w-full py-3 rounded-xl btn-primary font-extrabold text-xs shadow-md min-h-[48px]"
             >
               ایجاد و ذخیره قالب
             </Button>

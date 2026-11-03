@@ -74,9 +74,9 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
       case 'planned':
         return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-accent/20 text-accent-hover border border-accent/30">برنامه‌ریزی</span>;
       case 'done':
-        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-neutral-800 text-neutral-300 border border-neutral-700">پایان‌یافته</span>;
+        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-surface-2 text-text-muted border border-border">پایان‌یافته</span>;
       case 'cancelled':
-        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">لغو شده</span>;
+        return <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-danger/20 text-danger border border-danger/30">لغو شده</span>;
     }
   };
 
@@ -207,7 +207,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                             type="button"
                             disabled={deletingId === s.id}
                             onClick={() => handleDelete(s.id)}
-                            className="p-2 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+                            className="p-2 rounded-lg text-danger hover:text-danger-hover hover:bg-danger/10 transition-colors"
                             title="حذف جلسه"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -236,7 +236,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                       )}
                     </div>
                   ) : (
-                    <div className="text-xs text-amber-300 font-medium">
+                    <div className="text-xs text-primary font-medium">
                       در حال تعیین زمان از طریق نظرسنجی
                     </div>
                   )}
@@ -294,7 +294,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                         <span className="text-text-muted">·</span>
                         <span className="text-accent-hover font-bold">{maybeCount} شاید</span>
                         <span className="text-text-muted">·</span>
-                        <span className="text-rose-400 font-bold">{noCount} نه</span>
+                        <span className="text-danger font-bold">{noCount} نه</span>
                       </div>
                     )}
 

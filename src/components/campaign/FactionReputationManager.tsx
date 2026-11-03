@@ -217,13 +217,13 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
   const getAttitudeBadgeColor = (label: string) => {
     switch (label) {
       case 'متحد':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+        return 'bg-success/15 text-success border-success/30';
       case 'دوستانه':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
+        return 'bg-info/15 text-info border-info/30';
       case 'خصمانه':
-        return 'bg-orange-500/10 text-orange-400 border-orange-500/30';
+        return 'bg-warning/15 text-warning border-warning/30';
       case 'دشمن خونی':
-        return 'bg-red-500/10 text-red-400 border-red-500/30';
+        return 'bg-danger/15 text-danger border-danger/30';
       default:
         return 'bg-surface-3 text-text-primary/80 border-accent';
     }
@@ -321,7 +321,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
 
       {/* Error / Empty State */}
       {error && (
-        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+        <div className="p-3 rounded-xl bg-danger/10 border border-danger/30 text-danger text-xs flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
@@ -357,7 +357,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                     <div className="flex items-center gap-2">
                       <h4 className="font-extrabold text-sm text-text-primary">{rep.factionName || 'جناح ناشناس'}</h4>
                       {!rep.visible && isDm && (
-                        <span className="text-xs px-1.5 py-0.5 rounded bg-red-950/40 text-red-400 border border-red-800/40 font-bold flex items-center gap-1">
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-danger/15 text-danger border border-danger/30 font-bold flex items-center gap-1">
                           <EyeOff className="w-3 h-3" />
                           <span>مخفی از بازیکنان</span>
                         </span>
@@ -366,7 +366,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
 
                     <div className="flex items-center gap-2 mt-1 text-xs text-text-muted">
                       <span className="flex items-center gap-1">
-                        {isPartyWide ? <Users className="w-3 h-3 text-accent" /> : <User className="w-3 h-3 text-cyan-400" />}
+                        {isPartyWide ? <Users className="w-3 h-3 text-accent" /> : <User className="w-3 h-3 text-info" />}
                         <span>{isPartyWide ? 'مربوط به کل گروه' : (rep.characterName || 'کاراکتر خاص')}</span>
                       </span>
                       {rep.factionRegion && (
@@ -409,9 +409,9 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                     <div
                       className={`h-full rounded-full transition-all duration-300 ${
                         rep.value > 20
-                          ? 'bg-gradient-to-r from-emerald-500 to-emerald-400'
+                          ? 'bg-gradient-to-r from-success to-success/80'
                           : rep.value < -20
-                          ? 'bg-gradient-to-r from-red-600 to-rose-500'
+                          ? 'bg-gradient-to-r from-danger to-danger/80'
                           : 'bg-gradient-to-r from-accent to-accent-hover'
                       }`}
                       style={{ width: `${Math.max(4, Math.min(100, percentage))}%` }}
@@ -445,8 +445,8 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                         title={rep.visible ? 'پنهان کردن از بازیکنان' : 'نمایش برای بازیکنان'}
                         className={`p-1.5 rounded-lg border transition ${
                           rep.visible
-                            ? 'bg-surface-2 border-border text-emerald-400'
-                            : 'bg-red-500/10 border-red-500/30 text-red-400'
+                            ? 'bg-surface-2 border-border text-success'
+                            : 'bg-danger/10 border-danger/30 text-danger'
                         }`}
                       >
                         {rep.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
@@ -470,7 +470,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                       <Button
                         type="button"
                         onClick={() => handleDeleteReputation(rep.id)}
-                        className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10 transition"
+                        className="p-1.5 rounded-lg text-danger hover:bg-danger/10 transition"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
@@ -503,8 +503,8 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                   className={`flex-1 py-2 rounded-xl text-xs font-black border transition ${
                     adjustModal.delta === val
                       ? val > 0
-                        ? 'bg-emerald-500 text-black border-emerald-400'
-                        : 'bg-red-500 text-white border-red-400'
+                        ? 'bg-success text-on-accent border-success'
+                        : 'bg-danger text-on-danger border-danger'
                       : 'bg-surface border-border text-text-muted'
                   }`}
                 >
@@ -579,8 +579,8 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                 <span
                   className={`px-2 py-1 rounded-lg font-black text-xs shrink-0 ${
                     log.delta > 0
-                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-red-500/10 text-red-400 border border-red-500/30'
+                      ? 'bg-success/10 text-success border border-success/30'
+                      : 'bg-danger/10 text-danger border border-danger/30'
                   }`}
                 >
                   {log.delta > 0 ? `+${log.delta}` : log.delta}

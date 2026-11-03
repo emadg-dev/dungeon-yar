@@ -7,7 +7,7 @@ import { BottomSheet } from './mobile/BottomSheet';
 import { 
   Menu, X,
   CheckCircle2, RefreshCw, Shield, BookOpen, 
-  SunMedium, Sun, Moon, Type, LogOut, ChevronDown, MoreVertical, Sparkles, Swords, Bell,
+  Coffee, Sun, Moon, Type, LogOut, ChevronDown, MoreVertical, Sparkles, Swords, Bell,
   WifiOff, AlertTriangle, Eye, Wifi
 } from 'lucide-react';
 import { getRoleLabelFa, CampaignRole } from '../../shared/permissions';
@@ -440,7 +440,7 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
                 title={wakeLockActive ? 'روشن ماندن صفحه فعال است' : 'فعال‌سازی روشن ماندن صفحه در حین بازی'}
               >
-                <SunMedium className="w-4 h-4" />
+                <Coffee className="w-4 h-4" />
               </Button>
             )}
 
@@ -518,7 +518,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Button 
               type="button"
               onClick={onOpenAuth}
-              className="py-1.5 px-3 rounded-[10px] btn-primary-amber font-bold text-xs shadow-md transition touch-target min-w-[44px] flex items-center gap-1"
+              className="py-1.5 px-3 rounded-[10px] btn-primary font-bold text-xs shadow-md transition touch-target min-w-[44px] flex items-center gap-1"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>ورود / عضویت</span>
@@ -786,7 +786,7 @@ export const Header: React.FC<HeaderProps> = ({
                   className="w-full flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary touch-target min-w-[44px]"
                 >
                   <span className="flex items-center gap-1.5">
-                    <SunMedium className="w-4 h-4 text-accent" />
+                    <Coffee className="w-4 h-4 text-accent" />
                     روشن ماندن صفحه
                   </span>
                   <span className="text-xs font-bold text-accent">
@@ -981,7 +981,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onSyncNow();
                   setSyncSheetOpen(false);
                 }}
-                className="flex-1 py-3 px-4 rounded-[10px] btn-primary-amber font-bold text-xs flex items-center justify-center gap-2 touch-target min-h-[44px]"
+                className="flex-1 py-3 px-4 rounded-[10px] btn-primary font-bold text-xs flex items-center justify-center gap-2 touch-target min-h-[44px]"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span>تلاش مجدد برای همگام‌سازی</span>

@@ -172,7 +172,7 @@ export const RestModal: React.FC<RestModalProps> = ({
           </Button>
           <Button
             type="submit"
-            className="py-2.5 px-5 rounded-[12px] btn-primary-amber font-extrabold text-xs shadow-md touch-target min-w-[44px]"
+            className="py-2.5 px-5 rounded-[12px] btn-primary font-extrabold text-xs shadow-md touch-target min-w-[44px]"
           >
             تأیید استراحت و بازیابی
           </Button>

@@ -220,7 +220,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
               onClick={() => setFilterTab('hidden')}
               className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
                 filterTab === 'hidden'
-                  ? 'bg-purple-600 text-white font-black shadow-sm'
+                  ? 'bg-role-codm text-on-accent font-black shadow-sm'
                   : 'text-text-muted hover:text-text-primary'
               }`}
             >
@@ -273,9 +273,9 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                   quest.status === 'completed'
                     ? 'border-success/40 bg-success'
                     : quest.status === 'failed' || quest.status === 'abandoned'
-                    ? 'border-rose-900/40 bg-surface'
+                    ? 'border-danger/40 bg-surface'
                     : quest.status === 'hidden'
-                    ? 'border-purple-900/50 bg-role-codm'
+                    ? 'border-role-codm/50 bg-role-codm/10'
                     : 'border-border hover:border-accent/50 bg-bg'
                 }`}
               >
@@ -296,17 +296,17 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                           </span>
                         )}
                         {quest.status === 'failed' && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 font-bold">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-danger/15 text-danger border border-danger/30 font-bold">
                             شکست‌خورده
                           </span>
                         )}
                         {quest.status === 'abandoned' && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-stone-500/15 text-stone-300 border border-stone-500/30 font-bold">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-surface-2 text-text-muted border border-border font-bold">
                             رها شده
                           </span>
                         )}
                         {quest.status === 'hidden' && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold flex items-center gap-1">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-role-codm/15 text-role-codm border border-role-codm/30 font-bold flex items-center gap-1">
                             <EyeOff className="w-3 h-3" />
                             <span>پیش‌نویس DM</span>
                           </span>
@@ -347,7 +347,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                         quest.status === 'completed'
                           ? 'bg-success'
                           : quest.status === 'failed' || quest.status === 'abandoned'
-                          ? 'bg-rose-500'
+                          ? 'bg-danger'
                           : 'bg-gradient-to-l from-warning to-accent'
                       }`}
                       style={{ width: `${progress.percentage}%` }}
@@ -440,7 +440,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                           {/* DM Indicator for objective visibility */}
                           {isDm && (
                             <span className={`text-xs px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0 ${
-                              obj.visible !== false ? 'text-info bg-info/10' : 'text-purple-400 bg-purple-900/30'
+                              obj.visible !== false ? 'text-info bg-info/10' : 'text-role-codm bg-role-codm/10'
                             }`}>
                               {obj.visible !== false ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
                               <span>{obj.visible !== false ? 'نمایان' : 'پنهان'}</span>
@@ -494,7 +494,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                           type="button"
                           onClick={() => handleDeleteQuest(quest.id)}
                           disabled={actionLoading}
-                          className="py-1.5 px-3 rounded-[8px] bg-surface-2 border border-rose-900/40 hover:bg-rose-900/20 text-rose-300 text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[40px]"
+                          className="py-1.5 px-3 rounded-[8px] bg-surface-2 border border-danger/40 hover:bg-danger/20 text-danger text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[40px]"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>حذف</span>

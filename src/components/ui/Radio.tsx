@@ -36,8 +36,8 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
             onClick={() => !isDisabled && onChange(opt.value)}
             className={`flex items-start gap-3 p-3 rounded-xl border transition-all select-none ${
               isSelected
-                ? 'bg-amber-500/10 border-amber-500/50 text-stone-100'
-                : 'bg-stone-900/50 border-stone-800 text-stone-300 hover:border-stone-700'
+                ? 'bg-primary/10 border-primary/50 text-text-primary'
+                : 'bg-surface-2/50 border-border text-text-muted hover:border-border-strong'
             } ${isDisabled ? 'opacity-40 pointer-events-none' : 'cursor-pointer'}`}
           >
             <div className="pt-0.5">
@@ -48,13 +48,13 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
                 checked={isSelected}
                 disabled={isDisabled}
                 onChange={() => onChange(opt.value)}
-                className="w-4 h-4 accent-amber-500 cursor-pointer"
+                className="w-4 h-4 accent-primary cursor-pointer"
               />
             </div>
             <div className="min-w-0 flex-1">
               <span className="block text-sm font-medium">{opt.label}</span>
               {opt.description && (
-                <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">{opt.description}</p>
+                <p className="text-xs text-text-muted mt-0.5 leading-relaxed">{opt.description}</p>
               )}
             </div>
           </div>

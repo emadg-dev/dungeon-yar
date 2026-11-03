@@ -231,7 +231,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <Button 
               type="button"
               onClick={() => setMode('login')}
-              className="w-full py-2.5 rounded-[12px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px]"
+              className="w-full py-2.5 rounded-[12px] btn-primary font-extrabold text-xs touch-target min-w-[44px]"
             >
               بازگشت به صفحه ورود
             </Button>
@@ -417,7 +417,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <Button 
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 rounded-[12px] btn-primary-amber font-extrabold text-sm shadow-lg flex items-center justify-center gap-2 touch-target min-w-[44px] disabled:opacity-50 min-h-[48px]"
+                className="w-full py-3 px-4 rounded-[12px] btn-primary font-extrabold text-sm shadow-lg flex items-center justify-center gap-2 touch-target min-w-[44px] disabled:opacity-50 min-h-[48px]"
               >
                 {loading ? (
                   <span className="w-5 h-5 border-2 border-bg border-t-transparent rounded-full animate-spin" />

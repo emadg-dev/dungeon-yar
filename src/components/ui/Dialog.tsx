@@ -70,22 +70,22 @@ export const Dialog: React.FC<DialogProps> = ({
       {/* Backdrop */}
       <div
         onClick={onClose}
-        className="fixed inset-0 bg-stone-950/80 backdrop-blur-sm transition-opacity duration-200"
+        className="fixed inset-0 bg-overlay backdrop-blur-sm transition-opacity duration-200"
         aria-hidden="true"
       />
 
       {/* Modal Dialog Card */}
       <div
-        className={`relative z-41 w-full ${maxWidthStyles[maxWidth]} bg-stone-900 border border-stone-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150`}
+        className={`relative z-41 w-full ${maxWidthStyles[maxWidth]} bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150`}
       >
         {/* Header */}
-        <div className="px-5 py-4 border-b border-stone-800 flex items-start justify-between gap-3">
+        <div className="px-5 py-4 border-b border-border flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h3 id="dialog-title" className="text-base sm:text-lg font-bold text-stone-100">
+            <h3 id="dialog-title" className="text-base sm:text-lg font-bold text-text-primary">
               {title}
             </h3>
             {description && (
-              <p className="text-xs text-stone-400 mt-1 leading-relaxed">{description}</p>
+              <p className="text-xs text-text-muted mt-1 leading-relaxed">{description}</p>
             )}
           </div>
           <IconButton
@@ -94,7 +94,7 @@ export const Dialog: React.FC<DialogProps> = ({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="-me-1 text-stone-400 hover:text-stone-100"
+            className="-me-1 text-text-muted hover:text-text-primary"
           />
         </div>
 
@@ -103,7 +103,7 @@ export const Dialog: React.FC<DialogProps> = ({
 
         {/* Footer Actions */}
         {(onConfirm || confirmLabel) && (
-          <div className="px-5 py-3.5 border-t border-stone-800 bg-stone-900/60 flex items-center justify-end gap-2.5">
+          <div className="px-5 py-3.5 border-t border-border bg-surface-2/60 flex items-center justify-end gap-2.5">
             <Button variant="ghost" onClick={onClose} disabled={isConfirmLoading}>
               {cancelLabel}
             </Button>

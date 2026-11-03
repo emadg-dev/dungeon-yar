@@ -85,14 +85,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const getCharacterStatusBadge = (status?: string) => {
     switch (status) {
       case 'active':
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">فعال</span>;
+        return <span className="px-2 py-0.5 text-xs rounded-full bg-success/15 text-success border border-success/30 font-bold">فعال</span>;
       case 'retired':
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-bold">بازنشسته</span>;
+        return <span className="px-2 py-0.5 text-xs rounded-full bg-primary/15 text-primary border border-primary/30 font-bold">بازنشسته</span>;
       case 'dead':
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 font-bold">درگذشته</span>;
+        return <span className="px-2 py-0.5 text-xs rounded-full bg-danger/15 text-danger border border-danger/30 font-bold">درگذشته</span>;
       case 'archived':
       default:
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-stone-500/15 text-stone-300 border border-stone-500/30 font-bold">بایگانی</span>;
+        return <span className="px-2 py-0.5 text-xs rounded-full bg-surface-2 text-text-muted border border-border font-bold">بایگانی</span>;
     }
   };
 
@@ -312,8 +312,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                         </div>
                         {typeof camp.unreadCount === 'number' && camp.unreadCount > 0 && (
                           <div className="shrink-0">
-                            <span className="px-2 py-0.5 rounded-full text-xs font-black bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
+                            <span className="px-2 py-0.5 rounded-full text-xs font-black bg-danger/20 text-danger border border-danger/40 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-danger animate-ping" />
                               {toPersianDigits(camp.unreadCount)} تازه
                             </span>
                           </div>
@@ -328,17 +328,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       {!isPast && camp.nextSession && (
                         <div className={`mt-3 flex flex-wrap items-center justify-between gap-2 gap-2 px-3 py-1.5 rounded-xl text-xs border ${
                           countdown?.isImminent
-                            ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
+                            ? 'bg-primary/15 border-primary/40 text-primary'
                             : 'bg-surface-2 border-border text-accent-hover'
                         }`}>
                           <div className="flex items-center gap-1.5 min-w-0">
-                            <Clock className={`w-3.5 h-3.5 shrink-0 ${countdown?.isImminent ? 'text-amber-400 animate-spin' : 'text-accent'}`} />
+                            <Clock className={`w-3.5 h-3.5 shrink-0 ${countdown?.isImminent ? 'text-primary animate-spin' : 'text-accent'}`} />
                             <span className="truncate font-medium">
                               جلسه {toPersianDigits(camp.nextSession.number)}: {countdown?.text || new Date(camp.nextSession.scheduledAt).toLocaleDateString('fa-IR')}
                             </span>
                           </div>
                           {countdown?.isImminent && (
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-amber-500 text-black font-black shrink-0">
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-primary text-on-accent font-black shrink-0">
                               به‌زودی!
                             </span>
                           )}
@@ -452,7 +452,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     <Button
                       type="button"
                       onClick={() => onResumeDraft && onResumeDraft(draft)}
-                      className="px-3.5 py-1.5 rounded-xl btn-primary-amber text-xs font-bold shadow-md flex items-center gap-1 min-h-[44px]"
+                      className="px-3.5 py-1.5 rounded-xl btn-primary text-xs font-bold shadow-md flex items-center gap-1 min-h-[44px]"
                     >
                       <span>ادامه (Resume)</span>
                       <ChevronLeft className="w-3.5 h-3.5" />

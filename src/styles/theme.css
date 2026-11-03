@@ -83,6 +83,115 @@
 }
 
 /* ============================================================================
+ * بخش ۰: یکپارچه‌سازی توکن‌های Tailwind v4 (@theme Block)
+ * ============================================================================ */
+@theme {
+  --font-sans: var(--font-body);
+
+  --color-bg: rgb(var(--color-bg-rgb));
+  --color-surface: rgb(var(--color-surface-rgb));
+  --color-surface-2: rgb(var(--color-surface-2-rgb));
+  --color-surface-3: rgb(var(--color-surface-3-rgb));
+  --color-surface-raised: rgb(var(--color-surface-raised-rgb));
+  --color-surface-elevated: rgb(var(--color-surface-elevated-rgb));
+  --color-overlay: rgb(var(--color-overlay-rgb));
+
+  --color-border: rgb(var(--color-border-rgb));
+  --color-border-strong: rgb(var(--color-border-strong-rgb));
+  --color-border-subtle: rgb(var(--color-border-subtle-rgb));
+
+  --color-text: rgb(var(--color-text-rgb));
+  --color-text-primary: rgb(var(--color-text-rgb));
+  --color-text-muted: rgb(var(--color-text-muted-rgb));
+  --color-text-disabled: rgb(var(--color-text-disabled-rgb));
+  --color-text-inverse: rgb(var(--color-text-inverse-rgb));
+
+  --color-primary: rgb(var(--color-primary-rgb));
+  --color-primary-hover: rgb(var(--color-primary-hover-rgb));
+  --color-accent: rgb(var(--color-accent-rgb));
+  --color-accent-hover: rgb(var(--color-accent-hover-rgb));
+  --color-accent-glow: rgb(var(--color-accent-glow-rgb));
+  --color-on-accent: rgb(var(--color-on-accent-rgb));
+
+  --color-danger: rgb(var(--color-danger-rgb));
+  --color-danger-hover: rgb(var(--color-danger-hover-rgb));
+  --color-danger-bg: rgb(var(--color-danger-bg-rgb));
+  --color-on-danger: rgb(var(--color-on-danger-rgb));
+
+  --color-success: rgb(var(--color-success-rgb));
+  --color-success-bg: rgb(var(--color-success-bg-rgb));
+  --color-warning: rgb(var(--color-warning-rgb));
+  --color-warning-bg: rgb(var(--color-warning-bg-rgb));
+  --color-info: rgb(var(--color-info-rgb));
+  --color-info-bg: rgb(var(--color-info-bg-rgb));
+
+  --color-focus-ring: rgb(var(--color-focus-ring-rgb));
+  --color-selection: rgb(var(--color-selection-rgb));
+
+  --color-surface-glass: rgb(var(--color-surface-glass-rgb));
+  --color-surface-glass-strong: rgb(var(--color-surface-glass-strong-rgb));
+  --color-hairline: rgb(var(--color-hairline-rgb) / 0.06);
+  --color-scrim: rgb(var(--color-scrim-rgb) / 0.4);
+  --color-scrollbar-thumb: rgb(var(--color-scrollbar-thumb-rgb));
+  --color-scrollbar-thumb-hover: rgb(var(--color-scrollbar-thumb-hover-rgb));
+
+  --color-brand-google-blue: var(--brand-google-blue);
+  --color-brand-google-green: var(--brand-google-green);
+  --color-brand-google-yellow: var(--brand-google-yellow);
+  --color-brand-google-red: var(--brand-google-red);
+  --color-brand-cyan: var(--brand-cyan);
+
+  --color-neutral-slate: #94A3B8;
+  --color-neutral-slate-dark: #475569;
+  --color-neutral-zinc: #A1A1AA;
+  --color-neutral-zinc-dark: #3F3F46;
+  --color-neutral-zinc-muted: #52525B;
+  --color-neutral-cool: #CBD5E1;
+
+  --color-role-owner: var(--role-owner);
+  --color-role-codm: var(--role-codm);
+  --color-role-player: var(--role-player);
+  --color-role-spectator: var(--role-spectator);
+
+  --color-stat-hp: rgb(var(--stat-hp-rgb));
+  --color-stat-ac: var(--stat-ac);
+
+  --color-region-varna: var(--region-varna);
+  --color-region-desert: var(--region-desert);
+  --color-region-sepidarun: var(--region-sepidarun);
+  --color-region-mahestan: var(--region-mahestan);
+  --color-region-shanshin: var(--region-shanshin);
+  --color-region-common: var(--region-common);
+
+  --color-class-farhadar: var(--class-farhadar);
+  --color-class-azarin: var(--class-azarin);
+  --color-class-divanzad: var(--class-divanzad);
+  --color-class-peymanban: var(--class-peymanban);
+  --color-class-sayehkhan: var(--class-sayehkhan);
+  --color-class-mehashna: var(--class-mehashna);
+
+  --color-rarity-common: var(--rarity-common);
+  --color-rarity-uncommon: var(--rarity-uncommon);
+  --color-rarity-rare: var(--rarity-rare);
+  --color-rarity-very-rare: var(--rarity-very-rare);
+  --color-rarity-legendary: var(--rarity-legendary);
+  --color-rarity-artifact: var(--rarity-artifact);
+
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.75rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-pill: 9999px;
+
+  --shadow-glow-amber: 0 0 14px rgb(var(--color-primary-rgb) / 0.35);
+  --shadow-glow-amber-lg: 0 0 24px rgb(var(--color-primary-hover-rgb) / 0.5);
+  --shadow-glow-ember: 0 0 14px rgb(var(--color-danger-rgb) / 0.35);
+  --shadow-glow-heal: 0 0 14px rgb(var(--color-success-rgb) / 0.35);
+}
+
+/* ============================================================================
  * بخش ۱: توکن‌های طراحی (Design Tokens on :root)
  * ============================================================================ */
 :root,
@@ -98,6 +207,16 @@
   --color-surface-raised-rgb: 32 29 25;     /* سطح بالاتر (معادل surface-2) */
   --color-surface-elevated-rgb: 47 42 35;   /* سطح مرتفع، مودال‌ها و باتم‌شیت‌ها (معادل surface-3) */
   --color-overlay-rgb: 10 9 8;              /* پس‌زمینه محو شیت و مودال */
+
+  /* لایه‌های شیشه‌ای و حاشیه‌های ظریف */
+  --color-surface-glass-rgb: 23 21 19;
+  --color-surface-glass-strong-rgb: 19 17 15;
+  --color-hairline-rgb: 255 255 255;
+  --color-scrim-rgb: 0 0 0;
+
+  /* اسکرول‌بار */
+  --color-scrollbar-thumb-rgb: 42 48 60;
+  --color-scrollbar-thumb-hover-rgb: 217 119 6;
 
   /* کادرها و خطوط جداکننده (Borders & Dividers) */
   --color-border-rgb: 47 42 35;             /* #2F2A23 کادر استاندارد کاغذپوستی */
@@ -123,6 +242,7 @@
   /* بازخورد و وضعیت‌ها (Feedback & States) */
   --color-danger-rgb: 207 88 50;            /* #CF5832 آتش اخگر با کنتراست 4.71:1 WCAG AA */
   --color-danger-hover-rgb: 224 104 64;     /* هاور دکمه حذف و هشدار */
+  --color-on-danger-rgb: 255 255 255;       /* متن روشن روی دکمه خطر */
   --color-success-rgb: 111 158 120;         /* #6F9E78 سبز مریم‌گلی / موفقیت و درمان */
   --color-warning-rgb: 216 148 39;          /* #D89427 هشدار کهربایی تیره */
   --color-info-rgb: 127 180 214;            /* #7FB4D6 آبی نقره‌ای / اطلاعات و مانا */
@@ -132,6 +252,13 @@
   --color-warning-bg-rgb: 42 26 13;         /* #2A1A0D پس‌زمینه کم‌رنگ هشدار */
   --color-success-bg-rgb: 31 39 30;         /* #1F271E پس‌زمینه کم‌رنگ موفقیت */
   --color-info-bg-rgb: 24 34 43;            /* #18222B پس‌زمینه کم‌رنگ اطلاعات */
+
+  /* گرادیان پس‌زمینه صفحات و اورب‌های بدنه */
+  --gradient-page: linear-gradient(135deg, #0E0D0C 0%, #12100F 40%, #0A0A09 100%);
+  --glow-primary: radial-gradient(circle, rgb(var(--color-primary-rgb) / 0.055) 0%, transparent 68%);
+  --glow-danger: radial-gradient(circle, rgb(var(--color-danger-rgb) / 0.04) 0%, transparent 70%);
+
+  color-scheme: dark;
 
   /* توکن‌های رنگ‌های برند خارجی (Third-Party Brand Tokens) */
   --brand-google-blue: #4285F4;
@@ -182,55 +309,32 @@
   --role-spectator: #A39A89;                /* ناظر / تماشاچی (خاکستری برنزی) */
 
   /* رنگ‌های اقلیم‌های محتوایی (Region Accents) */
-  --color-region-varna: #6F9E78;            /* ورنا - سبز کهن */
-  --color-region-desert: #C97B4A;           /* کویر خاموش - نارنجی سفال */
-  --color-region-sepidarun: #7FB4D6;        /* سپیدارون - آبی نقره‌ای */
-  --color-region-mahestan: #9AA3AD;         /* مهستان - مه نقره‌ای */
-  --color-region-shanshin: #D6B25E;         /* شانشین - طلای زرد */
-  --color-region-common: #8C8576;           /* مشترک - برنز کهن */
+  --region-varna: #6F9E78;            /* ورنا - سبز کهن */
+  --region-desert: #C97B4A;           /* کویر خاموش - نارنجی سفال */
+  --region-sepidarun: #7FB4D6;        /* سپیدارون - آبی نقره‌ای */
+  --region-mahestan: #9AA3AD;         /* مهستان - مه نقره‌ای */
+  --region-shanshin: #D6B25E;         /* شانشین - طلای زرد */
+  --region-common: #8C8576;           /* مشترک - برنز کهن */
 
   /* رنگ‌های کلاس‌های بازی (Class Accents) */
-  --color-class-farhadar: #D6B25E;          /* فرهدار - طلای کهن */
-  --color-class-azarin: #C97B4A;            /* موبد آذرین - آتش زرد-نارنجی */
-  --color-class-divanzad: #8C7A68;          /* دیوانزاد - سنگ قهوه‌ای */
-  --color-class-peymanban: #6F9E78;         /* پیمانبان - سبز زمردی */
-  --color-class-sayehkhan: #9B72CF;         /* سایه‌خوان - بنفش رازآلود */
-  --color-class-mehashna: #CBD5E1;          /* مه‌آشنا - خاکستری نقره‌ای */
+  --class-farhadar: #D6B25E;          /* فرهدار - طلای کهن */
+  --class-azarin: #C97B4A;            /* موبد آذرین - آتش زرد-نارنجی */
+  --class-divanzad: #8C7A68;          /* دیوانزاد - سنگ قهوه‌ای */
+  --class-peymanban: #6F9E78;         /* پیمانبان - سبز زمردی */
+  --class-sayehkhan: #9B72CF;         /* سایه‌خوان - بنفش رازآلود */
+  --class-mehashna: #CBD5E1;          /* مه‌آشنا - خاکستری نقره‌ای */
 
   /* نایابی آیتم‌ها (Rarity Colors) */
-  --color-rarity-common: #A39A89;
-  --color-rarity-uncommon: #6F9E78;
-  --color-rarity-rare: #7FB4D6;
-  --color-rarity-very-rare: #9B72CF;
-  --color-rarity-legendary: #E0A030;
-  --color-rarity-artifact: #C2512B;
+  --rarity-common: #A39A89;
+  --rarity-uncommon: #6F9E78;
+  --rarity-rare: #7FB4D6;
+  --rarity-very-rare: #9B72CF;
+  --rarity-legendary: #E0A030;
+  --rarity-artifact: #C2512B;
 
   /* --------------------------------------------------------------------------
-   * ۳. مقادیر مستقیم CSS Colors (Direct CSS Color Variables)
+   * ۳. نام‌های مستعار عقب‌رو (Backwards Compatibility Aliases)
    * -------------------------------------------------------------------------- */
-  --color-bg: rgb(var(--color-bg-rgb));
-  --color-surface: rgb(var(--color-surface-rgb));
-  --color-surface-2: rgb(var(--color-surface-2-rgb));
-  --color-surface-3: rgb(var(--color-surface-3-rgb));
-  --color-surface-raised: rgb(var(--color-surface-raised-rgb));
-  --color-surface-elevated: rgb(var(--color-surface-elevated-rgb));
-  --color-border: rgb(var(--color-border-rgb));
-  --color-border-strong: rgb(var(--color-border-strong-rgb));
-  --color-border-subtle: rgb(var(--color-border-subtle-rgb));
-  --color-text: rgb(var(--color-text-rgb));
-  --color-text-muted: rgb(var(--color-text-muted-rgb));
-  --color-text-disabled: rgb(var(--color-text-disabled-rgb));
-  --color-primary: rgb(var(--color-primary-rgb));
-  --color-primary-hover: rgb(var(--color-primary-hover-rgb));
-  --color-accent: rgb(var(--color-accent-rgb));
-  --color-accent-hover: rgb(var(--color-accent-hover-rgb));
-  --color-danger: rgb(var(--color-danger-rgb));
-  --color-danger-hover: rgb(var(--color-danger-hover-rgb));
-  --color-success: rgb(var(--color-success-rgb));
-  --color-warning: rgb(var(--color-warning-rgb));
-  --color-info: rgb(var(--color-info-rgb));
-
-  /* معادل‌های کوتاه برای سازگاری عقب‌رو */
   --bg: var(--color-bg);
   --surface: var(--color-surface);
   --surface-2: var(--color-surface-2);
@@ -412,6 +516,16 @@
   --color-surface-elevated-rgb: 231 225 214;
   --color-overlay-rgb: 40 35 28;
 
+  /* لایه‌های شیشه‌ای و حاشیه‌های ظریف در تم روشن */
+  --color-surface-glass-rgb: 255 255 255;
+  --color-surface-glass-strong-rgb: 250 248 243;
+  --color-hairline-rgb: 0 0 0;
+  --color-scrim-rgb: 40 35 28;
+
+  /* اسکرول‌بار در تم روشن */
+  --color-scrollbar-thumb-rgb: 200 190 175;
+  --color-scrollbar-thumb-hover-rgb: 163 102 10;
+
   --color-border-rgb: 216 206 189;         /* خطوط کادر کرم-قهوه‌ای ملایم */
   --color-border-strong-rgb: 184 171 149;
   --color-border-subtle-rgb: 235 228 217;
@@ -427,12 +541,15 @@
   --color-primary-hover-rgb: 138 85 8;
   --color-accent-rgb: 163 102 10;
   --color-accent-hover-rgb: 138 85 8;
+  --color-accent-glow-rgb: 163 102 10;
   --color-on-accent-rgb: 255 255 255;      /* 5.2:1 کنتراست سفید روی کهربایی تیره */
   --color-focus-ring-rgb: 163 102 10;
+  --color-selection-rgb: 163 102 10;
 
   /* بازخورد و وضعیت‌ها با کنتراست WCAG AA در تم روشن (≥ 4.5:1) */
   --color-danger-rgb: 185 28 28;           /* قرمز تیره (5.8:1) */
   --color-danger-hover-rgb: 153 27 27;
+  --color-on-danger-rgb: 255 255 255;
   --color-success-rgb: 21 128 61;          /* سبز زمردی تیره (4.6:1) */
   --color-warning-rgb: 180 83 9;           /* نارنجی کهربایی تیره (4.8:1) */
   --color-info-rgb: 3 105 161;             /* آبی تیره (5.5:1) */
@@ -442,6 +559,13 @@
   --color-warning-bg-rgb: 255 251 235;
   --color-success-bg-rgb: 240 253 244;
   --color-info-bg-rgb: 239 246 255;
+
+  /* گرادیان پس‌زمینه صفحات و اورب‌های بدنه در تم روشن */
+  --gradient-page: linear-gradient(135deg, #F7F4EE 0%, #FAF7F2 40%, #EDE6D8 100%);
+  --glow-primary: radial-gradient(circle, rgb(var(--color-primary-rgb) / 0.04) 0%, transparent 68%);
+  --glow-danger: radial-gradient(circle, rgb(var(--color-danger-rgb) / 0.03) 0%, transparent 70%);
+
+  color-scheme: light;
 
   /* خاکستری‌های خنثی تم روشن */
   --color-neutral-slate: #475569;
@@ -453,6 +577,7 @@
 
   /* مکانیک‌های بازی و توکن‌های D&D در تم روشن */
   --stat-hp: #15803D;
+  --stat-hp-rgb: 21 128 61;
   --stat-hp-hurt: #B45309;
   --stat-hp-bloodied: #C2410C;
   --stat-hp-critical: #B91C1C;
@@ -472,9 +597,37 @@
   --role-player: #15803D;
   --role-spectator: #475569;
 
+  /* رنگ‌های اقلیم‌های محتوایی در تم روشن (کنتراست AA حداقل ۴.۵:۱) */
+  --region-varna: #1E6B37;
+  --region-desert: #9A3412;
+  --region-sepidarun: #0369A1;
+  --region-mahestan: #334155;
+  --region-shanshin: #854D0E;
+  --region-common: #57534E;
+
+  /* رنگ‌های کلاس‌های بازی در تم روشن (کنتراست AA حداقل ۴.۵:۱) */
+  --class-farhadar: #854D0E;
+  --class-azarin: #9A3412;
+  --class-divanzad: #57534E;
+  --class-peymanban: #15803D;
+  --class-sayehkhan: #6B21A8;
+  --class-mehashna: #334155;
+
+  /* نایابی آیتم‌ها در تم روشن (کنتراست AA حداقل ۴.۵:۱) */
+  --rarity-common: #57534E;
+  --rarity-uncommon: #15803D;
+  --rarity-rare: #0369A1;
+  --rarity-very-rare: #6B21A8;
+  --rarity-legendary: #A3660A;
+  --rarity-artifact: #B91C1C;
+
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --elevation-3: 0 8px 24px rgba(0, 0, 0, 0.16);
+  --elevation-4: 0 16px 36px rgba(0, 0, 0, 0.20);
   --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 2px 10px rgba(0, 0, 0, 0.06);
 
   --shadow-glow-amber: 0 0 12px rgba(163, 102, 10, 0.25);
@@ -525,19 +678,34 @@
 
 .btn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(var(--color-focus-ring-rgb), 0.35);
+  box-shadow: 0 0 0 3px rgb(var(--color-focus-ring-rgb) / 0.35);
 }
 
 /* دکمه اصلی کهربایی (Primary Amber Button) */
 .btn-primary {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
   color: var(--color-on-accent);
-  box-shadow: 0 2px 10px rgba(var(--color-primary-rgb), 0.3);
+  box-shadow: 0 2px 10px rgb(var(--color-primary-rgb) / 0.3);
 }
 
 .btn-primary:hover {
   box-shadow: var(--shadow-glow-amber);
   filter: brightness(1.06);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgb(var(--color-primary-rgb) / 0.35);
+}
+
+.btn-primary:disabled,
+.btn-primary[aria-disabled="true"] {
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 /* دکمه ثانویه سطحی (Secondary Button) */
@@ -549,7 +717,7 @@
 
 .btn-secondary:hover {
   background: var(--color-surface-elevated);
-  border-color: rgba(var(--color-primary-rgb), 0.4);
+  border-color: rgb(var(--color-primary-rgb) / 0.4);
 }
 
 /* دکمه شفاف / ارواحی (Ghost Button) */
@@ -559,7 +727,7 @@
 }
 
 .btn-ghost:hover {
-  background: rgba(var(--color-surface-raised-rgb), 0.7);
+  background: rgb(var(--color-surface-raised-rgb) / 0.7);
   color: var(--color-text);
 }
 
@@ -573,19 +741,28 @@
 .btn-outline:hover {
   border-color: var(--color-primary);
   color: var(--color-primary-hover);
-  background: rgba(var(--color-primary-rgb), 0.08);
+  background: rgb(var(--color-primary-rgb) / 0.08);
 }
 
 /* دکمه خطر / حذف (Danger Destructive Button) */
 .btn-danger {
   background: linear-gradient(135deg, var(--color-danger) 0%, var(--color-danger-hover) 100%);
-  color: #FFFFFF;
-  box-shadow: 0 2px 10px rgba(var(--color-danger-rgb), 0.3);
+  color: rgb(var(--color-on-danger-rgb));
+  box-shadow: 0 2px 10px rgb(var(--color-danger-rgb) / 0.3);
 }
 
 .btn-danger:hover {
   box-shadow: var(--shadow-glow-ember);
   filter: brightness(1.06);
+}
+
+.btn-danger:active {
+  transform: scale(0.98);
+}
+
+.btn-danger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgb(var(--color-danger-rgb) / 0.35);
 }
 
 /* دکمه کوچک نوار ابزار */
@@ -617,7 +794,7 @@
 }
 
 .card-interactive:hover {
-  border-color: rgba(var(--color-primary-rgb), 0.4);
+  border-color: rgb(var(--color-primary-rgb) / 0.4);
   box-shadow: var(--shadow-glow-amber);
 }
 
@@ -660,7 +837,7 @@
   border: 1px solid var(--color-border);
   color: var(--color-text);
   font-family: var(--font-body);
-  font-size: var(--text-md) !important; /* حداقل ۱۶ پیکسل برای جلوگیری از زوم خودکار iOS Safari */
+  font-size: var(--text-md); /* حداقل ۱۶ پیکسل برای جلوگیری از زوم خودکار iOS Safari */
   outline: none;
   transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
 }
@@ -668,8 +845,8 @@
 .input:focus,
 .select:focus,
 .textarea:focus {
-  border-color: var(--color-primary) !important;
-  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.22) !important;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgb(var(--color-primary-rgb) / 0.22);
 }
 
 .input::placeholder,
@@ -701,28 +878,28 @@
   border: 1px solid transparent;
 }
 
-/* نقش‌های کمپین */
+/* نقش‌های کمپین با color-mix برای پشتیبانی هماهنگ از هر دو تم */
 .badge-owner {
-  background: rgba(224, 160, 48, 0.15);
-  border-color: rgba(224, 160, 48, 0.4);
+  background: color-mix(in srgb, var(--role-owner) 15%, transparent);
+  border-color: color-mix(in srgb, var(--role-owner) 40%, transparent);
   color: var(--role-owner);
 }
 
 .badge-codm {
-  background: rgba(155, 114, 207, 0.15);
-  border-color: rgba(155, 114, 207, 0.4);
+  background: color-mix(in srgb, var(--role-codm) 15%, transparent);
+  border-color: color-mix(in srgb, var(--role-codm) 40%, transparent);
   color: var(--role-codm);
 }
 
 .badge-player {
-  background: rgba(111, 158, 120, 0.15);
-  border-color: rgba(111, 158, 120, 0.4);
+  background: color-mix(in srgb, var(--role-player) 15%, transparent);
+  border-color: color-mix(in srgb, var(--role-player) 40%, transparent);
   color: var(--role-player);
 }
 
 .badge-spectator {
-  background: rgba(163, 154, 137, 0.15);
-  border-color: rgba(163, 154, 137, 0.4);
+  background: color-mix(in srgb, var(--role-spectator) 15%, transparent);
+  border-color: color-mix(in srgb, var(--role-spectator) 40%, transparent);
   color: var(--role-spectator);
 }
 
@@ -769,14 +946,14 @@
 
 .tab:hover {
   color: var(--color-text);
-  background: rgba(var(--color-surface-raised-rgb), 0.5);
+  background: rgb(var(--color-surface-raised-rgb) / 0.5);
 }
 
 .tab-active {
-  background: rgba(var(--color-primary-rgb), 0.14);
-  border-color: rgba(var(--color-primary-rgb), 0.35);
+  background: rgb(var(--color-primary-rgb) / 0.14);
+  border-color: rgb(var(--color-primary-rgb) / 0.35);
   color: var(--color-primary-hover);
-  box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.15);
+  box-shadow: 0 0 10px rgb(var(--color-primary-rgb) / 0.15);
 }
 
 /* ----------------------------------------------------------------------------
@@ -813,8 +990,8 @@
   justify-content: center;
   text-align: center;
   padding: var(--space-6) var(--space-4);
-  background: rgba(var(--color-danger-rgb), 0.08);
-  border: 1px solid rgba(var(--color-danger-rgb), 0.3);
+  background: rgb(var(--color-danger-rgb) / 0.08);
+  border: 1px solid rgb(var(--color-danger-rgb) / 0.3);
   border-radius: var(--radius-card);
   color: var(--color-text);
   gap: var(--space-3);
@@ -826,7 +1003,7 @@
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(var(--color-overlay-rgb), 0.85);
+  background: rgb(var(--color-overlay-rgb) / 0.85);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: var(--z-backdrop);
@@ -875,7 +1052,7 @@
 
 .text-gold-glow {
   color: var(--color-primary-hover);
-  text-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.4);
+  text-shadow: 0 0 10px rgb(var(--color-primary-rgb) / 0.4);
 }
 
 .border-fantasy {

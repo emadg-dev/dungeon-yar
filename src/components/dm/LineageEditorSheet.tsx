@@ -490,7 +490,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
           <Button
             type="submit"
             disabled={saving}
-            className="flex-1 py-3 px-4 rounded-xl btn-primary-amber font-extrabold text-xs shadow-md flex items-center justify-center gap-2 min-h-[44px]"
+            className="flex-1 py-3 px-4 rounded-xl btn-primary font-extrabold text-xs shadow-md flex items-center justify-center gap-2 min-h-[44px]"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? 'در حال ذخیره‌سازی...' : 'ذخیره نژاد در کتابخانه'}</span>

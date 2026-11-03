@@ -12,17 +12,17 @@ export interface ToastProps {
 }
 
 const typeIcons: Record<ToastType, React.ReactNode> = {
-  success: <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />,
-  error: <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />,
-  warning: <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />,
-  info: <Info className="w-5 h-5 text-sky-400 shrink-0" />,
+  success: <CheckCircle2 className="w-5 h-5 text-success shrink-0" />,
+  error: <AlertCircle className="w-5 h-5 text-danger shrink-0" />,
+  warning: <AlertTriangle className="w-5 h-5 text-warning shrink-0" />,
+  info: <Info className="w-5 h-5 text-info shrink-0" />,
 };
 
 const typeBorders: Record<ToastType, string> = {
-  success: 'border-emerald-500/40 bg-stone-900/95 shadow-[0_4px_20px_rgba(16,185,129,0.15)]',
-  error: 'border-red-500/40 bg-stone-900/95 shadow-[0_4px_20px_rgba(239,68,68,0.15)]',
-  warning: 'border-amber-500/40 bg-stone-900/95 shadow-[0_4px_20px_rgba(224,160,48,0.15)]',
-  info: 'border-sky-500/40 bg-stone-900/95 shadow-[0_4px_20px_rgba(14,165,233,0.15)]',
+  success: 'border-success/40 bg-surface/95 shadow-lg',
+  error: 'border-danger/40 bg-surface/95 shadow-lg',
+  warning: 'border-warning/40 bg-surface/95 shadow-lg',
+  info: 'border-info/40 bg-surface/95 shadow-lg',
 };
 
 export const Toast: React.FC<ToastProps> = ({
@@ -49,12 +49,12 @@ export const Toast: React.FC<ToastProps> = ({
       } ${className}`}
     >
       {typeIcons[type]}
-      <p className="text-xs sm:text-sm font-medium text-stone-100 flex-1 leading-snug">{message}</p>
+      <p className="text-xs sm:text-sm font-medium text-text-primary flex-1 leading-snug">{message}</p>
       <button
         type="button"
         onClick={onClose}
         aria-label="بستن اعلان"
-        className="p-1 text-stone-400 hover:text-stone-100 transition-colors rounded-lg hover:bg-stone-800"
+        className="p-1 text-text-muted hover:text-text-primary transition-colors rounded-lg hover:bg-surface-3"
       >
         <X className="w-4 h-4" />
       </button>

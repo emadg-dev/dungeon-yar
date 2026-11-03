@@ -141,7 +141,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-start">
           {errorMessage && (
-            <div className="p-3 rounded-[10px] bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-bold">
+            <div className="p-3 rounded-[10px] bg-danger/10 border border-danger/30 text-danger text-xs font-bold">
               {errorMessage}
             </div>
           )}
@@ -265,7 +265,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                       <Button
                         type="button"
                         onClick={() => handleRemoveObjective(obj.id)}
-                        className="touch-target min-w-[44px] p-1 text-rose-400 hover:text-rose-300 transition shrink-0"
+                        className="touch-target min-w-[44px] p-1 text-danger hover:text-danger-hover transition shrink-0"
                         title="حذف هدف"
                       >
                         <Trash2 className="w-4 h-4" />

@@ -19,7 +19,7 @@ export const Spinner: React.FC<SpinnerProps> = ({
   label = 'در حال بارگذاری...',
 }) => {
   return (
-    <div role="status" className="inline-flex items-center gap-2 text-amber-500">
+    <div role="status" className="inline-flex items-center gap-2 text-primary">
       <Loader2 className={`animate-spin ${sizeStyles[size]} ${className}`} aria-hidden="true" />
       {label && <span className="sr-only">{label}</span>}
     </div>

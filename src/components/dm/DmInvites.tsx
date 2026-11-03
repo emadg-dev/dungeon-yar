@@ -142,7 +142,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
         <Button
           type="button"
           onClick={() => setShowCreateForm(!showCreateForm)}
-          className="py-2 px-3.5 rounded-[10px] btn-primary-amber text-xs font-bold touch-target min-w-[44px] flex items-center gap-1.5 shrink-0"
+          className="py-2 px-3.5 rounded-[10px] btn-primary text-xs font-bold touch-target min-w-[44px] flex items-center gap-1.5 shrink-0"
         >
           {showCreateForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           <span>{showCreateForm ? 'انصراف' : 'صدور کد دعوت جدید'}</span>
@@ -197,7 +197,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
             <Button
               type="button"
               onClick={() => copyText(newlyCreatedInvite.inviteLink || `${window.location.origin}/#register?code=${newlyCreatedInvite.code}`, true)}
-              className="py-2 px-4 rounded-[8px] btn-primary-amber text-xs font-bold touch-target min-w-[44px] flex items-center justify-center gap-1.5 min-h-[44px]"
+              className="py-2 px-4 rounded-[8px] btn-primary text-xs font-bold touch-target min-w-[44px] flex items-center justify-center gap-1.5 min-h-[44px]"
             >
               {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               <span>{copiedLink ? 'پیوند کپی شد' : 'کپی پیوند ثبت‌نام'}</span>
@@ -289,7 +289,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
             <Button
               type="submit"
               disabled={loading}
-              className="py-2 px-5 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[44px]"
+              className="py-2 px-5 rounded-[10px] btn-primary font-extrabold text-xs touch-target min-w-[44px] min-h-[44px]"
             >
               تولید و دریافت لینک
             </Button>

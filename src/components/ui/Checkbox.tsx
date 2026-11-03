@@ -51,10 +51,10 @@ export const Checkbox: React.FC<CheckboxProps> = ({
             }
           }}
           style={{ touchAction: 'manipulation' }}
-          className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-950 ${
+          className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${
             checked
-              ? 'bg-amber-500 border-amber-400 text-stone-950 shadow-[0_0_8px_rgba(224,160,48,0.3)]'
-              : 'bg-stone-900 border-stone-700 text-transparent hover:border-stone-500'
+              ? 'bg-primary border-primary text-on-accent shadow-[0_0_8px_rgb(var(--color-primary-rgb)/0.3)]'
+              : 'bg-surface-2 border-border text-transparent hover:border-border-strong'
           }`}
         >
           <Check className={`w-3.5 h-3.5 stroke-[3] transition-transform ${checked ? 'scale-100' : 'scale-0'}`} />
@@ -64,12 +64,12 @@ export const Checkbox: React.FC<CheckboxProps> = ({
       {(label || description) && (
         <div className="min-w-0 flex-1 leading-snug">
           {label && (
-            <label htmlFor={checkboxId} className="block text-sm font-medium text-stone-200 cursor-pointer">
+            <label htmlFor={checkboxId} className="block text-sm font-medium text-text-primary cursor-pointer">
               {label}
             </label>
           )}
           {description && (
-            <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">{description}</p>
+            <p className="text-xs text-text-muted mt-0.5 leading-relaxed">{description}</p>
           )}
         </div>
       )}

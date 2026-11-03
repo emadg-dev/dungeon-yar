@@ -320,12 +320,12 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
             <div className="flex items-center gap-2">
               <h3 className="font-extrabold text-base text-text-primary">خزانه مشترک گروه</h3>
               {isLocked ? (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-red-950/40 border border-red-800/40 text-red-400 font-bold flex items-center gap-1">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-danger/15 border border-danger/30 text-danger font-bold flex items-center gap-1">
                   <Lock className="w-3 h-3" />
                   <span>قفل شده</span>
                 </span>
               ) : (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 font-bold flex items-center gap-1">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-success/15 border border-success/30 text-success font-bold flex items-center gap-1">
                   <Unlock className="w-3 h-3" />
                   <span>آزاد برای اعضا</span>
                 </span>
@@ -371,18 +371,18 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
 
       {/* Concurrency Collision Banner */}
       {concurrencyError && (
-        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/40 text-amber-300 text-xs flex items-start justify-between gap-3">
+        <div className="p-4 rounded-xl bg-primary/10 border border-primary/40 text-primary text-xs flex items-start justify-between gap-3">
           <div className="flex items-start gap-2">
-            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
             <div>
-              <p className="font-extrabold text-sm text-amber-200">تداخل همزمانی در خزانه</p>
+              <p className="font-extrabold text-sm text-text-primary">تداخل همزمانی در خزانه</p>
               <p className="mt-0.5 leading-relaxed">{concurrencyError}</p>
             </div>
           </div>
           <Button
             type="button"
             onClick={loadData}
-            className="px-3 py-1.5 rounded-lg bg-amber-500 text-black font-extrabold text-xs shrink-0 hover:bg-amber-400 transition"
+            className="px-3 py-1.5 rounded-lg bg-primary text-on-accent font-extrabold text-xs shrink-0 hover:bg-primary-hover transition"
           >
             بازخوانی داده‌ها
           </Button>
@@ -391,8 +391,8 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
 
       {/* Locked Notice for players */}
       {isLocked && !isDm && (
-        <div className="p-3.5 rounded-xl bg-surface-2 border border-red-500/30 text-xs text-red-300 flex items-center gap-2.5">
-          <Lock className="w-4 h-4 text-red-400 shrink-0" />
+        <div className="p-3.5 rounded-xl bg-surface-2 border border-danger/30 text-xs text-danger flex items-center gap-2.5">
+          <Lock className="w-4 h-4 text-danger shrink-0" />
           <span>خزانه گروه توسط دانجن‌مستر قفل شده است. دسترسی شما در وضعیت فقط-خواندنی قرار دارد.</span>
         </div>
       )}
@@ -499,7 +499,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
                         quantity: 1,
                         submitting: false
                       })}
-                      className="px-2.5 py-1.5 rounded-lg bg-surface-2 border border-border text-emerald-400 font-bold hover:bg-surface-2 flex items-center gap-1 transition"
+                      className="px-2.5 py-1.5 rounded-lg bg-surface-2 border border-border text-success font-bold hover:bg-surface-2 flex items-center gap-1 transition"
                       title="برداشتن به کوله‌پشتی کاراکتر"
                     >
                       <ArrowDownLeft className="w-3.5 h-3.5" />
@@ -511,7 +511,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
                     <Button
                       type="button"
                       onClick={() => handleDeleteItem(item)}
-                      className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10 transition"
+                      className="p-1.5 rounded-lg text-danger hover:bg-danger/10 transition"
                       title="حذف از خزانه"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -529,7 +529,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
         <div className="surface-card rounded-[14px] p-4 border border-border space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <ArrowUpRight className="w-4 h-4 text-emerald-400" />
+              <ArrowUpRight className="w-4 h-4 text-success" />
               <h4 className="font-extrabold text-sm text-text-primary">
                 واریز آیتم از کوله‌پشتی {activeCharacter.name} به خزانه
               </h4>
@@ -681,7 +681,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
             <Button
               type="submit"
               disabled={withdrawModal.submitting}
-              className="px-5 py-2.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs shadow-sm"
+              className="px-5 py-2.5 rounded-xl bg-success text-on-accent font-extrabold text-xs shadow-sm"
             >
               {withdrawModal.submitting ? 'در حال انتقال...' : 'تأیید و برداشتن'}
             </Button>
@@ -815,9 +815,9 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
                   <span
                     className={`px-2 py-0.5 rounded text-xs font-black shrink-0 ${
                       isIn
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                        ? 'bg-success/10 text-success border border-success/30'
                         : isOut
-                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                        ? 'bg-primary/10 text-primary border border-primary/30'
                         : 'bg-surface-3 text-text-primary/80'
                     }`}
                   >

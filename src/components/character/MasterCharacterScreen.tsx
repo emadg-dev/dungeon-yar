@@ -178,20 +178,20 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
       case 'joined':
-        return <Compass className="w-4 h-4 text-emerald-400" />;
+        return <Compass className="w-4 h-4 text-success" />;
       case 'level_up':
-        return <Sparkles className="w-4 h-4 text-amber-400" />;
+        return <Sparkles className="w-4 h-4 text-primary" />;
       case 'milestone':
       case 'major_deed':
-        return <Award className="w-4 h-4 text-purple-400" />;
+        return <Award className="w-4 h-4 text-role-codm" />;
       case 'session_attendance':
-        return <Calendar className="w-4 h-4 text-sky-400" />;
+        return <Calendar className="w-4 h-4 text-info" />;
       case 'status_change':
-        return <AlertCircle className="w-4 h-4 text-orange-400" />;
+        return <AlertCircle className="w-4 h-4 text-warning" />;
       case 'death':
-        return <Skull className="w-4 h-4 text-rose-500" />;
+        return <Skull className="w-4 h-4 text-danger" />;
       case 'retired':
-        return <Lock className="w-4 h-4 text-amber-500" />;
+        return <Lock className="w-4 h-4 text-primary" />;
       default:
         return <Clock className="w-4 h-4 text-accent" />;
     }
@@ -200,20 +200,20 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
   const getEventBadge = (eventType: string) => {
     switch (eventType) {
       case 'joined':
-        return <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-medium">پیوستن</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-success/15 text-success border border-success/30 font-medium">پیوستن</span>;
       case 'level_up':
-        return <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-medium">ارتقای سطح</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30 font-medium">ارتقای سطح</span>;
       case 'milestone':
       case 'major_deed':
-        return <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30 font-medium">دستاورد / مایلیستون</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-role-codm/15 text-role-codm border border-role-codm/30 font-medium">دستاورد / مایلیستون</span>;
       case 'session_attendance':
-        return <span className="text-xs px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30 font-medium">حضور در جلسه</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-info/15 text-info border border-info/30 font-medium">حضور در جلسه</span>;
       case 'status_change':
-        return <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/30 font-medium">تغییر وضعیت</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-warning/15 text-warning border border-warning/30 font-medium">تغییر وضعیت</span>;
       case 'death':
-        return <span className="text-xs px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 font-medium">درگذشت</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-danger/15 text-danger border border-danger/30 font-medium">درگذشت</span>;
       case 'retired':
-        return <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-medium">بازنشستگی</span>;
+        return <span className="text-xs px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30 font-medium">بازنشستگی</span>;
       default:
         return <span className="text-xs px-2 py-0.5 rounded-full bg-surface-2 text-text-muted border border-border font-medium">رویداد</span>;
     }
@@ -609,10 +609,10 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                     setLegacyJoinError(null);
                     setLegacyJoinOpen(true);
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-300 hover:bg-purple-500/30 text-xs font-bold transition-colors flex items-center gap-1.5 min-h-[44px]"
+                  className="px-3 py-1.5 rounded-xl bg-role-codm/20 border border-role-codm/40 text-role-codm hover:bg-role-codm/30 text-xs font-bold transition-colors flex items-center gap-1.5 min-h-[44px]"
                   title="ورود میراثی یک شخصیت بازنشسته یا قدیمی به کمپین دیگر"
                 >
-                  <RefreshCw className="w-4 h-4 text-purple-400" />
+                  <RefreshCw className="w-4 h-4 text-role-codm" />
                   <span>ورود میراثی (Legacy Join)</span>
                 </Button>
               )}
@@ -677,8 +677,8 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           isOpen={true}
           onClose={() => setLegacyJoinOpen(false)}
           title={
-            <div className="flex items-center gap-2 text-purple-300">
-              <RefreshCw className="w-5 h-5 text-purple-400" />
+            <div className="flex items-center gap-2 text-role-codm">
+              <RefreshCw className="w-5 h-5 text-role-codm" />
               <span>ورود میراثی به کمپین جدید</span>
             </div>
           }
@@ -691,7 +691,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
             </p>
 
             {legacyJoinError && (
-              <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-danger/15 border border-danger/30 text-danger text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{legacyJoinError}</span>
               </div>
@@ -703,7 +703,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                 <Select noWrapper
                   value={selectedTargetCampaignId}
                   onChange={e => setSelectedTargetCampaignId(e.target.value)}
-                  className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-xs text-text-primary focus:border-purple-400 focus:outline-none min-h-[44px]"
+                  className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-xs text-text-primary focus:border-accent focus:outline-none min-h-[44px]"
                 >
                   <option value="">— یک کمپین را انتخاب کنید —</option>
                   {availableCampaigns
@@ -739,7 +739,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                     </div>
                     <div className="flex justify-between">
                       <span>نیاز به بررسی دانجن‌مستر:</span>
-                      <span className={needsAppr ? 'text-amber-400 font-bold' : 'text-emerald-400'}>
+                      <span className={needsAppr ? 'text-warning font-bold' : 'text-success'}>
                         {needsAppr ? 'بله (در صف تأیید قرار می‌گیرد)' : 'خیر (ورود مستقیم)'}
                       </span>
                     </div>
@@ -754,7 +754,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                   onChange={e => setLegacyNotes(e.target.value)}
                   rows={2}
                   placeholder="انگیزه ورود به سرزمین نو، ماجراهای فاصله دو کمپین..."
-                  className="w-full bg-bg border border-border rounded-xl p-2.5 text-xs text-text-primary focus:border-purple-400 focus:outline-none"
+                  className="w-full bg-bg border border-border rounded-xl p-2.5 text-xs text-text-primary focus:border-accent focus:outline-none"
                 />
               </div>
 
@@ -769,7 +769,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                 <Button
                   type="submit"
                   disabled={isLegacySubmitting || !selectedTargetCampaignId}
-                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs disabled:opacity-50 transition-all shadow min-h-[44px] flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-xl bg-role-codm hover:brightness-110 text-on-accent font-bold text-xs disabled:opacity-50 transition-all shadow min-h-[44px] flex items-center gap-1.5"
                 >
                   {isLegacySubmitting ? 'در حال ثبت...' : 'تأیید ورود میراثی'}
                 </Button>

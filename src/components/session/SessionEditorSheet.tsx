@@ -208,7 +208,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4 pb-20 text-start" dir="rtl">
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300 flex items-center gap-2">
+          <div className="p-3 rounded-xl bg-danger/10 border border-danger/30 text-xs text-danger flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>{errorMsg}</span>
           </div>
@@ -368,7 +368,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
                     <Button
                       type="button"
                       onClick={() => handleRemovePollOption(idx)}
-                      className="p-2 text-rose-400 hover:text-rose-300 transition-colors"
+                      className="p-2 text-danger hover:text-danger-hover transition-colors"
                       title="حذف این گزینه"
                     >
                       <Trash2 className="w-4 h-4" />

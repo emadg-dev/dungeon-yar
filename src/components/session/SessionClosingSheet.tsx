@@ -206,8 +206,8 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
     >
       <div className="space-y-6 py-2" dir="rtl">
         {errorMsg && (
-          <div className="p-3 rounded-[12px] bg-rose-950/40 border border-rose-800 text-rose-200 text-xs flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+          <div className="p-3 rounded-[12px] bg-danger/10 border border-danger/30 text-danger text-xs flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-danger shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -426,7 +426,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                       type="button"
                       onClick={() => toggleHighlightVisible(char.id)}
                       className={`text-xs font-medium px-2 py-0.5 rounded transition ${
-                        hl.visible ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-800/40' : 'bg-gray-800 text-gray-400'
+                        hl.visible ? 'bg-success/15 text-success border border-success/30' : 'bg-surface-2 text-text-muted border border-border'
                       }`}
                     >
                       {hl.visible ? 'نمایش برای بازیکن' : 'فقط دانجن مستر'}
@@ -535,7 +535,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
             type="button"
             disabled={isSubmitting}
             onClick={handleFinalSubmit}
-            className="w-full py-3.5 rounded-[12px] btn-primary-amber font-extrabold text-sm shadow-xl flex items-center justify-center gap-2 min-h-[48px] touch-target min-w-[44px]"
+            className="w-full py-3.5 rounded-[12px] btn-primary font-extrabold text-sm shadow-xl flex items-center justify-center gap-2 min-h-[48px] touch-target min-w-[44px]"
           >
             <CheckCircle2 className="w-4 h-4" />
             <span>{isSubmitting ? 'در حال ثبت و بستن جلسه...' : 'ثبت خلاصه، پاداش‌ها و پایان قطعی جلسه'}</span>

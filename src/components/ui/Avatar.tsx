@@ -43,7 +43,7 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   return (
     <div
-      className={`relative inline-flex items-center justify-center bg-stone-850 text-stone-200 border border-stone-800 shrink-0 font-bold overflow-hidden select-none shadow-md ${
+      className={`relative inline-flex items-center justify-center bg-surface-2 text-text-primary border border-border shrink-0 font-bold overflow-hidden select-none shadow-md ${
         sizeStyles[size]
       } ${roundedClass} ${className}`}
     >
@@ -57,7 +57,7 @@ export const Avatar: React.FC<AvatarProps> = ({
           className="w-full h-full object-cover"
         />
       ) : (
-        <span>{initials || <UserIcon className="w-1/2 h-1/2 text-stone-400" />}</span>
+        <span>{initials || <UserIcon className="w-1/2 h-1/2 text-text-muted" />}</span>
       )}
     </div>
   );

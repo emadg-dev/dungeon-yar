@@ -89,7 +89,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       {/* Backdrop */}
       <div
         onClick={onClose}
-        className="fixed inset-0 bg-stone-950/80 backdrop-blur-sm transition-opacity duration-200"
+        className="fixed inset-0 bg-overlay backdrop-blur-sm transition-opacity duration-200"
         aria-hidden="true"
       />
 
@@ -101,7 +101,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           paddingBottom: 'env(safe-area-inset-bottom, 16px)',
           ...dragOffsetStyle,
         }}
-        className="relative z-41 w-full max-w-xl bg-stone-900 border-t border-stone-800 rounded-t-3xl shadow-2xl flex flex-col transition-transform duration-200 ease-out overflow-hidden"
+        className="relative z-41 w-full max-w-xl bg-surface border-t border-border rounded-t-3xl shadow-2xl flex flex-col transition-transform duration-200 ease-out overflow-hidden"
       >
         {/* Drag down pill handle */}
         <div
@@ -110,20 +110,20 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           onTouchEnd={handleTouchEnd}
           className="w-full pt-3 pb-2 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing select-none"
         >
-          <div className="w-10 h-1.5 rounded-full bg-stone-700/80 hover:bg-stone-600 transition-colors" />
+          <div className="w-10 h-1.5 rounded-full bg-surface-3 hover:bg-border-strong transition-colors" />
         </div>
 
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className="px-5 py-2.5 flex items-start justify-between gap-3 border-b border-stone-800/80 shrink-0">
+          <div className="px-5 py-2.5 flex items-start justify-between gap-3 border-b border-border shrink-0">
             <div className="min-w-0 flex-1">
               {title && (
-                <h3 id="bottom-sheet-title" className="text-base sm:text-lg font-bold text-stone-100 truncate">
+                <h3 id="bottom-sheet-title" className="text-base sm:text-lg font-bold text-text-primary truncate">
                   {title}
                 </h3>
               )}
               {description && (
-                <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">{description}</p>
+                <p className="text-xs text-text-muted mt-0.5 leading-relaxed">{description}</p>
               )}
             </div>
 
@@ -134,7 +134,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={onClose}
-                className="shrink-0 -me-1 text-stone-400 hover:text-stone-100"
+                className="shrink-0 -me-1 text-text-muted hover:text-text-primary"
               />
             )}
           </div>
@@ -147,7 +147,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
         {/* Footer */}
         {footer && (
-          <div className="px-5 py-3 border-t border-stone-800/80 bg-stone-900/90 shrink-0">
+          <div className="px-5 py-3 border-t border-border bg-surface-2/90 shrink-0">
             {footer}
           </div>
         )}

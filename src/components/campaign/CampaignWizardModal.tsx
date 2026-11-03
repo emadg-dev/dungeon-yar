@@ -940,7 +940,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
               type="button"
               disabled={isLaunching || !name.trim()}
               onClick={handleLaunchCampaign}
-              className="w-full py-3.5 rounded-xl btn-primary-amber font-extrabold text-sm shadow-xl flex items-center justify-center gap-2 min-h-[48px]"
+              className="w-full py-3.5 rounded-xl btn-primary font-extrabold text-sm shadow-xl flex items-center justify-center gap-2 min-h-[48px]"
             >
               <Compass className="w-5 h-5" />
               <span>{isLaunching ? 'در حال راه‌اندازی کمپین...' : 'شروع کمپین و گشودن میز بازی'}</span>
@@ -1008,7 +1008,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
               <Button
                 type="button"
                 onClick={handleNextStep}
-                className="px-5 py-2.5 rounded-xl btn-primary-amber text-xs font-extrabold shadow-md flex items-center gap-1 min-h-[44px]"
+                className="px-5 py-2.5 rounded-xl btn-primary text-xs font-extrabold shadow-md flex items-center gap-1 min-h-[44px]"
               >
                 <span>مرحله بعد</span>
                 <ArrowLeft className="w-4 h-4" />
@@ -1018,7 +1018,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                 type="button"
                 disabled={isLaunching || !name.trim()}
                 onClick={handleLaunchCampaign}
-                className="px-6 py-2.5 rounded-xl btn-primary-amber text-xs font-extrabold shadow-lg min-h-[44px]"
+                className="px-6 py-2.5 rounded-xl btn-primary text-xs font-extrabold shadow-lg min-h-[44px]"
               >
                 {isLaunching ? 'در حال راه‌اندازی...' : 'شروع کمپین'}
               </Button>

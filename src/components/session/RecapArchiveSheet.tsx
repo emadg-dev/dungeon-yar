@@ -102,7 +102,7 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
             <Button
               type="button"
               onClick={onOpenCreateRecap}
-              className="py-2.5 px-3.5 rounded-[12px] btn-primary-amber text-xs font-bold flex items-center gap-1.5 shrink-0 touch-target min-w-[44px]"
+              className="py-2.5 px-3.5 rounded-[12px] btn-primary text-xs font-bold flex items-center gap-1.5 shrink-0 touch-target min-w-[44px]"
             >
               <Feather className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">نگارش خلاصه</span>
@@ -123,12 +123,12 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
                     </span>
                   )}
                   {activeRecap.status === 'draft' && (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-950/40 text-amber-300 border border-amber-800/40 text-xs font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30 text-xs font-bold">
                       پیش‌نویس
                     </span>
                   )}
                   {activeRecap.visibility === 'dm_only' && (
-                    <span className="px-2 py-0.5 rounded-full bg-purple-950/40 text-purple-300 border border-purple-800/40 text-xs font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-role-codm/15 text-role-codm border border-role-codm/30 text-xs font-bold">
                       فقط دانجن مستر
                     </span>
                   )}
@@ -159,7 +159,7 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
                         type="button"
                         onClick={() => handleDelete(activeRecap.id)}
                         disabled={deletingId === activeRecap.id}
-                        className="p-1.5 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 transition touch-target min-w-[44px]"
+                        className="p-1.5 rounded-lg text-danger hover:text-danger-hover hover:bg-danger/15 transition touch-target min-w-[44px]"
                         title="حذف"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -221,12 +221,12 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
                           </span>
                         )}
                         {recap.status === 'draft' && (
-                          <span className="px-1.5 py-0.2 rounded bg-amber-950/40 text-amber-300 border border-amber-800/40 text-[9px] font-bold">
+                          <span className="px-1.5 py-0.2 rounded bg-primary/15 text-primary border border-primary/30 text-[9px] font-bold">
                             پیش‌نویس
                           </span>
                         )}
                         {recap.visibility === 'dm_only' && (
-                          <span className="px-1.5 py-0.2 rounded bg-purple-950/40 text-purple-300 border border-purple-800/40 text-[9px] font-bold">
+                          <span className="px-1.5 py-0.2 rounded bg-role-codm/15 text-role-codm border border-role-codm/30 text-[9px] font-bold">
                             فقط DM
                           </span>
                         )}

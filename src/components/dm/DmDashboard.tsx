@@ -171,7 +171,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
         <Button
           type="button"
           onClick={nextDay}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] btn-primary-amber text-xs font-bold transition touch-target min-w-[44px]"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] btn-primary text-xs font-bold transition touch-target min-w-[44px]"
         >
           <span>روز بعد</span>
           <ChevronRight className="w-4 h-4" />
