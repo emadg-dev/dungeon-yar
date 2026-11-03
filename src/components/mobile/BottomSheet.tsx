@@ -5,12 +5,15 @@ import { X } from 'lucide-react';
 interface BottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
-  subtitle?: string;
+  title: string | React.ReactNode;
+  subtitle?: string | React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
   fullHeight?: boolean;
   centered?: boolean;
+  maxWidth?: string;
+  headerExtra?: React.ReactNode;
+  contentClassName?: string;
 }
 
 export const BottomSheet: React.FC<BottomSheetProps> = ({
@@ -22,6 +25,9 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   footer,
   fullHeight = false,
   centered = false,
+  maxWidth = 'max-w-lg',
+  headerExtra,
+  contentClassName,
 }) => {
   const [dragOffset, setDragOffset] = useState<number>(0);
   const touchStartY = useRef<number | null>(null);
@@ -119,7 +125,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       }}
     >
       <div
-        className={`w-full max-w-lg z-[101] glass-card bg-[#171513]/95 ${
+        className={`w-full ${maxWidth} z-[101] glass-card bg-[#171513]/95 ${
           centered
             ? 'border border-[#E0A030]/30 rounded-2xl my-auto animate-in zoom-in-95'
             : 'border-t sm:border border-[#E0A030]/25 rounded-t-3xl sm:rounded-2xl animate-in slide-in-from-bottom'
@@ -148,9 +154,22 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className="min-w-0 pr-1">
-            <h3 className="text-sm sm:text-base font-bold text-[#F2C265] truncate">{title}</h3>
-            {subtitle && <p className="text-[11px] text-[#A39A89] mt-0.5 truncate">{subtitle}</p>}
+          <div className="flex items-center gap-2 min-w-0 pr-1 flex-1">
+            <div className="min-w-0 flex-1">
+              {typeof title === 'string' ? (
+                <h3 className="text-sm sm:text-base font-bold text-[#F2C265] truncate">{title}</h3>
+              ) : (
+                title
+              )}
+              {subtitle && (
+                typeof subtitle === 'string' ? (
+                  <p className="text-[11px] text-[#A39A89] mt-0.5 truncate">{subtitle}</p>
+                ) : (
+                  subtitle
+                )
+              )}
+            </div>
+            {headerExtra}
           </div>
           <button
             type="button"
@@ -163,7 +182,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         </div>
 
         {/* Scrollable Content with ample bottom padding so buttons never cut off */}
-        <div className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-5 py-4 space-y-4 pb-8 sm:pb-6 focus:outline-none">
+        <div className={`flex-1 overflow-y-auto overscroll-contain px-4 sm:px-5 py-4 space-y-4 pb-8 sm:pb-6 focus:outline-none ${contentClassName || ''}`}>
           {children}
         </div>
 
