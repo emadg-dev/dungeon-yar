@@ -13,6 +13,7 @@ import {
   Upload, HelpCircle, RefreshCw, Copy, ExternalLink 
 } from 'lucide-react';
 import { ScrollableRow } from '../ui/ScrollableRow';
+import { BottomSheet } from '../mobile/BottomSheet';
 
 interface CampaignWizardModalProps {
   isOpen: boolean;
@@ -949,44 +950,91 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex flex-col justify-end sm:justify-center items-center p-0 sm:p-4 text-start" dir="rtl">
-      <div className="bg-[rgba(18,16,14,0.88)] backdrop-blur-xl border border-[#E0A030]/30 rounded-t-3xl sm:rounded-3xl w-full max-w-3xl min-h-[75vh] max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_24px_60px_rgba(0,0,0,0.5)]">
-        {/* Header Bar */}
-        <div className="p-4 border-b border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 bg-[#171513]">
-          <div className="flex items-center gap-2">
-            <Compass className="w-5 h-5 text-[#F2C265]" />
-            <div>
-              <h2 className="text-sm sm:text-base font-bold text-[#F2C265]">
-                {activeCampaign ? `ویزارد راه‌اندازی: ${name || 'کمپین جدید'}` : 'کمپین جدید (Campaign Wizard)'}
-              </h2>
-              {isSavingDraft && (
-                <span className="text-[10px] text-[#F2C265] flex items-center gap-1">
-                  <RefreshCw className="w-3 h-3 animate-spin" />
-                  ذخیره خودکار پیش‌نویس...
-                </span>
-              )}
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-xl bg-[#2F2A23] text-[#A39A89] hover:text-white"
-          >
-            <X className="w-5 h-5" />
-          </button>
+  if (!isOpen) return null;
+
+  return (
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      title={
+        <div className="flex items-center gap-2">
+          <Compass className="w-5 h-5 text-[#F2C265] shrink-0" />
+          <span className="truncate">
+            {activeCampaign ? `ویزارد راه‌اندازی: ${name || 'کمپین جدید'}` : 'کمپین جدید (Campaign Wizard)'}
+          </span>
         </div>
+      }
+      subtitle={
+        isSavingDraft ? (
+          <span className="text-[10px] text-[#F2C265] flex items-center gap-1">
+            <RefreshCw className="w-3 h-3 animate-spin shrink-0" />
+            ذخیره خودکار پیش‌نویس...
+          </span>
+        ) : undefined
+      }
+      fullHeight
+      maxWidth="max-w-3xl"
+      footer={
+        startMode ? (
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <button
+              type="button"
+              disabled={step <= 1}
+              onClick={handlePrevStep}
+              className={`px-4 py-2.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] text-xs font-bold transition flex items-center gap-1 min-h-[44px] ${
+                step <= 1 ? 'opacity-40 cursor-not-allowed' : ''
+              }`}
+            >
+              <ArrowRight className="w-4 h-4" />
+              <span>مرحله قبل</span>
+            </button>
 
-        {/* Status notification banner if any */}
-        {statusMessage && (
-          <div className="bg-[#E0A030]/15 border-b border-[#E0A030]/30 px-4 py-2 text-xs text-[#F2C265] flex flex-wrap items-center justify-between gap-2">
-            <span>{statusMessage}</span>
-            <button onClick={() => setStatusMessage(null)} className="text-[#A39A89] hover:text-white">✕</button>
+            <button
+              type="button"
+              onClick={() => {
+                saveCurrentDraft();
+                setStatusMessage('پیش‌نویس ذخیره شد. می‌توانید بعداً ادامه دهید.');
+                onClose();
+              }}
+              className="px-3 py-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-[#EDE6D8] text-xs font-semibold min-h-[44px]"
+            >
+              ذخیره و ادامه بعداً
+            </button>
+
+            {step < 8 ? (
+              <button
+                type="button"
+                onClick={handleNextStep}
+                className="px-5 py-2.5 rounded-xl btn-primary-amber text-xs font-extrabold shadow-md flex items-center gap-1 min-h-[44px]"
+              >
+                <span>مرحله بعد</span>
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={isLaunching || !name.trim()}
+                onClick={handleLaunchCampaign}
+                className="px-6 py-2.5 rounded-xl btn-primary-amber text-xs font-extrabold shadow-lg min-h-[44px]"
+              >
+                {isLaunching ? 'در حال راه‌اندازی...' : 'شروع کمپین'}
+              </button>
+            )}
           </div>
-        )}
+        ) : undefined
+      }
+    >
+      {/* Status notification banner if any */}
+      {statusMessage && (
+        <div className="bg-[#E0A030]/15 border border-[#E0A030]/30 rounded-xl px-4 py-2 text-xs text-[#F2C265] flex flex-wrap items-center justify-between gap-2">
+          <span>{statusMessage}</span>
+          <button onClick={() => setStatusMessage(null)} className="text-[#A39A89] hover:text-white">✕</button>
+        </div>
+      )}
 
-        {/* START MODE SELECTION SCREEN (If mode not yet chosen) */}
-        {!startMode ? (
-          <div className="p-5 overflow-y-auto space-y-4">
+      {/* START MODE SELECTION SCREEN (If mode not yet chosen) */}
+      {!startMode ? (
+        <div className="space-y-4">
             <div className="text-center space-y-1 mb-4">
               <h3 className="text-lg font-bold text-[#F2C265]">نقطه آغاز ماجراجویی را انتخاب کنید</h3>
               <p className="text-xs text-[#A39A89] max-w-2xl mx-auto">
@@ -1106,59 +1154,11 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
             </ScrollableRow>
 
             {/* Step Body */}
-            <div className="p-5 overflow-y-auto flex-1">
+            <div className="pt-2">
               {renderStepContent()}
-            </div>
-
-            {/* Sticky Bottom Actions Bar */}
-            <div className="p-4 bg-[#171513] border-t border-[#2F2A23] flex flex-wrap items-center justify-between gap-2 gap-2">
-              <button
-                type="button"
-                disabled={step <= 1}
-                onClick={handlePrevStep}
-                className={`px-4 py-2.5 rounded-xl bg-[#2F2A23] hover:bg-[#3A342B] text-[#EDE6D8] text-xs font-bold transition flex items-center gap-1 min-h-[44px] ${
-                  step <= 1 ? 'opacity-40 cursor-not-allowed' : ''
-                }`}
-              >
-                <ArrowRight className="w-4 h-4" />
-                <span>مرحله قبل</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  saveCurrentDraft();
-                  setStatusMessage('پیش‌نویس ذخیره شد. می‌توانید بعداً ادامه دهید.');
-                  onClose();
-                }}
-                className="px-3 py-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030] text-[#EDE6D8] text-xs font-semibold min-h-[44px]"
-              >
-                ذخیره و ادامه بعداً
-              </button>
-
-              {step < 8 ? (
-                <button
-                  type="button"
-                  onClick={handleNextStep}
-                  className="px-5 py-2.5 rounded-xl btn-primary-amber text-xs font-extrabold shadow-md flex items-center gap-1 min-h-[44px]"
-                >
-                  <span>مرحله بعد</span>
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  disabled={isLaunching || !name.trim()}
-                  onClick={handleLaunchCampaign}
-                  className="px-6 py-2.5 rounded-xl btn-primary-amber text-xs font-extrabold shadow-lg min-h-[44px]"
-                >
-                  {isLaunching ? 'در حال راه‌اندازی...' : 'شروع کمپین'}
-                </button>
-              )}
             </div>
           </>
         )}
-      </div>
-    </div>
+    </BottomSheet>
   );
 };

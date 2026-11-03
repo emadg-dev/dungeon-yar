@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { APP_NAME_FA } from '../../config/app';
 import { ScrollableRow } from '../ui/ScrollableRow';
+import { BottomSheet } from '../mobile/BottomSheet';
 
 interface CharacterCreationWizardModalProps {
   isOpen: boolean;
@@ -424,51 +425,91 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#0F0E0C] text-[#EDE6D8] overflow-hidden" dir="rtl">
-      {/* ------------------------------------------------------------- */}
-      {/* 1. Header & Stepper Bar                                       */}
-      {/* ------------------------------------------------------------- */}
-      <header className="shrink-0 bg-[#171513] border-b border-[#2F2A23] px-4 py-3 shadow-md">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[#E0A030]/20 text-[#F2C265] flex items-center justify-center font-bold">
-              {currentStep}
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-[#F2C265]">
-                ویزارد آفرینش کاراکتر {APP_NAME_FA}
-              </h2>
-              <p className="text-[11px] text-[#A39A89]">
-                کمپین: {campaign.name} (سطح {campaign.settings?.startingLevel || 1})
-              </p>
-            </div>
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      title={
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-[#E0A030]/20 text-[#F2C265] flex items-center justify-center font-bold text-xs shrink-0">
+            {currentStep}
           </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleSaveDraft}
-              disabled={isSavingDraft}
-              className="px-3 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030]/50 text-xs font-bold text-[#C9C0AE] hover:text-[#F2C265] transition-all flex items-center gap-1.5 min-h-[44px]"
-              title="ذخیره و خروج جهت ادامه در آینده"
-            >
-              <Save className="w-3.5 h-3.5 text-[#E0A030]" />
-              <span className="hidden sm:inline">ذخیره موقت</span>
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-9 h-9 rounded-xl bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] flex items-center justify-center"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <span className="font-bold text-sm text-[#F2C265] truncate">ویزارد آفرینش کاراکتر {APP_NAME_FA}</span>
         </div>
+      }
+      subtitle={`کمپین: ${campaign.name} (سطح ${campaign.settings?.startingLevel || 1})`}
+      fullHeight
+      maxWidth="max-w-3xl"
+      headerExtra={
+        <button
+          type="button"
+          onClick={handleSaveDraft}
+          disabled={isSavingDraft || isSubmitting}
+          className="px-2.5 py-1.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030]/50 text-xs font-bold text-[#C9C0AE] hover:text-[#F2C265] transition-all flex items-center gap-1.5 min-h-[44px]"
+          title="ذخیره موقت جهت ادامه در آینده"
+        >
+          <Save className="w-3.5 h-3.5 text-[#E0A030]" />
+          <span className="hidden sm:inline">ذخیره موقت</span>
+        </button>
+      }
+      footer={
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Back button */}
+          <button
+            type="button"
+            onClick={handlePrevStep}
+            disabled={currentStep === 1 || isSubmitting}
+            className={`px-4 py-2.5 rounded-xl border border-[#2F2A23] text-xs font-bold transition-all flex items-center gap-1 min-h-[44px] ${
+              currentStep === 1
+                ? 'opacity-40 bg-[#171513] text-[#8A8374] cursor-not-allowed'
+                : 'bg-[#201D19] text-[#EDE6D8] hover:border-[#E0A030]'
+            }`}
+          >
+            <ChevronRight className="w-4 h-4" />
+            <span>قبلی</span>
+          </button>
 
-        {/* Stepper Dots / Labels */}
+          {/* Save Draft */}
+          <button
+            type="button"
+            onClick={handleSaveDraft}
+            disabled={isSavingDraft || isSubmitting}
+            className="px-3.5 py-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030]/50 text-xs font-bold text-[#E0A030] transition-all flex items-center gap-1.5 min-h-[44px]"
+          >
+            <Save className="w-4 h-4" />
+            <span>ذخیره و ادامه بعداً</span>
+          </button>
+
+          {/* Next / Submit button */}
+          {currentStep < 8 ? (
+            <button
+              type="button"
+              onClick={handleNextStep}
+              className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-bold hover:bg-[#F2C265] transition-all flex items-center gap-1 min-h-[44px] shadow-lg shadow-[#E0A030]/20"
+            >
+              <span>گام بعدی</span>
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="px-6 py-2.5 rounded-xl bg-[#6F9E78] text-[#0E0D0C] text-xs font-bold hover:bg-[#85B88E] transition-all flex items-center gap-1.5 min-h-[44px] shadow-lg shadow-[#6F9E78]/20"
+            >
+              <Check className="w-4 h-4" />
+              <span>{isSubmitting ? 'در حال ثبت...' : 'تایید نهایی و آفرینش'}</span>
+            </button>
+          )}
+        </div>
+      }
+    >
+      {/* ------------------------------------------------------------- */}
+      {/* 1. Stepper Bar                                                */}
+      {/* ------------------------------------------------------------- */}
+      <div className="shrink-0 pb-1 border-b border-[#2F2A23]">
         <ScrollableRow
           activeKey={currentStep}
-          wrapperClassName="mt-3"
+          wrapperClassName="w-full"
           className="pb-1 text-[11px] font-medium text-[#8A8374] gap-1.5"
         >
           {[
@@ -503,20 +544,20 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             );
           })}
         </ScrollableRow>
-      </header>
+      </div>
 
       {/* ------------------------------------------------------------- */}
       {/* 2. Feedback Toasts & Errors                                   */}
       {/* ------------------------------------------------------------- */}
       {errorMsg && (
-        <div className="shrink-0 bg-[#C2512B]/20 border-b border-[#C2512B]/40 px-4 py-2.5 flex items-center gap-2 text-xs text-[#E8836B]">
+        <div className="rounded-xl bg-[#C2512B]/20 border border-[#C2512B]/40 px-4 py-2.5 flex items-center gap-2 text-xs text-[#E8836B]">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
 
       {toastNotice && (
-        <div className="shrink-0 bg-[#6F9E78]/20 border-b border-[#6F9E78]/40 px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[#95C29E]">
+        <div className="rounded-xl bg-[#6F9E78]/20 border border-[#6F9E78]/40 px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[#95C29E]">
           <div className="flex items-center gap-2">
             <Check className="w-4 h-4" />
             <span>{toastNotice}</span>
@@ -526,9 +567,9 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
       )}
 
       {/* ------------------------------------------------------------- */}
-      {/* 3. Main Wizard Content Viewport                               */}
+      {/* 3. Main Wizard Content                                        */}
       {/* ------------------------------------------------------------- */}
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6 max-w-3xl min-h-[75vh] w-full mx-auto space-y-6">
+      <div className="space-y-6">
         {/* ============================================================ */}
         {/* STEP 1: IDENTITY & LINEAGE                                   */}
         {/* ============================================================ */}
@@ -1320,100 +1361,41 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             </div>
           </section>
         )}
-      </main>
-
-      {/* ------------------------------------------------------------- */}
-      {/* 4. Sticky Bottom Action Bar                                   */}
-      {/* ------------------------------------------------------------- */}
-      <footer className="shrink-0 bg-[#171513] border-t border-[#2F2A23] px-4 py-3 shadow-2xl">
-        <div className="max-w-3xl min-h-[75vh] mx-auto flex flex-wrap items-center justify-between gap-2 gap-2">
-          {/* Back button */}
-          <button
-            type="button"
-            onClick={handlePrevStep}
-            disabled={currentStep === 1 || isSubmitting}
-            className="px-4 py-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] text-xs font-bold text-[#C9C0AE] hover:text-[#EDE6D8] disabled:opacity-40 transition-all flex items-center gap-1 min-h-[44px]"
-          >
-            <ChevronRight className="w-4 h-4" />
-            <span>قبلی</span>
-          </button>
-
-          {/* Save Draft */}
-          <button
-            type="button"
-            onClick={handleSaveDraft}
-            disabled={isSavingDraft || isSubmitting}
-            className="px-3.5 py-2.5 rounded-xl bg-[#201D19] border border-[#2F2A23] hover:border-[#E0A030]/50 text-xs font-bold text-[#E0A030] transition-all flex items-center gap-1.5 min-h-[44px]"
-          >
-            <Save className="w-4 h-4" />
-            <span>ذخیره و ادامه بعداً</span>
-          </button>
-
-          {/* Next / Submit button */}
-          {currentStep < 8 ? (
-            <button
-              type="button"
-              onClick={handleNextStep}
-              className="px-5 py-2.5 rounded-xl bg-[#E0A030] text-[#0E0D0C] text-xs font-bold hover:bg-[#F2C265] transition-all flex items-center gap-1 min-h-[44px] shadow-lg shadow-[#E0A030]/20"
-            >
-              <span>گام بعدی</span>
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="px-6 py-2.5 rounded-xl bg-[#6F9E78] text-[#0E0D0C] text-xs font-bold hover:bg-[#85B88E] transition-all flex items-center gap-1.5 min-h-[44px] shadow-lg shadow-[#6F9E78]/20"
-            >
-              <Check className="w-4 h-4" />
-              <span>{isSubmitting ? 'در حال ثبت...' : 'تایید نهایی و آفرینش'}</span>
-            </button>
-          )}
-        </div>
-      </footer>
+      </div>
 
       {/* ------------------------------------------------------------- */}
       {/* Class Compare Sheet Modal                                     */}
       {/* ------------------------------------------------------------- */}
-      {showClassCompare && (
-        <div className="fixed inset-0 z-60 bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-[#171513] border border-[#2F2A23] rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden text-start shadow-2xl" dir="rtl">
-            <div className="p-4 border-b border-[#2F2A23] flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-bold text-[#F2C265] flex items-center gap-2">
-                <Scale className="w-4 h-4" />
-                <span>مقایسه کلاس‌های مجاز کمپین</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowClassCompare(false)}
-                className="w-8 h-8 rounded-xl bg-[#201D19] text-[#A39A89] flex items-center justify-center"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      <BottomSheet
+        isOpen={showClassCompare}
+        onClose={() => setShowClassCompare(false)}
+        title={
+          <span className="flex items-center gap-2 text-[#F2C265]">
+            <Scale className="w-4 h-4 text-[#F2C265]" />
+            <span>مقایسه کلاس‌های مجاز کمپین</span>
+          </span>
+        }
+        maxWidth="max-w-2xl"
+      >
+        <div className="space-y-3">
+          {allowedClasses.map(cls => (
+            <div key={cls.id || cls.name} className="p-3.5 rounded-2xl bg-[#141210] border border-[#2F2A23]">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h4 className="text-sm font-bold text-[#EDE6D8]">{cls.name}</h4>
+                <span className="text-xs text-[#F2C265] font-mono">تاس جان: {cls.hitDie}</span>
+              </div>
+              <p className="text-xs text-[#A39A89] mt-1 line-clamp-2">{cls.description || cls.notes}</p>
+              <div className="mt-2 flex items-center gap-3 text-[11px] text-[#8A8374]">
+                <span>سیوها: {(cls.saves || []).join('، ')}</span>
+                <span>•</span>
+                <span>زره: {cls.armorProf || 'متنوع'}</span>
+                <span>•</span>
+                <span>نوع جادو: {cls.spellcasting ? cls.spellcasting.ability : 'بدون جادو'}</span>
+              </div>
             </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {allowedClasses.map(cls => (
-                <div key={cls.id || cls.name} className="p-3.5 rounded-2xl bg-[#141210] border border-[#2F2A23]">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h4 className="text-sm font-bold text-[#EDE6D8]">{cls.name}</h4>
-                    <span className="text-xs text-[#F2C265] font-mono">تاس جان: {cls.hitDie}</span>
-                  </div>
-                  <p className="text-xs text-[#A39A89] mt-1 line-clamp-2">{cls.description || cls.notes}</p>
-                  <div className="mt-2 flex items-center gap-3 text-[11px] text-[#8A8374]">
-                    <span>سیوها: {(cls.saves || []).join('، ')}</span>
-                    <span>•</span>
-                    <span>زره: {cls.armorProf || 'متنوع'}</span>
-                    <span>•</span>
-                    <span>نوع جادو: {cls.spellcasting ? cls.spellcasting.ability : 'بدون جادو'}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          ))}
         </div>
-      )}
-    </div>
+      </BottomSheet>
+    </BottomSheet>
   );
 };

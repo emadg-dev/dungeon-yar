@@ -8,6 +8,7 @@ import {
   Archive, RotateCcw, AlertCircle, Copy, Check, FileText
 } from 'lucide-react';
 import { ScrollableRow } from '../ui/ScrollableRow';
+import { BottomSheet } from '../mobile/BottomSheet';
 
 interface AdminConsoleModalProps {
   isOpen: boolean;
@@ -205,39 +206,31 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in" dir="rtl">
-      <div className="w-full max-w-4xl bg-[#171513] border border-[#2F2A23] rounded-[16px] shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-2 p-4 border-b border-[#2F2A23] bg-[#201D19]/60">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-[10px] bg-[#E0A030]/15 text-[#E0A030] border border-[#E0A030]/30">
-              <Shield className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-extrabold text-[#EDE6D8] flex items-center gap-1.5">
-                <span>کنسول مدیریت سامانه {APP_NAME_FA}</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#C2512B]/20 text-[#C2512B] border border-[#C2512B]/35 font-bold">
-                  مدیر سیستم
-                </span>
-              </h2>
-              <p className="text-[11px] text-[#A39A89]">
-                نظارت بر کاربران، کمپین‌ها، منابع و سلامت پایگاه داده (D1)
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-[10px] bg-[#201D19] text-[#A39A89] hover:text-[#EDE6D8] border border-[#2F2A23] touch-target min-w-[44px]"
-            title="بستن"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+  if (!isOpen) return null;
 
+  return (
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      title={
+        <div className="flex items-center gap-2">
+          <Shield className="w-5 h-5 text-[#E0A030] shrink-0" />
+          <span className="truncate">کنسول مدیریت سامانه {APP_NAME_FA}</span>
+        </div>
+      }
+      subtitle="نظارت بر کاربران، کمپین‌ها، منابع و سلامت پایگاه داده (D1)"
+      fullHeight
+      maxWidth="max-w-4xl"
+      headerExtra={
+        <span className="text-[10px] px-2 py-0.5 rounded-[6px] bg-[#C2512B]/20 text-[#C2512B] border border-[#C2512B]/35 font-bold shrink-0">
+          مدیر سیستم
+        </span>
+      }
+    >
+      <div className="space-y-4">
         {/* Status Toast */}
         {statusMsg && (
-          <div className={`px-4 py-2.5 text-xs font-bold flex items-center gap-2 border-b ${
+          <div className={`px-4 py-2.5 text-xs font-bold flex items-center gap-2 rounded-xl border ${
             statusMsg.type === 'success'
               ? 'bg-[#6F9E78]/15 text-[#6F9E78] border-[#6F9E78]/30'
               : 'bg-[#C2512B]/15 text-[#C2512B] border-[#C2512B]/30'
@@ -763,6 +756,6 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </BottomSheet>
   );
 };
