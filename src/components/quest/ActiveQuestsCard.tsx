@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import React from 'react';
 import { Quest } from '../../types';
 import { calculateQuestProgress } from '../../../shared/rules/questEngine';
@@ -41,14 +42,14 @@ export const ActiveQuestsCard: React.FC<ActiveQuestsCardProps> = ({
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={onOpenQuests}
           className="text-xs font-bold text-accent hover:text-accent-hover flex items-center gap-1 transition touch-target min-w-[44px] py-1 px-2 rounded-[8px] hover:bg-accent/10"
         >
           <span>مشاهده همه</span>
           <ChevronLeft className="w-3.5 h-3.5" />
-        </button>
+        </Button>
       </div>
 
       {/* Quest Preview Items */}
@@ -113,7 +114,7 @@ export const ActiveQuestsCard: React.FC<ActiveQuestsCardProps> = ({
                       className="flex items-center gap-2 text-xs"
                     >
                       {canToggleObjective && onToggleObjective ? (
-                        <button
+                        <Button
                           type="button"
                           onClick={() => onToggleObjective(quest.id, obj.id, !obj.done)}
                           className="shrink-0 text-accent hover:text-accent-hover touch-target min-w-[44px] p-1 -m-1"
@@ -124,7 +125,7 @@ export const ActiveQuestsCard: React.FC<ActiveQuestsCardProps> = ({
                           ) : (
                             <Circle className="w-4 h-4 text-text-muted" />
                           )}
-                        </button>
+                        </Button>
                       ) : (
                         <span className="shrink-0">
                           {obj.done ? (

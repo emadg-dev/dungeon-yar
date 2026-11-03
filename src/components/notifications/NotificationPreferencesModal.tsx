@@ -3,6 +3,7 @@ import { BottomSheet } from '../mobile/BottomSheet';
 import { NotificationPref, NotificationType } from '../../types';
 import { NOTIFICATION_TYPE_DEFINITIONS, NotificationTypeMeta } from '../../../shared/rules/notifications';
 import { api } from '../../services/api';
+import { Button } from '../ui/Button';
 import {
   Bell,
   BellOff,
@@ -174,7 +175,7 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
               </div>
             </div>
 
-            <button
+            <Button
               type="button"
               onClick={handleTogglePush}
               disabled={pushLoading || pushStatus === 'unsupported'}
@@ -197,7 +198,7 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
                   فعال‌سازی
                 </>
               )}
-            </button>
+            </Button>
           </div>
 
           {/* Honest Note for iOS Safari */}
@@ -253,7 +254,7 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
                               <p className="text-xs text-text-muted line-clamp-1">{item.descriptionFa}</p>
                             </div>
 
-                            <button
+                            <Button
                               type="button"
                               onClick={() => toggleType(item.type)}
                               className={`w-12 h-6 rounded-full transition-colors relative p-0.5 shrink-0 ${
@@ -266,7 +267,7 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
                                   isEnabled ? 'translate-x-0' : '-translate-x-6'
                                 }`}
                               />
-                            </button>
+                            </Button>
                           </div>
                         );
                       })}
@@ -280,13 +281,13 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
 
         {/* Footer Close Button */}
         <div className="pt-2">
-          <button
+          <Button
             type="button"
             onClick={onClose}
             className="w-full py-2.5 rounded-xl bg-surface-2 hover:bg-surface-3 text-text-primary font-medium border border-border-strong transition-colors"
           >
             بستن و بازگشت
-          </button>
+          </Button>
         </div>
       </div>
     </BottomSheet>

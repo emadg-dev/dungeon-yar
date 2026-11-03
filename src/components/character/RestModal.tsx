@@ -1,3 +1,5 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import React, { useState } from 'react';
 import { Moon, Sun, Sparkles, Heart } from 'lucide-react';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -83,7 +85,7 @@ export const RestModal: React.FC<RestModalProps> = ({
             const OptIcon = opt.icon;
             const isSelected = restType === opt.id;
             return (
-              <button
+              <Button
                 key={opt.id}
                 type="button"
                 onClick={() => setRestType(opt.id as any)}
@@ -95,7 +97,7 @@ export const RestModal: React.FC<RestModalProps> = ({
               >
                 <OptIcon className="w-4 h-4" />
                 <span className="font-extrabold text-xs truncate">{opt.label}</span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -126,23 +128,23 @@ export const RestModal: React.FC<RestModalProps> = ({
             </div>
 
             <div className="flex items-center gap-1.5 bg-bg p-1 rounded-[10px] border border-border">
-              <button
+              <Button
                 type="button"
                 onClick={() => setHitDiceToSpend(Math.max(0, hitDiceToSpend - 1))}
                 className="w-8 h-8 rounded-[8px] bg-surface-2 text-text-muted hover:text-text-primary font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
               >
                 -
-              </button>
+              </Button>
               <span className="font-mono text-sm font-extrabold text-text-primary min-w-[24px] text-center dice-ltr">
                 {hitDiceToSpend}
               </span>
-              <button
+              <Button
                 type="button"
                 onClick={() => setHitDiceToSpend(hitDiceToSpend + 1)}
                 className="w-8 h-8 rounded-[8px] bg-surface-2 text-text-muted hover:text-text-primary font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
               >
                 +
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -150,7 +152,7 @@ export const RestModal: React.FC<RestModalProps> = ({
         {/* Additional Rest Notes */}
         <div>
           <label className="text-xs text-text-muted block mb-1">یادداشت استراحت (اختیاری):</label>
-          <input
+          <Input noWrapper
             type="text"
             placeholder="مثلاً: نگهبانی سامان در برج دیده‌بانی کاروانسرا..."
             value={notes}
@@ -161,19 +163,19 @@ export const RestModal: React.FC<RestModalProps> = ({
 
         {/* Action Buttons */}
         <div className="flex gap-2 justify-end pt-2">
-          <button
+          <Button
             type="button"
             onClick={onClose}
             className="py-2.5 px-4 rounded-[12px] text-xs text-text-muted hover:text-text-primary touch-target min-w-[44px]"
           >
             انصراف
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             className="py-2.5 px-5 rounded-[12px] btn-primary-amber font-extrabold text-xs shadow-md touch-target min-w-[44px]"
           >
             تأیید استراحت و بازیابی
-          </button>
+          </Button>
         </div>
       </form>
     </BottomSheet>

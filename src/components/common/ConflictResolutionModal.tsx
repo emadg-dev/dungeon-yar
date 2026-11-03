@@ -7,6 +7,7 @@ import React from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { ConflictDetails, getFieldLabelFa } from '../../../shared/rules/offlineEngine';
 import { AlertTriangle, Check, RotateCcw, ShieldAlert } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 export interface ConflictResolutionModalProps {
   isOpen: boolean;
@@ -90,22 +91,22 @@ export const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = (
 
                 {/* Resolution Buttons */}
                 <div className="grid grid-cols-2 gap-2 pt-1">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => onResolve(c.id, 'client')}
                     className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-[10px] bg-accent hover:bg-accent-hover text-on-accent font-black text-xs transition touch-target min-w-[44px]"
                   >
                     <Check className="w-4 h-4 stroke-[2.5]" />
                     <span>حفظ تغییر من</span>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => onResolve(c.id, 'server')}
                     className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-[10px] bg-surface-2 hover:bg-surface-2 border border-border text-text-primary font-bold text-xs transition touch-target min-w-[44px]"
                   >
                     <RotateCcw className="w-4 h-4 text-text-muted" />
                     <span>پذیرش نسخه سرور</span>
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}
@@ -113,13 +114,13 @@ export const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = (
         )}
 
         <div className="pt-2">
-          <button
+          <Button
             type="button"
             onClick={onClose}
             className="w-full py-2.5 rounded-[10px] bg-surface-2 text-text-primary text-xs font-bold hover:bg-surface-2 transition touch-target min-w-[44px]"
           >
             بستن
-          </button>
+          </Button>
         </div>
       </div>
     </BottomSheet>

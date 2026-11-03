@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
 import React, { useState } from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { KeyRound, Shield, Clock, Check, AlertCircle, Sparkles } from 'lucide-react';
@@ -137,7 +140,7 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-text-primary">نوع مجوز:</label>
             <ScrollableRow activeKey={scope} className="gap-2">
-              <button
+              <Button
                 type="button"
                 data-key="preset"
                 onClick={() => setScope('preset')}
@@ -148,8 +151,8 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
                 }`}
               >
                 <span className="whitespace-nowrap shrink-0">پکیج از پیش‌تعریف‌شده (Preset)</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 data-key="fields"
                 onClick={() => setScope('fields')}
@@ -160,7 +163,7 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
                 }`}
               >
                 <span className="whitespace-nowrap shrink-0">انتخاب دستی فیلدها (Custom)</span>
-              </button>
+              </Button>
             </ScrollableRow>
           </div>
 
@@ -199,7 +202,7 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
                 {availableCustomFields.map(f => {
                   const isChecked = selectedFields.includes(f.id);
                   return (
-                    <button
+                    <Button
                       key={f.id}
                       type="button"
                       onClick={() => toggleField(f.id)}
@@ -211,7 +214,7 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
                     >
                       <span className="truncate">{f.label}</span>
                       {isChecked && <Check className="w-3.5 h-3.5 text-accent shrink-0" />}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -222,7 +225,7 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
           <div className="grid grid-cols-2 gap-3 pt-1">
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">مدت زمان اعتبار:</label>
-              <select
+              <Select noWrapper
                 value={durationHours}
                 onChange={e => setDurationHours(Number(e.target.value))}
                 className="w-full py-2 px-3 rounded-xl bg-surface-2 border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
@@ -232,11 +235,11 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
                 <option value={24}>۲۴ ساعت (۱ روز)</option>
                 <option value={48}>۴۸ ساعت (۲ روز)</option>
                 <option value={168}>۱ هفته</option>
-              </select>
+              </Select>
             </div>
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">تعداد دفعات اعمال:</label>
-              <select
+              <Select noWrapper
                 value={usesCount}
                 onChange={e => setUsesCount(Number(e.target.value))}
                 className="w-full py-2 px-3 rounded-xl bg-surface-2 border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
@@ -244,14 +247,14 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
                 <option value={1}>۱ بار (یک‌بار مصرف)</option>
                 <option value={3}>۳ بار ویرایش</option>
                 <option value={999}>نامحدود تا زمان انقضا</option>
-              </select>
+              </Select>
             </div>
           </div>
 
           {/* Reason */}
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">علت یا یادداشت مجوز:</label>
-            <input
+            <Input noWrapper
               type="text"
               value={reason}
               onChange={e => setReason(e.target.value)}
@@ -262,21 +265,21 @@ export const EditGrantModal: React.FC<EditGrantModalProps> = ({
 
           {/* Submit */}
           <div className="flex gap-2 pt-2">
-            <button
+            <Button
               type="submit"
               disabled={loading}
               className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-warning to-accent hover:from-accent hover:to-accent-hover text-on-accent font-black text-xs transition flex items-center justify-center gap-2 shadow-md shadow-accent/20 min-h-[44px]"
             >
               <KeyRound className="w-4 h-4" />
               <span>{loading ? 'در حال ثبت...' : 'صدور مجوز ویرایش'}</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={onClose}
               className="py-3 px-4 rounded-xl bg-surface-2 hover:bg-surface-3 text-text-primary text-xs font-bold border border-border transition min-h-[44px]"
             >
               انصراف
-            </button>
+            </Button>
           </div>
         </form>
       </div>

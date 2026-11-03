@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ZoomIn, ZoomOut, RotateCcw, X, Maximize2 } from 'lucide-react';
 
@@ -192,7 +193,7 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
     >
       {/* Top Floating Control Toolbar */}
       <div className="absolute top-3 end-3 z-30 flex items-center gap-1.5 bg-surface/85 backdrop-blur-md p-1.5 rounded-[12px] border border-border shadow-lg">
-        <button
+        <Button
           type="button"
           onClick={handleZoomIn}
           className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-primary hover:bg-white/10 active:bg-white/20 transition touch-target min-w-[44px]"
@@ -200,9 +201,9 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
           aria-label="بزرگ‌نمایی"
         >
           <ZoomIn className="w-4 h-4 text-accent" />
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           onClick={handleZoomOut}
           disabled={scale <= 1}
@@ -211,9 +212,9 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
           aria-label="کوچک‌نمایی"
         >
           <ZoomOut className="w-4 h-4 text-accent" />
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           onClick={handleResetZoom}
           className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-primary hover:bg-white/10 active:bg-white/20 transition touch-target min-w-[44px]"
@@ -221,10 +222,10 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
           aria-label="اندازه پیش‌فرض"
         >
           <RotateCcw className="w-4 h-4" />
-        </button>
+        </Button>
 
         {onClose && (
-          <button
+          <Button
             type="button"
             onClick={onClose}
             className="w-9 h-9 flex items-center justify-center rounded-[8px] text-text-muted hover:text-white hover:bg-rose-500/20 active:bg-rose-500/30 transition touch-target min-w-[44px]"
@@ -232,7 +233,7 @@ export const MobileImageViewer: React.FC<MobileImageViewerProps> = ({
             aria-label="بستن پنجره"
           >
             <X className="w-4 h-4" />
-          </button>
+          </Button>
         )}
       </div>
 

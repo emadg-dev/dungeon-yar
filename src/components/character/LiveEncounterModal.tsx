@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import React, { useState, useEffect } from 'react';
 import { PlayerEncounterView, Character } from '../../types';
 import { api } from '../../services/api';
@@ -126,23 +127,23 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          <button
+          <Button
             type="button"
             onClick={onOpenDice}
             className="p-2 rounded-[10px] bg-surface-2 text-accent hover:text-accent-hover border border-border transition touch-target min-w-[44px]"
             title="پرتاب تاس"
           >
             <Dices className="w-5 h-5" />
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             onClick={onClose}
             className="p-2 rounded-[10px] bg-surface-2 text-text-muted hover:text-text-primary border border-border transition touch-target min-w-[44px]"
             title="بستن پنجره"
           >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -185,13 +186,13 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
                 <span className="text-xs text-text-primary/90">اکشن‌ها و توانایی‌های شخصیت خود را اجرا نمایید.</span>
               </div>
             </div>
-            <button
+            <Button
               type="button"
               onClick={onOpenDice}
               className="bg-accent text-on-accent font-black text-xs px-3.5 py-2 rounded-[10px] shadow-sm shrink-0 touch-target min-w-[44px]"
             >
               پرتاب تاس
-            </button>
+            </Button>
           </div>
         )}
 
@@ -212,22 +213,22 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
 
             {onUpdateCharacterHp && (
               <div className="flex items-center gap-1 shrink-0">
-                <button
+                <Button
                   type="button"
                   onClick={() => onUpdateCharacterHp(Math.max(0, activeCharacter.hp.current - 1))}
                   className="w-8 h-8 rounded-[8px] bg-surface-2 hover:bg-danger/20 text-danger font-black text-sm transition touch-target min-w-[44px] border border-border flex items-center justify-center"
                   title="کاهش 1 سلامت"
                 >
                   -1
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => onUpdateCharacterHp(Math.min(activeCharacter.hp.max, activeCharacter.hp.current + 1))}
                   className="w-8 h-8 rounded-[8px] bg-surface-2 hover:bg-success/20 text-success font-black text-sm transition touch-target min-w-[44px] border border-border flex items-center justify-center"
                   title="افزایش 1 سلامت"
                 >
                   +1
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -241,7 +242,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
               <span className="text-xs text-text-primary/80">برای قرارگیری در ترتیب نوبت مبارزه</span>
             </div>
 
-            <button
+            <Button
               type="button"
               onClick={handleRollInitiative}
               disabled={isRollingInitiative}
@@ -258,7 +259,7 @@ export const LiveEncounterModal: React.FC<LiveEncounterModalProps> = ({
                   <span>پرتاب ابتکار</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         )}
 

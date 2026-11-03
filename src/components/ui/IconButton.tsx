@@ -1,8 +1,8 @@
 import React, { forwardRef } from 'react';
 import { Loader2 } from 'lucide-react';
 
-export type IconButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
-export type IconButtonSize = 'sm' | 'md' | 'lg';
+export type IconButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline' | 'unstyled';
+export type IconButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'none';
 
 export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   'aria-label': string;
@@ -18,12 +18,16 @@ const variantStyles: Record<IconButtonVariant, string> = {
   secondary: 'btn-secondary',
   ghost: 'btn-ghost',
   danger: 'btn-danger',
+  outline: 'btn-outline',
+  unstyled: '',
 };
 
 const sizeStyles: Record<IconButtonSize, string> = {
+  xs: 'w-8 h-8 text-xs',
   sm: 'w-11 h-11 text-xs',
   md: 'w-11 h-11 text-sm',
   lg: 'w-12 h-12 text-base',
+  none: '',
 };
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(

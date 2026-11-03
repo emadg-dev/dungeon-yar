@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState } from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Campaign, CampaignSettings } from '../../types';
@@ -69,7 +73,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
               <span className="text-xs font-semibold text-text-primary block">تأیید ورود شخصیت نو (onCreate)</span>
               <span className="text-xs text-text-muted">کاراکترهای جدید تا زمان تأیید DM در حالت معلق می‌مانند</span>
             </div>
-            <input
+            <Input noWrapper
               type="checkbox"
               checked={settings.approval?.onCreate}
               onChange={e => setSettings({
@@ -85,7 +89,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
               <span className="text-xs font-semibold text-text-primary block">تأیید ارتقای سطح (onLevelUp)</span>
               <span className="text-xs text-text-muted">تغییرات لول‌آپ بازیکن پس از تأیید دانجن مستر اعمال می‌شود</span>
             </div>
-            <input
+            <Input noWrapper
               type="checkbox"
               checked={settings.approval?.onLevelUp}
               onChange={e => setSettings({
@@ -101,7 +105,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
               <span className="text-xs font-semibold text-text-primary block">الزام تکمیل پیشینه برای تأیید ورود</span>
               <span className="text-xs text-text-muted">ورود شخصیت تنها پس از نگارش پیشینه و بازبینی ممکن باشد</span>
             </div>
-            <input
+            <Input noWrapper
               type="checkbox"
               checked={Boolean(settings.approval?.backstoryRequiredForApproval ?? settings.backstoryRequiredForApproval)}
               onChange={e => setSettings({
@@ -118,7 +122,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
               <span className="text-xs font-semibold text-text-primary block">مجوز ساخت شخصیت توسط بازیکن</span>
               <span className="text-xs text-text-muted">بازیکنان می‌توانند مستقیماً شخصیت اضافه کنند</span>
             </div>
-            <input
+            <Input noWrapper
               type="checkbox"
               checked={settings.allowPlayerCreateCharacter}
               onChange={e => setSettings({ ...settings, allowPlayerCreateCharacter: e.target.checked })}
@@ -131,7 +135,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
               <span className="text-xs font-semibold text-text-primary block">علامت‌زدن اهداف مأموریت توسط بازیکن</span>
               <span className="text-xs text-text-muted">امکان تیک زدن اهداف مأموریت در طومار توسط خود بازیکنان</span>
             </div>
-            <input
+            <Input noWrapper
               type="checkbox"
               checked={Boolean(settings.allowPlayerTickQuestObjectives)}
               onChange={e => setSettings({ ...settings, allowPlayerTickQuestObjectives: e.target.checked })}
@@ -150,7 +154,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-text-muted mb-1">سطح شروع کمپین</label>
-              <input
+              <Input noWrapper
                 type="number"
                 min={1}
                 max={20}
@@ -161,7 +165,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
             </div>
             <div>
               <label className="block text-xs text-text-muted mb-1">سقف سطح مجاز ورود (Max)</label>
-              <input
+              <Input noWrapper
                 type="number"
                 min={1}
                 max={20}
@@ -177,14 +181,14 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
               <span className="text-xs font-semibold text-text-primary block">واحد فواصل بازی</span>
               <span className="text-xs text-text-muted">نمایش حرکات و بردهای اسلحه و جادوها</span>
             </div>
-            <select
+            <Select noWrapper
               value={settings.units}
               onChange={e => setSettings({ ...settings, units: e.target.value as any })}
               className="bg-bg border border-border rounded-xl px-3 py-1.5 text-xs text-text-primary"
             >
               <option value="feet">فوت (Feet / 5e)</option>
               <option value="meters">متر (Meters)</option>
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -200,14 +204,14 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
               <span className="text-xs font-semibold text-text-primary block">حالت پیش‌فرض پرتاب تاس</span>
               <span className="text-xs text-text-muted">نمایش پرتاب‌ها در فید مشترک میز بازی</span>
             </div>
-            <select
+            <Select noWrapper
               value={settings.diceVisibility}
               onChange={e => setSettings({ ...settings, diceVisibility: e.target.value as any })}
               className="bg-bg border border-border rounded-xl px-3 py-1.5 text-xs text-text-primary"
             >
               <option value="table">عمومی برای کل میز (Table)</option>
               <option value="dm_only">مخفی (فقط دانجن مستر)</option>
-            </select>
+            </Select>
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-bg/40">
@@ -215,7 +219,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
               <span className="text-xs font-semibold text-text-primary block">اجازه پرتاب مخفی به بازیکن</span>
               <span className="text-xs text-text-muted">امکان علامت‌گذاری پرتاب به‌عنوان محرمانه به DM</span>
             </div>
-            <input
+            <Input noWrapper
               type="checkbox"
               checked={settings.allowPlayerRollPrivate}
               onChange={e => setSettings({ ...settings, allowPlayerRollPrivate: e.target.checked })}
@@ -228,14 +232,14 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
               <span className="text-xs font-semibold text-text-primary block">دیداری‌سازی پیشینه (Backstory)</span>
               <span className="text-xs text-text-muted">پیشینه و بخش‌های عمومی برای هم‌تیمی‌ها نمایش داده شود؟</span>
             </div>
-            <select
+            <Select noWrapper
               value={settings.backstoryVisibility}
               onChange={e => setSettings({ ...settings, backstoryVisibility: e.target.value as any })}
               className="bg-bg border border-border rounded-xl px-3 py-1.5 text-xs text-text-primary"
             >
               <option value="party">مشترک با یاران گروه (Party)</option>
               <option value="dm_only">فقط برای دانجن مستر</option>
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -248,7 +252,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <label className="flex items-center gap-2 p-2 rounded-xl bg-bg/40 cursor-pointer">
-              <input
+              <Input noWrapper
                 type="checkbox"
                 checked={settings.encounterDefaults?.showExactHp}
                 onChange={e => setSettings({
@@ -261,7 +265,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
             </label>
 
             <label className="flex items-center gap-2 p-2 rounded-xl bg-bg/40 cursor-pointer">
-              <input
+              <Input noWrapper
                 type="checkbox"
                 checked={settings.encounterDefaults?.showAc}
                 onChange={e => setSettings({
@@ -274,7 +278,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
             </label>
 
             <label className="flex items-center gap-2 p-2 rounded-xl bg-bg/40 cursor-pointer">
-              <input
+              <Input noWrapper
                 type="checkbox"
                 checked={settings.encounterDefaults?.playerInitiativeRolls}
                 onChange={e => setSettings({
@@ -287,7 +291,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
             </label>
 
             <label className="flex items-center gap-2 p-2 rounded-xl bg-bg/40 cursor-pointer">
-              <input
+              <Input noWrapper
                 type="checkbox"
                 checked={settings.encounterDefaults?.showConditions}
                 onChange={e => setSettings({
@@ -304,7 +308,7 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
         {/* House Rules */}
         <div>
           <label className="block text-xs font-bold text-text-primary mb-1">قوانین خانگی و توافقات میز (House Rules)</label>
-          <textarea
+          <Textarea noWrapper
             value={settings.houseRules || ''}
             onChange={e => setSettings({ ...settings, houseRules: e.target.value })}
             rows={2}
@@ -314,21 +318,21 @@ export const CampaignSettingsModal: React.FC<CampaignSettingsModalProps> = ({
         </div>
 
         <div className="flex justify-end gap-2 pt-2 border-t border-border">
-          <button
+          <Button
             type="button"
             onClick={onClose}
             className="px-4 py-2.5 rounded-xl text-xs font-bold text-text-muted hover:text-text-primary min-h-[44px]"
           >
             انصراف
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             disabled={isSaving}
             className="px-5 py-2.5 rounded-xl bg-accent text-on-accent font-bold text-xs hover:bg-accent-hover disabled:opacity-50 transition-colors flex items-center gap-2 min-h-[44px] shadow-lg shadow-accent/20"
           >
             {success ? <Check className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
             <span>{isSaving ? 'در حال ذخیره...' : success ? 'ذخیره شد' : 'ذخیره تنظیمات'}</span>
-          </button>
+          </Button>
         </div>
       </form>
     </BottomSheet>

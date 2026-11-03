@@ -1,3 +1,5 @@
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
 import React, { useState, useEffect, memo } from 'react';
 import { DiceRollResult, CampaignDiceRoll, User } from '../types';
 import { rollDice, formatModifier } from '../utils/dice';
@@ -231,7 +233,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
           wrapperClassName="rounded-xl bg-bg border border-border p-1"
           className="gap-1"
         >
-          <button
+          <Button 
             type="button"
             data-key="bag"
             onClick={() => setActiveTab('bag')}
@@ -243,8 +245,8 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
           >
             <Dices className="w-4 h-4 shrink-0" />
             <span className="whitespace-nowrap shrink-0">کیسه تاس</span>
-          </button>
-          <button
+          </Button>
+          <Button 
             type="button"
             data-key="table"
             onClick={() => {
@@ -259,7 +261,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
           >
             <Table className="w-4 h-4 shrink-0" />
             <span className="whitespace-nowrap shrink-0">میز بازی ({tableRolls.length})</span>
-          </button>
+          </Button>
         </ScrollableRow>
 
         {activeTab === 'bag' ? (
@@ -330,7 +332,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                 className="gap-2"
               >
                 {diceTypes.map(sides => (
-                  <button
+                  <Button 
                     key={sides}
                     data-key={sides}
                     type="button"
@@ -342,7 +344,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                     }`}
                   >
                     d{sides}
-                  </button>
+                  </Button>
                 ))}
               </ScrollableRow>
             </div>
@@ -352,46 +354,46 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
               <div>
                 <label className="block text-xs font-bold text-text-muted mb-1">تعداد تاس:</label>
                 <div className="flex items-center gap-1.5">
-                  <button
+                  <Button 
                     type="button"
                     onClick={() => setDiceCount(Math.max(1, diceCount - 1))}
                     className="w-12 h-12 rounded-[12px] bg-surface-2 border border-border text-text-primary font-bold text-lg flex items-center justify-center min-h-[48px] active:scale-95"
                   >
                     -
-                  </button>
+                  </Button>
                   <span className="flex-1 text-center font-extrabold font-mono text-base bg-bg py-2 rounded-[12px] border border-border min-h-[48px] flex items-center justify-center">
                     {diceCount}
                   </span>
-                  <button
+                  <Button 
                     type="button"
                     onClick={() => setDiceCount(Math.min(20, diceCount + 1))}
                     className="w-12 h-12 rounded-[12px] bg-surface-2 border border-border text-text-primary font-bold text-lg flex items-center justify-center min-h-[48px] active:scale-95"
                   >
                     +
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-text-muted mb-1">مادیفایر:</label>
                 <div className="flex items-center gap-1.5">
-                  <button
+                  <Button 
                     type="button"
                     onClick={() => setModifier(modifier - 1)}
                     className="w-12 h-12 rounded-[12px] bg-surface-2 border border-border text-text-primary font-bold text-lg flex items-center justify-center min-h-[48px] active:scale-95"
                   >
                     -
-                  </button>
+                  </Button>
                   <span className="flex-1 text-center font-extrabold font-mono text-base bg-bg py-2 rounded-[12px] border border-border min-h-[48px] flex items-center justify-center">
                     {formatModifier(modifier)}
                   </span>
-                  <button
+                  <Button 
                     type="button"
                     onClick={() => setModifier(modifier + 1)}
                     className="w-12 h-12 rounded-[12px] bg-surface-2 border border-border text-text-primary font-bold text-lg flex items-center justify-center min-h-[48px] active:scale-95"
                   >
                     +
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -409,7 +411,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                   { id: 'adv', label: 'با مزیت (Adv)' },
                   { id: 'dis', label: 'با ضعف (Dis)' },
                 ].map(item => (
-                  <button
+                  <Button 
                     key={item.id}
                     data-key={item.id}
                     type="button"
@@ -421,7 +423,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                     }`}
                   >
                     <span className="whitespace-nowrap shrink-0">{item.label}</span>
-                  </button>
+                  </Button>
                 ))}
               </ScrollableRow>
             </div>
@@ -440,24 +442,24 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                     </span>
                   </div>
                 </div>
-                <input
+                <Input noWrapper 
                   type="checkbox"
                   checked={isPrivateToDm}
                   onChange={e => setIsPrivateToDm(e.target.checked)}
                   className="w-5 h-5 accent-accent rounded cursor-pointer"
-                />
+                 />
               </div>
             )}
 
             {/* Big Roll Button */}
-            <button
+            <Button 
               type="button"
               onClick={() => handleRoll()}
               className="w-full py-3.5 rounded-[12px] bg-accent hover:bg-accent-hover text-on-accent font-black text-sm flex items-center justify-center gap-2 shadow-lg min-h-[48px] active:scale-98 transition-colors"
             >
               <Dices className="w-5 h-5" />
               <span>پرتاب {diceCount}d{selectedSides} {modifier !== 0 ? formatModifier(modifier) : ''}</span>
-            </button>
+            </Button>
           </>
         ) : (
           /* Table Tab: Shared Dice Feed (Last 50 rolls) */
@@ -466,14 +468,14 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
               <span className="text-xs font-bold text-text-primary">
                 پرتاب‌های زنده میز بازی (50 پرتاب اخیر)
               </span>
-              <button
+              <Button 
                 onClick={fetchTableRolls}
                 disabled={loadingTable}
                 className="p-1.5 text-accent-hover hover:bg-accent/10 rounded-lg flex items-center gap-1 text-xs"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loadingTable ? 'animate-spin' : ''}`} />
                 <span>بروزرسانی</span>
-              </button>
+              </Button>
             </div>
 
             <div className="space-y-2 max-h-96 overflow-y-auto pe-1">

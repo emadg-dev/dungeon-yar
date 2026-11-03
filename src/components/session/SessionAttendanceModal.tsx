@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import React, { useState, useEffect } from 'react';
 import { Session, CharacterParticipation, Character } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -120,21 +121,21 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
             شخصیت‌های حاضر: <span className="text-accent-hover">{attendedCount} از {participations.length}</span>
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => handleSelectAll(true)}
               className="text-success hover:underline font-semibold"
             >
               انتخاب همه
-            </button>
+            </Button>
             <span className="text-text-muted">·</span>
-            <button
+            <Button
               type="button"
               onClick={() => handleSelectAll(false)}
               className="text-rose-400 hover:underline font-semibold"
             >
               عدم انتخاب
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -193,14 +194,14 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
 
         {/* Submit */}
         <div className="pt-2">
-          <button
+          <Button
             type="submit"
             disabled={isSubmitting}
             className="w-full py-3.5 rounded-xl bg-success hover:bg-success text-on-accent font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-lg min-h-[48px]"
           >
             <UserCheck className="w-4 h-4" />
             <span>ثبت نهایی حضور و غیاب</span>
-          </button>
+          </Button>
         </div>
       </form>
     </BottomSheet>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { LucideIcon } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 export interface ActionMenuItem {
   id: string;
@@ -35,7 +36,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
         {items.map((item) => {
           const Icon = item.icon;
           return (
-            <button
+            <Button
               key={item.id}
               type="button"
               disabled={item.disabled}
@@ -61,17 +62,17 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                   {item.label}
                 </span>
               </div>
-            </button>
+            </Button>
           );
         })}
 
-        <button
+        <Button
           type="button"
           onClick={onClose}
           className="w-full py-3 mt-2 rounded-[12px] bg-surface text-text-muted hover:text-text-primary text-xs font-semibold border border-border touch-target min-w-[44px]"
         >
           بستن منو
-        </button>
+        </Button>
       </div>
     </BottomSheet>
   );

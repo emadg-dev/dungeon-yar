@@ -1,6 +1,7 @@
 import React from 'react';
 import { BottomSheet } from './BottomSheet';
 import { AlertTriangle } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 interface ConfirmSheetProps {
   isOpen: boolean;
@@ -57,16 +58,16 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
         {/* Large thumb-friendly action buttons */}
         <div className="grid grid-cols-2 gap-3 pt-2">
           {/* Cancel button */}
-          <button
+          <Button
             type="button"
             onClick={onClose}
             className="py-3 px-4 rounded-xl bg-surface-2 hover:bg-surface-2 text-text-primary text-xs font-bold transition touch-target min-w-[44px]"
           >
             {finalCancelLabel}
-          </button>
+          </Button>
 
           {/* Confirm/Destructive button on thumb side (in RTL, left is outer thumb side for right-handed or right for one-handed) */}
-          <button
+          <Button
             type="button"
             onClick={() => {
               onConfirm();
@@ -79,7 +80,7 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
             }`}
           >
             {finalConfirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </BottomSheet>

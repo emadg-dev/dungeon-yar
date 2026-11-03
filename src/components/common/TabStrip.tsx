@@ -1,6 +1,7 @@
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
 import { ScrollableRow } from '../ui/ScrollableRow';
+import { Button } from '../ui/Button';
 
 export interface TabItem<T extends string = string> {
   id: T;
@@ -36,7 +37,7 @@ export function TabStrip<T extends string = string>({
         const Icon = tab.icon;
 
         return (
-          <button
+          <Button
             key={tab.id}
             data-key={tab.id}
             data-tab={tab.id}
@@ -64,7 +65,7 @@ export function TabStrip<T extends string = string>({
                 {tab.badge}
               </span>
             )}
-          </button>
+          </Button>
         );
       })}
     </ScrollableRow>

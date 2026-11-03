@@ -1,3 +1,5 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import React, { useState } from 'react';
 import { Character, Companion } from '../../types';
 import { deriveSheet, computeCompanion } from '../../../shared/rules/engine';
@@ -121,14 +123,14 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
           <h3 className="text-sm font-black text-accent-hover">یاران و سازه‌های همراه</h3>
           <p className="text-xs text-text-muted">همراهان مکانیکی دیوانزاد و پیوندهای جنگلی پیمان‌بان</p>
         </div>
-        <button
+        <Button
           type="button"
           onClick={() => setShowAddModal(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent/20 hover:bg-accent/30 border border-accent/40 text-accent-hover text-xs font-bold transition touch-target min-w-[44px]"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>افزودن همراه</span>
-        </button>
+        </Button>
       </div>
 
       {companions.length === 0 ? (
@@ -164,14 +166,14 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
                     </div>
                   </div>
 
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleDeleteCompanion(comp.id)}
                     className="p-1 text-text-muted hover:text-danger transition"
                     title="حذف"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </div>
 
                 {/* HP Tracker with +/- */}
@@ -197,34 +199,34 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
 
                   {/* Quick Buttons */}
                   <div className="flex items-center justify-center gap-2 pt-1">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, -5)}
                       className="w-8 h-8 rounded-lg bg-danger/15 active:bg-danger/15 border border-danger/30 text-danger text-xs font-bold touch-target min-w-[44px] select-none"
                     >
                       -5
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, -1)}
                       className="w-8 h-8 rounded-lg bg-danger/15 active:bg-danger/15 border border-danger/30 text-danger text-xs font-bold touch-target min-w-[44px] select-none"
                     >
                       -1
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, +1)}
                       className="w-8 h-8 rounded-lg bg-success/15 active:bg-success/15 border border-success/30 text-success text-xs font-bold touch-target min-w-[44px] select-none"
                     >
                       +1
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => handleAdjustHp(comp.id, +5)}
                       className="w-8 h-8 rounded-lg bg-success/15 active:bg-success/15 border border-success/30 text-success text-xs font-bold touch-target min-w-[44px] select-none"
                     >
                       +5
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -237,14 +239,14 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
                         {comp.attack.toHit} برای اصابت • {comp.attack.damage}
                       </div>
                     </div>
-                    <button
+                    <Button
                       type="button"
                       onClick={() => onRollCheck(20, 1, 5, `حمله ${comp.name}`)}
                       className="p-2 rounded-lg bg-accent/20 hover:bg-accent/30 border border-accent/40 text-accent-hover text-xs font-bold flex items-center gap-1 touch-target min-w-[44px]"
                     >
                       <Swords className="w-3.5 h-3.5" />
                       <span>تاس حمله</span>
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -262,7 +264,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
         <form onSubmit={handleAddCustomCompanion} className="space-y-3.5">
           <div>
             <label className="text-xs text-text-primary block mb-1">نام همراه / سازه:</label>
-            <input
+            <Input noWrapper
               type="text"
               required
               value={newCompName}
@@ -275,7 +277,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-xs text-text-primary block mb-1">درجه زرهی (AC):</label>
-              <input
+              <Input noWrapper
                 type="number"
                 inputMode="numeric"
                 value={newCompAc}
@@ -285,7 +287,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
             </div>
             <div>
               <label className="text-xs text-text-primary block mb-1">حداکثر جان (HP):</label>
-              <input
+              <Input noWrapper
                 type="number"
                 inputMode="numeric"
                 value={newCompHp}
@@ -297,7 +299,7 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
 
           <div>
             <label className="text-xs text-text-primary block mb-1">مشخصات حمله:</label>
-            <input
+            <Input noWrapper
               type="text"
               value={newCompAtk}
               onChange={(e) => setNewCompAtk(e.target.value)}
@@ -306,12 +308,12 @@ export const CompanionsTab: React.FC<CompanionsTabProps> = ({
             />
           </div>
 
-          <button
+          <Button
             type="submit"
             className="w-full py-2.5 rounded-xl font-bold bg-accent hover:bg-accent-hover text-on-accent transition cursor-pointer touch-target min-w-[44px] mt-3"
           >
             ذخیره و ایجاد همراه
-          </button>
+          </Button>
         </form>
       </BottomSheet>
     </div>

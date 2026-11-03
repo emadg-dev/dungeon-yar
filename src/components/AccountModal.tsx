@@ -1,3 +1,5 @@
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
 import React, { useState, useEffect } from 'react';
 import { User, UserSession, Character } from '../types';
 import { APP_NAME_FA, APP_NAME_LATIN, APP_VERSION, APP_VERSION_FA } from '../config/app';
@@ -259,7 +261,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           wrapperClassName="rounded-[12px] bg-surface-2 p-1 border border-border"
           className="gap-1"
         >
-          <button
+          <Button 
             type="button"
             data-key="profile"
             onClick={() => setActiveTab('profile')}
@@ -271,8 +273,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           >
             <UserIcon className="w-3.5 h-3.5 shrink-0" />
             <span className="whitespace-nowrap shrink-0">پروفایل</span>
-          </button>
-          <button
+          </Button>
+          <Button 
             type="button"
             data-key="security"
             onClick={() => setActiveTab('security')}
@@ -284,8 +286,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           >
             <KeyRound className="w-3.5 h-3.5 shrink-0" />
             <span className="whitespace-nowrap shrink-0">امنیت و رمز</span>
-          </button>
-          <button
+          </Button>
+          <Button 
             type="button"
             data-key="sessions"
             onClick={() => setActiveTab('sessions')}
@@ -297,8 +299,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           >
             <Smartphone className="w-3.5 h-3.5 shrink-0" />
             <span className="whitespace-nowrap shrink-0">نشست‌ها</span>
-          </button>
-          <button
+          </Button>
+          <Button 
             type="button"
             data-key="data"
             onClick={() => setActiveTab('data')}
@@ -310,7 +312,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           >
             <Download className="w-3.5 h-3.5 shrink-0" />
             <span className="whitespace-nowrap shrink-0">داده‌ها</span>
-          </button>
+          </Button>
         </ScrollableRow>
 
         {/* Feedback message banner */}
@@ -337,22 +339,22 @@ export const AccountModal: React.FC<AccountModalProps> = ({
             <form onSubmit={handleUpdateProfile} className="space-y-3">
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-text-primary">نام نمایشی در کمپین</label>
-                <input
+                <Input noWrapper 
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
                   placeholder="مثال: پردیس"
-                />
+                 />
               </div>
-              <button
+              <Button 
                 type="submit"
                 disabled={loading}
                 className="py-2.5 px-4 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[44px] flex items-center justify-center gap-1.5"
               >
                 <Check className="w-3.5 h-3.5" />
                 <span>ذخیره تغییرات نام</span>
-              </button>
+              </Button>
             </form>
 
             {/* Active Character Selector (if user owns characters) */}
@@ -364,7 +366,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {characters.map(c => (
-                    <button
+                    <Button 
                       key={c.id}
                       type="button"
                       onClick={() => onSelectActiveCharacter(c.id)}
@@ -381,7 +383,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                       {activeCharacterId === c.id && (
                         <Check className="w-4 h-4 text-accent shrink-0" />
                       )}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -397,44 +399,44 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               <h4 className="text-xs font-extrabold text-text-primary">تغییر رمز عبور</h4>
               <div className="space-y-1">
                 <label className="block text-xs text-text-muted">رمز عبور فعلی</label>
-                <input
+                <Input noWrapper 
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   autoComplete="current-password"
                   dir="ltr"
                   className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
-                />
+                 />
               </div>
               <div className="space-y-1">
                 <label className="block text-xs text-text-muted">رمز عبور جدید (حداقل 8 نویسه)</label>
-                <input
+                <Input noWrapper 
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   autoComplete="new-password"
                   dir="ltr"
                   className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
-                />
+                 />
               </div>
               <div className="space-y-1">
                 <label className="block text-xs text-text-muted">تکرار رمز عبور جدید</label>
-                <input
+                <Input noWrapper 
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   autoComplete="new-password"
                   dir="ltr"
                   className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
-                />
+                 />
               </div>
-              <button
+              <Button 
                 type="submit"
                 disabled={loading}
                 className="py-2.5 px-4 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[44px]"
               >
                 به‌روزرسانی رمز عبور
-              </button>
+              </Button>
             </form>
 
             {/* Change Email */}
@@ -442,7 +444,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               <h4 className="text-xs font-extrabold text-text-primary">تغییر نشانی رایانامه (ایمیل)</h4>
               <div className="space-y-1">
                 <label className="block text-xs text-text-muted">ایمیل جدید</label>
-                <input
+                <Input noWrapper 
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
@@ -450,25 +452,25 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   dir="ltr"
                   inputMode="email"
                   className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
-                />
+                 />
               </div>
               <div className="space-y-1">
                 <label className="block text-xs text-text-muted">تأیید با رمز عبور فعلی</label>
-                <input
+                <Input noWrapper 
                   type="password"
                   value={emailCurrentPassword}
                   onChange={(e) => setEmailCurrentPassword(e.target.value)}
                   dir="ltr"
                   className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
-                />
+                 />
               </div>
-              <button
+              <Button 
                 type="submit"
                 disabled={loading}
                 className="py-2 px-4 rounded-[10px] bg-surface-2 border border-border hover:border-accent text-xs font-bold text-text-primary touch-target min-w-[44px] min-h-[44px]"
               >
                 ثبت ایمیل جدید
-              </button>
+              </Button>
             </form>
           </div>
         )}
@@ -481,13 +483,13 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                 <h4 className="text-xs font-bold text-text-primary">نشست‌های فعال دستگاه‌ها</h4>
                 <p className="text-xs text-text-muted">مدیریت دسترسی‌های فعال به حساب کاربری</p>
               </div>
-              <button
+              <Button 
                 type="button"
                 onClick={handleLogoutAll}
                 className="text-xs text-danger hover:underline font-bold"
               >
                 خروج از همه دستگاه‌ها
-              </button>
+              </Button>
             </div>
 
             <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -517,14 +519,14 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   </div>
 
                   {!s.isCurrent && (
-                    <button
+                    <Button 
                       type="button"
                       onClick={() => handleRevokeSession(s.id)}
                       className="p-2 rounded-[8px] bg-surface text-text-muted hover:text-danger border border-border touch-target min-w-[44px]"
                       title="خاتمه دادن به این نشست"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}
@@ -540,14 +542,14 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               <p className="text-xs text-text-muted leading-relaxed">
                 می‌توانید تمام شخصیت‌ها، یادداشت‌های خصوصی و مشخصات بازی خود را به صورت پرونده ساختاریافته JSON دریافت و ذخیره کنید.
               </p>
-              <button
+              <Button 
                 type="button"
                 onClick={handleExportData}
                 className="py-2 px-3 rounded-[8px] btn-primary-amber font-bold text-xs touch-target min-w-[44px] flex items-center gap-1.5 min-h-[44px]"
               >
                 <Download className="w-4 h-4" />
                 <span>دانلود نسخه پشتیبان داده‌ها</span>
-              </button>
+              </Button>
             </div>
 
             {/* Danger Zone: Account Deletion */}
@@ -562,14 +564,14 @@ export const AccountModal: React.FC<AccountModalProps> = ({
 
               <div className="space-y-2">
                 <label className="flex items-start gap-2 p-2.5 rounded-[8px] bg-surface border border-border cursor-pointer">
-                  <input
+                  <Input noWrapper 
                     type="radio"
                     name="deleteMode"
                     value="anonymize"
                     checked={deleteMode === 'anonymize'}
                     onChange={() => setDeleteMode('anonymize')}
                     className="mt-0.5 accent-accent"
-                  />
+                   />
                   <div className="text-xs">
                     <strong className="text-text-primary block">ناشناس‌سازی (توصیه‌شده برای حفظ کمپین‌ها)</strong>
                     <span className="text-text-muted">نام شما به «کاربر حذف‌شده» تبدیل می‌شود تا رکورد بازی و یادداشت‌های ثبت‌شده برای بقیه بازیکنان و کمپین خراب نشود. کمپین‌های تحت مالکیت شما به دستیار DM یا حالت بایگانی منتقل می‌گردد.</span>
@@ -577,14 +579,14 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                 </label>
 
                 <label className="flex items-start gap-2 p-2.5 rounded-[8px] bg-surface border border-border cursor-pointer">
-                  <input
+                  <Input noWrapper 
                     type="radio"
                     name="deleteMode"
                     value="remove_all"
                     checked={deleteMode === 'remove_all'}
                     onChange={() => setDeleteMode('remove_all')}
                     className="mt-0.5 accent-danger"
-                  />
+                   />
                   <div className="text-xs">
                     <strong className="text-text-primary block">حذف کامل حساب و کاراکترها</strong>
                     <span className="text-text-muted">حساب کاربری و تمام شخصیت‌های اختصاصی شما غیرفعال و نشانه‌گذاری حذف می‌شوند.</span>
@@ -594,18 +596,18 @@ export const AccountModal: React.FC<AccountModalProps> = ({
 
               <div className="space-y-1.5 pt-1">
                 <label className="block text-xs text-text-primary font-bold">برای تأیید، رمز عبور فعلی خود را وارد کنید:</label>
-                <input
+                <Input noWrapper 
                   type="password"
                   value={deletePassword}
                   onChange={(e) => setDeletePassword(e.target.value)}
                   placeholder="رمز عبور فعلی"
                   dir="ltr"
                   className="w-full py-2 px-3 rounded-[8px] bg-surface border border-danger/40 text-xs text-text-primary focus:border-danger outline-none min-h-[44px]"
-                />
+                 />
               </div>
 
               {!showDeleteConfirm ? (
-                <button
+                <Button 
                   type="button"
                   onClick={() => {
                     if (!deletePassword) {
@@ -618,26 +620,26 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>درخواست حذف حساب کاربری</span>
-                </button>
+                </Button>
               ) : (
                 <div className="p-3 rounded-[8px] bg-surface border border-danger space-y-2">
                   <span className="text-xs font-bold text-danger block">آیا 100٪ مطمئن هستید؟ این عملیات غیرقابل بازگشت است.</span>
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button 
                       type="button"
                       disabled={deleting}
                       onClick={handleDeleteAccount}
                       className="py-1.5 px-3 rounded-[6px] bg-danger text-white hover:bg-danger font-bold text-xs touch-target min-w-[44px] min-h-[40px]"
                     >
                       {deleting ? 'در حال حذف...' : 'بله، حسابم را حذف کن'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button 
                       type="button"
                       onClick={() => setShowDeleteConfirm(false)}
                       className="py-1.5 px-3 rounded-[6px] bg-surface-2 text-text-muted hover:text-text-primary text-xs font-bold touch-target min-w-[44px] min-h-[40px]"
                     >
                       انصراف
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -651,7 +653,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   نسخه {toPersianDigits(APP_VERSION)}
                 </span>
               </div>
-              <button
+              <Button 
                 type="button"
                 onClick={handleModalCheckUpdates}
                 disabled={isCheckingUpdates}
@@ -659,11 +661,11 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isCheckingUpdates ? 'animate-spin' : ''}`} />
                 <span>{isCheckingUpdates ? 'در حال بررسی...' : 'بررسی به‌روزرسانی'}</span>
-              </button>
+              </Button>
             </div>
 
             <div className="pt-2">
-              <button
+              <Button 
                 type="button"
                 onClick={() => {
                   onLogout();
@@ -673,7 +675,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               >
                 <LogOut className="w-4 h-4 text-text-muted" />
                 <span>خروج از حساب کاربری</span>
-              </button>
+              </Button>
             </div>
           </div>
         )}

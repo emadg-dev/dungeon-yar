@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, useEffect, useRef, useDeferredValue, startTransition, memo } from 'react';
 import { Character, CharacterNote, NoteCategory } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -49,7 +53,7 @@ const NoteCardRow = memo<NoteCardRowProps>(({
 
       {/* Top Action Buttons (Pin, Share with DM, Edit, Delete) */}
       <div className="flex items-center gap-1 shrink-0">
-        <button
+        <Button
           type="button"
           onClick={() => onTogglePin(note)}
           className={`p-1.5 rounded-[8px] border transition touch-target min-w-[44px] ${
@@ -61,9 +65,9 @@ const NoteCardRow = memo<NoteCardRowProps>(({
           aria-label={note.pinned ? 'برداشتن سنجاق' : 'سنجاق به بالا'}
         >
           {note.pinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           onClick={() => onToggleShare(note)}
           className={`flex items-center gap-1 px-2 py-1 rounded-[8px] text-xs font-bold border transition touch-target min-w-[44px] ${
@@ -76,25 +80,25 @@ const NoteCardRow = memo<NoteCardRowProps>(({
         >
           {note.sharedWithDm ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
           <span className="hidden sm:inline">{note.sharedWithDm ? 'دیده‌شده توسط DM' : 'خصوصی'}</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           onClick={() => onStartEdit(note)}
           className="p-1.5 rounded-[8px] bg-surface-2 text-text-muted hover:text-text-primary border border-border touch-target min-w-[44px]"
           title="ویرایش یادداشت"
         >
           <Edit3 className="w-3.5 h-3.5" />
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           onClick={() => onDeleteRequest(note.id, note.title)}
           className="p-1.5 rounded-[8px] bg-surface-2 text-text-muted hover:text-danger border border-border touch-target min-w-[44px]"
           title="حذف یادداشت"
         >
           <Trash2 className="w-3.5 h-3.5" />
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -268,7 +272,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
       <div className="surface-card rounded-[14px] p-3.5 space-y-3">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
           <div className="relative flex-1">
-            <input
+            <Input noWrapper
               type="text"
               placeholder="جستجو در وقایع و یادداشت‌ها..."
               value={searchQuery}
@@ -278,14 +282,14 @@ export const NotesTab: React.FC<NotesTabProps> = ({
             <Search className="w-3.5 h-3.5 text-text-muted absolute start-2.5 top-1/2 -translate-y-1/2" />
           </div>
 
-          <button
+          <Button
             type="button"
             onClick={() => setShowAddModal(true)}
             className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] btn-primary-amber text-xs font-bold transition touch-target min-w-[44px] shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>یادداشت نو</span>
-          </button>
+          </Button>
         </div>
 
         {/* Category Chips */}
@@ -295,7 +299,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
           className="pb-1 gap-1.5"
         >
           {categories.map(cat => (
-            <button
+            <Button
               key={cat.id}
               data-key={cat.id}
               type="button"
@@ -311,7 +315,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
               }`}
             >
               <span className="whitespace-nowrap shrink-0">{cat.label}</span>
-            </button>
+            </Button>
           ))}
         </ScrollableRow>
       </div>
@@ -367,7 +371,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
           <div className="space-y-3" dir="rtl">
             <div>
               <label className="text-xs text-text-muted block mb-1">عنوان یادداشت:</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
@@ -378,7 +382,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-xs text-text-muted block mb-1">دسته‌بندی:</label>
-                <select
+                <Select noWrapper
                   value={editCategory}
                   onChange={(e) => setEditCategory(e.target.value as NoteCategory)}
                   className="w-full py-2 px-2 rounded-[12px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent focus:outline-none"
@@ -388,12 +392,12 @@ export const NotesTab: React.FC<NotesTabProps> = ({
                   <option value="clues">سرنخ‌ها و رازها</option>
                   <option value="npcs">اشخاص</option>
                   <option value="locations">مکان‌ها</option>
-                </select>
+                </Select>
               </div>
 
               <div>
                 <label className="text-xs text-text-muted block mb-1">شماره جلسه:</label>
-                <input
+                <Input noWrapper
                   type="text"
                   value={editSession}
                   onChange={(e) => setEditSession(e.target.value)}
@@ -404,7 +408,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
 
             <div>
               <label className="text-xs text-text-muted block mb-1">متن یادداشت:</label>
-              <textarea
+              <Textarea noWrapper
                 rows={6}
                 value={editBody}
                 onChange={(e) => setEditBody(e.target.value)}
@@ -414,7 +418,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
 
             <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
               <label className="flex items-center gap-2 cursor-pointer text-xs text-text-primary touch-target min-w-[44px]">
-                <input
+                <Input noWrapper
                   type="checkbox"
                   checked={editShared}
                   onChange={(e) => setEditShared(e.target.checked)}
@@ -424,20 +428,20 @@ export const NotesTab: React.FC<NotesTabProps> = ({
               </label>
 
               <div className="flex gap-2">
-                <button
+                <Button
                   type="button"
                   onClick={() => setEditingNote(null)}
                   className="py-2 px-4 rounded-[12px] text-xs text-text-muted touch-target min-w-[44px]"
                 >
                   انصراف
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={handleSaveEdit}
                   className="py-2 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target min-w-[44px]"
                 >
                   ذخیره تغییرات
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -454,7 +458,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
         <form onSubmit={handleCreateSubmit} className="space-y-3" dir="rtl">
           <div>
             <label className="text-xs text-text-muted block mb-1">عنوان یادداشت:</label>
-            <input
+            <Input noWrapper
               type="text"
               required
               placeholder="مثلاً: گفت‌وگو با پیشوای نوژان در معبد سنگی"
@@ -467,7 +471,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-xs text-text-muted block mb-1">دسته‌بندی:</label>
-              <select
+              <Select noWrapper
                 value={noteCategory}
                 onChange={(e) => setNoteCategory(e.target.value as NoteCategory)}
                 className="w-full py-2 px-2 rounded-[12px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent focus:outline-none"
@@ -477,12 +481,12 @@ export const NotesTab: React.FC<NotesTabProps> = ({
                 <option value="clues">سرنخ‌ها و رازها</option>
                 <option value="npcs">اشخاص</option>
                 <option value="locations">مکان‌ها</option>
-              </select>
+              </Select>
             </div>
 
             <div>
               <label className="text-xs text-text-muted block mb-1">شماره جلسه:</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={noteSession}
                 onChange={(e) => setNoteSession(e.target.value)}
@@ -493,7 +497,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
 
           <div>
             <label className="text-xs text-text-muted block mb-1">متن یادداشت:</label>
-            <textarea
+            <Textarea noWrapper
               rows={5}
               required
               placeholder="شرح جزئیات..."
@@ -505,7 +509,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
 
           <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
             <label className="flex items-center gap-2 cursor-pointer text-xs text-text-primary touch-target min-w-[44px]">
-              <input
+              <Input noWrapper
                 type="checkbox"
                 checked={noteShared}
                 onChange={(e) => setNoteShared(e.target.checked)}
@@ -515,19 +519,19 @@ export const NotesTab: React.FC<NotesTabProps> = ({
             </label>
 
             <div className="flex gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowAddModal(false)}
                 className="py-2 px-4 rounded-[12px] text-xs text-text-muted touch-target min-w-[44px]"
               >
                 انصراف
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 className="py-2 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target min-w-[44px]"
               >
                 ثبت یادداشت
-              </button>
+              </Button>
             </div>
           </div>
         </form>

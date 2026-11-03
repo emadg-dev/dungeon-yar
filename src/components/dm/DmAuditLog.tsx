@@ -1,3 +1,5 @@
+import { Button } from '../ui/Button';
+import { Select } from '../ui/Select';
 import React, { useState, useEffect } from 'react';
 import { AuditLogEntry } from '../../types';
 import { api } from '../../services/api';
@@ -76,7 +78,7 @@ export const DmAuditLog: React.FC<DmAuditLogProps> = ({ campaignId }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          <select
+          <Select noWrapper
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
             className="py-1.5 px-3 rounded-[8px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
@@ -87,16 +89,16 @@ export const DmAuditLog: React.FC<DmAuditLogProps> = ({ campaignId }) => {
                 {getActionFa(act)} ({act})
               </option>
             ))}
-          </select>
+          </Select>
 
-          <button
+          <Button
             type="button"
             onClick={loadLogs}
             className="p-2 rounded-[8px] bg-surface-2 border border-border text-text-muted hover:text-text-primary touch-target min-h-[44px] min-w-[44px] flex items-center justify-center"
             title="تازه‌سازی لاگ"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, useDeferredValue, startTransition, memo } from 'react';
 import { NPC, NpcType } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -63,7 +67,7 @@ const NpcCardRow = memo<NpcCardRowProps>(({
         </div>
 
         <div className="flex items-center gap-1">
-          <button
+          <Button
             onClick={() => onToggleRevealed(npc)}
             title={npc.isRevealed ? 'آشکار برای بازیکنان (کلیک برای پنهان کردن)' : 'پنهان از بازیکنان (کلیک برای آشکارسازی)'}
             className={`p-1.5 rounded-lg text-xs transition border ${
@@ -73,28 +77,28 @@ const NpcCardRow = memo<NpcCardRowProps>(({
             }`}
           >
             {npc.isRevealed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => onDuplicate(npc)}
             title="تکثیر NPC"
             className="p-1.5 rounded-lg bg-surface-2 text-text-muted hover:text-text-primary"
           >
             <Copy className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => onStartEdit(npc)}
             title="ویرایش"
             className="p-1.5 rounded-lg bg-surface-2 text-text-muted hover:text-text-primary"
           >
             <Edit3 className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => onDeleteNpc(npc.id)}
             title="حذف"
             className="p-1.5 rounded-lg bg-surface-2 text-text-muted hover:text-danger"
           >
             <Trash2 className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -276,7 +280,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-border">
           <div className="relative flex-1">
             <Search className="absolute right-3 top-2.5 w-4 h-4 text-text-muted" />
-            <input
+            <Input noWrapper
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -285,19 +289,19 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
             />
           </div>
 
-          <button
+          <Button
             type="button"
             onClick={handleStartCreate}
             className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-on-accent font-bold text-xs transition whitespace-nowrap shrink-0 min-h-[44px]"
           >
             <Plus className="w-4 h-4 shrink-0" />
             <span>ساخت NPC / هیولای تازه</span>
-          </button>
+          </Button>
         </div>
 
         {/* Filter Pills */}
         <ScrollableRow activeKey={selectedType} className="items-center gap-1.5 pb-1">
-          <button
+          <Button
             type="button"
             data-scroll-key="all"
             onClick={() => setSelectedType('all')}
@@ -308,12 +312,12 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
             }`}
           >
             همه ({npcs.length})
-          </button>
+          </Button>
           {(Object.keys(typeLabels) as NpcType[]).map(typeKey => {
             const count = npcs.filter(n => n.type === typeKey).length;
             if (count === 0) return null;
             return (
-              <button
+              <Button
                 key={typeKey}
                 type="button"
                 data-scroll-key={typeKey}
@@ -325,7 +329,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
                 }`}
               >
                 {typeLabels[typeKey]} ({count})
-              </button>
+              </Button>
             );
           })}
         </ScrollableRow>
@@ -345,7 +349,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="text-xs text-text-primary block mb-1">نام موجود / شخص:</label>
-              <input
+              <Input noWrapper
                 type="text"
                 required
                 value={formData.name}
@@ -355,7 +359,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
             </div>
             <div>
               <label className="text-xs text-text-primary block mb-1">نوع:</label>
-              <select
+              <Select noWrapper
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as NpcType })}
                 className="w-full py-2 px-3 rounded-xl bg-bg border border-border-strong text-sm text-text-primary"
@@ -363,11 +367,11 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
                 {(Object.keys(typeLabels) as NpcType[]).map(t => (
                   <option key={t} value={t}>{typeLabels[t]}</option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div>
               <label className="text-xs text-text-primary block mb-1">مکان و محیط:</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={formData.locationTag}
                 onChange={(e) => setFormData({ ...formData, locationTag: e.target.value })}
@@ -379,7 +383,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div>
               <label className="text-xs text-text-primary block mb-1">درجه زرهی (AC):</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={formData.ac}
                 placeholder="آشوبناک 16 / مهارشده 10"
@@ -389,7 +393,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
             </div>
             <div>
               <label className="text-xs text-text-primary block mb-1">حداکثر جان (HP):</label>
-              <input
+              <Input noWrapper
                 type="number"
                 value={formData.hp?.max}
                 onChange={(e) => setFormData({
@@ -401,7 +405,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
             </div>
             <div>
               <label className="text-xs text-text-primary block mb-1">سرعت حرکت:</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={formData.speed}
                 onChange={(e) => setFormData({ ...formData, speed: e.target.value })}
@@ -410,7 +414,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
             </div>
             <div>
               <label className="text-xs text-text-primary block mb-1">جلسه کمپین:</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={formData.sessionTag}
                 onChange={(e) => setFormData({ ...formData, sessionTag: e.target.value })}
@@ -421,7 +425,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
 
           <div>
             <label className="text-xs text-text-primary block mb-1">شرح و پیش‌زمینه روایی:</label>
-            <textarea
+            <Textarea noWrapper
               rows={2}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -431,7 +435,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
 
           <div>
             <label className="text-xs text-text-primary block mb-1">نکات تاکتیکی و هوش مبارزاتی برای DM:</label>
-            <textarea
+            <Textarea noWrapper
               rows={2}
               value={formData.tacticsTips}
               onChange={(e) => setFormData({ ...formData, tacticsTips: e.target.value })}
@@ -441,7 +445,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
 
           <div>
             <label className="text-xs text-text-primary block mb-1">غنیمت و پاداش (Loot Drops):</label>
-            <input
+            <Input noWrapper
               type="text"
               value={formData.lootDrops}
               onChange={(e) => setFormData({ ...formData, lootDrops: e.target.value })}
@@ -450,7 +454,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
           </div>
 
           <div className="flex items-center gap-2 p-2.5 rounded-xl bg-surface border border-border">
-            <input
+            <Input noWrapper
               type="checkbox"
               id="revealedCheck"
               checked={formData.isRevealed}
@@ -463,7 +467,7 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
           </div>
 
           <div className="flex gap-2 justify-end pt-2">
-            <button
+            <Button
               type="button"
               onClick={() => {
                 setIsCreating(false);
@@ -472,13 +476,13 @@ export const DmNpcManager: React.FC<DmNpcManagerProps> = ({
               className="py-2.5 px-4 rounded-xl text-xs text-text-muted touch-target min-w-[44px]"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               className="py-2.5 px-5 rounded-xl bg-accent text-on-accent font-bold text-xs touch-target min-w-[44px]"
             >
               ذخیره NPC
-            </button>
+            </Button>
           </div>
         </form>
       </BottomSheet>

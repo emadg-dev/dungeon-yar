@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '../ui/Button';
 import {
   Heart, Dices, FileText, Compass, MoreHorizontal,
   Shield, UserCheck, LayoutDashboard, LogIn
@@ -56,7 +57,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             const Icon = item.icon;
             const isActive = homeTab === item.id;
             return (
-              <button
+              <Button
                 key={item.id}
                 type="button"
                 aria-label={item.label}
@@ -66,7 +67,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
                 <span className="dock-label whitespace-nowrap">{item.label}</span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -89,7 +90,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             const Icon = item.icon;
             const isActive = dmTab === item.id || (item.id === 'sheet' && (dmTab === 'overview' || dmTab === 'abilities' || dmTab === 'combat'));
             return (
-              <button
+              <Button
                 key={item.id}
                 type="button"
                 aria-label={item.label}
@@ -106,7 +107,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
                 <span className="dock-label whitespace-nowrap">{item.label}</span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -131,7 +132,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           const isCenter = i === 2; // Dice in center
           if (isCenter) {
             return (
-              <button
+              <Button
                 key={item.id}
                 type="button"
                 onClick={onOpenDice}
@@ -139,11 +140,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 aria-label="پرتاب تاس"
               >
                 <Dices className="w-6 h-6 stroke-[2.5]" />
-              </button>
+              </Button>
             );
           }
           return (
-            <button
+            <Button
               key={item.id}
               type="button"
               aria-label={item.label}
@@ -158,7 +159,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             >
               <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
               <span className="dock-label whitespace-nowrap">{item.label}</span>
-            </button>
+            </Button>
           );
         })}
       </div>

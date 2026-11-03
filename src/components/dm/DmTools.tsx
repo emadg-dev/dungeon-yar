@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import React, { useState, Suspense } from 'react';
 import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate, LocationEntry, Campaign, CharacterParticipation, Session, SessionRsvpChoice, SessionRecap } from '../../types';
 import { 
@@ -216,7 +217,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (
-            <button
+            <Button
               type="button"
               key={item.id}
               data-key={item.id}
@@ -229,7 +230,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <Icon className="w-4 h-4 shrink-0" />
               <span className="whitespace-nowrap shrink-0">{item.label}</span>
-            </button>
+            </Button>
           );
         })}
       </ScrollableRow>
@@ -294,7 +295,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             wrapperClassName="surface-card rounded-[12px] p-1 border border-border"
             className="gap-1"
           >
-            <button
+            <Button
               type="button"
               data-key="library_hub"
               onClick={() => setLibrarySubTab('library_hub')}
@@ -306,8 +307,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <Library className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">مخزن کلان کتابخانه</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-key="npcs"
               onClick={() => setLibrarySubTab('npcs')}
@@ -319,8 +320,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <Users className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">موجودات ({npcs.length})</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-key="items"
               onClick={() => setLibrarySubTab('items')}
@@ -332,8 +333,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <Sparkles className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">اشیاء ({items.length})</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-key="locations"
               onClick={() => setLibrarySubTab('locations')}
@@ -345,8 +346,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <MapPin className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">مکان‌ها ({locations.length})</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-key="handouts"
               onClick={() => setLibrarySubTab('handouts')}
@@ -358,8 +359,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <MapIcon className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">اسناد و نقشه‌ها</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-key="quests"
               onClick={() => setLibrarySubTab('quests')}
@@ -371,8 +372,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <Scroll className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">مأموریت‌ها ({quests.length})</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-key="reputation"
               onClick={() => setLibrarySubTab('reputation')}
@@ -384,8 +385,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <Flag className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">شهرت جناح‌ها</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-key="treasury"
               onClick={() => setLibrarySubTab('treasury')}
@@ -397,7 +398,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <Coins className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">خزانه گروه</span>
-            </button>
+            </Button>
           </ScrollableRow>
 
           {librarySubTab === 'library_hub' && (
@@ -509,7 +510,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             wrapperClassName="surface-card rounded-[12px] p-1 border border-border"
             className="gap-1"
           >
-            <button
+            <Button
               type="button"
               data-key="notes"
               onClick={() => setNarrativeSubTab('notes')}
@@ -521,8 +522,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <BookOpen className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">یادداشت‌های کمپین ({campaignNotes.length})</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-key="endings"
               onClick={() => setNarrativeSubTab('endings')}
@@ -534,7 +535,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <Compass className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">پایان‌بندی‌ها و سرنوشت</span>
-            </button>
+            </Button>
           </ScrollableRow>
 
           {narrativeSubTab === 'notes' && (
@@ -560,7 +561,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             wrapperClassName="surface-card rounded-[12px] p-1 border border-border"
             className="gap-1"
           >
-            <button
+            <Button
               type="button"
               data-key="users"
               onClick={() => setMoreSubTab('users')}
@@ -572,8 +573,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <Users className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">کاربران</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-key="invites"
               onClick={() => setMoreSubTab('invites')}
@@ -585,8 +586,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <KeyRound className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">کدهای دعوت</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-key="audit"
               onClick={() => setMoreSubTab('audit')}
@@ -598,8 +599,8 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <Scroll className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">گزارش وقایع</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-key="settings"
               onClick={() => setMoreSubTab('settings')}
@@ -611,7 +612,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
             >
               <SettingsIcon className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">تنظیمات</span>
-            </button>
+            </Button>
           </ScrollableRow>
 
           {moreSubTab === 'users' && (

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { DiceRollResult } from '../../types';
 import { formatModifier } from '../../utils/dice';
 import { Dices, Flame, Sparkles, X } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 interface DiceToastProps {
   latestRoll: DiceRollResult | null;
@@ -99,20 +100,20 @@ export const DiceToast: React.FC<DiceToastProps> = ({
 
         {/* Action buttons */}
         <div className="flex items-center gap-1">
-          <button
+          <Button
             onClick={onOpenRollerModal}
             className="p-2 rounded-xl bg-surface-2/80 hover:bg-surface-2 text-accent-hover touch-target min-w-[44px]"
             title="مشاهده کیسه تاس"
           >
             <Dices className="w-4 h-4" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onClose}
             className="p-2 rounded-xl text-text-muted hover:text-text-primary touch-target min-w-[44px]"
             title="بستن"
           >
             <X className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>

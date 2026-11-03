@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Textarea } from '../ui/Textarea';
 import React, { useState } from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Shield, Sparkles, BookOpen, Layers } from 'lucide-react';
@@ -64,7 +67,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
 
         <div>
           <label className="block text-xs font-bold text-text-primary mb-1">نام کمپین *</label>
-          <input
+          <Input noWrapper
             type="text"
             value={name}
             onChange={e => setName(e.target.value)}
@@ -130,7 +133,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
 
         <div>
           <label className="block text-xs font-bold text-text-primary mb-1">فضاسازی و لحن ماجراجویی (Tone)</label>
-          <input
+          <Input noWrapper
             type="text"
             value={tone}
             onChange={e => setTone(e.target.value)}
@@ -141,7 +144,7 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
 
         <div>
           <label className="block text-xs font-bold text-text-primary mb-1">شرح و مقدمه کمپین</label>
-          <textarea
+          <Textarea noWrapper
             value={description}
             onChange={e => setDescription(e.target.value)}
             placeholder="شرح کوتاه از داستان و سرآغاز ماجرا..."
@@ -151,21 +154,21 @@ export const CreateCampaignModal: React.FC<CreateCampaignModalProps> = ({
         </div>
 
         <div className="flex justify-end gap-2 pt-2 border-t border-border">
-          <button
+          <Button
             type="button"
             onClick={onClose}
             className="px-4 py-2.5 rounded-xl text-xs font-bold text-text-muted hover:text-text-primary min-h-[44px]"
           >
             انصراف
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             disabled={isSubmitting || !name.trim()}
             className="px-5 py-2.5 rounded-xl bg-accent text-on-accent font-bold text-xs hover:bg-accent-hover disabled:opacity-50 transition-colors flex items-center gap-2 min-h-[44px] shadow-lg shadow-accent/20"
           >
             <Shield className="w-4 h-4" />
             <span>{isSubmitting ? 'در حال ایجاد...' : 'ساخت کمپین و ورود'}</span>
-          </button>
+          </Button>
         </div>
       </form>
     </BottomSheet>

@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import React from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Lock, Send, ShieldAlert, Sparkles } from 'lucide-react';
@@ -55,7 +56,7 @@ export const LockedFieldModal: React.FC<LockedFieldModalProps> = ({
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2 pt-2">
-          <button
+          <Button
             type="button"
             onClick={() => {
               onClose();
@@ -65,14 +66,14 @@ export const LockedFieldModal: React.FC<LockedFieldModalProps> = ({
           >
             <Send className="w-4 h-4" />
             <span>درخواست تغییر به DM</span>
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onClose}
             className="py-3 px-4 rounded-xl bg-surface-2 hover:bg-surface-3 text-text-primary text-xs font-bold border border-border transition min-h-[44px]"
           >
             بستن
-          </button>
+          </Button>
         </div>
       </div>
     </BottomSheet>

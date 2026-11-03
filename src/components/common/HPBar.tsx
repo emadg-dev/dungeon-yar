@@ -1,5 +1,6 @@
 import React from 'react';
 import { Heart, Plus, Minus } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 interface HPBarProps {
   current: number;
@@ -41,22 +42,22 @@ export const HPBar: React.FC<HPBarProps> = ({
           />
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <button
+          <Button
             type="button"
             onClick={() => onAdjust(-1)}
             className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 border border-border text-danger hover:border-danger/60 text-xs font-black transition active:scale-95"
             title="کاهش 1 جان"
           >
             <Minus className="w-3.5 h-3.5" />
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => onAdjust(1)}
             className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 border border-border text-success hover:border-success/60 text-xs font-black transition active:scale-95"
             title="افزایش 1 جان"
           >
             <Plus className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -96,38 +97,38 @@ export const HPBar: React.FC<HPBarProps> = ({
 
       {/* Wide touch adjustment buttons (≥ 48px hit area) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-1">
-        <button
+        <Button
           type="button"
           onClick={() => onAdjust(-5)}
           className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 border border-border text-danger hover:border-danger/60 text-xs font-black transition active:scale-95"
           title="کاهش 5 جان"
         >
           -5
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => onAdjust(-1)}
           className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 border border-border text-danger hover:border-danger/60 text-xs font-black transition active:scale-95"
           title="کاهش 1 جان"
         >
           -1
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => onAdjust(1)}
           className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 border border-border text-success hover:border-success/60 text-xs font-black transition active:scale-95"
           title="افزایش 1 جان"
         >
           +1
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => onAdjust(5)}
           className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 border border-border text-success hover:border-success/60 text-xs font-black transition active:scale-95"
           title="افزایش 5 جان"
         >
           +5
-        </button>
+        </Button>
       </div>
     </div>
   );

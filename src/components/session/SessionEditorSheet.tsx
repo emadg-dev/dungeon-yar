@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, useEffect } from 'react';
 import { Session, Campaign, WorldCalendar, SessionStatus } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -213,7 +217,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
         {/* Mode Selector */}
         {!isEditing && (
           <div className="grid grid-cols-2 gap-2 bg-bg p-1.5 rounded-2xl border border-white/10">
-            <button
+            <Button
               type="button"
               onClick={() => {
                 setMode('fixed');
@@ -227,8 +231,8 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
             >
               <CalendarIcon className="w-4 h-4" />
               <span>تاریخ قطعی مشخص</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => {
                 setMode('poll');
@@ -242,7 +246,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
             >
               <Hourglass className="w-4 h-4" />
               <span>نظرسنجی تاریخ (۲ تا ۵ گزینه)</span>
-            </button>
+            </Button>
           </div>
         )}
 
@@ -250,7 +254,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
         <div className="grid grid-cols-4 gap-3">
           <div className="col-span-1 space-y-1">
             <label className="text-xs font-bold text-text-muted">شماره جلسه</label>
-            <input
+            <Input noWrapper
               type="number"
               min={1}
               value={number}
@@ -260,7 +264,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
           </div>
           <div className="col-span-3 space-y-1">
             <label className="text-xs font-bold text-text-muted">عنوان جلسه *</label>
-            <input
+            <Input noWrapper
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -281,7 +285,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-xs text-text-muted">تاریخ جلسه</label>
-                <input
+                <Input noWrapper
                   type="date"
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
@@ -290,7 +294,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-text-muted">ساعت شروع</label>
-                <input
+                <Input noWrapper
                   type="time"
                   value={scheduledTime}
                   onChange={(e) => setScheduledTime(e.target.value)}
@@ -301,7 +305,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
 
             <div className="space-y-1">
               <label className="text-xs text-text-muted">مدت زمان پیش‌بینی‌شده (دقیقه)</label>
-              <input
+              <Input noWrapper
                 type="number"
                 step={30}
                 min={30}
@@ -322,14 +326,14 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
                 <span>گزینه‌های نظرسنجی تاریخ (۲ تا ۵ گزینه)</span>
               </h4>
               {pollOptions.length < 5 && (
-                <button
+                <Button
                   type="button"
                   onClick={handleAddPollOption}
                   className="px-2.5 py-1 rounded-lg bg-accent/20 hover:bg-accent text-accent-hover hover:text-on-accent text-xs font-bold transition-colors flex items-center gap-1"
                 >
                   <Plus className="w-3 h-3" />
                   <span>افزودن گزینه</span>
-                </button>
+                </Button>
               )}
             </div>
 
@@ -339,7 +343,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
                   <span className="text-xs font-bold text-text-muted w-6 text-center">
                     {idx + 1}
                   </span>
-                  <input
+                  <Input noWrapper
                     type="date"
                     value={opt.date}
                     onChange={(e) => {
@@ -350,7 +354,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
                     className="flex-1 bg-transparent border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
                     required
                   />
-                  <input
+                  <Input noWrapper
                     type="time"
                     value={opt.time}
                     onChange={(e) => {
@@ -361,14 +365,14 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
                     className="w-24 bg-transparent border border-white/10 rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
                   />
                   {pollOptions.length > 2 && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleRemovePollOption(idx)}
                       className="p-2 text-rose-400 hover:text-rose-300 transition-colors"
                       title="حذف این گزینه"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}
@@ -382,7 +386,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
             <Hourglass className="w-3.5 h-3.5 text-accent" />
             <span>تاریخ در جهان بازی (In-world date)</span>
           </label>
-          <input
+          <Input noWrapper
             type="text"
             value={inWorldDate}
             onChange={(e) => setInWorldDate(e.target.value)}
@@ -398,7 +402,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
               <MapPin className="w-3.5 h-3.5 text-accent" />
               <span>محل برگزاری فیزیکی</span>
             </label>
-            <input
+            <Input noWrapper
               type="text"
               value={placeText}
               onChange={(e) => setPlaceText(e.target.value)}
@@ -412,7 +416,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
               <Video className="w-3.5 h-3.5 text-role-codm" />
               <span>لینک جلسه آنلاین (گوگل میت، دیسکورد)</span>
             </label>
-            <input
+            <Input noWrapper
               type="url"
               value={onlineUrl}
               onChange={(e) => setOnlineUrl(e.target.value)}
@@ -426,7 +430,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
         {isEditing && (
           <div className="space-y-1">
             <label className="text-xs font-bold text-text-muted">وضعیت جلسه</label>
-            <select
+            <Select noWrapper
               value={status}
               onChange={(e) => setStatus(e.target.value as SessionStatus)}
               className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
@@ -435,7 +439,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
               <option value="confirmed">تأیید شده و قطعی</option>
               <option value="done">برگزار شده (پایان‌یافته)</option>
               <option value="cancelled">لغو شده</option>
-            </select>
+            </Select>
           </div>
         )}
 
@@ -445,7 +449,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
             <Sparkles className="w-3.5 h-3.5" />
             <span>یادداشت محرمانه دانجن مستر (فقط برای شما و دستیاران قابل مشاهده است)</span>
           </label>
-          <textarea
+          <Textarea noWrapper
             value={dmNotes}
             onChange={(e) => setDmNotes(e.target.value)}
             rows={3}
@@ -456,14 +460,14 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
 
         {/* Submit Button */}
         <div className="pt-2">
-          <button
+          <Button
             type="submit"
             disabled={isSubmitting}
             className="w-full py-3.5 rounded-xl bg-accent hover:bg-accent-hover text-on-accent font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-lg min-h-[48px]"
           >
             <Save className="w-4 h-4" />
             <span>{isEditing ? 'ذخیره تغییرات جلسه' : 'ایجاد و ثبت جلسه'}</span>
-          </button>
+          </Button>
         </div>
       </form>
     </BottomSheet>

@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
 import React, { useState, useEffect } from 'react';
 import { Invite, Character } from '../../types';
 import { api } from '../../services/api';
@@ -136,14 +139,14 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
           </p>
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={() => setShowCreateForm(!showCreateForm)}
           className="py-2 px-3.5 rounded-[10px] btn-primary-amber text-xs font-bold touch-target min-w-[44px] flex items-center gap-1.5 shrink-0"
         >
           {showCreateForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           <span>{showCreateForm ? 'انصراف' : 'صدور کد دعوت جدید'}</span>
-        </button>
+        </Button>
       </div>
 
       {/* Alerts */}
@@ -156,9 +159,9 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
           }`}
         >
           <span>{message.text}</span>
-          <button type="button" onClick={() => setMessage(null)} className="p-1 touch-target min-w-[44px]">
+          <Button type="button" onClick={() => setMessage(null)} className="p-1 touch-target min-w-[44px]">
             <X className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         </div>
       )}
 
@@ -170,13 +173,13 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
               <Sparkles className="w-4 h-4" />
               کد دعوت با موفقیت تولید شد
             </span>
-            <button
+            <Button
               type="button"
               onClick={() => setNewlyCreatedInvite(null)}
               className="p-1 text-text-muted hover:text-text-primary touch-target min-w-[44px]"
             >
               <X className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
 
           <p className="text-xs text-text-primary/90 leading-relaxed">
@@ -184,34 +187,34 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-stretch gap-2">
-            <input
+            <Input noWrapper
               type="text"
               readOnly
               value={newlyCreatedInvite.inviteLink || `${window.location.origin}/#register?code=${newlyCreatedInvite.code}`}
               dir="ltr"
               className="flex-1 py-2 px-3 rounded-[8px] bg-surface border border-border text-xs font-mono text-text-primary select-all min-h-[44px]"
             />
-            <button
+            <Button
               type="button"
               onClick={() => copyText(newlyCreatedInvite.inviteLink || `${window.location.origin}/#register?code=${newlyCreatedInvite.code}`, true)}
               className="py-2 px-4 rounded-[8px] btn-primary-amber text-xs font-bold touch-target min-w-[44px] flex items-center justify-center gap-1.5 min-h-[44px]"
             >
               {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               <span>{copiedLink ? 'پیوند کپی شد' : 'کپی پیوند ثبت‌نام'}</span>
-            </button>
+            </Button>
           </div>
 
           {newlyCreatedInvite.code && (
             <div className="text-xs text-text-muted flex items-center gap-2 pt-1">
               <span>کد کوتاه:</span>
               <span className="font-mono text-accent font-bold">{newlyCreatedInvite.code}</span>
-              <button
+              <Button
                 type="button"
                 onClick={() => copyText(newlyCreatedInvite.code!, false)}
                 className="text-xs text-text-muted hover:text-text-primary underline"
               >
                 {copiedCode ? 'کپی شد' : 'کپی کد'}
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -225,7 +228,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="block text-xs font-bold text-text-primary">عنوان / یادداشت دعوت</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
@@ -236,7 +239,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
 
             <div className="space-y-1">
               <label className="block text-xs font-bold text-text-primary">کاراکتر انتسابی خودکار (اختیاری)</label>
-              <select
+              <Select noWrapper
                 value={assignCharacterId}
                 onChange={(e) => setAssignCharacterId(e.target.value)}
                 className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
@@ -247,12 +250,12 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
                     {c.name} ({c.className} - سطح {c.level})
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             <div className="space-y-1">
               <label className="block text-xs font-bold text-text-primary">مدت اعتبار (روز)</label>
-              <input
+              <Input noWrapper
                 type="number"
                 min="1"
                 max="365"
@@ -264,7 +267,7 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
 
             <div className="space-y-1">
               <label className="block text-xs font-bold text-text-primary">حداکثر دفعات مجاز استفاده</label>
-              <input
+              <Input noWrapper
                 type="number"
                 min="1"
                 max="50"
@@ -276,20 +279,20 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
           </div>
 
           <div className="pt-2 flex justify-end gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => setShowCreateForm(false)}
               className="py-2 px-4 rounded-[10px] bg-surface-2 text-text-muted hover:text-text-primary text-xs font-bold touch-target min-w-[44px] min-h-[44px]"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={loading}
               className="py-2 px-5 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[44px]"
             >
               تولید و دریافت لینک
-            </button>
+            </Button>
           </div>
         </form>
       )}
@@ -331,14 +334,14 @@ export const DmInvites: React.FC<DmInvitesProps> = ({ characters }) => {
 
               {/* Revoke button */}
               {!inv.revokedAt && (
-                <button
+                <Button
                   type="button"
                   onClick={() => handleRevoke(inv.id)}
                   className="p-2 rounded-[8px] bg-surface-2 border border-border text-text-muted hover:text-danger touch-target min-w-[44px]"
                   title="ابطال این دعوت‌نامه"
                 >
                   <Trash2 className="w-4 h-4" />
-                </button>
+                </Button>
               )}
             </div>
           ))

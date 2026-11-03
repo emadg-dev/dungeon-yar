@@ -1,3 +1,5 @@
+import { Button } from '../ui/Button';
+import { Select } from '../ui/Select';
 import React, { useState } from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Campaign, CampaignMember, CampaignRole, User } from '../../types';
@@ -67,21 +69,21 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
               آیا مطمئن هستید که می‌خواهید مالکیت این کمپین را واگذار کنید؟ پس از این کار، نقش شما به دستیار دانجن مستر تغییر یافته و کاربر جدید مالک کامل کمپین خواهد بود.
             </p>
             <div className="flex justify-end gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setTransferTargetId(null)}
                 className="px-3 py-1.5 rounded-xl text-xs text-text-muted hover:text-text-primary"
               >
                 انصراف
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleTransfer}
                 disabled={loading}
                 className="px-4 py-1.5 rounded-xl bg-accent text-on-accent font-bold text-xs hover:bg-accent-hover"
               >
                 تأیید و انتقال مالکیت
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -132,7 +134,7 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
                 <div className="flex items-center gap-2">
                   {/* Role Selector (If actor has rights to change this member's role) */}
                   {allowedNextRoles.length > 0 ? (
-                    <select
+                    <Select noWrapper
                       value={member.role}
                       onChange={e => onUpdateMemberRole(member.userId, e.target.value as CampaignRole)}
                       className="bg-bg border border-border rounded-xl px-2.5 py-1.5 text-xs text-text-primary font-medium"
@@ -143,7 +145,7 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
                           {getRoleLabelFa(r)}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   ) : (
                     <span className={`text-xs px-2.5 py-1 rounded-xl font-bold ${badgeColorClass}`}>
                       {getRoleLabelFa(member.role as CampaignRole)}
@@ -153,22 +155,22 @@ export const CampaignMembersModal: React.FC<CampaignMembersModalProps> = ({
                   {/* Actions for owner / co-dm */}
                   <div className="flex items-center gap-1">
                     {canTransfer && (
-                      <button
+                      <Button
                         title="انتقال مالکیت به این کاربر"
                         onClick={() => setTransferTargetId(member.userId)}
                         className="p-2 rounded-xl text-accent-hover hover:bg-accent/10 transition-colors"
                       >
                         <ArrowRightLeft className="w-4 h-4" />
-                      </button>
+                      </Button>
                     )}
                     {canKick && (
-                      <button
+                      <Button
                         title="حذف از کمپین"
                         onClick={() => onRemoveMember(member.userId)}
                         className="p-2 rounded-xl text-danger-hover hover:bg-danger/10 transition-colors"
                       >
                         <UserX className="w-4 h-4" />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>

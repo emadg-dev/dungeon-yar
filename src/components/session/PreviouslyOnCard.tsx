@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import React, { useState } from 'react';
 import { SessionRecap, Campaign, User, CampaignRole, NPC, LocationEntry, CampaignNote } from '../../types';
 import { formatSessionDateTime } from '../../../shared/rules/sessionEngine';
@@ -58,14 +59,14 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
               </h3>
             </div>
           </div>
-          <button
+          <Button
             type="button"
             onClick={onOpenArchive}
             className="text-xs text-text-muted hover:text-text-primary flex items-center gap-1 transition px-2 py-1 rounded-lg hover:bg-white/5 touch-target min-w-[44px]"
           >
             <Archive className="w-3.5 h-3.5" />
             <span>آرشیو</span>
-          </button>
+          </Button>
         </div>
 
         <p className="text-xs text-text-muted mt-3 leading-relaxed">
@@ -74,14 +75,14 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
 
         {canCreate && onOpenCreateRecap && (
           <div className="mt-3 pt-3 border-t border-border/60 flex justify-end">
-            <button
+            <Button
               type="button"
               onClick={onOpenCreateRecap}
               className="py-2 px-3.5 rounded-[10px] bg-surface-2 hover:bg-surface-3 border border-accent/30 hover:border-accent text-accent-hover text-xs font-bold flex items-center gap-1.5 transition touch-target min-w-[44px]"
             >
               <Feather className="w-3.5 h-3.5" />
               <span>نگارش خلاصه رویدادها</span>
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -135,23 +136,23 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
 
         <div className="flex items-center gap-1">
           {canEdit && onEditRecap && (
-            <button
+            <Button
               type="button"
               onClick={() => onEditRecap(recap)}
               className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition touch-target min-w-[44px]"
               title="ویرایش خلاصه"
             >
               <Edit3 className="w-3.5 h-3.5" />
-            </button>
+            </Button>
           )}
-          <button
+          <Button
             type="button"
             onClick={onOpenArchive}
             className="py-1 px-2.5 rounded-[8px] bg-white/5 hover:bg-white/10 text-text-primary hover:text-text-primary text-xs font-semibold flex items-center gap-1 transition touch-target min-w-[44px]"
           >
             <Archive className="w-3.5 h-3.5 text-accent" />
             <span>آرشیو</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -193,14 +194,14 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
 
       {/* Expand / Collapse toggle */}
       {recap.body.length > 220 && (
-        <button
+        <Button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
           className="mt-2 text-xs font-bold text-accent hover:text-accent-hover flex items-center gap-1 transition touch-target min-w-[44px]"
         >
           <span>{isExpanded ? 'خلاصه کردن متن' : 'مطالعه کامل سرگذشت'}</span>
           {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-        </button>
+        </Button>
       )}
 
       {/* Linked Entities (NPCs, Locations, Quests) */}

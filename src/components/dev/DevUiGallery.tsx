@@ -106,7 +106,7 @@ export const DevUiGallery: React.FC = () => {
           </a>
 
           <div className="flex items-center bg-stone-900 border border-stone-800 rounded-xl p-1 gap-1">
-            <button
+            <Button
               type="button"
               onClick={() => toggleTheme('dark')}
               className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
@@ -115,8 +115,8 @@ export const DevUiGallery: React.FC = () => {
             >
               <Moon className="w-3.5 h-3.5" />
               <span>تاریک</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => toggleTheme('light')}
               className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
@@ -125,7 +125,7 @@ export const DevUiGallery: React.FC = () => {
             >
               <Sun className="w-3.5 h-3.5" />
               <span>روشن</span>
-            </button>
+            </Button>
           </div>
         </div>
       </header>

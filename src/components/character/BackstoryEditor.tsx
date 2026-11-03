@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   MasterCharacter, MasterBackstory, BackstorySection, BackstoryRelationship, 
@@ -316,7 +320,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
       <div className="rounded-2xl bg-surface border border-border p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
         <div className="flex flex-wrap items-center gap-2">
           {/* Ready For Review Button */}
-          <button
+          <Button
             type="button"
             onClick={handleToggleReady}
             className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 min-h-[44px] ${
@@ -327,7 +331,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
           >
             <Clock className="w-4 h-4" />
             <span>{character.readyForReview ? 'آماده‌ی بازبینی (در صف DM)' : 'علامت‌گذاری به عنوان: آماده‌ی بازبینی'}</span>
-          </button>
+          </Button>
 
           {/* Review Status Badge */}
           {character.reviewStatus === 'approved' && (
@@ -345,13 +349,13 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
 
           {/* DM Action Button */}
           {isDm && onReviewBackstory && (
-            <button
+            <Button
               type="button"
               onClick={() => setIsReviewModalOpen(true)}
               className="px-3 py-2 rounded-xl text-xs font-bold bg-accent text-on-accent hover:bg-accent-hover min-h-[44px]"
             >
               داوری و ثبت نظر راوی
-            </button>
+            </Button>
           )}
         </div>
 
@@ -362,7 +366,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
           </span>
 
           {/* Revision History Button */}
-          <button
+          <Button
             type="button"
             onClick={handleOpenRevisions}
             className="p-2 rounded-xl bg-surface-2 border border-border text-text-muted hover:text-text-primary min-h-[44px] min-w-[44px] flex items-center justify-center gap-1 text-xs"
@@ -370,10 +374,10 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
           >
             <History className="w-4 h-4 text-accent-hover" />
             <span className="hidden sm:inline">تاریخچه</span>
-          </button>
+          </Button>
 
           {/* Print Button */}
-          <button
+          <Button
             type="button"
             onClick={onPrint || (() => window.print())}
             className="p-2 rounded-xl bg-surface-2 border border-border text-text-muted hover:text-text-primary min-h-[44px] min-w-[44px] flex items-center justify-center gap-1 text-xs"
@@ -381,7 +385,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
           >
             <Printer className="w-4 h-4 text-info" />
             <span className="hidden sm:inline">چاپ A4</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -416,7 +420,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
       {/* Rich Text Toolbar */}
       <div className="sticky top-2 z-20 rounded-xl bg-bg/95 backdrop-blur border border-border p-1.5 flex items-center gap-1 shadow-md">
         <span className="text-xs text-text-muted px-2 font-bold hidden sm:inline">ابزار نگارش:</span>
-        <button
+        <Button
           type="button"
           onClick={() => applyFormatting('**', '**')}
           className="p-2 rounded-lg text-xs hover:bg-surface-2 text-text-primary flex items-center gap-1 min-h-[44px]"
@@ -424,8 +428,8 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
         >
           <Bold className="w-3.5 h-3.5" />
           <span className="text-xs">درشت</span>
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => applyFormatting('*', '*')}
           className="p-2 rounded-lg text-xs hover:bg-surface-2 text-text-primary flex items-center gap-1 min-h-[44px]"
@@ -433,8 +437,8 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
         >
           <Italic className="w-3.5 h-3.5" />
           <span className="text-xs">مورب</span>
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => applyFormatting('\n• ')}
           className="p-2 rounded-lg text-xs hover:bg-surface-2 text-text-primary flex items-center gap-1 min-h-[44px]"
@@ -442,8 +446,8 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
         >
           <List className="w-3.5 h-3.5" />
           <span className="text-xs">فهرست</span>
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => applyFormatting('\n\n')}
           className="p-2 rounded-lg text-xs hover:bg-surface-2 text-text-primary flex items-center gap-1 min-h-[44px]"
@@ -451,7 +455,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
         >
           <CornerDownLeft className="w-3.5 h-3.5" />
           <span className="text-xs">بند جدید</span>
-        </button>
+        </Button>
       </div>
 
       {/* SECTION 1: SUMMARY */}
@@ -462,22 +466,22 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
             خلاصه هویت و منش کلی (Summary)
           </h3>
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => setExpandedPrompts(p => ({ ...p, summary: !p.summary }))}
               className="text-xs text-text-muted hover:text-accent-hover flex items-center gap-1"
             >
               <span>راهنمای نگارش</span>
               {expandedPrompts.summary ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setActiveCommentSection(activeCommentSection === 'summary' ? null : 'summary')}
               className="px-2 py-1 rounded-lg bg-surface-2 border border-border text-xs text-text-muted hover:text-text-primary flex items-center gap-1 min-h-[44px]"
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span>{getSectionCommentCount('summary')}</span>
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -489,7 +493,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
           </div>
         )}
 
-        <textarea
+        <Textarea noWrapper
           ref={activeTextareaRef}
           value={backstory.summary || ''}
           onChange={e => updateBackstoryField('summary', e.target.value)}
@@ -510,22 +514,22 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
             خاستگاه، زادگاه و نقطه عطف (Origin)
           </h3>
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => setExpandedPrompts(p => ({ ...p, origin: !p.origin }))}
               className="text-xs text-text-muted hover:text-accent-hover flex items-center gap-1"
             >
               <span>راهنمای تبار و زادگاه</span>
               {expandedPrompts.origin ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setActiveCommentSection(activeCommentSection === 'origin' ? null : 'origin')}
               className="px-2 py-1 rounded-lg bg-surface-2 border border-border text-xs text-text-muted hover:text-text-primary flex items-center gap-1 min-h-[44px]"
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span>{getSectionCommentCount('origin')}</span>
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -545,7 +549,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
           </div>
         )}
 
-        <textarea
+        <Textarea noWrapper
           value={backstory.origin || ''}
           onChange={e => updateBackstoryField('origin', e.target.value)}
           rows={3}
@@ -560,14 +564,14 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
       <div className="rounded-2xl bg-surface border border-border p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-bold text-accent-hover">ارکان شخصیتی و روحی (Traits, Ideals, Bonds, Flaws)</h3>
-          <button
+          <Button
             type="button"
             onClick={() => setActiveCommentSection(activeCommentSection === 'personality' ? null : 'personality')}
             className="px-2 py-1 rounded-lg bg-surface-2 border border-border text-xs text-text-muted hover:text-text-primary flex items-center gap-1 min-h-[44px]"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             <span>{getSectionCommentCount('personality')}</span>
-          </button>
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -575,7 +579,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label className="text-xs font-bold text-text-primary">ویژگی‌های رفتاری (Traits)</label>
-              <button
+              <Button
                 type="button"
                 onClick={() => handleRollPersonality('traits')}
                 className="text-xs text-accent-hover hover:text-accent flex items-center gap-1"
@@ -583,9 +587,9 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
               >
                 <Dices className="w-3.5 h-3.5" />
                 <span>تاس از پیشینه</span>
-              </button>
+              </Button>
             </div>
-            <textarea
+            <Textarea noWrapper
               value={backstory.personality?.traits || ''}
               onChange={e => updatePersonalityField('traits', e.target.value)}
               rows={2}
@@ -597,7 +601,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label className="text-xs font-bold text-text-primary">آرمان‌ها و باورها (Ideals)</label>
-              <button
+              <Button
                 type="button"
                 onClick={() => handleRollPersonality('ideals')}
                 className="text-xs text-accent-hover hover:text-accent flex items-center gap-1"
@@ -605,9 +609,9 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
               >
                 <Dices className="w-3.5 h-3.5" />
                 <span>تاس از پیشینه</span>
-              </button>
+              </Button>
             </div>
-            <textarea
+            <Textarea noWrapper
               value={backstory.personality?.ideals || ''}
               onChange={e => updatePersonalityField('ideals', e.target.value)}
               rows={2}
@@ -619,7 +623,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label className="text-xs font-bold text-text-primary">پیمان‌ها و دلبستگی‌ها (Bonds)</label>
-              <button
+              <Button
                 type="button"
                 onClick={() => handleRollPersonality('bonds')}
                 className="text-xs text-accent-hover hover:text-accent flex items-center gap-1"
@@ -627,9 +631,9 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
               >
                 <Dices className="w-3.5 h-3.5" />
                 <span>تاس از پیشینه</span>
-              </button>
+              </Button>
             </div>
-            <textarea
+            <Textarea noWrapper
               value={backstory.personality?.bonds || ''}
               onChange={e => updatePersonalityField('bonds', e.target.value)}
               rows={2}
@@ -641,7 +645,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label className="text-xs font-bold text-text-primary">نقایص و هراس‌ها (Flaws)</label>
-              <button
+              <Button
                 type="button"
                 onClick={() => handleRollPersonality('flaws')}
                 className="text-xs text-accent-hover hover:text-accent flex items-center gap-1"
@@ -649,9 +653,9 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
               >
                 <Dices className="w-3.5 h-3.5" />
                 <span>تاس از پیشینه</span>
-              </button>
+              </Button>
             </div>
-            <textarea
+            <Textarea noWrapper
               value={backstory.personality?.flaws || ''}
               onChange={e => updatePersonalityField('flaws', e.target.value)}
               rows={2}
@@ -668,22 +672,22 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-bold text-accent-hover">اهداف، مقاصد و آرزوها (Goals)</h3>
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => setExpandedPrompts(p => ({ ...p, goals: !p.goals }))}
               className="text-xs text-text-muted hover:text-accent-hover flex items-center gap-1"
             >
               <span>راهنما</span>
               {expandedPrompts.goals ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setActiveCommentSection(activeCommentSection === 'goals' ? null : 'goals')}
               className="px-2 py-1 rounded-lg bg-surface-2 border border-border text-xs text-text-muted hover:text-text-primary flex items-center gap-1 min-h-[44px]"
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span>{getSectionCommentCount('goals')}</span>
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -695,7 +699,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
           </div>
         )}
 
-        <textarea
+        <Textarea noWrapper
           value={backstory.goals || ''}
           onChange={e => updateBackstoryField('goals', e.target.value)}
           rows={2}
@@ -711,22 +715,22 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-bold text-accent-hover">ارتباطات، یاران و پیوند با NPCها (Relationships)</h3>
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => setActiveCommentSection(activeCommentSection === 'relationships' ? null : 'relationships')}
               className="px-2 py-1 rounded-lg bg-surface-2 border border-border text-xs text-text-muted hover:text-text-primary flex items-center gap-1 min-h-[44px]"
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span>{getSectionCommentCount('relationships')}</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={handleAddRelationship}
               className="px-3 py-1.5 rounded-xl bg-accent/15 border border-accent/30 text-accent-hover text-xs font-bold hover:bg-accent/25 flex items-center gap-1 min-h-[44px]"
             >
               <Plus className="w-4 h-4" />
               افزودن رابطه
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -740,7 +744,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
               <div key={idx} className="p-3.5 rounded-xl bg-bg border border-border space-y-2.5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <input
+                    <Input noWrapper
                       type="text"
                       value={rel.name}
                       onChange={e => handleUpdateRelationship(idx, { name: e.target.value })}
@@ -748,7 +752,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
                       className="bg-bg border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:border-accent"
                     />
                     {/* Link to Campaign NPC */}
-                    <select
+                    <Select noWrapper
                       value={rel.npcRef || ''}
                       onChange={e => {
                         const val = e.target.value;
@@ -766,12 +770,12 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
                           {npc.name} {isDm && (npc as any).visibility === 'hidden' ? '(پنهان - DM)' : ''}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </div>
 
                   <div className="flex items-center gap-2 self-end sm:self-auto">
                     {/* Share with party toggle */}
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleUpdateRelationship(idx, { shareWithParty: rel.shareWithParty === false })}
                       className={`px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1 min-h-[44px] ${
@@ -782,19 +786,19 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
                     >
                       {rel.shareWithParty !== false ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                       <span>{rel.shareWithParty !== false ? 'مشترک' : 'محرمانه'}</span>
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleDeleteRelationship(idx)}
                       className="p-1.5 text-danger-hover hover:bg-danger/20 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
-                <input
+                <Input noWrapper
                   type="text"
                   value={rel.note}
                   onChange={e => handleUpdateRelationship(idx, { note: e.target.value })}
@@ -814,22 +818,22 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-bold text-accent-hover">خط زمانی رویدادهای گذشته (Timeline)</h3>
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => setActiveCommentSection(activeCommentSection === 'timeline' ? null : 'timeline')}
               className="px-2 py-1 rounded-lg bg-surface-2 border border-border text-xs text-text-muted hover:text-text-primary flex items-center gap-1 min-h-[44px]"
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span>{getSectionCommentCount('timeline')}</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={handleAddTimeline}
               className="px-3 py-1.5 rounded-xl bg-accent/15 border border-accent/30 text-accent-hover text-xs font-bold hover:bg-accent/25 flex items-center gap-1 min-h-[44px]"
             >
               <Plus className="w-4 h-4" />
               افزودن رویداد
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -842,7 +846,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
             backstory.timeline.map((item, idx) => (
               <div key={idx} className="p-3 rounded-xl bg-bg border border-border space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
-                  <input
+                  <Input noWrapper
                     type="text"
                     value={item.label}
                     onChange={e => handleUpdateTimeline(idx, { label: e.target.value })}
@@ -850,7 +854,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
                     className="bg-bg border border-border rounded-lg px-2.5 py-1 text-xs text-accent-hover font-bold flex-1"
                   />
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleUpdateTimeline(idx, { shareWithParty: item.shareWithParty === false })}
                       className={`px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1 min-h-[44px] ${
@@ -861,17 +865,17 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
                     >
                       {item.shareWithParty !== false ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                       <span>{item.shareWithParty !== false ? 'مشترک' : 'محرمانه'}</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => handleDeleteTimeline(idx)}
                       className="p-1 text-danger-hover hover:bg-danger/20 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
-                <textarea
+                <Textarea noWrapper
                   value={item.text}
                   onChange={e => handleUpdateTimeline(idx, { text: e.target.value })}
                   rows={2}
@@ -890,14 +894,14 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
       <div className="rounded-2xl bg-surface border border-border p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-bold text-accent-hover">بخش‌های سفارشی پیشینه (Custom Sections)</h3>
-          <button
+          <Button
             type="button"
             onClick={handleAddCustomSection}
             className="px-3 py-1.5 rounded-xl bg-accent/15 border border-accent/30 text-accent-hover text-xs font-bold hover:bg-accent/25 flex items-center gap-1 min-h-[44px]"
           >
             <Plus className="w-4 h-4" />
             افزودن بخش سفارشی
-          </button>
+          </Button>
         </div>
 
         <div className="space-y-3">
@@ -909,7 +913,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
             backstory.sections.map(sec => (
               <div key={sec.id} className="p-4 rounded-xl bg-bg border border-border space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
-                  <input
+                  <Input noWrapper
                     type="text"
                     value={sec.title}
                     onChange={e => handleUpdateCustomSection(sec.id, { title: e.target.value })}
@@ -917,7 +921,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
                     placeholder="عنوان بخش..."
                   />
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleUpdateCustomSection(sec.id, { shareWithParty: !sec.shareWithParty })}
                       className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1 min-h-[44px] ${
@@ -928,25 +932,25 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
                     >
                       {sec.shareWithParty ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                       <span>{sec.shareWithParty ? 'مشترک با یاران' : 'فقط دانجن مستر'}</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => setActiveCommentSection(activeCommentSection === sec.id ? null : sec.id)}
                       className="px-2 py-1 rounded-lg bg-surface-2 border border-border text-xs text-text-muted hover:text-text-primary flex items-center gap-1 min-h-[44px]"
                     >
                       <MessageSquare className="w-3.5 h-3.5" />
                       <span>{getSectionCommentCount(sec.id)}</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => handleDeleteCustomSection(sec.id)}
                       className="p-1.5 text-danger-hover hover:bg-danger/20 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
-                <textarea
+                <Textarea noWrapper
                   value={sec.text}
                   onChange={e => handleUpdateCustomSection(sec.id, { text: e.target.value })}
                   rows={3}
@@ -967,14 +971,14 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
             <Lock className="w-4 h-4 text-danger-hover" />
             رازها و قلاب‌های محرمانه (فقط دانجن مستر و صاحب کاراکتر)
           </h3>
-          <button
+          <Button
             type="button"
             onClick={() => setActiveCommentSection(activeCommentSection === 'dm_secrets' ? null : 'dm_secrets')}
             className="px-2 py-1 rounded-lg bg-surface-2 border border-border text-xs text-text-muted hover:text-text-primary flex items-center gap-1 min-h-[44px]"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             <span>{getSectionCommentCount('dm_secrets')}</span>
-          </button>
+          </Button>
         </div>
         <p className="text-xs text-danger/60">
           این فیلدها هرگز توسط سرور به سایر بازیکنان یا اعضای گروه نشان داده نمی‌شوند.
@@ -983,7 +987,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
         <div className="space-y-3">
           <div>
             <label className="block text-xs text-danger/80 mb-1">رازهای مگو (Secrets)</label>
-            <textarea
+            <Textarea noWrapper
               value={backstory.dmOnly?.secrets || ''}
               onChange={e => updateDmOnlyField('secrets', e.target.value)}
               rows={2}
@@ -993,7 +997,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
           </div>
           <div>
             <label className="block text-xs text-danger/80 mb-1">قلاب‌های داستانی (Hooks)</label>
-            <textarea
+            <Textarea noWrapper
               value={backstory.dmOnly?.hooks || ''}
               onChange={e => updateDmOnlyField('hooks', e.target.value)}
               rows={2}
@@ -1028,14 +1032,14 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
                       {rev.backstory?.summary || rev.backstory?.origin || 'پیشینه'}
                     </p>
                   </div>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleRestore(rev.id)}
                     className="px-3 py-1.5 rounded-lg bg-accent/20 border border-accent/40 text-accent-hover text-xs font-bold hover:bg-accent/30 min-h-[44px] flex items-center gap-1"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>بازگردانی</span>
-                  </button>
+                  </Button>
                 </div>
               );
             })
@@ -1056,7 +1060,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
             </p>
 
             <div className="flex gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setReviewAction('approved')}
                 className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition ${
@@ -1066,8 +1070,8 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
                 }`}
               >
                 تأیید رسمی پیشینه
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setReviewAction('changes_requested')}
                 className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition ${
@@ -1077,12 +1081,12 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
                 }`}
               >
                 درخواست اصلاحات
-              </button>
+              </Button>
             </div>
 
             <div>
               <label className="block text-xs text-text-primary mb-1 font-bold">یادداشت و راهنمایی دانجن مستر:</label>
-              <textarea
+              <Textarea noWrapper
                 value={reviewComment}
                 onChange={e => setReviewComment(e.target.value)}
                 rows={3}
@@ -1092,21 +1096,21 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setIsReviewModalOpen(false)}
                 className="px-4 py-2 rounded-xl text-xs text-text-muted"
               >
                 انصراف
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 disabled={isSubmittingReview}
                 onClick={handleSubmitDmReview}
                 className="px-5 py-2 rounded-xl text-xs font-bold bg-accent text-on-accent hover:bg-accent-hover"
               >
                 {isSubmittingReview ? 'در حال ثبت...' : 'ثبت داوری'}
-              </button>
+              </Button>
             </div>
           </div>
         </BottomSheet>
@@ -1148,7 +1152,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
                       {c.authorRole}
                     </span>
                   </div>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleToggleResolve(c.id, c.resolved)}
                     className={`text-xs px-2 py-0.5 rounded font-medium flex items-center gap-1 ${
@@ -1158,7 +1162,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
                     }`}
                   >
                     {c.resolved ? '✓ حل شد' : 'علامت به عنوان حل شده'}
-                  </button>
+                  </Button>
                 </div>
                 <p className="text-xs text-text-primary leading-relaxed whitespace-pre-wrap">{c.body}</p>
               </div>
@@ -1168,7 +1172,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
 
         {/* Add comment input */}
         <div className="flex gap-2 pt-1">
-          <input
+          <Input noWrapper
             type="text"
             value={activeCommentSection === sectionId ? newCommentText : ''}
             onChange={e => setNewCommentText(e.target.value)}
@@ -1181,14 +1185,14 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
             placeholder="درج دیدگاه، پرسش یا پیشنهاد اصلاح..."
             className="flex-1 bg-bg border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:border-accent focus:outline-none"
           />
-          <button
+          <Button
             type="button"
             disabled={submittingComment || !newCommentText.trim()}
             onClick={() => handleAddComment(sectionId)}
             className="px-3 py-1.5 rounded-lg bg-accent text-on-accent text-xs font-bold hover:bg-accent-hover disabled:opacity-50 min-h-[44px]"
           >
             {submittingComment ? '...' : 'ارسال'}
-          </button>
+          </Button>
         </div>
       </div>
     );

@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Campaign, WizardState, WizardStartMode, CampaignSettings, 
@@ -341,7 +345,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
             <h3 className="text-sm font-black text-accent-hover">گام 1: مشخصات هویتی و بصری کمپین</h3>
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">نام کمپین *</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
@@ -353,7 +357,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">یک جمله ایده اصلی (Premise)</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={premise}
                 onChange={e => setPremise(e.target.value)}
@@ -364,7 +368,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">توصیف جامع کمپین</label>
-              <textarea
+              <Textarea noWrapper
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 placeholder="توضیحاتی برای بازیکنان در مورد جهان، ماجرا و مقدمه آغازین..."
@@ -387,14 +391,14 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                 ))}
               </div>
               <div className="flex items-center gap-2">
-                <input
+                <Input noWrapper
                   type="text"
                   value={toneInput}
                   onChange={e => setToneInput(e.target.value)}
                   placeholder="افزودن برچسب جدید (مثلاً اسطوره‌ای، بقا، کارآگاهی)..."
                   className="flex-1 bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
                 />
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     if (toneInput.trim() && !toneTags.includes(toneInput.trim())) {
@@ -405,7 +409,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                   className="px-3 py-2 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary text-xs font-bold min-h-[40px]"
                 >
                   افزودن
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -442,19 +446,19 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-text-primary mb-1">واحد اندازه‌گیری</label>
-                <select
+                <Select noWrapper
                   value={units}
                   onChange={e => setUnits(e.target.value as any)}
                   className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2.5 text-xs text-text-primary min-h-[44px]"
                 >
                   <option value="feet">فوت (Feet - پیش‌فرض D&D 5e)</option>
                   <option value="meters">متر (Meters)</option>
-                </select>
+                </Select>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-text-primary mb-1">سطح ورودی شخصیت‌ها</label>
-                <input
+                <Input noWrapper
                   type="number"
                   min={1}
                   max={20}
@@ -475,7 +479,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                   { id: 'manual', label: 'ورود دستی' }
                 ].map(m => (
                   <label key={m.id} className="flex items-center gap-2 cursor-pointer">
-                    <input
+                    <Input noWrapper
                       type="checkbox"
                       checked={abilityMethods.includes(m.id as any)}
                       onChange={e => {
@@ -493,7 +497,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
             <div className="p-3 rounded-xl bg-surface-2/60 border border-border space-y-2">
               <span className="text-xs font-bold text-text-primary block">تأیید دانجن مستر و پدیداری</span>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input
+                <Input noWrapper
                   type="checkbox"
                   checked={approvalCreate}
                   onChange={e => setApprovalCreate(e.target.checked)}
@@ -503,7 +507,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
               </label>
 
               <label className="flex items-center gap-2 cursor-pointer">
-                <input
+                <Input noWrapper
                   type="checkbox"
                   checked={approvalLevelUp}
                   onChange={e => setApprovalLevelUp(e.target.checked)}
@@ -515,7 +519,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">قوانین خانه (House Rules Text)</label>
-              <textarea
+              <Textarea noWrapper
                 value={houseRulesText}
                 onChange={e => setHouseRulesText(e.target.value)}
                 rows={3}
@@ -536,7 +540,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                 <span>گاه‌شمار کمپین</span>
               </span>
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <button
+                <Button
                   type="button"
                   onClick={() => setCalendarSource('zorvania')}
                   className={`p-2.5 rounded-xl border text-start transition ${
@@ -547,9 +551,9 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                 >
                   <div className="font-bold">گاه‌شمار شاه‌روزان زروانیا</div>
                   <div className="text-xs text-text-muted mt-0.5">12 ماه 30 روزه + 5 روز برون‌گاه اساطیری</div>
-                </button>
+                </Button>
 
-                <button
+                <Button
                   type="button"
                   onClick={() => setCalendarSource('scratch')}
                   className={`p-2.5 rounded-xl border text-start transition ${
@@ -560,7 +564,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                 >
                   <div className="font-bold">گاه‌شمار اختصاصی از صفر</div>
                   <div className="text-xs text-text-muted mt-0.5">تعریف ماه‌ها و جشن‌های دلخواه</div>
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -589,21 +593,21 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
               {/* Quick Add Faction */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-border">
-                <input
+                <Input noWrapper
                   type="text"
                   value={newFactionName}
                   onChange={e => setNewFactionName(e.target.value)}
                   placeholder="نام جناح..."
                   className="bg-bg border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
                 />
-                <input
+                <Input noWrapper
                   type="text"
                   value={newFactionDesc}
                   onChange={e => setNewFactionDesc(e.target.value)}
                   placeholder="توصیف کوتاه..."
                   className="bg-bg border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
                 />
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     if (newFactionName.trim()) {
@@ -620,7 +624,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                   className="px-3 py-1.5 rounded-lg bg-surface-3 hover:bg-surface-3 text-accent-hover text-xs font-bold"
                 >
                   افزودن جناح
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -653,14 +657,14 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
             <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
               <span className="text-xs font-bold text-text-primary block">افزودن سریع NPC / هیولا</span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <input
+                <Input noWrapper
                   type="text"
                   value={newNpcName}
                   onChange={e => setNewNpcName(e.target.value)}
                   placeholder="نام موجود یا NPC..."
                   className="bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
                 />
-                <input
+                <Input noWrapper
                   type="text"
                   value={newNpcTitle}
                   onChange={e => setNewNpcTitle(e.target.value)}
@@ -668,7 +672,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                   className="bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
                 />
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   if (newNpcName.trim()) {
@@ -686,7 +690,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                 className="w-full py-2 rounded-xl bg-surface-3 hover:bg-surface-3 text-accent-hover text-xs font-bold"
               >
                 ثبت در فهرست بازیگران
-              </button>
+              </Button>
             </div>
           </div>
         );
@@ -714,21 +718,21 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
             <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
               <span className="text-xs font-bold text-text-primary block">افزودن سریع آیتم</span>
-              <input
+              <Input noWrapper
                 type="text"
                 value={newItemName}
                 onChange={e => setNewItemName(e.target.value)}
                 placeholder="نام شیء یا سلاح..."
                 className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
               />
-              <input
+              <Input noWrapper
                 type="text"
                 value={newItemDesc}
                 onChange={e => setNewItemDesc(e.target.value)}
                 placeholder="توصیف و اثر مکانیکی..."
                 className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
               />
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   if (newItemName.trim()) {
@@ -744,7 +748,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                 className="w-full py-2 rounded-xl bg-surface-3 hover:bg-surface-3 text-accent-hover text-xs font-bold"
               >
                 افزودن به گاوصندوق لوت
-              </button>
+              </Button>
             </div>
           </div>
         );
@@ -759,7 +763,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">عنوان سند</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={sessionZeroTitle}
                 onChange={e => setSessionZeroTitle(e.target.value)}
@@ -769,7 +773,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">انتظارات و سبک بازی</label>
-              <textarea
+              <Textarea noWrapper
                 value={sessionZeroExpectations}
                 onChange={e => setSessionZeroExpectations(e.target.value)}
                 rows={2}
@@ -779,7 +783,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">برنامه و زمان‌بندی جلسات</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={sessionZeroSchedule}
                 onChange={e => setSessionZeroSchedule(e.target.value)}
@@ -789,7 +793,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">خطوط قرمز و ایمنی (Lines & Veils)</label>
-              <textarea
+              <Textarea noWrapper
                 value={sessionZeroLinesAndVeils}
                 onChange={e => setSessionZeroLinesAndVeils(e.target.value)}
                 rows={2}
@@ -798,7 +802,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
             </div>
 
             <label className="flex items-center gap-2 cursor-pointer p-3 rounded-xl bg-surface-2 border border-border">
-              <input
+              <Input noWrapper
                 type="checkbox"
                 checked={sessionZeroXCard}
                 onChange={e => setSessionZeroXCard(e.target.checked)}
@@ -840,14 +844,14 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
             <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
               <span className="text-xs font-bold text-text-primary block">ساخت دعوت‌نامه جدید</span>
               <div className="grid grid-cols-2 gap-2">
-                <input
+                <Input noWrapper
                   type="text"
                   value={newInviteLabel}
                   onChange={e => setNewInviteLabel(e.target.value)}
                   placeholder="نام یا عنوان بازیکن..."
                   className="bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
                 />
-                <select
+                <Select noWrapper
                   value={newInviteRole}
                   onChange={e => setNewInviteRole(e.target.value as any)}
                   className="bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
@@ -855,9 +859,9 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                   <option value="player">ماجراجو (Player)</option>
                   <option value="co_dm">دستیار دانجن مستر (Co-DM)</option>
                   <option value="spectator">تماشاچی (Spectator)</option>
-                </select>
+                </Select>
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   if (newInviteLabel.trim()) {
@@ -873,7 +877,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                 className="w-full py-2 rounded-xl bg-surface-3 hover:bg-surface-3 text-accent-hover text-xs font-bold"
               >
                 افزودن کد دعوت
-              </button>
+              </Button>
             </div>
           </div>
         );
@@ -932,7 +936,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
               با فشردن دکمه زیر، کمپین از حالت پیش‌نویس خارج شده و به حالت فعال (Active) درمی‌آید. تمام محتواها در ابزارهای دانجن مستر قابل ویرایش خواهند بود.
             </p>
 
-            <button
+            <Button
               type="button"
               disabled={isLaunching || !name.trim()}
               onClick={handleLaunchCampaign}
@@ -940,7 +944,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
             >
               <Compass className="w-5 h-5" />
               <span>{isLaunching ? 'در حال راه‌اندازی کمپین...' : 'شروع کمپین و گشودن میز بازی'}</span>
-            </button>
+            </Button>
           </div>
         );
 
@@ -976,7 +980,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
       footer={
         startMode ? (
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <button
+            <Button
               type="button"
               disabled={step <= 1}
               onClick={handlePrevStep}
@@ -986,9 +990,9 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
             >
               <ArrowRight className="w-4 h-4" />
               <span>مرحله قبل</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
               onClick={() => {
                 saveCurrentDraft();
@@ -998,26 +1002,26 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
               className="px-3 py-2.5 rounded-xl bg-surface-2 border border-border hover:border-accent text-text-primary text-xs font-semibold min-h-[44px]"
             >
               ذخیره و ادامه بعداً
-            </button>
+            </Button>
 
             {step < 8 ? (
-              <button
+              <Button
                 type="button"
                 onClick={handleNextStep}
                 className="px-5 py-2.5 rounded-xl btn-primary-amber text-xs font-extrabold shadow-md flex items-center gap-1 min-h-[44px]"
               >
                 <span>مرحله بعد</span>
                 <ArrowLeft className="w-4 h-4" />
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 type="button"
                 disabled={isLaunching || !name.trim()}
                 onClick={handleLaunchCampaign}
                 className="px-6 py-2.5 rounded-xl btn-primary-amber text-xs font-extrabold shadow-lg min-h-[44px]"
               >
                 {isLaunching ? 'در حال راه‌اندازی...' : 'شروع کمپین'}
-              </button>
+              </Button>
             )}
           </div>
         ) : undefined
@@ -1027,7 +1031,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
       {statusMessage && (
         <div className="bg-accent/15 border border-accent/30 rounded-xl px-4 py-2 text-xs text-accent-hover flex flex-wrap items-center justify-between gap-2">
           <span>{statusMessage}</span>
-          <button onClick={() => setStatusMessage(null)} className="text-text-muted hover:text-white">✕</button>
+          <Button onClick={() => setStatusMessage(null)} className="text-text-muted hover:text-white">✕</Button>
         </div>
       )}
 
@@ -1129,7 +1133,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                 const isCurrent = step === st.s;
                 const isDone = completedSteps.includes(st.s);
                 return (
-                  <button
+                  <Button
                     key={st.s}
                     data-key={st.s}
                     type="button"
@@ -1147,7 +1151,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                   >
                     <span className="shrink-0">{st.s}.</span>
                     <span className="whitespace-nowrap shrink-0">{st.title}</span>
-                  </button>
+                  </Button>
                 );
               })}
             </ScrollableRow>

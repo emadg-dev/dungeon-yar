@@ -3,6 +3,7 @@ import { WorldCalendar } from '../../types';
 import { CALENDAR_MONTHS, CALENDAR_OFF_DAYS, formatWorldDate } from '../../data/calendar';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Calendar as CalendarIcon, Sparkles, ChevronRight, FastForward, Clock, BookOpen, AlertCircle } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 interface CalendarModalProps {
   isOpen: boolean;
@@ -79,23 +80,23 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
           <div className="p-3.5 rounded-xl bg-info border border-border-strong/80 space-y-2.5">
             <span className="text-xs font-bold text-accent-hover block">پیشبرد زمان توسط دانجن مستر:</span>
             <div className="grid grid-cols-3 gap-2">
-              <button
+              <Button
                 type="button"
                 disabled={advancing}
                 onClick={() => handleAdvance(1)}
                 className="py-2.5 px-2 rounded-xl bg-surface-2 hover:bg-surface-2 active:bg-warning active:text-on-accent text-xs font-bold text-text-primary transition border border-border-strong flex items-center justify-center gap-1 touch-target min-w-[44px] cursor-pointer"
               >
                 <span>+1 روز</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 disabled={advancing}
                 onClick={() => handleAdvance(7)}
                 className="py-2.5 px-2 rounded-xl bg-surface-2 hover:bg-surface-2 active:bg-warning active:text-on-accent text-xs font-bold text-text-primary transition border border-border-strong flex items-center justify-center gap-1 touch-target min-w-[44px] cursor-pointer"
               >
                 <span>+7 روز (1 هفته)</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 disabled={advancing}
                 onClick={() => handleAdvance(30)}
@@ -103,7 +104,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
               >
                 <FastForward className="w-3.5 h-3.5 shrink-0" />
                 <span>+1 ماه (30 روز)</span>
-              </button>
+              </Button>
             </div>
           </div>
         )}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { LucideIcon, Sparkles, AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 interface EmptyStateProps {
   title: string;
@@ -41,24 +42,24 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <p className="text-xs text-text-muted leading-relaxed max-w-xs">{message}</p>
 
       {isError && onRetry && (
-        <button
+        <Button
           type="button"
           onClick={onRetry}
           className="mt-2 py-2.5 px-5 rounded-[12px] bg-surface-2 hover:bg-surface-2 text-text-primary border border-border font-bold text-xs flex items-center gap-2 touch-target min-w-[44px] transition-all"
         >
           <RefreshCw className="w-4 h-4 text-accent" />
           <span>تلاش دوباره</span>
-        </button>
+        </Button>
       )}
 
       {!isError && actionLabel && onAction && (
-        <button
+        <Button
           type="button"
           onClick={onAction}
           className="mt-2 py-2.5 px-5 btn-primary-amber text-xs touch-target min-w-[44px]"
         >
           {actionLabel}
-        </button>
+        </Button>
       )}
     </div>
   );

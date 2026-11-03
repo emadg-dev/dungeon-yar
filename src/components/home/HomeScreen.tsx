@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { toPersianDigits, partitionCampaigns, calculateCountdown } from '../../../shared/rules/historyEngine';
 import { ScrollableRow } from '../ui/ScrollableRow';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 
 interface HomeScreenProps {
   currentUser: User | null;
@@ -131,13 +133,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 {toPersianDigits(pendingApprovals.length)} درخواست تأیید در انتظار بررسی دانجن مستر
               </span>
             </div>
-            <button
+            <Button
               onClick={onOpenApprovals}
               className="px-3 py-1.5 rounded-xl bg-accent text-on-accent text-xs font-bold hover:bg-accent-hover transition-colors flex items-center gap-1 shadow"
             >
               بررسی صف تأیید
               <ChevronLeft className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -185,12 +187,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
                   <div className="mt-3 pt-3 border-t border-border flex flex-wrap items-center justify-between gap-2">
                     <span className="text-xs text-text-muted">{toPersianDigits(percent)}٪ تکمیل شده</span>
-                    <button
+                    <Button
                       onClick={() => onSelectCampaign(draft.id)}
                       className="px-3 py-1 rounded-xl bg-accent text-on-accent text-xs font-bold hover:bg-accent-hover transition-colors"
                     >
                       ادامه ویزارد
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );
@@ -211,7 +213,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <ScrollableRow activeKey={campaignTab} className="gap-2 shrink-0">
               {/* Current vs Past Tabs */}
               <div className="flex items-center p-1 bg-bg border border-border rounded-xl text-xs shrink-0">
-                <button
+                <Button
                   type="button"
                   data-key="current"
                   onClick={() => {
@@ -230,8 +232,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   <span className={`text-xs px-1.5 py-0.2 rounded-full shrink-0 ${campaignTab === 'current' ? 'bg-accent/25 text-accent-hover' : 'bg-surface-2 text-text-muted'}`}>
                     {toPersianDigits(activeCampaigns.length)}
                   </span>
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   data-key="past"
                   onClick={() => {
@@ -250,17 +252,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   <span className={`text-xs px-1.5 py-0.2 rounded-full shrink-0 ${campaignTab === 'past' ? 'bg-accent/25 text-accent-hover' : 'bg-surface-2 text-text-muted'}`}>
                     {toPersianDigits(pastCampaigns.length)}
                   </span>
-                </button>
+                </Button>
               </div>
 
-              <button
+              <Button
                 type="button"
                 onClick={onOpenCreateCampaign}
                 className="px-3.5 py-1.5 rounded-xl bg-accent/15 border border-accent/30 text-accent-hover text-xs font-bold hover:bg-accent/25 transition-colors flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
               >
                 <Plus className="w-4 h-4 shrink-0" />
                 <span className="whitespace-nowrap shrink-0">کمپین جدید</span>
-              </button>
+              </Button>
             </ScrollableRow>
           </div>
 
@@ -278,12 +280,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   : 'کمپین‌هایی که بایگانی شده یا از آن‌ها خارج شده‌اید در این بخش به عنوان تاریخچه فقط خواندنی نمایش داده می‌شوند.'}
               </p>
               {campaignTab === 'current' && (
-                <button
+                <Button
                   onClick={onOpenCreateCampaign}
                   className="px-4 py-2 rounded-xl bg-accent text-on-accent font-bold text-sm hover:bg-accent-hover transition-all shadow-lg shadow-accent/20"
                 >
                   ساخت اولین کمپین
-                </button>
+                </Button>
               )}
             </div>
           ) : (
@@ -447,14 +449,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
                   <div className="mt-3 pt-2.5 border-t border-border flex flex-wrap items-center justify-between gap-2">
                     <span className="text-xs text-text-muted">سطح: {toPersianDigits(draft.level || 1)}</span>
-                    <button
+                    <Button
                       type="button"
                       onClick={() => onResumeDraft && onResumeDraft(draft)}
                       className="px-3.5 py-1.5 rounded-xl btn-primary-amber text-xs font-bold shadow-md flex items-center gap-1 min-h-[44px]"
                     >
                       <span>ادامه (Resume)</span>
                       <ChevronLeft className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );
@@ -476,23 +478,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
             <ScrollableRow className="gap-2 shrink-0">
               {onOpenCharacterWizard && (
-                <button
+                <Button
                   type="button"
                   onClick={() => onOpenCharacterWizard()}
                   className="px-3 py-1.5 rounded-xl bg-accent text-on-accent text-xs font-bold hover:bg-accent-hover transition-colors flex items-center gap-1.5 min-h-[44px] shadow-sm whitespace-nowrap shrink-0 snap-start"
                 >
                   <Sparkles className="w-4 h-4 shrink-0" />
                   <span className="whitespace-nowrap shrink-0">ساخت کاراکتر با ویزارد</span>
-                </button>
+                </Button>
               )}
-              <button
+              <Button
                 type="button"
                 onClick={onOpenCreateCharacter}
                 className="px-3 py-1.5 rounded-xl bg-accent/15 border border-accent/30 text-accent-hover text-xs font-bold hover:bg-accent/25 transition-colors flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
               >
                 <Plus className="w-4 h-4 shrink-0" />
                 <span className="whitespace-nowrap shrink-0">شناسنامه ساده</span>
-              </button>
+              </Button>
             </ScrollableRow>
           </div>
 
@@ -501,12 +503,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <p className="text-xs text-text-muted leading-relaxed">
                 شما هنوز هیچ شخصیت کلانی ثبت نکرده‌اید. با ایجاد شناسنامه کلان می‌توانید یک شخصیت را به چند کمپین ببرید.
               </p>
-              <button
+              <Button
                 onClick={onOpenCreateCharacter}
                 className="px-4 py-2 rounded-xl bg-surface-2 hover:bg-surface-2 text-accent-hover text-xs font-bold transition-all"
               >
                 ایجاد اولین شخصیت
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -574,14 +576,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           پیوستن به کمپین با کد دعوت
         </h3>
         <div className="flex gap-2">
-          <input
+          <Input noWrapper 
             type="text"
             value={inviteInput}
-            onChange={e => setInviteInput(e.target.value)}
+            onChange={(e) => setInviteInput(e.target.value)}
             placeholder="کد دعوت کمپین را اینجا وارد کنید..."
             className="flex-1 bg-bg/80 border border-border rounded-xl px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
           />
-          <button
+          <Button
             onClick={() => {
               if (inviteInput.trim()) {
                 onAcceptInvite(inviteInput.trim());
@@ -592,7 +594,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             className="px-4 py-2 rounded-xl bg-accent text-on-accent font-bold text-xs hover:bg-accent-hover disabled:opacity-50 transition-colors min-h-[44px]"
           >
             پیوستن
-          </button>
+          </Button>
         </div>
       </section>
     </div>

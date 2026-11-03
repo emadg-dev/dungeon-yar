@@ -1,3 +1,5 @@
+import { Button } from './ui/Button';
+import { Select } from './ui/Select';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { User, Character } from '../types';
 import { APP_NAME_FA, APP_NAME_LATIN, APP_TAGLINE, APP_VERSION } from '../config/app';
@@ -169,7 +171,7 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 z-20 w-full max-w-full glass-panel border-b border-border shadow-md pt-[env(safe-area-inset-top,0px)] ps-[env(safe-area-inset-left,0px)] pe-[env(safe-area-inset-right,0px)]">
       <div className="max-w-7xl mx-auto px-2.5 sm:px-4 py-2 flex flex-wrap items-center justify-between gap-2 gap-2">
         {/* Mobile hamburger — left of header, mobile only */}
-        <button
+        <Button 
           ref={hamburgerRef}
           type="button"
           onClick={() => setMobileMenuOpen(o => !o)}
@@ -180,25 +182,25 @@ export const Header: React.FC<HeaderProps> = ({
           title={mobileMenuOpen ? 'بستن منو' : 'باز کردن منو'}
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        </Button>
 
         {/* Brand & Campaign Switcher / Breadcrumb */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {/* Brand Seal Logo Mark */}
-          <button
+          <Button 
             type="button"
             onClick={onGoHome}
             className="relative flex items-center justify-center w-8 h-8 rounded-[10px] bg-gradient-to-br from-accent to-danger border border-accent-hover/40 shadow-glow-amber shrink-0 hover:scale-105 transition-transform"
             title={APP_NAME_FA}
           >
             <span className="text-base font-black text-on-accent leading-none">ز</span>
-          </button>
+          </Button>
 
           {viewMode === 'campaign_space' ? (
             <div className="flex items-center gap-1.5 min-w-0">
               {/* Campaign Switcher Chip */}
               {onOpenCampaignSwitcher && (
-                <button
+                <Button 
                   type="button"
                   onClick={onOpenCampaignSwitcher}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] bg-surface-2 border border-border hover:border-accent text-xs font-black text-text-primary truncate max-w-[130px] sm:max-w-[180px] touch-target min-w-[44px] transition"
@@ -206,7 +208,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <span className="truncate text-accent">{activeCampaignName || 'کمپین'}</span>
                   <ChevronDown className="w-3.5 h-3.5 text-text-muted shrink-0" />
-                </button>
+                </Button>
               )}
 
               {/* Role Badge in campaign space */}
@@ -230,7 +232,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Character Dropdown inside campaign */}
               {currentUser && characters.length > 0 && !isDmView && (
                 <div className="relative min-w-0 max-w-[120px] sm:max-w-[160px]">
-                  <select
+                  <Select noWrapper 
                     value={activeCharacterId || ''}
                     onChange={(e) => onSelectCharacter(e.target.value)}
                     className="w-full bg-surface-2 text-xs font-bold text-accent py-1.5 pe-6 ps-2 rounded-[10px] border border-border focus:outline-none appearance-none cursor-pointer truncate touch-target min-w-[44px]"
@@ -241,14 +243,14 @@ export const Header: React.FC<HeaderProps> = ({
                         {c.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   <ChevronDown className="w-3 h-3 text-text-muted absolute start-auto end-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
               )}
 
               {/* Level-Up Ready Indicator Button */}
               {levelUpAvailable && onOpenLevelUp && !isDmView && (
-                <button
+                <Button 
                   type="button"
                   onClick={onOpenLevelUp}
                   className="flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-gradient-to-r from-warning to-accent text-on-accent text-xs font-black animate-pulse shadow-md shadow-accent/20 touch-target min-w-[44px] shrink-0"
@@ -256,19 +258,19 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">ارتقای سطح!</span>
-                </button>
+                </Button>
               )}
             </div>
           ) : viewMode === 'character_master' ? (
             <div className="flex items-center gap-2 truncate">
               {onGoHome && (
-                <button
+                <Button 
                   type="button"
                   onClick={onGoHome}
                   className="text-xs font-bold text-text-muted hover:text-accent transition flex items-center gap-1"
                 >
                   خانه /
-                </button>
+                </Button>
               )}
               <h1 className="text-xs sm:text-sm font-black text-text-primary truncate">
                 پرونده جامع شخصیت
@@ -285,7 +287,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Visual Offline / Queue / Conflict Indicator — visible in navigation bar on ALL viewports */}
         {(!isOnline || saveStatus === 'offline' || queueLength > 0 || saveStatus === 'conflict') && (
-          <button
+          <Button 
             type="button"
             onClick={() => {
               if (saveStatus === 'conflict') {
@@ -347,14 +349,14 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </>
             )}
-          </button>
+          </Button>
         )}
 
         {/* Action Controls & Utilities — hidden on mobile; hamburger replaces below md */}
         <div className="hidden md:flex items-center gap-1.5 shrink-0">
           {/* DM Pending Approvals notification */}
           {pendingApprovalsCount > 0 && onOpenCampaignApprovals && (
-            <button
+            <Button 
               type="button"
               onClick={onOpenCampaignApprovals}
               className="flex items-center gap-1 px-2 py-1 rounded-[10px] text-xs font-black bg-accent/20 text-accent-hover border border-accent/40 hover:bg-accent/30 transition touch-target min-w-[44px] animate-pulse"
@@ -362,12 +364,12 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>{pendingApprovalsCount}</span>
-            </button>
+            </Button>
           )}
 
           {/* Live Encounter Button for Players or DM */}
           {viewMode === 'campaign_space' && activeEncounter && onOpenActiveEncounter && (
-            <button
+            <Button 
               type="button"
               onClick={onOpenActiveEncounter}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-xs font-black bg-danger hover:bg-danger text-white animate-pulse border border-accent-hover shadow-[0_0_12px_rgba(194,81,43,0.6)] touch-target min-w-[44px] transition"
@@ -375,7 +377,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Swords className="w-3.5 h-3.5 stroke-[2.5]" />
               <span className="hidden sm:inline">مبارزه زنده</span>
-            </button>
+            </Button>
           )}
 
           {/* Desktop Synced Status (when all saved and online) */}
@@ -391,7 +393,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Desktop App Version & Check for Updates Button */}
           {onCheckForUpdates && (
-            <button
+            <Button 
               type="button"
               onClick={onCheckForUpdates}
               disabled={isCheckingUpdates}
@@ -400,12 +402,12 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <RefreshCw className={`w-3 h-3 ${isCheckingUpdates ? 'animate-spin text-accent' : 'text-text-muted'}`} />
               <span>نسخه {toPersianDigits(appVersion || APP_VERSION)}</span>
-            </button>
+            </Button>
           )}
 
           {/* DM / Player View Switcher (if user is DM in this campaign) */}
           {viewMode === 'campaign_space' && isDm && onToggleDmView && (
-            <button
+            <Button 
               type="button"
               onClick={onToggleDmView}
               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] text-xs font-bold transition border touch-target min-w-[44px] ${
@@ -417,14 +419,14 @@ export const Header: React.FC<HeaderProps> = ({
             >
               {isDmView ? <Shield className="w-3.5 h-3.5" /> : <BookOpen className="w-3.5 h-3.5" />}
               <span className="hidden sm:inline">{isDmView ? 'ابزارهای مستر' : 'کاراکترشیت'}</span>
-            </button>
+            </Button>
           )}
 
           {/* Desktop-only Quick Tools */}
           <div className="hidden sm:flex items-center gap-1.5">
             {/* Screen Wake Lock toggle */}
             {wakeLockSupported && (
-              <button
+              <Button 
                 type="button"
                 onClick={onToggleWakeLock}
                 className={`p-1.5 rounded-[10px] text-xs font-bold transition border touch-target min-w-[44px] ${
@@ -435,11 +437,11 @@ export const Header: React.FC<HeaderProps> = ({
                 title={wakeLockActive ? 'روشن ماندن صفحه فعال است' : 'فعال‌سازی روشن ماندن صفحه در حین بازی'}
               >
                 <SunMedium className="w-4 h-4" />
-              </button>
+              </Button>
             )}
 
             {/* Font Scale toggle */}
-            <button
+            <Button 
               type="button"
               onClick={onToggleFontScale}
               className={`p-1.5 rounded-[10px] text-xs font-bold transition border touch-target min-w-[44px] ${
@@ -450,12 +452,12 @@ export const Header: React.FC<HeaderProps> = ({
               title={fontScale === 'xlarge' ? 'فونت خیلی بزرگ' : fontScale === 'large' ? 'فونت بزرگ' : 'فونت استاندارد'}
             >
               <Type className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
 
           {/* Notifications Bell */}
           {onOpenNotifications && (
-            <button
+            <Button 
               type="button"
               onClick={onOpenNotifications}
               className="relative p-1.5 rounded-[10px] text-xs font-bold transition border border-border bg-surface-2 text-text-muted hover:text-text-primary hover:border-accent touch-target min-w-[44px]"
@@ -467,14 +469,14 @@ export const Header: React.FC<HeaderProps> = ({
                   {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
                 </span>
               )}
-            </button>
+            </Button>
           )}
 
           {/* User Account / Login Button */}
           {currentUser ? (
             <div className="flex items-center gap-1.5">
               {currentUser.platformRole === 'admin' && onOpenAdminConsole && (
-                <button
+                <Button 
                   type="button"
                   onClick={onOpenAdminConsole}
                   className="py-1 px-2.5 rounded-[10px] bg-accent/15 border border-accent/40 text-accent hover:bg-accent/25 text-xs font-bold transition touch-target min-w-[44px] flex items-center gap-1 min-h-[44px]"
@@ -482,9 +484,9 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <Shield className="w-3.5 h-3.5" />
                   <span className="hidden md:inline">مدیریت</span>
-                </button>
+                </Button>
               )}
-              <button
+              <Button 
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
                 className="flex items-center gap-1.5 py-1 px-2 rounded-[10px] bg-surface-2 border border-border text-xs font-bold text-text-primary hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 active:scale-95 transition touch-target min-w-[44px]"
@@ -493,17 +495,17 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="w-2 h-2 rounded-full bg-success" />
                 <span className="truncate max-w-[80px] sm:max-w-[120px]">{currentUser.displayName || currentUser.name}</span>
                 <MoreVertical className="w-3.5 h-3.5 text-text-muted" />
-              </button>
+              </Button>
             </div>
           ) : (
-            <button
+            <Button 
               type="button"
               onClick={onOpenAuth}
               className="py-1.5 px-3 rounded-[10px] btn-primary-amber font-bold text-xs shadow-md transition touch-target min-w-[44px] flex items-center gap-1"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>ورود / عضویت</span>
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -536,14 +538,14 @@ export const Header: React.FC<HeaderProps> = ({
                 <h2 className="text-xs font-black text-text-primary">{APP_NAME_FA}</h2>
                 <span className="text-xs text-text-muted">منوی اصلی</span>
               </div>
-              <button
+              <Button 
                 type="button"
                 onClick={closeMenu}
                 aria-label="بستن منو"
                 className="w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary hover:border-accent flex items-center justify-center transition touch-target min-w-[44px]"
               >
                 <X className="w-5 h-5" />
-              </button>
+              </Button>
             </div>
 
             <div className="p-3 space-y-1.5">
@@ -564,7 +566,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Navigation & Campaign Controls */}
             <div className="space-y-1.5">
               {onGoHome && (
-                <button
+                <Button 
                   type="button"
                   onClick={() => {
                     setMobileMenuOpen(false);
@@ -574,11 +576,11 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <Sparkles className="w-3.5 h-3.5 text-accent" />
                   <span>صفحه اصلی (کمپین‌ها و کاراکترها)</span>
-                </button>
+                </Button>
               )}
 
               {onOpenCampaignSwitcher && (
-                <button
+                <Button 
                   type="button"
                   onClick={() => {
                     setMobileMenuOpen(false);
@@ -588,7 +590,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <span>جابجایی بین کمپین‌ها</span>
                   <ChevronDown className="w-3.5 h-3.5" />
-                </button>
+                </Button>
               )}
 
               {/* DM Campaign Management Tools */}
@@ -596,7 +598,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="space-y-1 pt-1.5 border-t border-border/60">
                   <span className="text-xs font-bold text-text-muted">مدیریت این کمپین:</span>
                   {onOpenCampaignSettings && (
-                    <button
+                    <Button 
                       type="button"
                       onClick={() => {
                         setMobileMenuOpen(false);
@@ -605,10 +607,10 @@ export const Header: React.FC<HeaderProps> = ({
                       className="w-full text-start py-2 px-2.5 rounded-[8px] bg-surface-2/60 hover:bg-surface-2 text-xs text-text-primary flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
                     >
                       <span>تنظیمات قوانین و واحدها</span>
-                    </button>
+                    </Button>
                   )}
                   {onOpenCampaignMembers && (
-                    <button
+                    <Button 
                       type="button"
                       onClick={() => {
                         setMobileMenuOpen(false);
@@ -617,10 +619,10 @@ export const Header: React.FC<HeaderProps> = ({
                       className="w-full text-start py-2 px-2.5 rounded-[8px] bg-surface-2/60 hover:bg-surface-2 text-xs text-text-primary flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
                     >
                       <span>اعضا و تعیین نقش‌ها</span>
-                    </button>
+                    </Button>
                   )}
                   {onOpenCampaignInvites && (
-                    <button
+                    <Button 
                       type="button"
                       onClick={() => {
                         setMobileMenuOpen(false);
@@ -629,10 +631,10 @@ export const Header: React.FC<HeaderProps> = ({
                       className="w-full text-start py-2 px-2.5 rounded-[8px] bg-surface-2/60 hover:bg-surface-2 text-xs text-text-primary flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
                     >
                       <span>ساخت و مدیریت کدهای دعوت</span>
-                    </button>
+                    </Button>
                   )}
                   {onOpenCampaignApprovals && (
-                    <button
+                    <Button 
                       type="button"
                       onClick={() => {
                         setMobileMenuOpen(false);
@@ -646,7 +648,7 @@ export const Header: React.FC<HeaderProps> = ({
                           {pendingApprovalsCount}
                         </span>
                       )}
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}
@@ -654,7 +656,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Account Management Button */}
             {onOpenAccount && (
-              <button
+              <Button 
                 type="button"
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -664,12 +666,12 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <Sparkles className="w-3.5 h-3.5 text-accent" />
                 <span>مدیریت حساب کاربری و نشست‌ها</span>
-              </button>
+              </Button>
             )}
 
             {/* Instance Admin Console Button */}
             {currentUser?.platformRole === 'admin' && onOpenAdminConsole && (
-              <button
+              <Button 
                 type="button"
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -679,12 +681,12 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <Shield className="w-3.5 h-3.5" />
                 <span>کنسول مدیریت سامانه (ادمین)</span>
-              </button>
+              </Button>
             )}
 
             {/* Notifications and Events Button */}
             {onOpenNotifications && (
-              <button
+              <Button 
                 type="button"
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -701,7 +703,7 @@ export const Header: React.FC<HeaderProps> = ({
                     {unreadNotificationsCount} جدید
                   </span>
                 )}
-              </button>
+              </Button>
             )}
 
             {/* Character selection if multiple */}
@@ -710,7 +712,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <label className="text-xs font-bold text-text-muted">کاراکتر انتخابی شما:</label>
                 <div className="space-y-1 max-h-40 overflow-y-auto">
                   {characters.map(c => (
-                    <button
+                    <Button 
                       key={c.id}
                       type="button"
                       onClick={() => {
@@ -725,7 +727,7 @@ export const Header: React.FC<HeaderProps> = ({
                     >
                       <span className="truncate">{c.name}</span>
                       <span className="text-xs text-text-muted">L{c.level}</span>
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -737,7 +739,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <label className="text-xs font-bold text-text-muted">سوئیچ کاربر برای تست بازی:</label>
                 <div className="space-y-1 max-h-36 overflow-y-auto">
                   {allUsers.map(u => (
-                    <button
+                    <Button 
                       key={u.id}
                       type="button"
                       onClick={() => {
@@ -752,7 +754,7 @@ export const Header: React.FC<HeaderProps> = ({
                     >
                       <span className="truncate">{u.displayName || u.name}</span>
                       <span className="text-xs">{u.role === 'dm' ? 'مستر' : 'بازیکن'}</span>
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -761,7 +763,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Utility Toggles */}
             <div className="space-y-2 pt-2 border-t border-border">
               {wakeLockSupported && (
-                <button
+                <Button 
                   type="button"
                   onClick={onToggleWakeLock}
                   className="w-full flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary touch-target min-w-[44px]"
@@ -773,10 +775,10 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="text-xs font-bold text-accent">
                     {wakeLockActive ? 'فعال' : 'غیرفعال'}
                   </span>
-                </button>
+                </Button>
               )}
 
-              <button
+              <Button 
                 type="button"
                 onClick={onToggleFontScale}
                 className="w-full flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary touch-target min-w-[44px]"
@@ -788,7 +790,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="text-xs font-bold text-accent">
                   {fontScale === 'xlarge' ? 'خیلی بزرگ' : fontScale === 'large' ? 'بزرگ' : 'استاندارد'}
                 </span>
-              </button>
+              </Button>
             </div>
 
             {/* Connection & Offline Status in Drawer */}
@@ -822,14 +824,14 @@ export const Header: React.FC<HeaderProps> = ({
                 </p>
               )}
               {onSyncNow && (
-                <button
+                <Button 
                   type="button"
                   onClick={onSyncNow}
                   className="w-full py-2 px-3 rounded-[8px] bg-surface-2 hover:bg-surface-3 border border-border-strong text-xs font-bold text-accent-hover flex items-center justify-center gap-1.5 transition touch-target min-h-[44px]"
                 >
                   <RefreshCw className="w-3.5 h-3.5 text-accent" />
                   <span>تلاش برای همگام‌سازی اکنون</span>
-                </button>
+                </Button>
               )}
             </div>
 
@@ -850,7 +852,7 @@ export const Header: React.FC<HeaderProps> = ({
               </p>
 
               {onCheckForUpdates && (
-                <button
+                <Button 
                   type="button"
                   onClick={onCheckForUpdates}
                   disabled={isCheckingUpdates}
@@ -859,12 +861,12 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isCheckingUpdates ? 'animate-spin text-accent' : 'text-accent'}`} />
                   <span>{isCheckingUpdates ? 'در حال بررسی به‌روزرسانی...' : 'بررسی به‌روزرسانی'}</span>
-                </button>
+                </Button>
               )}
             </div>
 
             {/* Logout Action */}
-            <button
+            <Button 
               type="button"
               onClick={() => {
                 onLogout();
@@ -874,7 +876,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <LogOut className="w-4 h-4" />
               <span>خروج از حساب</span>
-            </button>
+            </Button>
           </div>
         </div>
         </>
@@ -940,7 +942,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Manual flush / retry button */}
           <div className="pt-2 flex flex-col sm:flex-row gap-2">
             {onSyncNow && (
-              <button
+              <Button 
                 type="button"
                 onClick={() => {
                   onSyncNow();
@@ -950,15 +952,15 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <RefreshCw className="w-4 h-4" />
                 <span>تلاش مجدد برای همگام‌سازی</span>
-              </button>
+              </Button>
             )}
-            <button
+            <Button 
               type="button"
               onClick={() => setSyncSheetOpen(false)}
               className="py-3 px-4 rounded-[10px] bg-surface-2 border border-border text-text-primary font-bold text-xs hover:border-accent touch-target min-h-[44px]"
             >
               بستن
-            </button>
+            </Button>
           </div>
         </div>
       </BottomSheet>

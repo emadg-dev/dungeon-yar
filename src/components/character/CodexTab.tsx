@@ -1,3 +1,5 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import React, { useState } from 'react';
 import { NPC, ItemLibraryEntry, LocationEntry, Character, Quest } from '../../types';
 import { SEED_RULES } from '../../data/seed';
@@ -105,7 +107,7 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         wrapperClassName="surface-card rounded-[14px] p-1.5"
         className="gap-1.5"
       >
-        <button
+        <Button
           type="button"
           data-key="quests"
           onClick={() => setSubTab('quests')}
@@ -117,9 +119,9 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         >
           <Scroll className="w-3.5 h-3.5 shrink-0" />
           <span className="whitespace-nowrap shrink-0">مأموریت‌ها ({quests.length})</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           data-key="locations"
           onClick={() => setSubTab('locations')}
@@ -131,9 +133,9 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         >
           <MapPin className="w-3.5 h-3.5 shrink-0" />
           <span className="whitespace-nowrap shrink-0">مکان‌ها ({revealedLocations.length})</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           data-key="handouts"
           onClick={() => setSubTab('handouts')}
@@ -145,9 +147,9 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         >
           <MapIcon className="w-3.5 h-3.5 shrink-0" />
           <span className="whitespace-nowrap shrink-0">اسناد و نقشه‌ها</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           data-key="items"
           onClick={() => setSubTab('items')}
@@ -159,9 +161,9 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         >
           <Sparkles className="w-3.5 h-3.5 shrink-0" />
           <span className="whitespace-nowrap shrink-0">اشیاء ({revealedItems.length})</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           data-key="creatures"
           onClick={() => setSubTab('creatures')}
@@ -173,9 +175,9 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         >
           <Users className="w-3.5 h-3.5 shrink-0" />
           <span className="whitespace-nowrap shrink-0">موجودات ({revealedNpcs.length})</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           data-key="rules"
           onClick={() => setSubTab('rules')}
@@ -187,9 +189,9 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         >
           <BookOpen className="w-3.5 h-3.5 shrink-0" />
           <span className="whitespace-nowrap shrink-0">قوانین ({SEED_RULES.length})</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           data-key="calendar"
           onClick={() => setSubTab('calendar')}
@@ -201,9 +203,9 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         >
           <Calendar className="w-3.5 h-3.5 shrink-0" />
           <span className="whitespace-nowrap shrink-0">گاهشمار</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
           data-key="factions"
           onClick={() => setSubTab('factions')}
@@ -215,7 +217,7 @@ export const CodexTab: React.FC<CodexTabProps> = ({
         >
           <Compass className="w-3.5 h-3.5 shrink-0" />
           <span className="whitespace-nowrap shrink-0">جناح‌ها</span>
-        </button>
+        </Button>
       </ScrollableRow>
 
       {/* Quests Inner Tab */}
@@ -243,7 +245,7 @@ export const CodexTab: React.FC<CodexTabProps> = ({
       {/* Search Bar for Other Tabs */}
       {subTab !== 'quests' && subTab !== 'handouts' && (
         <div className="relative">
-          <input
+          <Input noWrapper
             type="text"
             placeholder="جستجو در دانشنامه زروانیا..."
             value={searchQuery}

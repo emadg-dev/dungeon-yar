@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, useDeferredValue, startTransition } from 'react';
 import { LocationEntry, LocationRegion } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -128,7 +132,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
       <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-text-muted absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
+          <Input noWrapper
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -137,19 +141,19 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
           />
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={handleOpenCreate}
           className="bg-accent text-on-accent font-extrabold px-4 py-2.5 rounded-[12px] flex items-center justify-center gap-2 hover:bg-accent-hover transition shadow-md touch-target min-w-[44px] shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>مکان جدید</span>
-        </button>
+        </Button>
       </div>
 
       {/* Region Filter Chips */}
       <ScrollableRow activeKey={selectedRegion} className="items-center gap-1.5 pb-1">
-        <button
+        <Button
           type="button"
           data-scroll-key="all"
           onClick={() => {
@@ -164,11 +168,11 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
           }`}
         >
           همه ({locations.length})
-        </button>
+        </Button>
         {REGION_OPTIONS.map(r => {
           const count = locations.filter(l => l.region === r).length;
           return (
-            <button
+            <Button
               type="button"
               key={r}
               data-scroll-key={r}
@@ -184,7 +188,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               }`}
             >
               {r} ({count})
-            </button>
+            </Button>
           );
         })}
       </ScrollableRow>
@@ -213,7 +217,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
                   </div>
                 </div>
 
-                <button
+                <Button
                   type="button"
                   onClick={() => handleToggleRevealed(loc)}
                   title={loc.revealed ? 'آشکار برای بازیکنان (کلیک جهت پنهان‌سازی)' : 'مخفی از بازیکنان (کلیک جهت آشکارسازی)'}
@@ -224,7 +228,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
                   }`}
                 >
                   {loc.revealed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                </button>
+                </Button>
               </div>
 
               {loc.description && (
@@ -245,15 +249,15 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               <span>{loc.revealed ? 'آشکار در دانشنامه' : 'مخفی در دانشنامه'}</span>
 
               <div className="flex items-center gap-1.5">
-                <button
+                <Button
                   type="button"
                   onClick={() => handleOpenEdit(loc)}
                   className="p-1.5 rounded-[6px] hover:bg-surface-2 text-text-primary transition touch-target min-w-[44px]"
                   title="ویرایش مکان"
                 >
                   <Edit3 className="w-4 h-4" />
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => {
                     if (confirm(`آیا از حذف مکان "${loc.name}" اطمینان دارید؟`)) {
@@ -264,7 +268,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
                   title="حذف مکان"
                 >
                   <Trash2 className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -292,7 +296,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
             <label className="block text-xs font-bold text-text-muted mb-1">
               نام مکان <span className="text-danger">*</span>
             </label>
-            <input
+            <Input noWrapper
               type="text"
               required
               value={formData.name || ''}
@@ -306,7 +310,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
             <label className="block text-xs font-bold text-text-muted mb-1">
               اقلیم و منطقه
             </label>
-            <select
+            <Select noWrapper
               value={formData.region || 'ورنا'}
               onChange={(e) => setFormData(prev => ({ ...prev, region: e.target.value as LocationRegion }))}
               className="w-full bg-surface text-text-primary p-2.5 rounded-[10px] border border-border focus:border-accent focus:outline-none text-sm touch-target min-w-[44px]"
@@ -314,14 +318,14 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               {REGION_OPTIONS.map(r => (
                 <option key={r} value={r}>{r}</option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>
             <label className="block text-xs font-bold text-text-muted mb-1">
               توضیحات عمومی (قابل مشاهده برای بازیکنان پس از آشکارسازی)
             </label>
-            <textarea
+            <Textarea noWrapper
               rows={3}
               value={formData.description || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
@@ -335,7 +339,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               <Lock className="w-3.5 h-3.5" />
               <span>یادداشت‌های محرمانه دانجن مستر (هرگز به بازیکنان نمایش داده نمی‌شود)</span>
             </label>
-            <textarea
+            <Textarea noWrapper
               rows={2}
               value={formData.dmNotes || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, dmNotes: e.target.value }))}
@@ -348,7 +352,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
             <label className="block text-xs font-bold text-text-muted mb-1">
               نشانی تصویر یا نقشه (اختیاری)
             </label>
-            <input
+            <Input noWrapper
               type="text"
               value={formData.imageUrl || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
@@ -362,7 +366,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               <div className="text-sm font-bold text-text-primary">آشکار برای بازیکنان</div>
               <div className="text-xs text-text-muted">در صورت فعال بودن، در بخش مکان‌های دانشنامه بازیکن نمایش داده می‌شود.</div>
             </div>
-            <input
+            <Input noWrapper
               type="checkbox"
               checked={!!formData.revealed}
               onChange={(e) => setFormData(prev => ({ ...prev, revealed: e.target.checked }))}
@@ -371,7 +375,7 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
           </div>
 
           <div className="flex gap-2 pt-2">
-            <button
+            <Button
               type="button"
               onClick={() => {
                 setIsCreating(false);
@@ -380,14 +384,14 @@ export const DmLocationManager: React.FC<DmLocationManagerProps> = ({
               className="flex-1 py-2.5 rounded-[10px] border border-border text-text-muted font-bold text-sm hover:text-text-primary transition touch-target min-w-[44px]"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isSubmitting || !formData.name?.trim()}
               className="flex-1 py-2.5 rounded-[10px] bg-accent text-on-accent font-extrabold text-sm hover:bg-accent-hover transition disabled:opacity-50 touch-target min-w-[44px]"
             >
               {isSubmitting ? 'در حال ذخیره...' : editingLocation ? 'ثبت تغییرات' : 'ایجاد مکان'}
-            </button>
+            </Button>
           </div>
         </form>
       </BottomSheet>

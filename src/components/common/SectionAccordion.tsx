@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, LucideIcon } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 interface SectionAccordionProps {
   title: string;
@@ -27,7 +28,7 @@ export const SectionAccordion: React.FC<SectionAccordionProps> = ({
   return (
     <div className={`surface-card overflow-hidden transition-all duration-150 ${className}`} dir="rtl">
       {/* Header bar */}
-      <button
+      <Button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="w-full p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-2 text-start cursor-pointer hover:bg-surface-2/60 transition-colors duration-150 touch-target min-w-[44px]"
@@ -59,7 +60,7 @@ export const SectionAccordion: React.FC<SectionAccordionProps> = ({
             <ChevronDown className="w-4 h-4" />
           </div>
         </div>
-      </button>
+      </Button>
 
       {/* Collapsible Content */}
       {isOpen && (

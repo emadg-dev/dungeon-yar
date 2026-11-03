@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
 import React, { useState, useEffect } from 'react';
 import {
   FactionReputation,
@@ -251,31 +254,31 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
             onClick={loadData}
             title="بازخوانی"
             className="p-2 rounded-lg bg-surface-2 border border-border text-text-muted hover:text-text-primary transition"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
+          </Button>
 
           {isDm && (
-            <button
+            <Button
               type="button"
               onClick={() => setCreateModal(prev => ({ ...prev, isOpen: true }))}
               className="px-3.5 py-2 rounded-xl bg-accent text-on-accent font-extrabold text-xs flex items-center gap-1.5 shadow-sm hover:brightness-110 active:scale-95 transition"
             >
               <Plus className="w-4 h-4" />
               <span>ردیابی جناح جدید</span>
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
       {/* Target Filter Tabs */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-        <button
+        <Button
           type="button"
           onClick={() => setTargetFilter('all')}
           className={`px-3 py-1.5 rounded-lg font-bold transition whitespace-nowrap ${
@@ -285,8 +288,8 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
           }`}
         >
           همه مسیرها ({reputations.length})
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => setTargetFilter('party')}
           className={`px-3 py-1.5 rounded-lg font-bold transition whitespace-nowrap flex items-center gap-1 ${
@@ -297,10 +300,10 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
         >
           <Users className="w-3.5 h-3.5" />
           <span>کل گروه</span>
-        </button>
+        </Button>
 
         {participations.map(p => (
-          <button
+          <Button
             type="button"
             key={p.id}
             onClick={() => setTargetFilter(p.id)}
@@ -312,7 +315,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
           >
             <User className="w-3.5 h-3.5" />
             <span>{p.className ? `${p.className} (${p.id.slice(0, 4)})` : p.id}</span>
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -425,18 +428,18 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
 
                 {/* Footer action buttons */}
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/60 text-xs">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleOpenLogs(rep)}
                     className="text-text-muted hover:text-text-primary flex items-center gap-1 transition"
                   >
                     <History className="w-3.5 h-3.5" />
                     <span>تاریخچه رویدادها</span>
-                  </button>
+                  </Button>
 
                   {isDm && (
                     <div className="flex items-center gap-1.5">
-                      <button
+                      <Button
                         type="button"
                         onClick={() => handleToggleVisibility(rep)}
                         title={rep.visible ? 'پنهان کردن از بازیکنان' : 'نمایش برای بازیکنان'}
@@ -447,9 +450,9 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                         }`}
                       >
                         {rep.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setAdjustModal({
                           isOpen: true,
@@ -462,15 +465,15 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                       >
                         <Sliders className="w-3.5 h-3.5" />
                         <span>تغییر شهرت</span>
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
                         type="button"
                         onClick={() => handleDeleteReputation(rep.id)}
                         className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10 transition"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -493,7 +496,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
             </label>
             <div className="flex items-center gap-2">
               {[-20, -10, -5, +5, +10, +20].map(val => (
-                <button
+                <Button
                   type="button"
                   key={val}
                   onClick={() => setAdjustModal(prev => ({ ...prev, delta: val }))}
@@ -506,10 +509,10 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                   }`}
                 >
                   {val > 0 ? `+${val}` : val}
-                </button>
+                </Button>
               ))}
             </div>
-            <input
+            <Input noWrapper
               type="number"
               value={adjustModal.delta}
               onChange={e => setAdjustModal(prev => ({ ...prev, delta: Number(e.target.value) }))}
@@ -521,7 +524,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
             <label className="block text-xs font-bold text-text-primary mb-1.5">
               دلیل تغییر شهرت
             </label>
-            <input
+            <Input noWrapper
               type="text"
               placeholder="مثلاً: کمک به نجات کاروان موبدان در کویر خاموش"
               value={adjustModal.reason}
@@ -532,20 +535,20 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
           </div>
 
           <div className="pt-2 flex items-center justify-end gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => setAdjustModal(prev => ({ ...prev, isOpen: false }))}
               className="px-4 py-2 rounded-xl text-xs font-bold text-text-muted hover:text-text-primary"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={adjustModal.submitting}
               className="px-5 py-2.5 rounded-xl bg-accent text-on-accent font-extrabold text-xs shadow-sm disabled:opacity-50"
             >
               {adjustModal.submitting ? 'در حال ثبت...' : 'ثبت تغییر'}
-            </button>
+            </Button>
           </div>
         </form>
       </BottomSheet>
@@ -597,7 +600,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
         <form onSubmit={handleCreateReputation} className="p-4 space-y-4" dir="rtl">
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1.5">انتخاب جناح</label>
-            <select
+            <Select noWrapper
               value={createModal.factionId}
               onChange={e => setCreateModal(prev => ({ ...prev, factionId: e.target.value }))}
               required
@@ -609,12 +612,12 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                   {f.name} ({f.region || 'بدون منطقه'})
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1.5">مخاطب مسیر شهرت</label>
-            <select
+            <Select noWrapper
               value={createModal.participationId}
               onChange={e => setCreateModal(prev => ({ ...prev, participationId: e.target.value }))}
               className="w-full px-3 py-2 rounded-xl bg-surface border border-border text-xs text-text-primary outline-none"
@@ -625,13 +628,13 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
                   شخصیت خاص: {p.className ? `${p.className} (${p.id.slice(0, 4)})` : p.id}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div className="grid grid-cols-3 gap-2">
             <div>
               <label className="block text-xs text-text-muted mb-1">امتیاز اولیه</label>
-              <input
+              <Input noWrapper
                 type="number"
                 value={createModal.initialValue}
                 onChange={e => setCreateModal(prev => ({ ...prev, initialValue: Number(e.target.value) }))}
@@ -640,7 +643,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
             </div>
             <div>
               <label className="block text-xs text-text-muted mb-1">حداقل (Min)</label>
-              <input
+              <Input noWrapper
                 type="number"
                 value={createModal.min}
                 onChange={e => setCreateModal(prev => ({ ...prev, min: Number(e.target.value) }))}
@@ -649,7 +652,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
             </div>
             <div>
               <label className="block text-xs text-text-muted mb-1">حداکثر (Max)</label>
-              <input
+              <Input noWrapper
                 type="number"
                 value={createModal.max}
                 onChange={e => setCreateModal(prev => ({ ...prev, max: Number(e.target.value) }))}
@@ -659,7 +662,7 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
           </div>
 
           <div className="flex items-center gap-2 pt-1">
-            <input
+            <Input noWrapper
               type="checkbox"
               id="visibleCheck"
               checked={createModal.visible}
@@ -672,20 +675,20 @@ export const FactionReputationManager: React.FC<FactionReputationManagerProps> =
           </div>
 
           <div className="pt-2 flex items-center justify-end gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => setCreateModal(prev => ({ ...prev, isOpen: false }))}
               className="px-4 py-2 rounded-xl text-xs font-bold text-text-muted"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={createModal.submitting}
               className="px-5 py-2.5 rounded-xl bg-accent text-on-accent font-extrabold text-xs shadow-sm"
             >
               {createModal.submitting ? 'در حال ثبت...' : 'ایجاد ردیاب شهرت'}
-            </button>
+            </Button>
           </div>
         </form>
       </BottomSheet>

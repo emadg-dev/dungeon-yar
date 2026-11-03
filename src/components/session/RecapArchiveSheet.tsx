@@ -1,3 +1,5 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import React, { useState, useMemo } from 'react';
 import { SessionRecap, Session, Campaign, User, CampaignRole, NPC, LocationEntry, CampaignNote } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -78,7 +80,7 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-text-muted" />
-            <input
+            <Input noWrapper
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -86,18 +88,18 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
               className="w-full ps-9 pe-9 py-2.5 rounded-[12px] bg-surface border border-border text-xs text-text-primary placeholder-border-strong focus:outline-none focus:border-accent transition"
             />
             {searchQuery && (
-              <button
+              <Button
                 type="button"
                 onClick={() => setSearchQuery('')}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"
               >
                 <X className="w-3.5 h-3.5" />
-              </button>
+              </Button>
             )}
           </div>
 
           {canCreate && onOpenCreateRecap && (
-            <button
+            <Button
               type="button"
               onClick={onOpenCreateRecap}
               className="py-2.5 px-3.5 rounded-[12px] btn-primary-amber text-xs font-bold flex items-center gap-1.5 shrink-0 touch-target min-w-[44px]"
@@ -105,7 +107,7 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
               <Feather className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">نگارش خلاصه</span>
               <span className="sm:hidden">ثبت</span>
-            </button>
+            </Button>
           )}
         </div>
 
@@ -143,17 +145,17 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
                 {canUserEditRecap(activeRecap, userRole, currentUser?.id) && (
                   <>
                     {onEditRecap && (
-                      <button
+                      <Button
                         type="button"
                         onClick={() => onEditRecap(activeRecap)}
                         className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition touch-target min-w-[44px]"
                         title="ویرایش"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
-                      </button>
+                      </Button>
                     )}
                     {onDeleteRecap && (
-                      <button
+                      <Button
                         type="button"
                         onClick={() => handleDelete(activeRecap.id)}
                         disabled={deletingId === activeRecap.id}
@@ -161,18 +163,18 @@ export const RecapArchiveSheet: React.FC<RecapArchiveSheetProps> = ({
                         title="حذف"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      </Button>
                     )}
                   </>
                 )}
-                <button
+                <Button
                   type="button"
                   onClick={() => setSelectedRecapId(null)}
                   className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition touch-target min-w-[44px]"
                   title="بستن پنجره مطالعه"
                 >
                   <X className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
 

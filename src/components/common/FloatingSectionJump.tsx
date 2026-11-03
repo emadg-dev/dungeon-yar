@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { Bookmark, ChevronUp, X } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 export interface SectionItem {
   id: string;
@@ -54,19 +55,19 @@ export const FloatingSectionJump: React.FC<FloatingSectionJumpProps> = ({
               <Bookmark className="w-3.5 h-3.5" />
               پرش به بخش
             </span>
-            <button
+            <Button
               type="button"
               onClick={() => setIsOpen(false)}
               className="p-1 rounded-lg text-text-muted hover:text-text-primary transition touch-target min-w-[28px] min-h-[28px] flex items-center justify-center"
               aria-label="بستن منوی پرش"
             >
               <X className="w-3.5 h-3.5" />
-            </button>
+            </Button>
           </div>
 
           <div className="space-y-1 max-h-56 overflow-y-auto no-scrollbar py-0.5">
             {sections.map(sec => (
-              <button
+              <Button
                 key={sec.id}
                 type="button"
                 onClick={() => handleJump(sec.id)}
@@ -78,14 +79,14 @@ export const FloatingSectionJump: React.FC<FloatingSectionJumpProps> = ({
                 ) : (
                   <ChevronUp className="w-3.5 h-3.5 text-text-muted shrink-0" />
                 )}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
       )}
 
       {/* Floating button */}
-      <button
+      <Button
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
         aria-expanded={isOpen}
@@ -95,7 +96,7 @@ export const FloatingSectionJump: React.FC<FloatingSectionJumpProps> = ({
         <Bookmark className="w-4 h-4 text-accent" />
         <span className="text-xs font-extrabold whitespace-nowrap">بخش‌ها</span>
         <ChevronUp className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180 text-accent' : 'text-text-muted'}`} />
-      </button>
+      </Button>
     </div>
   );
 };

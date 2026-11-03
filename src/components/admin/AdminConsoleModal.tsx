@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
 import React, { useState, useEffect } from 'react';
 import { User, AdminUserItem, AdminCampaignItem, InstanceSettings, StorageStats, CleanupReport } from '../../types';
 import { api } from '../../services/api';
@@ -247,7 +250,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
           wrapperClassName="border-b border-border bg-surface"
           className="p-2 gap-1.5"
         >
-          <button
+          <Button 
             data-key="users"
             onClick={() => setActiveTab('users')}
             className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
@@ -258,9 +261,9 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
           >
             <Users className="w-4 h-4 shrink-0" />
             <span className="whitespace-nowrap shrink-0">کاربران ({users.length})</span>
-          </button>
+          </Button>
 
-          <button
+          <Button 
             data-key="campaigns"
             onClick={() => setActiveTab('campaigns')}
             className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
@@ -271,9 +274,9 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
           >
             <Castle className="w-4 h-4 shrink-0" />
             <span className="whitespace-nowrap shrink-0">کمپین‌ها ({campaigns.length})</span>
-          </button>
+          </Button>
 
-          <button
+          <Button 
             data-key="settings"
             onClick={() => setActiveTab('settings')}
             className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
@@ -284,9 +287,9 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
           >
             <Settings className="w-4 h-4 shrink-0" />
             <span className="whitespace-nowrap shrink-0">تنظیمات سامانه</span>
-          </button>
+          </Button>
 
-          <button
+          <Button 
             data-key="storage"
             onClick={() => setActiveTab('storage')}
             className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
@@ -297,9 +300,9 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
           >
             <HardDrive className="w-4 h-4 shrink-0" />
             <span className="whitespace-nowrap shrink-0">پایش ذخیره‌سازی D1</span>
-          </button>
+          </Button>
 
-          <button
+          <Button 
             data-key="cleanup"
             onClick={() => setActiveTab('cleanup')}
             className={`py-2 px-3.5 rounded-[10px] text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start transition touch-target min-w-[44px] min-h-[44px] ${
@@ -310,17 +313,17 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
           >
             <Trash2 className="w-4 h-4 shrink-0" />
             <span className="whitespace-nowrap shrink-0">پاک‌سازی داده‌های یتیم</span>
-          </button>
+          </Button>
 
           <div className="ms-auto pe-1 shrink-0">
-            <button
+            <Button 
               onClick={() => loadTabData(activeTab)}
               disabled={loading}
               className="p-2 rounded-[8px] bg-surface-2 text-text-muted hover:text-text-primary border border-border touch-target min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0"
               title="بارگذاری مجدد"
             >
               <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? 'animate-spin text-accent' : ''}`} />
-            </button>
+            </Button>
           </div>
         </ScrollableRow>
 
@@ -330,13 +333,13 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
           {activeTab === 'users' && (
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-                <input
+                <Input noWrapper 
                   type="text"
                   value={userSearch}
                   onChange={(e) => setUserSearch(e.target.value)}
                   placeholder="جستجو بر اساس نام یا ایمیل کاربر..."
                   className="py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary placeholder-text-disabled focus:border-accent outline-none min-h-[44px]"
-                />
+                 />
                 <span className="text-xs text-text-muted text-end">
                   نمایش {filteredUsers.length} از {users.length} کاربر
                 </span>
@@ -350,28 +353,28 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                       <KeyRound className="w-4 h-4" />
                       <span>لینک تغییر رمز یک‌بارمصرف (معتبر تا 24 ساعت)</span>
                     </span>
-                    <button
+                    <Button 
                       onClick={() => setGeneratedReset(null)}
                       className="text-xs text-text-muted hover:text-text-primary"
                     >
                       بستن
-                    </button>
+                    </Button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <input
+                    <Input noWrapper 
                       type="text"
                       readOnly
                       value={generatedReset.url}
                       className="flex-1 py-1.5 px-3 rounded-[8px] bg-surface border border-border text-xs text-text-primary text-end outline-none"
                       dir="ltr"
-                    />
-                    <button
+                     />
+                    <Button 
                       onClick={handleCopyResetLink}
                       className="py-1.5 px-3 rounded-[8px] btn-primary-amber text-xs font-bold flex items-center gap-1 touch-target min-w-[44px] min-h-[40px]"
                     >
                       {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                       <span>{copiedLink ? 'کپی شد' : 'کپی لینک'}</span>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -420,26 +423,26 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 flex-wrap">
-                      <button
+                      <Button 
                         onClick={() => handleGenerateResetLink(u.id)}
                         className="py-1.5 px-2.5 rounded-[8px] bg-surface border border-border hover:border-accent text-xs font-bold text-text-primary flex items-center gap-1 touch-target min-w-[44px] min-h-[44px]"
                         title="تولید لینک یکبارمصرف تغییر رمز"
                       >
                         <KeyRound className="w-3.5 h-3.5 text-accent" />
                         <span>لینک بازنشانی</span>
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button 
                         onClick={() => handleRevokeSessions(u.id)}
                         className="py-1.5 px-2.5 rounded-[8px] bg-surface border border-border hover:border-danger text-xs font-bold text-text-primary flex items-center gap-1 touch-target min-w-[44px] min-h-[44px]"
                         title="لغو تمام نشست‌های فعال این کاربر"
                       >
                         <Ban className="w-3.5 h-3.5 text-danger" />
                         <span>خاتمه نشست‌ها</span>
-                      </button>
+                      </Button>
 
                       {u.id !== currentUser.id && (
-                        <button
+                        <Button 
                           onClick={() => handleToggleUserStatus(u.id)}
                           className={`py-1.5 px-2.5 rounded-[8px] text-xs font-bold border flex items-center gap-1 touch-target min-w-[44px] min-h-[44px] ${
                             u.status === 'active'
@@ -448,7 +451,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                           }`}
                         >
                           <span>{u.status === 'active' ? 'غیرفعال‌سازی' : 'فعال‌سازی'}</span>
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -468,13 +471,13 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
               </div>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-                <input
+                <Input noWrapper 
                   type="text"
                   value={campaignSearch}
                   onChange={(e) => setCampaignSearch(e.target.value)}
                   placeholder="جستجو بر اساس نام کمپین یا مالک..."
                   className="py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary placeholder-text-disabled focus:border-accent outline-none min-h-[44px]"
-                />
+                 />
                 <span className="text-xs text-text-muted text-end">
                   نمایش {filteredCampaigns.length} از {campaigns.length} کمپین
                 </span>
@@ -520,23 +523,23 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                     {/* Actions */}
                     <div className="flex items-center gap-2">
                       {c.status !== 'archived' ? (
-                        <button
+                        <Button 
                           onClick={() => handleArchiveCampaign(c.id)}
                           className="py-1.5 px-3 rounded-[8px] bg-surface border border-border hover:border-danger text-xs font-bold text-danger flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
                           title="بایگانی کردن کمپین"
                         >
                           <Archive className="w-3.5 h-3.5" />
                           <span>بایگانی</span>
-                        </button>
+                        </Button>
                       ) : (
-                        <button
+                        <Button 
                           onClick={() => handleRestoreCampaign(c.id)}
                           className="py-1.5 px-3 rounded-[8px] bg-surface border border-border hover:border-success text-xs font-bold text-success flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
                           title="بازگردانی کمپین به حالت فعال"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
                           <span>بازگردانی</span>
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -557,77 +560,77 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                     <span className="text-xs font-bold text-text-primary block">مجوز ایجاد کمپین جدید توسط دی‌ام‌ها</span>
                     <span className="text-xs text-text-muted">در صورت غیرفعال بودن، فقط مدیر می‌تواند کمپین جدید بسازد</span>
                   </div>
-                  <input
+                  <Input noWrapper 
                     type="checkbox"
                     checked={settings.allowCampaignCreation}
                     onChange={(e) => setSettings({ ...settings, allowCampaignCreation: e.target.checked })}
                     className="w-5 h-5 accent-accent cursor-pointer"
-                  />
+                   />
                 </div>
 
                 {/* Registration Mode */}
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-text-primary">شیوه ثبت‌نام کاربران</label>
-                  <select
+                  <Select noWrapper 
                     value={settings.registrationMode}
                     onChange={(e) => setSettings({ ...settings, registrationMode: e.target.value as any })}
                     className="w-full py-2.5 px-3 rounded-[10px] bg-surface border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
                   >
                     <option value="invite">دعوت‌محور (فقط با داشتن کد دعوت معتبر)</option>
                     <option value="open">ثبت‌نام آزاد (برای همه کاربران بدون کد دعوت)</option>
-                  </select>
+                  </Select>
                 </div>
 
                 {/* Per User Media Quota */}
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-text-primary">سهمیه رسانه برای هر کاربر (مگابایت)</label>
-                  <input
+                  <Input noWrapper 
                     type="number"
                     min="1"
                     max="100"
                     value={Math.round(settings.perUserMediaQuotaBytes / (1024 * 1024))}
                     onChange={(e) => setSettings({ ...settings, perUserMediaQuotaBytes: Number(e.target.value) * 1024 * 1024 })}
                     className="w-full py-2 px-3 rounded-[10px] bg-surface border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
-                  />
+                   />
                   <p className="text-xs text-text-muted">تصاویر آواتار و پرتره‌های اختصاصی کاربر</p>
                 </div>
 
                 {/* Per Campaign Media Quota */}
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-text-primary">سهمیه رسانه برای هر کمپین (مگابایت)</label>
-                  <input
+                  <Input noWrapper 
                     type="number"
                     min="5"
                     max="500"
                     value={Math.round(settings.perCampaignMediaQuotaBytes / (1024 * 1024))}
                     onChange={(e) => setSettings({ ...settings, perCampaignMediaQuotaBytes: Number(e.target.value) * 1024 * 1024 })}
                     className="w-full py-2 px-3 rounded-[10px] bg-surface border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
-                  />
+                   />
                   <p className="text-xs text-text-muted">تصاویر نقشه‌ها، دست‌نوشته‌ها و مدارک کمپین</p>
                 </div>
 
                 {/* Storage Warning Threshold */}
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-text-primary">آستانه هشدار سهمیه پایگاه داده D1 (مگابایت)</label>
-                  <input
+                  <Input noWrapper 
                     type="number"
                     min="100"
                     max="1000"
                     value={Math.round(settings.storageWarningThresholdBytes / (1024 * 1024))}
                     onChange={(e) => setSettings({ ...settings, storageWarningThresholdBytes: Number(e.target.value) * 1024 * 1024 })}
                     className="w-full py-2 px-3 rounded-[10px] bg-surface border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
-                  />
+                   />
                   <p className="text-xs text-text-muted">سقف رایگان پلن کلودفلر D1 معادل 1000 مگابایت (1 گیگابایت) است.</p>
                 </div>
               </div>
 
-              <button
+              <Button 
                 type="submit"
                 disabled={settingsSaving}
                 className="py-2.5 px-5 rounded-[10px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[44px]"
               >
                 {settingsSaving ? 'در حال ذخیره‌سازی...' : 'ذخیره تغییرات تنظیمات'}
-              </button>
+              </Button>
             </form>
           )}
 
@@ -733,16 +736,16 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
               </div>
 
               <div className="flex items-center gap-3">
-                <button
+                <Button 
                   type="button"
                   onClick={() => handleRunCleanup(true)}
                   disabled={cleanupExecuting}
                   className="py-2.5 px-4 rounded-[10px] bg-surface-2 border border-border hover:border-accent text-xs font-bold text-text-primary touch-target min-w-[44px] min-h-[44px]"
                 >
                   بررسی مجدد (پیش‌نمایش)
-                </button>
+                </Button>
 
-                <button
+                <Button 
                   type="button"
                   onClick={() => handleRunCleanup(false)}
                   disabled={cleanupExecuting || cleanupReport.cleanedTotal === 0}
@@ -750,7 +753,7 @@ export const AdminConsoleModal: React.FC<AdminConsoleModalProps> = ({
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>اجرای پاک‌سازی دائمی</span>
-                </button>
+                </Button>
               </div>
             </div>
           )}

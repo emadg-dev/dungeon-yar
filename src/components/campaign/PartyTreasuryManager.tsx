@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, useEffect } from 'react';
 import {
   PartyItem,
@@ -334,33 +338,33 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
             onClick={loadData}
             title="بازخوانی خزانه"
             className="p-2 rounded-lg bg-surface-2 border border-border text-text-muted hover:text-text-primary transition"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             onClick={handleOpenLogs}
             className="px-3 py-2 rounded-xl bg-surface-2 border border-border text-xs font-bold text-text-primary hover:bg-surface-2 flex items-center gap-1.5 transition"
           >
             <History className="w-3.5 h-3.5 text-accent" />
             <span>گزارش فعالیت‌ها</span>
-          </button>
+          </Button>
 
           {permissions.canModify && (
-            <button
+            <Button
               type="button"
               onClick={() => setAddItemModal(true)}
               className="px-3.5 py-2 rounded-xl bg-accent text-on-accent font-extrabold text-xs flex items-center gap-1.5 shadow-sm hover:brightness-110 active:scale-95 transition"
             >
               <Plus className="w-4 h-4" />
               <span>افزودن آیتم به خزانه</span>
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -375,13 +379,13 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
               <p className="mt-0.5 leading-relaxed">{concurrencyError}</p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
             onClick={loadData}
             className="px-3 py-1.5 rounded-lg bg-amber-500 text-black font-extrabold text-xs shrink-0 hover:bg-amber-400 transition"
           >
             بازخوانی داده‌ها
-          </button>
+          </Button>
         </div>
       )}
 
@@ -402,14 +406,14 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
           </div>
 
           {permissions.canModify && (
-            <button
+            <Button
               type="button"
               onClick={handleOpenCurrencyModal}
               className="px-2.5 py-1 rounded-lg bg-surface-2 border border-border text-xs font-bold text-accent-hover hover:bg-surface-2 flex items-center gap-1 transition"
             >
               <Edit2 className="w-3 h-3" />
               <span>ویرایش موجودی</span>
-            </button>
+            </Button>
           )}
         </div>
 
@@ -487,7 +491,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
                 <div className="flex items-center gap-1.5">
                   {/* Player or DM can take item into their character backpack */}
                   {activeCharacter && permissions.canModify && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setWithdrawModal({
                         isOpen: true,
@@ -500,18 +504,18 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
                     >
                       <ArrowDownLeft className="w-3.5 h-3.5" />
                       <span>برداشتن به کوله</span>
-                    </button>
+                    </Button>
                   )}
 
                   {permissions.canModify && isDm && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleDeleteItem(item)}
                       className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10 transition"
                       title="حذف از خزانه"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -543,7 +547,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
                     <p className="font-bold text-text-primary truncate">{ci.name}</p>
                     <p className="text-xs text-text-muted">موجودی: {ci.quantity}</p>
                   </div>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setDepositModal({
                       isOpen: true,
@@ -554,7 +558,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
                     className="px-2 py-1 rounded-lg bg-surface-2 border border-border text-xs font-bold text-accent-hover hover:bg-surface-2 shrink-0"
                   >
                     واریز به خزانه
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
@@ -573,7 +577,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
         <form onSubmit={handleAddItem} className="p-4 space-y-3.5" dir="rtl">
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">نام آیتم</label>
-            <input
+            <Input noWrapper
               type="text"
               placeholder="مثلاً: مشعل، طناب ابریشمی، معجون شفا"
               value={newItemName}
@@ -586,7 +590,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">تعداد</label>
-              <input
+              <Input noWrapper
                 type="number"
                 min="1"
                 value={newItemQuantity}
@@ -597,7 +601,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
             </div>
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">دسته‌بندی</label>
-              <select
+              <Select noWrapper
                 value={newItemCategory}
                 onChange={e => setNewItemCategory(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl bg-surface border border-border text-xs text-text-primary outline-none"
@@ -608,13 +612,13 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
                 <option value="weapon">سلاح و ابزار رزم</option>
                 <option value="armor">زره و سپر</option>
                 <option value="quest">کلید و مأموریت</option>
-              </select>
+              </Select>
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">توضیحات و ویژگی‌ها</label>
-            <textarea
+            <Textarea noWrapper
               placeholder="توضیح کوتاه درباره خواص یا منشأ آیتم..."
               value={newItemDesc}
               onChange={e => setNewItemDesc(e.target.value)}
@@ -624,19 +628,19 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
           </div>
 
           <div className="pt-2 flex items-center justify-end gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => setAddItemModal(false)}
               className="px-4 py-2 rounded-xl text-xs font-bold text-text-muted"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               className="px-5 py-2.5 rounded-xl bg-accent text-on-accent font-extrabold text-xs shadow-sm"
             >
               افزودن به خزانه
-            </button>
+            </Button>
           </div>
         </form>
       </BottomSheet>
@@ -655,7 +659,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
             <label className="block text-xs font-bold text-text-primary mb-1">
               تعداد برداشت (حداکثر موجود: {withdrawModal.item?.quantity || 1})
             </label>
-            <input
+            <Input noWrapper
               type="number"
               min="1"
               max={withdrawModal.item?.quantity || 1}
@@ -667,20 +671,20 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-2">
-            <button
+            <Button
               type="button"
               onClick={() => setWithdrawModal(prev => ({ ...prev, isOpen: false }))}
               className="px-4 py-2 rounded-xl text-xs font-bold text-text-muted"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={withdrawModal.submitting}
               className="px-5 py-2.5 rounded-xl bg-emerald-500 text-black font-extrabold text-xs shadow-sm"
             >
               {withdrawModal.submitting ? 'در حال انتقال...' : 'تأیید و برداشتن'}
-            </button>
+            </Button>
           </div>
         </form>
       </BottomSheet>
@@ -699,7 +703,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
             <label className="block text-xs font-bold text-text-primary mb-1">
               تعداد واریز (موجودی در کوله‌پشتی: {depositModal.charItem?.quantity || 1})
             </label>
-            <input
+            <Input noWrapper
               type="number"
               min="1"
               max={depositModal.charItem?.quantity || 1}
@@ -711,20 +715,20 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-2">
-            <button
+            <Button
               type="button"
               onClick={() => setDepositModal(prev => ({ ...prev, isOpen: false }))}
               className="px-4 py-2 rounded-xl text-xs font-bold text-text-muted"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={depositModal.submitting}
               className="px-5 py-2.5 rounded-xl bg-accent text-on-accent font-extrabold text-xs shadow-sm"
             >
               {depositModal.submitting ? 'در حال واریز...' : 'تأیید و واریز به خزانه'}
-            </button>
+            </Button>
           </div>
         </form>
       </BottomSheet>
@@ -740,7 +744,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
             {['gold', 'silver', 'copper', 'platinum'].map(k => (
               <div key={k} className="flex flex-wrap items-center justify-between gap-2 gap-3">
                 <label className="text-xs font-bold text-text-primary">{getCurrencyLabel(k)}</label>
-                <input
+                <Input noWrapper
                   type="number"
                   min="0"
                   value={tempBalances[k] ?? 0}
@@ -753,7 +757,7 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">یادداشت ثبت رویداد</label>
-            <input
+            <Input noWrapper
               type="text"
               placeholder="مثلاً: پاداش انجام مأموریت نجات کاروان"
               value={currencyNote}
@@ -763,19 +767,19 @@ export const PartyTreasuryManager: React.FC<PartyTreasuryManagerProps> = ({
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-2">
-            <button
+            <Button
               type="button"
               onClick={() => setCurrencyModal(false)}
               className="px-4 py-2 rounded-xl text-xs font-bold text-text-muted"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               className="px-5 py-2.5 rounded-xl bg-accent text-on-accent font-extrabold text-xs shadow-sm"
             >
               ذخیره موجودی
-            </button>
+            </Button>
           </div>
         </form>
       </BottomSheet>

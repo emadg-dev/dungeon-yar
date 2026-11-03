@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Campaign,
@@ -440,7 +444,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
       fullHeight
       maxWidth="max-w-3xl"
       headerExtra={
-        <button
+        <Button
           type="button"
           onClick={handleSaveDraft}
           disabled={isSavingDraft || isSubmitting}
@@ -449,12 +453,12 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
         >
           <Save className="w-3.5 h-3.5 text-accent" />
           <span className="hidden sm:inline">ذخیره موقت</span>
-        </button>
+        </Button>
       }
       footer={
         <div className="flex flex-wrap items-center justify-between gap-2">
           {/* Back button */}
-          <button
+          <Button
             type="button"
             onClick={handlePrevStep}
             disabled={currentStep === 1 || isSubmitting}
@@ -466,10 +470,10 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
           >
             <ChevronRight className="w-4 h-4" />
             <span>قبلی</span>
-          </button>
+          </Button>
 
           {/* Save Draft */}
-          <button
+          <Button
             type="button"
             onClick={handleSaveDraft}
             disabled={isSavingDraft || isSubmitting}
@@ -477,20 +481,20 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
           >
             <Save className="w-4 h-4" />
             <span>ذخیره و ادامه بعداً</span>
-          </button>
+          </Button>
 
           {/* Next / Submit button */}
           {currentStep < 8 ? (
-            <button
+            <Button
               type="button"
               onClick={handleNextStep}
               className="px-5 py-2.5 rounded-xl bg-accent text-on-accent text-xs font-bold hover:bg-accent-hover transition-all flex items-center gap-1 min-h-[44px] shadow-lg shadow-accent/20"
             >
               <span>گام بعدی</span>
               <ChevronLeft className="w-4 h-4" />
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting}
@@ -498,7 +502,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             >
               <Check className="w-4 h-4" />
               <span>{isSubmitting ? 'در حال ثبت...' : 'تایید نهایی و آفرینش'}</span>
-            </button>
+            </Button>
           )}
         </div>
       }
@@ -525,7 +529,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             const isActive = currentStep === s.step;
             const isDone = currentStep > s.step;
             return (
-              <button
+              <Button
                 key={s.step}
                 data-key={s.step}
                 type="button"
@@ -540,7 +544,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
               >
                 {isDone ? <Check className="w-3.5 h-3.5 text-success shrink-0" /> : <span className="shrink-0">{s.step}.</span>}
                 <span className="whitespace-nowrap shrink-0">{s.title}</span>
-              </button>
+              </Button>
             );
           })}
         </ScrollableRow>
@@ -562,7 +566,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             <Check className="w-4 h-4" />
             <span>{toastNotice}</span>
           </div>
-          <button onClick={() => setToastNotice(null)} className="text-xs text-text-muted">بستن</button>
+          <Button onClick={() => setToastNotice(null)} className="text-xs text-text-muted">بستن</Button>
         </div>
       )}
 
@@ -588,7 +592,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             {/* Character Name */}
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1.5">نام کاراکتر *</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
@@ -613,7 +617,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                 <div className="flex-1 space-y-2">
                   <div className="flex flex-wrap gap-2">
                     {PRESET_AVATARS.map((url, i) => (
-                      <button
+                      <Button
                         key={i}
                         type="button"
                         onClick={() => setPortraitUrl(url)}
@@ -630,7 +634,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                           height={40}
                           className="w-full h-full object-cover"
                         />
-                      </button>
+                      </Button>
                     ))}
                   </div>
 
@@ -716,7 +720,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
             {/* Appearance notes */}
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1.5">ویژگی‌های ظاهری و پوشش</label>
-              <textarea
+              <Textarea noWrapper
                 value={appearance}
                 onChange={e => setAppearance(e.target.value)}
                 placeholder="قد، رنگ مو و چشمان، زخم‌های کهنه، نوع جامه یا زره..."
@@ -742,14 +746,14 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                   کلاس، نقش رزمی، نحوه بقا و ویژگی‌های جادویی شما را تعیین می‌کند.
                 </p>
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowClassCompare(true)}
                 className="px-3 py-1.5 rounded-xl bg-accent/15 border border-accent/40 text-accent-hover text-xs font-bold hover:bg-accent/25 transition-all flex items-center gap-1.5 min-h-[44px]"
               >
                 <Scale className="w-3.5 h-3.5" />
                 <span>مقایسه کلاس‌ها</span>
-              </button>
+              </Button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -820,7 +824,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                 };
                 const isSelected = abilityMethod === m;
                 return (
-                  <button
+                  <Button
                     key={m}
                     type="button"
                     onClick={() => setAbilityMethod(m)}
@@ -831,7 +835,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                     }`}
                   >
                     {labels[m] || m}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -859,7 +863,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
               <div className="p-4 rounded-2xl bg-surface border border-border space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-xs font-bold text-text-primary">تاس‌های ریخته‌شده سرور:</span>
-                  <button
+                  <Button
                     type="button"
                     onClick={handleRollAbilities}
                     disabled={isRolling}
@@ -867,7 +871,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isRolling ? 'animate-spin' : ''}`} />
                     <span>ریختن تاس جدید (4d6)</span>
-                  </button>
+                  </Button>
                 </div>
 
                 {serverRolls ? (
@@ -918,7 +922,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                     {/* Editor controls */}
                     {abilityMethod === 'point_buy' && (
                       <div className="flex items-center gap-1.5">
-                        <button
+                        <Button
                           type="button"
                           onClick={() => {
                             if (baseVal > 8) {
@@ -929,9 +933,9 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                           className="w-7 h-7 rounded-lg bg-surface-2 text-text-primary disabled:opacity-30 flex items-center justify-center font-bold"
                         >
                           -
-                        </button>
+                        </Button>
                         <span className="w-6 text-center text-xs font-bold font-mono">{baseVal}</span>
-                        <button
+                        <Button
                           type="button"
                           onClick={() => {
                             if (baseVal < 15) {
@@ -942,12 +946,12 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                           className="w-7 h-7 rounded-lg bg-surface-2 text-text-primary disabled:opacity-30 flex items-center justify-center font-bold"
                         >
                           +
-                        </button>
+                        </Button>
                       </div>
                     )}
 
                     {abilityMethod === 'standard_array' && (
-                      <select
+                      <Select noWrapper
                         value={baseVal}
                         onChange={e => {
                           const val = parseInt(e.target.value, 10);
@@ -958,11 +962,11 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                         {STANDARD_ARRAY.map(score => (
                           <option key={score} value={score}>{score}</option>
                         ))}
-                      </select>
+                      </Select>
                     )}
 
                     {abilityMethod === 'manual' && (
-                      <input
+                      <Input noWrapper
                         type="number"
                         min={3}
                         max={18}
@@ -1045,7 +1049,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                   const lower = opt.toLowerCase();
                   const isChecked = selectedClassSkills.includes(lower);
                   return (
-                    <button
+                    <Button
                       key={opt}
                       type="button"
                       onClick={() => {
@@ -1065,7 +1069,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
                     >
                       <span>{opt}</span>
                       <span className="text-xs opacity-70">[کلاس]</span>
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -1249,7 +1253,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1.5">خاستگاه و زادگاه</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={origin}
                 onChange={e => setOrigin(e.target.value)}
@@ -1260,7 +1264,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1.5">اهداف و آرمان‌ها</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={goals}
                 onChange={e => setGoals(e.target.value)}
@@ -1271,7 +1275,7 @@ export const CharacterCreationWizardModal: React.FC<CharacterCreationWizardModal
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1.5">خلاصه پیش‌داستان</label>
-              <textarea
+              <Textarea noWrapper
                 value={backstorySummary}
                 onChange={e => setBackstorySummary(e.target.value)}
                 rows={3}

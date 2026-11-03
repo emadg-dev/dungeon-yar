@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
 import React, { useState, useEffect } from 'react';
 import { CampaignEndingState } from '../../types';
 import {
@@ -179,7 +182,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                 key={k}
                 className="flex items-center gap-2.5 p-2 rounded-xl bg-info border border-border hover:border-border-strong cursor-pointer transition select-none text-xs"
               >
-                <input
+                <Input noWrapper
                   type="checkbox"
                   checked={state.truthSources[k]}
                   onChange={() => toggleTruthSource(k)}
@@ -214,7 +217,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                 key={k}
                 className="flex items-center gap-2.5 p-2 rounded-xl bg-info border border-border hover:border-border-strong cursor-pointer transition select-none text-xs"
               >
-                <input
+                <Input noWrapper
                   type="checkbox"
                   checked={state.aryamanTriggers[k]}
                   onChange={() => toggleAryamanTrigger(k)}
@@ -236,7 +239,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
               اخگرها ({state.embersPercentage}٪ از 100٪)
             </span>
             <label className="flex items-center gap-1 text-xs text-accent-hover cursor-pointer font-bold">
-              <input
+              <Input noWrapper
                 type="checkbox"
                 checked={state.motherEmberObtained}
                 onChange={async () => {
@@ -268,7 +271,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
                 className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border text-xs cursor-pointer select-none"
               >
                 <div className="flex items-center gap-2">
-                  <input
+                  <Input noWrapper
                     type="checkbox"
                     checked={src.collected}
                     onChange={() => toggleEmberSource(i)}
@@ -300,57 +303,57 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border">
               <span className="text-text-primary min-w-0 truncate">مهر کلید شکسته (+1 هر کدام، حداکثر 3):</span>
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   type="button"
                   onClick={() => adjustChaos('brokenKeySeals', -1)}
                   className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >-1</button>
+                >-1</Button>
                 <span className="font-mono font-bold text-accent-hover">{state.chaos.brokenKeySeals}</span>
-                <button
+                <Button
                   type="button"
                   onClick={() => adjustChaos('brokenKeySeals', +1)}
                   className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >+1</button>
+                >+1</Button>
               </div>
             </div>
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border">
               <span className="text-text-primary">متحد اصلی کشته‌شده (+1 هر کدام، حداکثر 3):</span>
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   type="button"
                   onClick={() => adjustChaos('mainAlliesDead', -1)}
                   className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >-1</button>
+                >-1</Button>
                 <span className="font-mono font-bold text-accent-hover">{state.chaos.mainAlliesDead}</span>
-                <button
+                <Button
                   type="button"
                   onClick={() => adjustChaos('mainAlliesDead', +1)}
                   className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >+1</button>
+                >+1</Button>
               </div>
             </div>
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border">
               <span className="text-text-primary">فرقه/جناح دشمن‌شده (+1 هر کدام، حداکثر 3):</span>
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   type="button"
                   onClick={() => adjustChaos('ordersTurnedEnemy', -1)}
                   className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >-1</button>
+                >-1</Button>
                 <span className="font-mono font-bold text-accent-hover">{state.chaos.ordersTurnedEnemy}</span>
-                <button
+                <Button
                   type="button"
                   onClick={() => adjustChaos('ordersTurnedEnemy', +1)}
                   className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >+1</button>
+                >+1</Button>
               </div>
             </div>
 
             <label className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border cursor-pointer select-none">
               <span className="text-text-primary">آستانه مهارنشده سنگ‌خواب یا وردان (+1):</span>
-              <input
+              <Input noWrapper
                 type="checkbox"
                 checked={state.chaos.unrestrainedThreshold}
                 onChange={toggleChaosThreshold}
@@ -361,17 +364,17 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border">
               <span className="text-success">آشتی دادن جناح یا نجات متحد (-1 کاهش):</span>
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   type="button"
                   onClick={() => adjustChaos('reconciledOrdersOrSavedAllies', -1)}
                   className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >-1</button>
+                >-1</Button>
                 <span className="font-mono font-bold text-success">{state.chaos.reconciledOrdersOrSavedAllies}</span>
-                <button
+                <Button
                   type="button"
                   onClick={() => adjustChaos('reconciledOrdersOrSavedAllies', +1)}
                   className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >+1</button>
+                >+1</Button>
               </div>
             </div>
           </div>
@@ -381,7 +384,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
       {/* Second Half Seal Checkbox & Method */}
       <div className="p-4 rounded-2xl bg-surface border border-accent/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
         <label className="flex items-center gap-2 text-text-primary font-bold cursor-pointer select-none">
-          <input
+          <Input noWrapper
             type="checkbox"
             checked={state.secondHalfSealObtained}
             onChange={async () => {
@@ -399,7 +402,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
         {state.secondHalfSealObtained && (
           <div className="flex items-center gap-2">
             <span className="text-text-muted text-xs">نحوه دستیابی:</span>
-            <select
+            <Select noWrapper
               value={state.secondHalfSealMethod}
               onChange={async (e) => {
                 await onUpdateState({
@@ -412,7 +415,7 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
               <option value="given">اهدایی و صلح‌آمیز</option>
               <option value="defeat">پس از شکست دشمن</option>
               <option value="stolen_by_shahbaz">دزدیده‌شده توسط شهباز</option>
-            </select>
+            </Select>
           </div>
         )}
       </div>

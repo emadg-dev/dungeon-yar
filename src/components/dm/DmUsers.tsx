@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
 import React, { useState, useEffect } from 'react';
 import { User, Character } from '../../types';
 import { api } from '../../services/api';
@@ -189,20 +192,20 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
               <p className="text-xs text-text-muted">کنترل نقش‌ها، کاراکترهای واگذارشده و پیوندهای ورود</p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
             onClick={loadUsers}
             className="py-1.5 px-3 rounded-[8px] bg-surface-2 border border-border text-xs font-bold text-text-muted hover:text-text-primary touch-target min-w-[44px] flex items-center gap-1 self-start sm:self-auto"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>تازه‌سازی</span>
-          </button>
+          </Button>
         </div>
 
         {/* Search & Filter inputs */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
           <div className="relative">
-            <input
+            <Input noWrapper
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -212,7 +215,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
             <Search className="w-4 h-4 text-text-muted absolute top-3.5 start-2.5 pointer-events-none" />
           </div>
 
-          <select
+          <Select noWrapper
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
             className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
@@ -220,9 +223,9 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
             <option value="">همه نقش‌ها</option>
             <option value="player">فقط بازیکنان</option>
             <option value="dm">فقط دانجن مسترها</option>
-          </select>
+          </Select>
 
-          <select
+          <Select noWrapper
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
@@ -230,7 +233,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
             <option value="">همه وضعیت‌ها</option>
             <option value="active">فعال</option>
             <option value="disabled">غیرفعال (مسدود)</option>
-          </select>
+          </Select>
         </div>
       </div>
 
@@ -238,17 +241,17 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
       {errorMsg && (
         <div className="p-3 rounded-[10px] bg-danger/15 border border-danger/40 text-text-primary text-xs flex flex-wrap items-center justify-between gap-2">
           <span>{errorMsg}</span>
-          <button type="button" onClick={() => setErrorMsg('')} className="p-1 touch-target min-w-[44px]">
+          <Button type="button" onClick={() => setErrorMsg('')} className="p-1 touch-target min-w-[44px]">
             <X className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         </div>
       )}
       {successMsg && (
         <div className="p-3 rounded-[10px] bg-success/15 border border-success/40 text-success text-xs flex flex-wrap items-center justify-between gap-2 font-bold">
           <span>{successMsg}</span>
-          <button type="button" onClick={() => setSuccessMsg('')} className="p-1 touch-target min-w-[44px]">
+          <Button type="button" onClick={() => setSuccessMsg('')} className="p-1 touch-target min-w-[44px]">
             <X className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         </div>
       )}
 
@@ -260,33 +263,33 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
               <KeyRound className="w-4 h-4" />
               لینک یک‌بار مصرف تغییر رمز تولید شد
             </span>
-            <button
+            <Button
               type="button"
               onClick={() => setResetLinkData(null)}
               className="p-1 text-text-muted hover:text-text-primary touch-target min-w-[44px]"
             >
               <X className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
           <p className="text-xs text-text-primary/90 leading-relaxed">
             هشدار امنیتی: این پیوند تنها یک‌بار مصرف است و 24 ساعت اعتبار دارد. آن را کپی کرده و برای بازیکن ارسال فرمایید:
           </p>
           <div className="flex items-center gap-2">
-            <input
+            <Input noWrapper
               type="text"
               readOnly
               value={resetLinkData.resetLink}
               dir="ltr"
               className="flex-1 py-2 px-3 rounded-[8px] bg-surface border border-border text-xs text-text-primary font-mono select-all min-h-[44px]"
             />
-            <button
+            <Button
               type="button"
               onClick={() => copyToClipboard(resetLinkData.resetLink)}
               className="py-2 px-3.5 rounded-[8px] btn-primary-amber text-xs font-bold touch-target min-w-[44px] flex items-center gap-1 shrink-0 min-h-[44px]"
             >
               {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               <span>{copiedLink ? 'کپی شد' : 'کپی لینک'}</span>
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -352,7 +355,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
               </div>
 
               {/* Action Menu Trigger */}
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setSelectedUser(u);
@@ -362,7 +365,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
                 title="عملیات کاربر"
               >
                 <MoreVertical className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           ))
         )}
@@ -390,7 +393,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
               <p className="text-xs text-text-muted text-center py-4">هیچ شخصیتی در کمپین ثبت نشده است.</p>
             ) : (
               characters.map((c) => (
-                <button
+                <Button
                   key={c.id}
                   type="button"
                   onClick={() => handleAssignCharacter(c.id)}
@@ -403,7 +406,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
                   <span className="text-xs px-2 py-1 rounded-[6px] bg-accent/15 text-accent font-bold">
                     واگذاری
                   </span>
-                </button>
+                </Button>
               ))
             )}
           </div>

@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import React, { useState } from 'react';
 import { X, Eye, EyeOff, Users, Copy, Check, FileText, Image as ImageIcon, Map as MapIcon, Share2, Tag } from 'lucide-react';
 import { Handout, MapPin } from '../../types';
@@ -113,7 +114,7 @@ export const HandoutViewerModal: React.FC<HandoutViewerModalProps> = ({
       }
       headerExtra={
         isDm && onToggleReveal ? (
-          <button
+          <Button
             type="button"
             onClick={() => handleToggleVisibility(handout.visibility === 'revealed' ? 'hidden' : 'revealed')}
             disabled={isUpdatingVisibility}
@@ -134,7 +135,7 @@ export const HandoutViewerModal: React.FC<HandoutViewerModalProps> = ({
                 <span>آشکارسازی</span>
               </>
             )}
-          </button>
+          </Button>
         ) : undefined
       }
       maxWidth="max-w-3xl"
@@ -160,14 +161,14 @@ export const HandoutViewerModal: React.FC<HandoutViewerModalProps> = ({
                   <FileText className="w-3.5 h-3.5 text-accent" />
                   متن سند / نامه
                 </span>
-                <button
+                <Button
                   type="button"
                   onClick={handleCopyText}
                   className="px-2.5 py-1 rounded-[6px] bg-surface-2 hover:bg-surface-3 text-xs text-text-muted flex items-center gap-1.5 transition touch-target min-w-[44px]"
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copied ? 'کپی شد' : 'کپی متن'}</span>
-                </button>
+                </Button>
               </div>
 
               <div className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap selection:bg-accent/30 selection:text-white">

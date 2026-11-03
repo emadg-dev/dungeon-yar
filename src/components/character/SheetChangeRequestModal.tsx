@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState } from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Shield, Send, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -99,7 +102,7 @@ export const SheetChangeRequestModal: React.FC<SheetChangeRequestModalProps> = (
               <label className="block text-xs font-bold text-text-primary mb-1.5">
                 موضوع و بخش مورد نظر:
               </label>
-              <select
+              <Select noWrapper
                 value={selectedField}
                 onChange={e => setSelectedField(e.target.value)}
                 className="w-full p-2.5 rounded-xl bg-info border border-border text-xs text-text-primary focus:outline-none focus:border-accent"
@@ -109,14 +112,14 @@ export const SheetChangeRequestModal: React.FC<SheetChangeRequestModalProps> = (
                     {opt.label}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1.5">
                 تغییر پیشنهادی و مقدار جدید:
               </label>
-              <textarea
+              <Textarea noWrapper
                 value={proposedValue}
                 onChange={e => setProposedValue(e.target.value)}
                 placeholder="مقدار، عدد یا عنوان مدنظرتان را بنویسید (مثال: تغییر زیرکلاس به بربر توتم)..."
@@ -129,7 +132,7 @@ export const SheetChangeRequestModal: React.FC<SheetChangeRequestModalProps> = (
               <label className="block text-xs font-bold text-text-primary mb-1.5">
                 دلیل درخواست (برای راوی / DM):
               </label>
-              <textarea
+              <Textarea noWrapper
                 value={reason}
                 onChange={e => setReason(e.target.value)}
                 placeholder="توضیح دهید چرا این تغییر در این مرحله از ماجراجویی لازم یا متناسب با روایت است..."
@@ -145,14 +148,14 @@ export const SheetChangeRequestModal: React.FC<SheetChangeRequestModalProps> = (
               </div>
             )}
 
-            <button
+            <Button
               type="submit"
               disabled={isSubmitting}
               className="w-full py-3 rounded-xl bg-gradient-to-r from-warning to-accent hover:from-accent hover:to-accent-hover text-on-accent font-black text-xs transition flex items-center justify-center gap-2 touch-target min-w-[44px] min-h-[48px] shadow-lg shadow-accent/20 disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
               <span>{isSubmitting ? 'در حال ارسال...' : 'ارسال درخواست به دانجن مستر'}</span>
-            </button>
+            </Button>
           </form>
         )}
       </div>

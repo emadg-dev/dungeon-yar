@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Textarea } from '../ui/Textarea';
 import React, { useState } from 'react';
 import { ShanshinEncounter } from '../../types';
 import { Dices, Edit3, Check, Sparkles, AlertCircle } from 'lucide-react';
@@ -49,7 +52,7 @@ export const DmShanshinEncounters: React.FC<DmShanshinEncountersProps> = ({
           </p>
         </div>
 
-        <button
+        <Button
           type="button"
           disabled={rolling}
           onClick={handleRoll}
@@ -57,7 +60,7 @@ export const DmShanshinEncounters: React.FC<DmShanshinEncountersProps> = ({
         >
           <Dices className={`w-5 h-5 ${rolling ? 'animate-spin' : ''}`} />
           <span>پرتاب تاس d8 برخورد شانشین</span>
-        </button>
+        </Button>
       </div>
 
       {/* Active Rolled Encounter Card */}
@@ -109,14 +112,14 @@ export const DmShanshinEncounters: React.FC<DmShanshinEncountersProps> = ({
                   </span>
                   <h4 className="font-bold text-xs text-text-primary">{enc.title}</h4>
                 </div>
-                <button
+                <Button
                   type="button"
                   onClick={() => setEditingEncounter(enc)}
                   className="p-1.5 text-text-muted hover:text-accent-hover transition rounded-lg hover:bg-surface-2"
                   title="ویرایش برخورد"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
-                </button>
+                </Button>
               </div>
 
               <p className="text-xs text-text-muted leading-relaxed">
@@ -143,7 +146,7 @@ export const DmShanshinEncounters: React.FC<DmShanshinEncountersProps> = ({
           <form onSubmit={handleSaveEdit} className="space-y-3.5">
             <div>
               <label className="text-xs text-text-primary block mb-1">عنوان برخورد:</label>
-              <input
+              <Input noWrapper
                 type="text"
                 required
                 value={editingEncounter.title}
@@ -154,7 +157,7 @@ export const DmShanshinEncounters: React.FC<DmShanshinEncountersProps> = ({
 
             <div>
               <label className="text-xs text-text-primary block mb-1">توضیحات و رخداد روایی:</label>
-              <textarea
+              <Textarea noWrapper
                 rows={3}
                 required
                 value={editingEncounter.description}
@@ -165,7 +168,7 @@ export const DmShanshinEncounters: React.FC<DmShanshinEncountersProps> = ({
 
             <div>
               <label className="text-xs text-text-primary block mb-1">نکته مکانیکی و DC تاس:</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={editingEncounter.mechanicsNote}
                 onChange={(e) => setEditingEncounter({ ...editingEncounter, mechanicsNote: e.target.value })}
@@ -175,7 +178,7 @@ export const DmShanshinEncounters: React.FC<DmShanshinEncountersProps> = ({
 
             <div>
               <label className="text-xs text-text-primary block mb-1">راهنمای راوی (DM Advice):</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={editingEncounter.dmAdvice}
                 onChange={(e) => setEditingEncounter({ ...editingEncounter, dmAdvice: e.target.value })}
@@ -183,12 +186,12 @@ export const DmShanshinEncounters: React.FC<DmShanshinEncountersProps> = ({
               />
             </div>
 
-            <button
+            <Button
               type="submit"
               className="w-full py-2.5 rounded-xl font-bold bg-accent hover:bg-accent-hover text-on-accent transition cursor-pointer touch-target min-w-[44px] mt-3"
             >
               ذخیره تغییرات
-            </button>
+            </Button>
           </form>
         </BottomSheet>
       )}

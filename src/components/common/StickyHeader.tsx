@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Character } from '../../types';
 import { Heart, Shield, AlertTriangle, Moon, Sun, Zap, Swords, Sparkles, Bot, Layers } from 'lucide-react';
 import { TabStrip, TabItem } from './TabStrip';
+import { Button } from '../ui/Button';
 
 export type SheetTab = 'overview' | 'abilities' | 'combat' | 'features' | 'companions' | 'resources';
 
@@ -119,14 +120,14 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
 
           {/* Wide HP Bar & 48px Buttons */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <button
+            <Button
               type="button"
               onClick={() => adjustHp(-1)}
               className="touch-target min-w-[44px]-lg w-12 h-12 rounded-[12px] bg-surface-2 border border-border text-danger hover:border-danger/60 font-black text-sm active:scale-95"
               title="کاهش 1 جان"
             >
               -1
-            </button>
+            </Button>
 
             {/* HP Value Display */}
             <div className="flex flex-col items-center justify-center px-2 py-1 rounded-[12px] bg-surface-2 border border-border min-w-[62px] min-h-[48px]">
@@ -144,14 +145,14 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
               </div>
             </div>
 
-            <button
+            <Button
               type="button"
               onClick={() => adjustHp(1)}
               className="touch-target min-w-[44px]-lg w-12 h-12 rounded-[12px] bg-surface-2 border border-border text-success hover:border-success/60 font-black text-sm active:scale-95"
               title="افزایش 1 جان"
             >
               +1
-            </button>
+            </Button>
           </div>
         </div>
 

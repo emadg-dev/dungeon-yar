@@ -1,3 +1,4 @@
+import { Button } from './ui/Button';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
@@ -45,14 +46,14 @@ export class ErrorBoundary extends Component<Props, State> {
                 {this.state.error.message}
               </div>
             )}
-            <button
+            <Button 
               type="button"
               onClick={this.handleReset}
               className="w-full py-2.5 px-4 rounded-xl bg-accent hover:bg-accent-hover text-on-accent font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition active:scale-95"
             >
               <RefreshCw className="w-4 h-4" />
               <span>تلاش دوباره</span>
-            </button>
+            </Button>
           </div>
         </div>
       );

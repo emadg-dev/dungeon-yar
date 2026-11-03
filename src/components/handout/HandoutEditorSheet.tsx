@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Upload, FileText, Image as ImageIcon, Map as MapIcon, Eye, EyeOff, Users, AlertCircle, Check } from 'lucide-react';
 import { Handout, HandoutKind, HandoutVisibility } from '../../types';
@@ -160,7 +163,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
           <div>
             <label className="block text-xs font-semibold text-text-muted mb-1.5">نوع سند</label>
             <div className="grid grid-cols-3 gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setKind('text')}
                 className={`py-2.5 px-3 rounded-[10px] border flex flex-col items-center gap-1.5 transition touch-target min-w-[44px] ${
@@ -171,9 +174,9 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               >
                 <FileText className="w-5 h-5" />
                 <span className="text-xs">سند متنی</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 onClick={() => setKind('image')}
                 className={`py-2.5 px-3 rounded-[10px] border flex flex-col items-center gap-1.5 transition touch-target min-w-[44px] ${
@@ -184,9 +187,9 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               >
                 <ImageIcon className="w-5 h-5" />
                 <span className="text-xs">تصویر</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 onClick={() => setKind('map')}
                 className={`py-2.5 px-3 rounded-[10px] border flex flex-col items-center gap-1.5 transition touch-target min-w-[44px] ${
@@ -197,7 +200,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               >
                 <MapIcon className="w-5 h-5" />
                 <span className="text-xs">نقشه با نشانگر</span>
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -206,7 +209,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
             <label className="block text-xs font-semibold text-text-muted mb-1">
               عنوان سند / نقشه <span className="text-rose-400">*</span>
             </label>
-            <input
+            <Input noWrapper
               type="text"
               required
               value={title}
@@ -220,7 +223,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
           {kind === 'text' && (
             <div>
               <label className="block text-xs font-semibold text-text-muted mb-1">متن یا محتوای سند</label>
-              <textarea
+              <Textarea noWrapper
                 rows={6}
                 value={body}
                 onChange={e => setBody(e.target.value)}
@@ -299,7 +302,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
           <div>
             <label className="block text-xs font-semibold text-text-muted mb-1.5">وضعیت انتشار و دسترسی</label>
             <div className="grid grid-cols-3 gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setVisibility('hidden')}
                 className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target min-w-[44px] ${
@@ -310,9 +313,9 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               >
                 <EyeOff className="w-4 h-4" />
                 <span className="text-xs">مخفی (DM)</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 onClick={() => setVisibility('revealed')}
                 className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target min-w-[44px] ${
@@ -323,9 +326,9 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               >
                 <Eye className="w-4 h-4" />
                 <span className="text-xs">آشکار (همه)</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 onClick={() => setVisibility('selected')}
                 className={`p-2.5 rounded-[10px] border flex flex-col items-center gap-1 transition touch-target min-w-[44px] ${
@@ -336,7 +339,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
               >
                 <Users className="w-4 h-4" />
                 <span className="text-xs">بازیکنان منتخب</span>
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -361,7 +364,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
                             : 'bg-bg border-border text-text-muted'
                         }`}
                       >
-                        <input
+                        <Input noWrapper
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => handleToggleRecipient(char.id)}
@@ -384,7 +387,7 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
             <label className="block text-xs font-semibold text-text-muted mb-1">
               برچسب‌ها (با ویرگول یا کاما جدا کنید)
             </label>
-            <input
+            <Input noWrapper
               type="text"
               value={tagsInput}
               onChange={e => setTagsInput(e.target.value)}
@@ -395,20 +398,20 @@ export const HandoutEditorSheet: React.FC<HandoutEditorSheetProps> = ({
 
           {/* Footer Actions */}
           <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
-            <button
+            <Button
               type="button"
               onClick={onClose}
               className="px-4 py-2.5 rounded-[10px] bg-surface-2 text-xs font-medium text-text-primary hover:bg-surface-3 transition touch-target min-w-[44px]"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isSaving || isCompressing || !title.trim()}
               className="px-5 py-2.5 rounded-[10px] bg-accent hover:bg-accent-hover text-xs font-bold text-on-accent transition touch-target min-w-[44px] disabled:opacity-40 shadow-lg"
             >
               {isSaving ? 'در حال ذخیره‌سازی...' : initialHandout ? 'ذخیره تغییرات' : 'ایجاد سند'}
-            </button>
+            </Button>
           </div>
         </form>
     </BottomSheet>

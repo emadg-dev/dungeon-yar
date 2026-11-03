@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState } from 'react';
 import { LineageTemplate, AbilityName, LineageTrait, SublineageDef } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -176,7 +180,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">نام نژاد *</label>
-            <input
+            <Input noWrapper
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
@@ -188,7 +192,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">توصیف و زمینه تاریخی</label>
-            <textarea
+            <Textarea noWrapper
               value={description}
               onChange={e => setDescription(e.target.value)}
               rows={3}
@@ -200,7 +204,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">اندازه و جثه (Size)</label>
-              <select
+              <Select noWrapper
                 value={size}
                 onChange={e => setSize(e.target.value)}
                 className="w-full bg-surface-2 border border-border rounded-xl px-2.5 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
@@ -208,12 +212,12 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
                 <option value="متوسط (Medium)">متوسط (Medium)</option>
                 <option value="کوچک (Small)">کوچک (Small)</option>
                 <option value="بزرگ (Large)">بزرگ (Large)</option>
-              </select>
+              </Select>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">سرعت پایه (فوت)</label>
-              <input
+              <Input noWrapper
                 type="number"
                 value={speed}
                 onChange={e => setSpeed(parseInt(e.target.value, 10) || 30)}
@@ -234,7 +238,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
               <span>پاداش ویژگی‌ها (Ability Score Bonuses)</span>
             </h4>
             <div className="flex items-center gap-1 bg-surface-2 p-1 rounded-xl border border-border">
-              <button
+              <Button
                 type="button"
                 onClick={() => setBonusMode('fixed')}
                 className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
@@ -242,8 +246,8 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
                 }`}
               >
                 مقادیر ثابت
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setBonusMode('choose')}
                 className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
@@ -251,7 +255,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
                 }`}
               >
                 انتخاب بازیکن
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -260,7 +264,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
               {ABILITY_LABELS.map(ab => (
                 <div key={ab.key} className="bg-surface-2 p-2 rounded-xl border border-border text-center">
                   <span className="text-xs text-text-muted block mb-1">{ab.key.toUpperCase()}</span>
-                  <input
+                  <Input noWrapper
                     type="number"
                     value={fixedBonuses[ab.key] ?? 0}
                     onChange={e => setFixedBonuses({
@@ -278,7 +282,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
                 <label className="block text-text-muted text-xs mb-1">تعداد ویژگی‌های انتخابی</label>
-                <input
+                <Input noWrapper
                   type="number"
                   value={chooseCount}
                   onChange={e => setChooseCount(parseInt(e.target.value, 10) || 1)}
@@ -289,7 +293,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
               </div>
               <div>
                 <label className="block text-text-muted text-xs mb-1">مقدار افزایش هر ویژگی</label>
-                <input
+                <Input noWrapper
                   type="number"
                   value={chooseValue}
                   onChange={e => setChooseValue(parseInt(e.target.value, 10) || 1)}
@@ -309,21 +313,21 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
               <Shield className="w-4 h-4" />
               <span>قابلیت‌ها و خصلت‌های نژادی (Traits)</span>
             </h4>
-            <button
+            <Button
               type="button"
               onClick={handleAddTrait}
               className="px-2.5 py-1 rounded-xl bg-surface-3 hover:bg-surface-3 text-accent-hover text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>افزودن خصلت</span>
-            </button>
+            </Button>
           </div>
 
           <div className="space-y-2">
             {traits.map((tr, idx) => (
               <div key={idx} className="p-2.5 rounded-xl bg-surface-2 border border-border space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
-                  <input
+                  <Input noWrapper
                     type="text"
                     value={tr.name}
                     onChange={e => {
@@ -334,16 +338,16 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
                     placeholder="نام خصلت (مثال: دید در تاریکی، سرسختی کویر)"
                     className="flex-1 bg-surface border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary"
                   />
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleRemoveTrait(idx)}
                     className="p-1.5 rounded-lg text-danger hover:bg-danger/10"
                     title="حذف"
                   >
                     <Trash2 className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
-                <textarea
+                <Textarea noWrapper
                   value={tr.description}
                   onChange={e => {
                     const updated = [...traits];
@@ -369,7 +373,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">دید در تاریکی (Darkvision)</label>
-              <input
+              <Input noWrapper
                 type="number"
                 value={darkvision}
                 onChange={e => setDarkvision(parseInt(e.target.value, 10) || 0)}
@@ -382,7 +386,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
             </div>
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">مقاومت به آسیب (Resistances)</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={resistancesText}
                 onChange={e => setResistancesText(e.target.value)}
@@ -394,7 +398,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">زبان‌ها</label>
-            <input
+            <Input noWrapper
               type="text"
               value={languagesText}
               onChange={e => setLanguagesText(e.target.value)}
@@ -406,7 +410,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">مهارت‌های اولیه نژادی</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={skillsText}
                 onChange={e => setSkillsText(e.target.value)}
@@ -416,7 +420,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
             </div>
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">سلاح‌های مجاز نژادی</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={weaponsText}
                 onChange={e => setWeaponsText(e.target.value)}
@@ -434,20 +438,20 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
               <BookOpen className="w-4 h-4" />
               <span>زیرنژادها / تیره‌ها (Sublineages)</span>
             </h4>
-            <button
+            <Button
               type="button"
               onClick={handleAddSublineage}
               className="px-2.5 py-1 rounded-xl bg-surface-3 hover:bg-surface-3 text-accent-hover text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>افزودن تیره</span>
-            </button>
+            </Button>
           </div>
 
           {sublineages.map((sub, idx) => (
             <div key={idx} className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
-                <input
+                <Input noWrapper
                   type="text"
                   value={sub.name}
                   onChange={e => {
@@ -458,15 +462,15 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
                   placeholder="نام تیره (مثال: دیوانزاد خاکی، پری کویر)"
                   className="flex-1 bg-surface border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary"
                 />
-                <button
+                <Button
                   type="button"
                   onClick={() => handleRemoveSublineage(idx)}
                   className="p-1.5 rounded-lg text-danger hover:bg-danger/10"
                 >
                   <Trash2 className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
-              <textarea
+              <Textarea noWrapper
                 value={sub.description}
                 onChange={e => {
                   const updated = [...sublineages];
@@ -483,21 +487,21 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
 
         {/* Submit Actions */}
         <div className="pt-2 flex items-center gap-2">
-          <button
+          <Button
             type="submit"
             disabled={saving}
             className="flex-1 py-3 px-4 rounded-xl btn-primary-amber font-extrabold text-xs shadow-md flex items-center justify-center gap-2 min-h-[44px]"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? 'در حال ذخیره‌سازی...' : 'ذخیره نژاد در کتابخانه'}</span>
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onClose}
             className="py-3 px-4 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary font-bold text-xs min-h-[44px]"
           >
             انصراف
-          </button>
+          </Button>
         </div>
       </form>
     </BottomSheet>

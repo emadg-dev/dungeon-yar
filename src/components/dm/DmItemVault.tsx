@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, useDeferredValue, startTransition } from 'react';
 import { ItemLibraryEntry, ItemLibraryCategory, Character, RewardPackage, WeaponTemplate } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -130,7 +134,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
     <div className="space-y-6">
       {/* Vault Subtab switcher */}
       <ScrollableRow activeKey={subTab} className="border-b border-border pb-2 gap-4">
-        <button
+        <Button
           type="button"
           data-scroll-key="items"
           onClick={() => setSubTab('items')}
@@ -141,8 +145,8 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
           }`}
         >
           گنجینه اشیاء و آرتیفکت‌ها ({items.length})
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           data-scroll-key="rewards"
           onClick={() => setSubTab('rewards')}
@@ -153,7 +157,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
           }`}
         >
           بسته‌های پاداش و غنایم ({rewards.length})
-        </button>
+        </Button>
       </ScrollableRow>
 
       {subTab === 'items' ? (
@@ -163,7 +167,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-border">
               <div className="relative flex-1">
                 <Search className="absolute right-3 top-2.5 w-4 h-4 text-text-muted" />
-                <input
+                <Input noWrapper
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -172,19 +176,19 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                 />
               </div>
 
-              <button
+              <Button
                 type="button"
                 onClick={handleStartCreate}
                 className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-on-accent font-bold text-xs transition whitespace-nowrap shrink-0 min-h-[44px]"
               >
                 <Plus className="w-4 h-4 shrink-0" />
                 <span>افزودن شیء / آرتیفکت تازه</span>
-              </button>
+              </Button>
             </div>
 
             {/* Category Filter Pills */}
             <ScrollableRow activeKey={selectedCat} className="items-center gap-1.5 pb-1">
-              <button
+              <Button
                 type="button"
                 data-scroll-key="all"
                 onClick={() => setSelectedCat('all')}
@@ -195,11 +199,11 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                 }`}
               >
                 همه ({items.length})
-              </button>
+              </Button>
               {(Object.keys(categoryLabels) as ItemLibraryCategory[]).map(cat => {
                 const count = items.filter(i => i.category === cat).length;
                 return (
-                  <button
+                  <Button
                     key={cat}
                     type="button"
                     data-scroll-key={cat}
@@ -211,7 +215,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                     }`}
                   >
                     {categoryLabels[cat]} ({count})
-                  </button>
+                  </Button>
                 );
               })}
             </ScrollableRow>
@@ -228,7 +232,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-xs text-text-primary block mb-1">نام شیء:</label>
-                  <input
+                  <Input noWrapper
                     type="text"
                     required
                     value={formData.name}
@@ -239,7 +243,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                 </div>
                 <div>
                   <label className="text-xs text-text-primary block mb-1">دسته‌بندی:</label>
-                  <select
+                  <Select noWrapper
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value as ItemLibraryCategory })}
                     className="w-full py-2 px-3 rounded-xl bg-bg border border-border-strong text-sm text-text-primary"
@@ -247,11 +251,11 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                     {(Object.keys(categoryLabels) as ItemLibraryCategory[]).map(c => (
                       <option key={c} value={c}>{categoryLabels[c]}</option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
                 <div>
                   <label className="text-xs text-text-primary block mb-1">کمیابی:</label>
-                  <select
+                  <Select noWrapper
                     value={formData.rarity}
                     onChange={(e) => setFormData({ ...formData, rarity: e.target.value as any })}
                     className="w-full py-2 px-3 rounded-xl bg-bg border border-border-strong text-sm text-text-primary"
@@ -261,13 +265,13 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                     <option value="بسیار کمیاب">بسیار کمیاب</option>
                     <option value="افسانه‌ای">افسانه‌ای</option>
                     <option value="باستانی و ممنوعه">باستانی و ممنوعه</option>
-                  </select>
+                  </Select>
                 </div>
               </div>
 
               <div>
                 <label className="text-xs text-text-primary block mb-1">شرح و ظاهر:</label>
-                <textarea
+                <Textarea noWrapper
                   rows={2}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -277,7 +281,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
 
               <div>
                 <label className="text-xs text-text-primary block mb-1">اثر مکانیکی و قوانین بازی:</label>
-                <textarea
+                <Textarea noWrapper
                   rows={2}
                   value={formData.mechanicalEffect}
                   onChange={(e) => setFormData({ ...formData, mechanicalEffect: e.target.value })}
@@ -288,7 +292,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-text-primary block mb-1">مناسب برای (تگ بازیکن):</label>
-                  <input
+                  <Input noWrapper
                     type="text"
                     value={formData.whoItsFor}
                     onChange={(e) => setFormData({ ...formData, whoItsFor: e.target.value })}
@@ -298,7 +302,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                 </div>
                 <div>
                   <label className="text-xs text-text-primary block mb-1">یادداشت محرمانه DM:</label>
-                  <input
+                  <Input noWrapper
                     type="text"
                     value={formData.secretNotes}
                     onChange={(e) => setFormData({ ...formData, secretNotes: e.target.value })}
@@ -309,7 +313,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
               </div>
 
               <div className="flex items-center gap-2 p-2.5 rounded-xl bg-surface border border-border">
-                <input
+                <Input noWrapper
                   type="checkbox"
                   id="revealedItemCheck"
                   checked={formData.isRevealed}
@@ -322,19 +326,19 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
               </div>
 
               <div className="flex gap-2 justify-end pt-2">
-                <button
+                <Button
                   type="button"
                   onClick={() => setIsCreating(false)}
                   className="py-2.5 px-4 rounded-xl text-xs text-text-muted touch-target min-w-[44px]"
                 >
                   انصراف
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   className="py-2.5 px-5 rounded-xl bg-accent text-on-accent font-bold text-xs touch-target min-w-[44px]"
                 >
                   ذخیره در گنجینه
-                </button>
+                </Button>
               </div>
             </form>
           </BottomSheet>
@@ -356,7 +360,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <button
+                      <Button
                         onClick={() => toggleRevealed(item)}
                         title={item.isRevealed ? 'آشکار برای بازیکنان' : 'پنهان از بازیکنان'}
                         className={`p-1.5 rounded-lg text-xs transition border ${
@@ -366,13 +370,13 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                         }`}
                       >
                         {item.isRevealed ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => onDeleteItem(item.id)}
                         className="p-1.5 rounded-lg bg-surface-2 text-text-muted hover:text-danger"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
@@ -398,13 +402,13 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                 </div>
 
                 {/* Give to Player Button */}
-                <button
+                <Button
                   onClick={() => handleOpenGive(item)}
                   className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-warning to-accent hover:from-accent hover:to-accent-hover text-on-accent text-xs font-bold transition flex items-center justify-center gap-1.5"
                 >
                   <Gift className="w-4 h-4" />
                   اهدای این شیء به یکی از ماجراجویان
-                </button>
+                </Button>
               </div>
             ))}
           </div>
@@ -443,13 +447,13 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                   )}
                 </div>
 
-                <button
+                <Button
                   onClick={() => handleDistributeAll(rew)}
                   className="w-full py-2 px-3 rounded-xl bg-accent hover:bg-accent-hover text-on-accent font-bold text-xs transition flex items-center justify-center gap-2"
                 >
                   <Gift className="w-4 h-4" />
                   توزیع این بسته بین تمام اعضای گروه
-                </button>
+                </Button>
               </div>
             ))}
           </div>
@@ -478,7 +482,7 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
               <div className="space-y-4">
                 <div>
                   <label className="text-xs text-text-primary block mb-1">انتخاب بازیکن:</label>
-                  <select
+                  <Select noWrapper
                     value={selectedCharacterId}
                     onChange={(e) => setSelectedCharacterId(e.target.value)}
                     className="w-full py-2.5 px-3 rounded-xl bg-info border border-border-strong text-sm text-text-primary focus:outline-none focus:border-accent"
@@ -486,24 +490,24 @@ export const DmItemVault: React.FC<DmItemVaultProps> = ({
                     {characters.map(c => (
                       <option key={c.id} value={c.id}>{c.name} ({c.className})</option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="flex gap-2 justify-end pt-3">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setGiveModalItem(null)}
                     className="py-2.5 px-4 rounded-xl text-xs text-text-muted hover:text-text-primary touch-target min-w-[44px]"
                   >
                     انصراف
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={handleConfirmGive}
                     className="py-2.5 px-5 rounded-xl bg-accent hover:bg-accent-hover text-on-accent font-bold text-xs shadow-md transition touch-target min-w-[44px]"
                   >
                     تأیید و ارسال به ماجراجو
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}

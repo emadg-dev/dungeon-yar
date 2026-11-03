@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, useEffect, useMemo, useDeferredValue, startTransition } from 'react';
 import { 
   Campaign, ContentPack, ContentPackKind, EntityScopeType, CloneEntityType, 
@@ -565,7 +569,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
           {/* Action shortcuts */}
           <ScrollableRow className="items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => setMultiSelectMode(!multiSelectMode)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
@@ -576,9 +580,9 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             >
               <CheckSquare className="w-4 h-4 shrink-0" />
               <span className="whitespace-nowrap shrink-0">{multiSelectMode ? 'خروج از انتخاب' : 'انتخاب دسته‌ای'}</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
               onClick={() => setPackExportImportOpen(true)}
               className="px-3 py-1.5 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary text-xs font-bold transition inline-flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
@@ -586,50 +590,50 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             >
               <Upload className="w-4 h-4 shrink-0" />
               <span className="whitespace-nowrap shrink-0">بسته‌ها</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
               onClick={() => setSaveTemplateModalOpen(true)}
               className="px-3 py-1.5 rounded-xl bg-accent/15 border border-accent/30 text-accent-hover hover:bg-accent/25 text-xs font-bold transition inline-flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
             >
               <Bookmark className="w-4 h-4 shrink-0" />
               <span className="whitespace-nowrap shrink-0">ذخیره به عنوان قالب</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
               onClick={() => setClassEditor({ isOpen: true, item: null })}
               className="px-3 py-1.5 rounded-xl bg-info/20 border border-info/40 text-info hover:bg-info/30 text-xs font-bold transition inline-flex items-center gap-1 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
             >
               <Plus className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">کلاس جدید</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
               onClick={() => setLineageEditor({ isOpen: true, item: null })}
               className="px-3 py-1.5 rounded-xl bg-warning/20 border border-warning/40 text-warning hover:bg-warning/30 text-xs font-bold transition inline-flex items-center gap-1 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
             >
               <Plus className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">نژاد جدید</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
               onClick={() => setBackgroundEditor({ isOpen: true, item: null })}
               className="px-3 py-1.5 rounded-xl bg-success/20 border border-success/40 text-success hover:bg-success/30 text-xs font-bold transition inline-flex items-center gap-1 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
             >
               <Plus className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">پیشینه جدید</span>
-            </button>
+            </Button>
           </ScrollableRow>
         </div>
 
         {/* Source Switcher Buttons */}
         <ScrollableRow activeKey={source} className="items-center gap-1.5 pt-2 border-t border-border">
           <span className="text-xs text-text-muted ms-1 whitespace-nowrap shrink-0">منبع:</span>
-          <button
+          <Button
             type="button"
             data-scroll-key="current_campaign"
             onClick={() => setSource('current_campaign')}
@@ -640,8 +644,8 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             }`}
           >
             این کمپین
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             data-scroll-key="my_library"
             onClick={() => setSource('my_library')}
@@ -652,8 +656,8 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             }`}
           >
             کتابخانه‌ی من
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             data-scroll-key="pack-zorvania"
             onClick={() => setSource('pack-zorvania')}
@@ -664,8 +668,8 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             }`}
           >
             بسته زروانیا
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             data-scroll-key="pack-srd-5e"
             onClick={() => setSource('pack-srd-5e')}
@@ -676,11 +680,11 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             }`}
           >
             پایه 5e (SRD)
-          </button>
+          </Button>
 
           {/* Dynamic User Packs */}
           {packs.filter(p => !p.isDefaultLibrary && p.id !== 'pack-zorvania' && p.id !== 'pack-srd-5e').map(p => (
-            <button
+            <Button
               key={p.id}
               type="button"
               data-scroll-key={p.id}
@@ -692,7 +696,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               }`}
             >
               {p.name}
-            </button>
+            </Button>
           ))}
         </ScrollableRow>
       </div>
@@ -715,7 +719,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             { id: 'rule_set', label: 'قوانین' },
             { id: 'campaign_doc', label: 'اسناد' }
           ].map(chip => (
-            <button
+            <Button
               key={chip.id}
               type="button"
               data-scroll-key={chip.id}
@@ -731,7 +735,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               }`}
             >
               {chip.label}
-            </button>
+            </Button>
           ))}
         </ScrollableRow>
 
@@ -740,7 +744,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
           {/* Search Input */}
           <div className="sm:col-span-2 relative">
             <Search className="w-4 h-4 text-text-muted absolute right-3 top-3 pointer-events-none" />
-            <input
+            <Input noWrapper
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
@@ -751,7 +755,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
           {/* Region Filter */}
           <div>
-            <select
+            <Select noWrapper
               value={regionFilter}
               onChange={e => setRegionFilter(e.target.value)}
               className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
@@ -763,12 +767,12 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               <option value="مهستان">مهستان</option>
               <option value="شانشین">شانشین</option>
               <option value="مشترک">مشترک</option>
-            </select>
+            </Select>
           </div>
 
           {/* Sort dropdown */}
           <div>
-            <select
+            <Select noWrapper
               value={sortBy}
               onChange={e => setSortBy(e.target.value as any)}
               className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
@@ -776,7 +780,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               <option value="newest">جدیدترین</option>
               <option value="name">بر اساس نام الفبایی</option>
               <option value="favorite">علاقه‌مندی‌ها در بالا</option>
-            </select>
+            </Select>
           </div>
         </div>
       </div>
@@ -833,7 +837,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
                       <div className="flex items-center gap-1.5 shrink-0">
                         {renderTypeBadge(item.itemType)}
-                        <button
+                        <Button
                           type="button"
                           onClick={(e) => handleToggleFavorite(e, item)}
                           className={`p-1 rounded-lg transition ${
@@ -842,7 +846,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                           title="علاقه‌مندی"
                         >
                           <Star className={`w-4 h-4 ${item.isFavorite ? 'fill-accent-hover' : ''}`} />
-                        </button>
+                        </Button>
                       </div>
                     </div>
 
@@ -906,7 +910,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
                     <div className="flex items-center gap-1.5 shrink-0">
                       {renderTypeBadge(item.itemType)}
-                      <button
+                      <Button
                         type="button"
                         onClick={(e) => handleToggleFavorite(e, item)}
                         className={`p-1 rounded-lg transition ${
@@ -915,7 +919,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                         title="علاقه‌مندی"
                       >
                         <Star className={`w-4 h-4 ${item.isFavorite ? 'fill-accent-hover' : ''}`} />
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
@@ -953,23 +957,23 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={handleBatchCopyToCurrentCampaign}
               className="px-3 py-1.5 rounded-xl btn-primary-amber text-xs font-bold shadow-md flex items-center gap-1 min-h-[44px]"
             >
               <Copy className="w-3.5 h-3.5" />
               <span>کپی به این کمپین</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
               onClick={handleBatchSaveToMyLibrary}
               className="px-3 py-1.5 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary text-xs font-bold flex items-center gap-1 min-h-[44px]"
             >
               <Bookmark className="w-3.5 h-3.5" />
               <span>ذخیره در کتابخانه‌ام</span>
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -1020,7 +1024,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
             {/* Actions Footer */}
             <div className="pt-3 border-t border-border flex flex-wrap items-center gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   const ref: EntityRef = { type: detailItem.itemType, id: detailItem.id };
@@ -1031,9 +1035,9 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               >
                 <Copy className="w-4 h-4" />
                 <span>کپی به این کمپین</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 onClick={async () => {
                   try {
@@ -1049,11 +1053,11 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               >
                 <Bookmark className="w-4 h-4" />
                 <span>ذخیره در کتابخانه‌ام</span>
-              </button>
+              </Button>
 
               {/* Edit Template buttons */}
               {detailItem.itemType === 'class_template' && (
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setClassEditor({ isOpen: true, item: detailItem });
@@ -1063,11 +1067,11 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 >
                   <Edit className="w-4 h-4" />
                   <span>ویرایش کلاس</span>
-                </button>
+                </Button>
               )}
 
               {detailItem.itemType === 'lineage_template' && (
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setLineageEditor({ isOpen: true, item: detailItem });
@@ -1077,11 +1081,11 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 >
                   <Edit className="w-4 h-4" />
                   <span>ویرایش نژاد</span>
-                </button>
+                </Button>
               )}
 
               {detailItem.itemType === 'background_template' && (
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setBackgroundEditor({ isOpen: true, item: detailItem });
@@ -1091,18 +1095,18 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 >
                   <Edit className="w-4 h-4" />
                   <span>ویرایش پیشینه</span>
-                </button>
+                </Button>
               )}
 
               {/* Detach Link button if linked copy */}
               {detailItem.sourceMode === 'linked' && detailItem.sourceId && (
-                <button
+                <Button
                   type="button"
                   onClick={() => handleDetachLink(detailItem)}
                   className="py-2.5 px-3 rounded-xl bg-danger/15 border border-danger/30 text-danger hover:bg-danger/25 font-bold text-xs min-h-[44px]"
                 >
                   قطع پیوند
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -1137,7 +1141,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
                 <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input
+                    <Input noWrapper
                       type="checkbox"
                       checked={importSheet.includeDependencies}
                       onChange={e => setImportSheet(prev => ({ ...prev, includeDependencies: e.target.checked }))}
@@ -1152,7 +1156,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   </p>
 
                   <label className="flex items-center gap-2 cursor-pointer pt-2 border-t border-border">
-                    <input
+                    <Input noWrapper
                       type="checkbox"
                       checked={importSheet.includeChildren}
                       onChange={e => setImportSheet(prev => ({ ...prev, includeChildren: e.target.checked }))}
@@ -1164,13 +1168,13 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   </label>
                 </div>
 
-                <button
+                <Button
                   type="button"
                   onClick={handleImportGoToStep2}
                   className="w-full py-3 rounded-xl btn-primary-amber font-extrabold text-xs shadow-md mt-4 min-h-[48px]"
                 >
                   مرحله بعد: تنظیمات انتقال
-                </button>
+                </Button>
               </div>
             )}
 
@@ -1179,7 +1183,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               <div className="space-y-3">
                 <div className="space-y-2">
                   <label className="block text-xs font-bold text-text-primary">وضعیت پدیداری (Visibility)</label>
-                  <select
+                  <Select noWrapper
                     value={importSheet.options.visibility}
                     onChange={e => setImportSheet(prev => ({
                       ...prev,
@@ -1189,12 +1193,12 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   >
                     <option value="hidden">مخفی (فقط در دید دانجن مستر - پیش‌فرض)</option>
                     <option value="keep">حفظ وضعیت قبلی پدیداری</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
                   <label className="block text-xs font-bold text-text-primary">مدیریت تداخل نام (Name Conflicts)</label>
-                  <select
+                  <Select noWrapper
                     value={importSheet.options.nameConflict}
                     onChange={e => setImportSheet(prev => ({
                       ...prev,
@@ -1204,12 +1208,12 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   >
                     <option value="rename">تغییر نام با پسوند (کپی) - پیش‌فرض</option>
                     <option value="skip">صرف‌نظر از کپی موجودیت تکراری (Skip)</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
                   <label className="block text-xs font-bold text-text-primary">نوع کپی و اتصال (Link Mode - Part B)</label>
-                  <select
+                  <Select noWrapper
                     value={importSheet.options.keepLink}
                     onChange={e => setImportSheet(prev => ({
                       ...prev,
@@ -1219,12 +1223,12 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   >
                     <option value="copy">کپی کاملاً مستقل (Copy - پیش‌فرض)</option>
                     <option value="linked">کپی پیونددار با اعلام تغییرات منبع (Linked Copy)</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input
+                    <Input noWrapper
                       type="checkbox"
                       checked={importSheet.options.stripDmSecrets}
                       onChange={e => setImportSheet(prev => ({
@@ -1237,7 +1241,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   </label>
 
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input
+                    <Input noWrapper
                       type="checkbox"
                       checked={importSheet.options.resetState}
                       onChange={e => setImportSheet(prev => ({
@@ -1251,20 +1255,20 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 pt-2">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setImportSheet(prev => ({ ...prev, step: 1 }))}
                     className="py-3 px-4 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary font-bold text-xs min-h-[48px]"
                   >
                     بازگشت
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={handleImportGoToStep3}
                     className="flex-1 py-3 rounded-xl btn-primary-amber font-extrabold text-xs shadow-md min-h-[48px]"
                   >
                     محاسبه پیش‌نمایش (Preview Dry-Run)
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -1284,20 +1288,20 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                     </p>
 
                     <div className="flex items-center justify-center gap-2 pt-2">
-                      <button
+                      <Button
                         type="button"
                         onClick={() => handleUndoClone(importSheet.resultJob!.id)}
                         className="py-2.5 px-4 rounded-xl bg-danger/15 border border-danger/30 text-danger text-xs font-bold hover:bg-danger/25 min-h-[44px]"
                       >
                         لغو عملیات (Undo)
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
                         onClick={() => setImportSheet(prev => ({ ...prev, isOpen: false }))}
                         className="py-2.5 px-6 rounded-xl btn-primary-amber text-xs font-bold min-h-[44px]"
                       >
                         بستن پنجره
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ) : (
@@ -1335,21 +1339,21 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                     )}
 
                     <div className="flex items-center gap-2 pt-2">
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setImportSheet(prev => ({ ...prev, step: 2 }))}
                         className="py-3 px-4 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary font-bold text-xs min-h-[48px]"
                       >
                         بازگشت
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
                         disabled={importSheet.isExecuting}
                         onClick={handleExecuteImport}
                         className="flex-1 py-3 rounded-xl btn-primary-amber font-extrabold text-xs shadow-md min-h-[48px]"
                       >
                         {importSheet.isExecuting ? 'در حال کلون...' : 'تأیید و اجرای کلون (Run)'}
-                      </button>
+                      </Button>
                     </div>
                   </>
                 )}
@@ -1411,20 +1415,20 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             </div>
 
             <div className="flex items-center gap-2 pt-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setLinkedDiffModal({ isOpen: false, diff: null, chosenFields: {} })}
                 className="py-3 px-4 rounded-xl bg-surface-3 text-text-primary text-xs font-bold min-h-[48px]"
               >
                 انصراف
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleApplyLinkedDiff}
                 className="flex-1 py-3 rounded-xl btn-primary-amber text-xs font-extrabold shadow-md min-h-[48px]"
               >
                 اعمال تغییرات برگزیده
-              </button>
+              </Button>
             </div>
           </div>
         </BottomSheet>
@@ -1449,7 +1453,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               </p>
               <div className="flex flex-wrap gap-2 pt-1">
                 {packs.map(p => (
-                  <button
+                  <Button
                     key={p.id}
                     type="button"
                     onClick={() => handleExportPack(p.id)}
@@ -1457,7 +1461,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   >
                     <span>{p.name}</span>
                     <Download className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -1471,7 +1475,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               <p className="text-xs text-text-muted">
                 محتوای فایل JSON با فرمت zorvania-pack/1 را در کادر زیر جای‌گذاری کنید:
               </p>
-              <textarea
+              <Textarea noWrapper
                 value={importJsonText}
                 onChange={e => setImportJsonText(e.target.value)}
                 placeholder='{"format": "zorvania-pack/1", ...}'
@@ -1488,25 +1492,25 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               {importPreviewManifest && (
                 <div className="p-3 rounded-xl bg-success/10 border border-success/30 text-success text-xs space-y-1">
                   <div className="font-bold">پیش‌نمایش معتبر: {importPreviewManifest.totalCount} مورد یافت شد.</div>
-                  <button
+                  <Button
                     type="button"
                     onClick={handleRunImportPack}
                     className="w-full py-2.5 rounded-xl btn-primary-amber text-xs font-extrabold shadow-md mt-2 min-h-[44px]"
                   >
                     درون‌ریزی نهایی به کمپین
-                  </button>
+                  </Button>
                 </div>
               )}
 
               {!importPreviewManifest && (
-                <button
+                <Button
                   type="button"
                   disabled={!importJsonText.trim()}
                   onClick={handlePreviewImportPack}
                   className="w-full py-2.5 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary text-xs font-bold min-h-[44px]"
                 >
                   بررسی و اعتبارسنجی فایل (Preview)
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -1527,7 +1531,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">نام قالب *</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={templateName}
                 onChange={e => setTemplateName(e.target.value)}
@@ -1538,7 +1542,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">توضیحات</label>
-              <textarea
+              <Textarea noWrapper
                 value={templateDesc}
                 onChange={e => setTemplateDesc(e.target.value)}
                 placeholder="توضیحاتی برای استفاده‌کنندگان از این قالب..."
@@ -1548,7 +1552,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             </div>
 
             <label className="flex items-center gap-2 cursor-pointer p-3 rounded-xl bg-surface-2 border border-border">
-              <input
+              <Input noWrapper
                 type="checkbox"
                 checked={templateStripSecrets}
                 onChange={e => setTemplateStripSecrets(e.target.checked)}
@@ -1559,14 +1563,14 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               </span>
             </label>
 
-            <button
+            <Button
               type="button"
               disabled={!templateName.trim()}
               onClick={handleSaveCampaignAsTemplate}
               className="w-full py-3 rounded-xl btn-primary-amber font-extrabold text-xs shadow-md min-h-[48px]"
             >
               ایجاد و ذخیره قالب
-            </button>
+            </Button>
           </div>
         </BottomSheet>
       )}

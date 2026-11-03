@@ -1,3 +1,5 @@
+import { Button } from '../ui/Button';
+import { Textarea } from '../ui/Textarea';
 import React, { useState } from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Check, X, MessageSquare, AlertCircle, Sparkles, User, ArrowUp, Shield, Dumbbell } from 'lucide-react';
@@ -190,7 +192,7 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
 
                   {isSelected ? (
                     <div className="pt-2 border-t border-border space-y-2">
-                      <textarea
+                      <Textarea noWrapper
                         value={comment}
                         onChange={e => setComment(e.target.value)}
                         placeholder="یادداشت یا دلیل رد / درخواست تغییرات برای بازیکن..."
@@ -198,48 +200,48 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
                         className="w-full bg-bg border border-border rounded-xl p-2 text-xs text-text-primary focus:outline-none focus:border-accent"
                       />
                       <div className="flex justify-end gap-2">
-                        <button
+                        <Button
                           type="button"
                           onClick={() => setActiveItemId(null)}
                           className="px-3 py-1.5 rounded-xl text-xs text-text-muted hover:text-text-primary"
                         >
                           انصراف
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
                           disabled={loading}
                           onClick={() => handleAction(item, 'reject')}
                           className="px-3 py-1.5 rounded-xl bg-danger/20 text-danger border border-danger/30 hover:bg-danger/30 text-xs font-bold"
                         >
                           رد درخواست
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
                           disabled={loading}
                           onClick={() => handleAction(item, 'request_changes')}
                           className="px-3 py-1.5 rounded-xl bg-accent/20 text-accent-hover border border-accent/30 hover:bg-accent/30 text-xs font-bold"
                         >
                           درخواست اصلاح
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ) : (
                     <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
-                      <button
+                      <Button
                         onClick={() => setActiveItemId(item.participationId)}
                         className="px-3 py-1.5 rounded-xl bg-surface-2 text-text-primary hover:text-text-primary text-xs font-medium flex items-center gap-1 min-h-[36px]"
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
                         <span>رد یا اصلاح...</span>
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         disabled={loading}
                         onClick={() => handleAction(item, 'approve')}
                         className="px-4 py-1.5 rounded-xl bg-success text-on-accent hover:bg-success text-xs font-bold flex items-center gap-1 min-h-[36px] shadow-md shadow-success/20"
                       >
                         <Check className="w-3.5 h-3.5" />
                         <span>تأیید رسمی</span>
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </div>

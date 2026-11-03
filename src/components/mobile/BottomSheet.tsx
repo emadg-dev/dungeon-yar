@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -171,14 +172,14 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             </div>
             {headerExtra}
           </div>
-          <button
+          <Button
             type="button"
             onClick={handleClose}
             className="p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-surface-2 transition touch-target min-w-[44px] shrink-0"
             title="بستن"
           >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Scrollable Content with ample bottom padding so buttons never cut off */}

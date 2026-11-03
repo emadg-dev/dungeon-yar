@@ -121,11 +121,36 @@
   --color-selection-rgb: 224 160 48;        /* هایلایت متن انتخابی */
 
   /* بازخورد و وضعیت‌ها (Feedback & States) */
-  --color-danger-rgb: 194 81 43;            /* #C2512B آتش اخگر / اقدامات مخرب */
-  --color-danger-hover-rgb: 214 97 56;      /* #D66138 هاور دکمه حذف و هشدار */
+  --color-danger-rgb: 207 88 50;            /* #CF5832 آتش اخگر با کنتراست 4.71:1 WCAG AA */
+  --color-danger-hover-rgb: 224 104 64;     /* هاور دکمه حذف و هشدار */
   --color-success-rgb: 111 158 120;         /* #6F9E78 سبز مریم‌گلی / موفقیت و درمان */
   --color-warning-rgb: 216 148 39;          /* #D89427 هشدار کهربایی تیره */
   --color-info-rgb: 127 180 214;            /* #7FB4D6 آبی نقره‌ای / اطلاعات و مانا */
+
+  /* پس‌زمینه‌های وضعیت کم‌رنگ (Tinted State Backgrounds) */
+  --color-danger-bg-rgb: 32 18 13;          /* #20120D پس‌زمینه کم‌رنگ خطر */
+  --color-warning-bg-rgb: 42 26 13;         /* #2A1A0D پس‌زمینه کم‌رنگ هشدار */
+  --color-success-bg-rgb: 31 39 30;         /* #1F271E پس‌زمینه کم‌رنگ موفقیت */
+  --color-info-bg-rgb: 24 34 43;            /* #18222B پس‌زمینه کم‌رنگ اطلاعات */
+
+  /* توکن‌های رنگ‌های برند خارجی (Third-Party Brand Tokens) */
+  --brand-google-blue: #4285F4;
+  --brand-google-green: #34A853;
+  --brand-google-yellow: #FBBC05;
+  --brand-google-red: #EA4335;
+  --brand-cyan: #00ACC1;
+
+  /* خاکستری‌های خنثی و سرد (Cool/Neutral Tokens) */
+  --color-neutral-slate: #94A3B8;
+  --color-neutral-slate-dark: #475569;
+  --color-neutral-zinc: #A1A1AA;
+  --color-neutral-zinc-dark: #3F3F46;
+  --color-neutral-zinc-muted: #52525B;
+  --color-neutral-cool: #CBD5E1;
+
+  /* رنگ‌های متنی و راهنما با روشنایی متن (تفكيك از كادرها) */
+  --color-text-tertiary: #8C8576;
+  --color-placeholder: #787063;
 
   /* --------------------------------------------------------------------------
    * ۲. توکن‌های اختصاصی D&D و مکانیک‌های بازی (D&D Mechanics Tokens)
@@ -391,25 +416,69 @@
   --color-border-strong-rgb: 184 171 149;
   --color-border-subtle-rgb: 235 228 217;
 
-  --color-text-rgb: 38 34 29;              /* متن جوهری تیره با خوانایی بالا */
-  --color-text-muted-rgb: 107 97 82;       /* متن ثانویه قهوه‌ای ملایم */
-  --color-text-disabled-rgb: 168 158 143;
+  --color-text-rgb: 38 34 29;              /* متن جوهری تیره با خوانایی بالا (16.3:1) */
+  --color-text-muted-rgb: 107 97 82;       /* متن ثانویه قهوه‌ای ملایم (5.3:1) */
+  --color-text-disabled-rgb: 140 130 115;
   --color-text-inverse-rgb: 255 255 255;
+  --color-text-tertiary: #6B6152;
+  --color-placeholder: #8C8273;
 
-  --color-primary-rgb: 191 127 20;         /* کهربایی تیره‌تر با کنتراست AA در تم روشن */
-  --color-primary-hover-rgb: 166 108 12;
-  --color-accent-rgb: 191 127 20;
-  --color-accent-hover-rgb: 166 108 12;
-  --color-on-accent-rgb: 255 255 255;
-  --color-focus-ring-rgb: 191 127 20;
+  --color-primary-rgb: 163 102 10;         /* کهربایی عمیق با کنتراست AA (5.2:1 روی سفید) */
+  --color-primary-hover-rgb: 138 85 8;
+  --color-accent-rgb: 163 102 10;
+  --color-accent-hover-rgb: 138 85 8;
+  --color-on-accent-rgb: 255 255 255;      /* 5.2:1 کنتراست سفید روی کهربایی تیره */
+  --color-focus-ring-rgb: 163 102 10;
+
+  /* بازخورد و وضعیت‌ها با کنتراست WCAG AA در تم روشن (≥ 4.5:1) */
+  --color-danger-rgb: 185 28 28;           /* قرمز تیره (5.8:1) */
+  --color-danger-hover-rgb: 153 27 27;
+  --color-success-rgb: 21 128 61;          /* سبز زمردی تیره (4.6:1) */
+  --color-warning-rgb: 180 83 9;           /* نارنجی کهربایی تیره (4.8:1) */
+  --color-info-rgb: 3 105 161;             /* آبی تیره (5.5:1) */
+
+  /* پس‌زمینه‌های وضعیت کم‌رنگ تم روشن */
+  --color-danger-bg-rgb: 254 242 242;
+  --color-warning-bg-rgb: 255 251 235;
+  --color-success-bg-rgb: 240 253 244;
+  --color-info-bg-rgb: 239 246 255;
+
+  /* خاکستری‌های خنثی تم روشن */
+  --color-neutral-slate: #475569;
+  --color-neutral-slate-dark: #1E293B;
+  --color-neutral-zinc: #52525B;
+  --color-neutral-zinc-dark: #27272A;
+  --color-neutral-zinc-muted: #71717A;
+  --color-neutral-cool: #64748B;
+
+  /* مکانیک‌های بازی و توکن‌های D&D در تم روشن */
+  --stat-hp: #15803D;
+  --stat-hp-hurt: #B45309;
+  --stat-hp-bloodied: #C2410C;
+  --stat-hp-critical: #B91C1C;
+  --stat-hp-dead: #57534E;
+  --stat-temp-hp: #0369A1;
+  --stat-ac: #854D0E;
+  --stat-initiative: #0369A1;
+  --stat-speed: #57534E;
+  --stat-spell-slot: #6B21A8;
+
+  --dice-nat20: #965C05;
+  --dice-nat1: #B91C1C;
+  --dice-secret: #6B21A8;
+
+  --role-owner: #965C05;
+  --role-codm: #6B21A8;
+  --role-player: #15803D;
+  --role-spectator: #475569;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
   --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 2px 10px rgba(0, 0, 0, 0.06);
 
-  --shadow-glow-amber: 0 0 12px rgba(191, 127, 20, 0.25);
-  --shadow-glow-amber-lg: 0 0 20px rgba(191, 127, 20, 0.35);
+  --shadow-glow-amber: 0 0 12px rgba(163, 102, 10, 0.25);
+  --shadow-glow-amber-lg: 0 0 20px rgba(163, 102, 10, 0.35);
 }
 
 /* ============================================================================

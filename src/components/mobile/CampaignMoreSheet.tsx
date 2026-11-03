@@ -2,6 +2,7 @@
  * Flat, 1-tap campaign secondary sheet (removes nested collapsible menus).
  */
 import React from 'react';
+import { Button } from '../ui/Button';
 import {
   Package, Users, Coffee, CalendarDays, FileText, Settings, LogOut, Sparkles
 } from 'lucide-react';
@@ -35,20 +36,20 @@ export const CampaignMoreSheet: React.FC<CampaignMoreSheetProps> = ({ isOpen, on
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-black text-accent-hover">بیشتر</h2>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-accent/10 text-text-muted hover:text-text-primary" aria-label="بستن">✕</button>
+          <Button onClick={onClose} className="p-2 rounded-xl hover:bg-accent/10 text-text-muted hover:text-text-primary" aria-label="بستن">✕</Button>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {items.map(it => {
             const Icon = it.icon;
             return (
-              <button
+              <Button
                 key={it.id}
                 onClick={() => { onJump(it.id); onClose(); }}
                 className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-surface-2/60 hover:bg-accent/10 border border-border hover:border-accent/40 transition touch-target min-h-[64px]"
               >
                 <Icon className="w-6 h-6 text-accent stroke-[2]" />
                 <span className="text-xs font-bold text-text-primary whitespace-nowrap">{it.label}</span>
-              </button>
+              </Button>
             );
           })}
         </div>

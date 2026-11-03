@@ -1,5 +1,6 @@
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 interface ChipProps {
   label?: string;
@@ -75,7 +76,7 @@ export const Chip: React.FC<ChipProps> = ({
 
   // Interactive filter chip
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 border touch-target min-w-[44px] ${
@@ -91,6 +92,6 @@ export const Chip: React.FC<ChipProps> = ({
           ({count})
         </span>
       )}
-    </button>
+    </Button>
   );
 };

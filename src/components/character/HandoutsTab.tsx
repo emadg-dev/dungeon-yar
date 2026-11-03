@@ -1,3 +1,5 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   FileText, Image as ImageIcon, Map as MapIcon, Search, 
@@ -104,7 +106,7 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
           {/* Search bar */}
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-text-muted absolute start-3 top-1/2 -translate-y-1/2" />
-            <input
+            <Input noWrapper
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
@@ -119,7 +121,7 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
             wrapperClassName="bg-bg p-1 rounded-[10px] border border-border shrink-0"
             className="gap-1"
           >
-            <button
+            <Button
               type="button"
               data-scroll-key="all"
               onClick={() => setKindFilter('all')}
@@ -128,8 +130,8 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
               }`}
             >
               همه ({handouts.length})
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-scroll-key="map"
               onClick={() => setKindFilter('map')}
@@ -139,8 +141,8 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
             >
               <MapIcon className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">نقشه‌ها</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-scroll-key="image"
               onClick={() => setKindFilter('image')}
@@ -150,8 +152,8 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
             >
               <ImageIcon className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">تصاویر</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-scroll-key="text"
               onClick={() => setKindFilter('text')}
@@ -161,7 +163,7 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
             >
               <FileText className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">نامه‌ها و متون</span>
-            </button>
+            </Button>
           </ScrollableRow>
         </div>
 
@@ -170,7 +172,7 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
           <ScrollableRow activeKey={selectedTag || 'all'} className="gap-1.5 pt-1">
             <span className="text-xs text-text-muted whitespace-nowrap shrink-0 self-center">دسته‌بندی:</span>
             {allTags.map(tag => (
-              <button
+              <Button
                 key={tag}
                 type="button"
                 data-scroll-key={tag}
@@ -182,7 +184,7 @@ export const HandoutsTab: React.FC<HandoutsTabProps> = ({
                 }`}
               >
                 #{tag}
-              </button>
+              </Button>
             ))}
           </ScrollableRow>
         )}

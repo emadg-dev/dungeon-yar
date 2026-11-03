@@ -1,3 +1,4 @@
+import { Button } from "./components/ui/Button";
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -1723,7 +1724,7 @@ export default function App() {
                     برای ماجراجویی در کمپین <strong>{activeCampaign?.name}</strong>، یکی از شخصیت‌های خود را وارد کنید یا شخصیت جدید بسازید.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => {
                         setJoinCampaignModal({
@@ -1735,9 +1736,9 @@ export default function App() {
                       className="py-2.5 px-6 rounded-[12px] btn-primary-amber font-extrabold text-xs shadow-lg transition touch-target min-w-[44px]"
                     >
                       ورود با شخصیت موجود
-                    </button>
+                    </Button>
                     {allowPlayerCreateCharacter && (
-                      <button
+                      <Button
                         type="button"
                         onClick={async () => {
                           const newMaster = await api.createMasterCharacter({
@@ -1755,7 +1756,7 @@ export default function App() {
                         className="py-2.5 px-6 rounded-[12px] bg-surface-2 border border-border hover:border-accent font-extrabold text-xs text-text-primary transition touch-target min-w-[44px]"
                       >
                         ساخت شخصیت تازه
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -2253,7 +2254,7 @@ export default function App() {
               <p className="text-xs text-text-primary/90 leading-relaxed">
                 نشست امنیتی شما منقضی یا توسط دستگاه دیگری خاتمه یافته است. داده‌های تغییریافته شما در حافظه دستگاه محفوظ است و پس از ورود مجدد همگام‌سازی خواهند شد.
               </p>
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setSessionExpiredSheetOpen(false);
@@ -2262,7 +2263,7 @@ export default function App() {
                 className="w-full py-3 rounded-[12px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px] min-h-[48px]"
               >
                 ورود مجدد به حساب کاربری
-              </button>
+              </Button>
             </div>
           </BottomSheet>
         )}

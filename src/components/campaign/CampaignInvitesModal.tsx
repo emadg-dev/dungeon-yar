@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
 import React, { useState } from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Campaign, CampaignInvite, CampaignRole } from '../../types';
@@ -66,13 +69,13 @@ export const CampaignInvitesModal: React.FC<CampaignInvitesModalProps> = ({
           <p className="text-xs text-text-muted">
             لینک‌های دعوت جهت پیوستن بازیکنان یا تماشاچیان جدید به کمپین «{campaign.name}»
           </p>
-          <button
+          <Button
             onClick={() => setShowCreateForm(!showCreateForm)}
             className="px-3 py-1.5 rounded-xl bg-accent/15 border border-accent/30 text-accent-hover text-xs font-bold hover:bg-accent/25 transition-colors flex items-center gap-1.5 min-h-[44px]"
           >
             <Plus className="w-4 h-4" />
             دعوت‌نامه جدید
-          </button>
+          </Button>
         </div>
 
         {/* Create Form */}
@@ -82,7 +85,7 @@ export const CampaignInvitesModal: React.FC<CampaignInvitesModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-text-muted mb-1">عنوان یادداشت دعوت</label>
-                <input
+                <Input noWrapper
                   type="text"
                   value={label}
                   onChange={e => setLabel(e.target.value)}
@@ -92,7 +95,7 @@ export const CampaignInvitesModal: React.FC<CampaignInvitesModalProps> = ({
               </div>
               <div>
                 <label className="block text-xs text-text-muted mb-1">نقش پس از پیوستن</label>
-                <select
+                <Select noWrapper
                   value={role}
                   onChange={e => setRole(e.target.value as CampaignRole)}
                   className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent"
@@ -100,11 +103,11 @@ export const CampaignInvitesModal: React.FC<CampaignInvitesModalProps> = ({
                   <option value="player">بازیکن (ماجراجو)</option>
                   <option value="co_dm">دستیار دانجن مستر</option>
                   <option value="spectator">تماشاچی (فقط خواندن و تاس میز)</option>
-                </select>
+                </Select>
               </div>
               <div>
                 <label className="block text-xs text-text-muted mb-1">انقضا (روز)</label>
-                <input
+                <Input noWrapper
                   type="number"
                   min={1}
                   max={365}
@@ -115,7 +118,7 @@ export const CampaignInvitesModal: React.FC<CampaignInvitesModalProps> = ({
               </div>
               <div>
                 <label className="block text-xs text-text-muted mb-1">حداکثر دفعات استفاده</label>
-                <input
+                <Input noWrapper
                   type="number"
                   min={1}
                   max={100}
@@ -127,20 +130,20 @@ export const CampaignInvitesModal: React.FC<CampaignInvitesModalProps> = ({
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowCreateForm(false)}
                 className="px-3 py-1.5 text-xs text-text-muted hover:text-text-primary"
               >
                 انصراف
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={loading}
                 className="px-4 py-1.5 bg-accent text-on-accent text-xs font-bold rounded-xl hover:bg-accent-hover disabled:opacity-50"
               >
                 ایجاد دعوت‌نامه
-              </button>
+              </Button>
             </div>
           </form>
         )}
@@ -173,20 +176,20 @@ export const CampaignInvitesModal: React.FC<CampaignInvitesModalProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1.5">
-                      <button
+                      <Button
                         onClick={() => handleCopyLink(inv.code, inv.id)}
                         className="px-3 py-1.5 rounded-xl bg-surface-2 hover:bg-surface-2 text-accent-hover text-xs font-medium flex items-center gap-1 min-h-[44px]"
                       >
                         {isCopied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
                         <span>{isCopied ? 'کپی شد' : 'کپی لینک'}</span>
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => onRevokeInvite(inv.id)}
                         className="p-2 text-danger-hover hover:bg-danger/10 rounded-xl transition-colors"
                         title="ابطال دعوت‌نامه"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
+                      </Button>
                     </div>
                   </div>
 

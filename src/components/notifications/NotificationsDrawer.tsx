@@ -5,6 +5,7 @@ import { NotificationItem, NotificationType } from '../../types';
 import { groupNotificationsByCampaign, GroupedNotifications } from '../../../shared/rules/notifications';
 import { NotificationPreferencesModal } from './NotificationPreferencesModal';
 import { api } from '../../services/api';
+import { Button } from '../ui/Button';
 import {
   Bell,
   CheckCheck,
@@ -177,7 +178,7 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
           {/* Top action bar: Filter Pills & Action buttons */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-b border-border pb-3">
             <ScrollableRow activeKey={filterMode} className="items-center gap-1.5 py-0.5">
-              <button
+              <Button
                 type="button"
                 data-scroll-key="all"
                 onClick={() => setFilterMode('all')}
@@ -188,9 +189,9 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                 }`}
               >
                 همه ({notifications.length})
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
                 data-scroll-key="unread"
                 onClick={() => setFilterMode('unread')}
@@ -206,10 +207,10 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                     {totalUnread}
                   </span>
                 )}
-              </button>
+              </Button>
 
               {activeCampaignId && (
-                <button
+                <Button
                   type="button"
                   data-scroll-key="current"
                   onClick={() => setFilterMode('current')}
@@ -220,13 +221,13 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                   }`}
                 >
                   کمپین فعلی
-                </button>
+                </Button>
               )}
             </ScrollableRow>
 
             <div className="flex items-center gap-1.5 shrink-0">
               {totalUnread > 0 && (
-                <button
+                <Button
                   type="button"
                   onClick={handleMarkAllRead}
                   className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-2 text-accent text-xs font-medium flex items-center gap-1 border border-border-strong transition-colors"
@@ -234,17 +235,17 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
                 >
                   <CheckCheck className="w-4 h-4" />
                   <span className="hidden sm:inline">خواندن همه</span>
-                </button>
+                </Button>
               )}
 
-              <button
+              <Button
                 type="button"
                 onClick={() => onOpenPreferences ? onOpenPreferences() : setPrefsModalOpen(true)}
                 className="p-1.5 rounded-lg bg-surface-2 hover:bg-surface-2 text-text-muted hover:text-text-primary border border-border transition-colors"
                 title="تنظیمات اعلان‌ها"
               >
                 <Settings className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -334,33 +335,33 @@ export const NotificationsDrawer: React.FC<NotificationsDrawerProps> = ({
 
                             {/* Deep link action button & Delete */}
                             <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
-                              <button
+                              <Button
                                 type="button"
                                 onClick={() => handleItemClick(item)}
                                 className="inline-flex items-center gap-1 text-accent hover:text-accent-hover font-semibold text-xs transition-colors py-0.5"
                               >
                                 <span>مشاهده جزئیات</span>
                                 <ExternalLink className="w-3 h-3" />
-                              </button>
+                              </Button>
 
                               <div className="flex items-center gap-2">
                                 {isUnread && (
-                                  <button
+                                  <Button
                                     type="button"
                                     onClick={() => handleMarkAsRead(item.id)}
                                     className="text-xs text-text-muted hover:text-text-primary transition-colors"
                                   >
                                     علامت خوانده‌شده
-                                  </button>
+                                  </Button>
                                 )}
-                                <button
+                                <Button
                                   type="button"
                                   onClick={() => handleDelete(item.id)}
                                   className="text-text-disabled hover:text-danger transition-colors p-1"
                                   title="حذف این اعلان"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
-                                </button>
+                                </Button>
                               </div>
                             </div>
                           </div>

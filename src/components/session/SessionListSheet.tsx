@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import React, { useState } from 'react';
 import { Session, Campaign, WorldCalendar, User, CampaignRole } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -91,7 +92,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
         {/* Top Control Bar: Tabs & New Session Button */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <ScrollableRow activeKey={activeTab} wrapperClassName="bg-bg p-1 rounded-xl border border-white/10 shrink-0" className="gap-1">
-            <button
+            <Button
               type="button"
               data-scroll-key="upcoming"
               onClick={() => setActiveTab('upcoming')}
@@ -102,8 +103,8 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
               }`}
             >
               پیش‌رو ({upcoming.length})
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               data-scroll-key="past"
               onClick={() => setActiveTab('past')}
@@ -114,12 +115,12 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
               }`}
             >
               گذشته ({past.length})
-            </button>
+            </Button>
           </ScrollableRow>
 
           <ScrollableRow className="items-center gap-2">
             {onOpenRecapArchive && (
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   onClose();
@@ -130,11 +131,11 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
               >
                 <BookOpen className="w-3.5 h-3.5 text-accent shrink-0" />
                 <span className="whitespace-nowrap shrink-0">آرشیو خلاصه‌ها</span>
-              </button>
+              </Button>
             )}
 
             {isDm && onOpenCreateSession && (
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   onClose();
@@ -144,7 +145,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
               >
                 <Plus className="w-4 h-4 shrink-0" />
                 <span className="whitespace-nowrap shrink-0">جلسه جدید</span>
-              </button>
+              </Button>
             )}
           </ScrollableRow>
         </div>
@@ -189,7 +190,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                     {isDm && (
                       <div className="flex items-center gap-1">
                         {onEditSession && (
-                          <button
+                          <Button
                             type="button"
                             onClick={() => {
                               onClose();
@@ -199,10 +200,10 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                             title="ویرایش جلسه"
                           >
                             <Edit3 className="w-4 h-4" />
-                          </button>
+                          </Button>
                         )}
                         {onDeleteSession && (
-                          <button
+                          <Button
                             type="button"
                             disabled={deletingId === s.id}
                             onClick={() => handleDelete(s.id)}
@@ -210,7 +211,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                             title="حذف جلسه"
                           >
                             <Trash2 className="w-4 h-4" />
-                          </button>
+                          </Button>
                         )}
                       </div>
                     )}
@@ -300,7 +301,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                     <div className="flex items-center gap-1.5">
                       {/* Attendance button for DM on past/open session */}
                       {isDm && s.status !== 'done' && onOpenAttendance && (
-                        <button
+                        <Button
                           type="button"
                           onClick={() => {
                             onClose();
@@ -310,12 +311,12 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                         >
                           <UserCheck className="w-3.5 h-3.5" />
                           <span>ثبت حضور</span>
-                        </button>
+                        </Button>
                       )}
 
                       {/* Closing sheet / Recap & Rewards button for DM */}
                       {isDm && onOpenClosingSheet && (
-                        <button
+                        <Button
                           type="button"
                           onClick={() => {
                             onClose();
@@ -326,7 +327,7 @@ export const SessionListSheet: React.FC<SessionListSheetProps> = ({
                         >
                           <BookOpen className="w-3.5 h-3.5" />
                           <span>خلاصه و پاداش‌ها</span>
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { usePWARefresh } from '../../hooks/usePWARefresh';
 import { RotateCw, X } from 'lucide-react';
 import { APP_NAME_FA } from '../../config/app';
+import { Button } from '../ui/Button';
 
 export const PWARefreshPrompt: React.FC = () => {
   const { promptVisible, doRefresh, dismiss } = usePWARefresh();
@@ -13,13 +14,13 @@ export const PWARefreshPrompt: React.FC = () => {
       <div className="w-full max-w-md rounded-2xl bg-surface border border-accent/40 p-6 shadow-2xl" dir="rtl">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <h3 className="text-xl font-bold text-accent-hover">به‌روزرسانی اپلیکیشن</h3>
-          <button
+          <Button
             onClick={() => dismiss()}
             className="p-2 text-text-muted hover:text-text-primary transition-colors"
             title="نادیده گرفتن"
           >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         <div className="space-y-3 mb-6">
@@ -32,18 +33,18 @@ export const PWARefreshPrompt: React.FC = () => {
           </div>
 
           <div className="flex gap-3">
-            <button
+            <Button
               onClick={() => doRefresh()}
               className="flex-1 py-3 px-4 rounded-xl bg-accent hover:bg-accent/90 text-on-accent font-bold text-sm transition-colors"
             >
               به‌روز کردن
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => dismiss()}
               className="px-4 py-3 rounded-xl bg-surface-2 hover:bg-surface-3 text-text-primary font-medium text-sm transition-colors"
             >
               بعدا‌بررسی
-            </button>
+            </Button>
           </div>
         </div>
       </div>

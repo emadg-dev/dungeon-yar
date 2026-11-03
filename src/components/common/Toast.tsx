@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 export interface ToastMessage {
   id: string;
@@ -62,14 +63,14 @@ export const Toast: React.FC<ToastProps> = ({ toast, message, onDismiss, onClose
           )}
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={dismiss}
           className="p-1.5 rounded-[8px] text-text-muted hover:text-text-primary touch-target min-w-[44px]"
           title="بستن پیام"
         >
           <X className="w-4 h-4" />
-        </button>
+        </Button>
       </div>
     </div>
   );

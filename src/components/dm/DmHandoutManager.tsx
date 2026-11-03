@@ -1,3 +1,5 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   FileText, Image as ImageIcon, Map as MapIcon, Plus, Search, 
@@ -269,7 +271,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
             onClick={() => {
               setEditingHandout(null);
@@ -279,16 +281,16 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
           >
             <Plus className="w-4 h-4" />
             <span>سند یا نقشه جدید</span>
-          </button>
+          </Button>
         </div>
       </div>
 
       {actionError && (
         <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-[10px] text-xs text-rose-300 flex flex-wrap items-center justify-between gap-2">
           <span>{actionError}</span>
-          <button type="button" onClick={() => setActionError(null)} className="text-rose-300 hover:text-white">
+          <Button type="button" onClick={() => setActionError(null)} className="text-rose-300 hover:text-white">
             ×
-          </button>
+          </Button>
         </div>
       )}
 
@@ -298,7 +300,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
           {/* Search Input */}
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-text-muted absolute start-3 top-1/2 -translate-y-1/2" />
-            <input
+            <Input noWrapper
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
@@ -309,7 +311,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
 
           {/* Kind Filter Tabs */}
           <div className="flex items-center gap-1 bg-bg p-1 rounded-[10px] border border-border shrink-0 overflow-x-auto">
-            <button
+            <Button
               type="button"
               onClick={() => setKindFilter('all')}
               className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition touch-target min-w-[44px] ${
@@ -317,8 +319,8 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
               }`}
             >
               همه ({handouts.length})
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setKindFilter('map')}
               className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
@@ -327,8 +329,8 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
             >
               <MapIcon className="w-3.5 h-3.5" />
               <span>نقشه‌ها</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setKindFilter('image')}
               className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
@@ -337,8 +339,8 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
             >
               <ImageIcon className="w-3.5 h-3.5" />
               <span>تصاویر</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setKindFilter('text')}
               className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
@@ -347,7 +349,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
             >
               <FileText className="w-3.5 h-3.5" />
               <span>متون</span>
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -356,7 +358,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <span className="text-xs text-text-muted">برچسب:</span>
             {allTags.map(tag => (
-              <button
+              <Button
                 key={tag}
                 type="button"
                 onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
@@ -367,7 +369,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                 }`}
               >
                 #{tag}
-              </button>
+              </Button>
             ))}
           </div>
         )}
@@ -481,7 +483,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                 <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center border-t sm:border-t-0 pt-2 sm:pt-0 border-border/60 w-full sm:w-auto justify-between sm:justify-end">
                   {/* Sort reordering */}
                   <div className="flex items-center">
-                    <button
+                    <Button
                       type="button"
                       disabled={index === 0}
                       onClick={() => handleMoveSort(index, 'up')}
@@ -489,8 +491,8 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                       title="انتقال به بالا"
                     >
                       <ArrowUp className="w-3.5 h-3.5" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       disabled={index === filteredHandouts.length - 1}
                       onClick={() => handleMoveSort(index, 'down')}
@@ -498,11 +500,11 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                       title="انتقال به پایین"
                     >
                       <ArrowDown className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </div>
 
                   {/* 1-Tap Reveal To Everyone */}
-                  <button
+                  <Button
                     type="button"
                     onClick={() => (isRevealed ? handleQuickHide(handout) : handleQuickReveal(handout))}
                     className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
@@ -514,30 +516,30 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                   >
                     {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     <span>{isRevealed ? 'مخفی کردن' : 'آشکارسازی همه'}</span>
-                  </button>
+                  </Button>
 
                   {/* 1-Tap Reveal to Selected */}
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleOpenRecipientModal(handout)}
                     className="p-1.5 rounded-[8px] bg-bg hover:bg-surface-2 text-sky-400 border border-sky-800/40 touch-target min-w-[44px]"
                     title="انتخاب بازیکنان مجاز"
                   >
                     <Users className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
 
                   {/* View / Pin Editor */}
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setViewingHandout(handout)}
                     className="p-1.5 rounded-[8px] bg-bg hover:bg-surface-2 text-accent border border-border touch-target min-w-[44px]"
                     title="مشاهده و ویرایش نشانگرها"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
 
                   {/* Edit details */}
-                  <button
+                  <Button
                     type="button"
                     onClick={() => {
                       setEditingHandout(handout);
@@ -547,17 +549,17 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                     title="ویرایش مشخصات"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
 
                   {/* Delete */}
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleDeleteHandout(handout.id)}
                     className="p-1.5 rounded-[8px] bg-bg hover:bg-rose-500/20 text-text-muted hover:text-rose-400 border border-border touch-target min-w-[44px]"
                     title="حذف سند"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             );
@@ -628,7 +630,7 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <input
+                        <Input noWrapper
                           type="checkbox"
                           checked={isChecked}
                           onChange={() =>
@@ -650,20 +652,20 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
-              <button
+              <Button
                 type="button"
                 onClick={() => setRecipientModalHandout(null)}
                 className="px-4 py-2.5 rounded-xl bg-surface-2 border border-border text-xs font-bold text-text-muted hover:text-text-primary transition touch-target min-w-[44px] min-h-[44px]"
               >
                 انصراف
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleSaveRecipients}
                 className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-xs font-black text-black shadow-md transition touch-target min-w-[44px] min-h-[44px]"
               >
                 ثبت و اشتراک‌گذاری
-              </button>
+              </Button>
             </div>
           </div>
         </BottomSheet>

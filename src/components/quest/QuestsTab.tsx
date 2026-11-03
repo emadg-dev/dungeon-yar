@@ -1,3 +1,5 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import React, { useState } from 'react';
 import { Quest, QuestStatus, NPC, LocationEntry, Character } from '../../types';
 import { 
@@ -138,21 +140,21 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
           </div>
 
           {isDm && onCreateQuest && (
-            <button
+            <Button
               type="button"
               onClick={handleOpenCreateModal}
               className="py-2 px-3 rounded-[10px] bg-gradient-to-l from-warning to-accent text-on-accent font-black text-xs shadow-md hover:brightness-110 transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[40px]"
             >
               <Plus className="w-4 h-4" />
               <span>مأموریت تازه</span>
-            </button>
+            </Button>
           )}
         </div>
 
         {/* Search Input */}
         <div className="relative">
           <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-text-muted" />
-          <input
+          <Input noWrapper
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -163,7 +165,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
 
         {/* Filter Subtabs */}
         <ScrollableRow activeKey={filterTab} className="items-center gap-1.5 pt-1">
-          <button
+          <Button
             type="button"
             data-scroll-key="active"
             onClick={() => setFilterTab('active')}
@@ -177,9 +179,9 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
             <span className="text-xs px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold shrink-0">
               {activeCount}
             </span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             data-scroll-key="completed"
             onClick={() => setFilterTab('completed')}
@@ -193,9 +195,9 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
             <span className="text-xs px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold shrink-0">
               {completedCount}
             </span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             data-scroll-key="other"
             onClick={() => setFilterTab('other')}
@@ -209,10 +211,10 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
             <span className="text-xs px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold shrink-0">
               {otherCount}
             </span>
-          </button>
+          </Button>
 
           {isDm && (
-            <button
+            <Button
               type="button"
               data-scroll-key="hidden"
               onClick={() => setFilterTab('hidden')}
@@ -227,7 +229,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
               <span className="text-xs px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold shrink-0">
                 {hiddenCount}
               </span>
-            </button>
+            </Button>
           )}
         </ScrollableRow>
       </div>
@@ -248,13 +250,13 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                 : 'هیچ سابقه‌ای در این وضعیت ثبت نشده است.'}
             </p>
             {isDm && onCreateQuest && (
-              <button
+              <Button
                 type="button"
                 onClick={handleOpenCreateModal}
                 className="mt-2 py-2 px-4 rounded-[10px] bg-surface-2 border border-border hover:border-accent text-xs font-bold text-accent transition touch-target min-w-[44px]"
               >
                 ایجاد اولین مأموریت
-              </button>
+              </Button>
             )}
           </div>
         ) : (
@@ -408,7 +410,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                         >
                           <div className="flex items-center gap-2.5 flex-1 min-w-0">
                             {canToggle ? (
-                              <button
+                              <Button
                                 type="button"
                                 onClick={() => onToggleObjective(quest.id, obj.id, !obj.done)}
                                 className="touch-target min-w-[44px] p-1 -m-1 text-accent hover:text-accent-hover shrink-0"
@@ -419,7 +421,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                                 ) : (
                                   <Circle className="w-4 h-4 text-text-muted" />
                                 )}
-                              </button>
+                              </Button>
                             ) : (
                               <span className="shrink-0">
                                 {obj.done ? (
@@ -466,29 +468,29 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                   {isDm && (
                     <div className="pt-2 border-t border-border flex flex-wrap items-center justify-end gap-2">
                       {quest.status === 'active' && onCompleteQuest && (
-                        <button
+                        <Button
                           type="button"
                           onClick={() => setCompletingQuest(quest)}
                           className="py-1.5 px-3 rounded-[8px] bg-success text-on-accent font-black text-xs shadow-sm hover:brightness-110 transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[40px]"
                         >
                           <Check className="w-3.5 h-3.5" />
                           <span>تکمیل مأموریت و اعطای پاداش</span>
-                        </button>
+                        </Button>
                       )}
 
                       {onUpdateQuest && (
-                        <button
+                        <Button
                           type="button"
                           onClick={() => handleOpenEditModal(quest)}
                           className="py-1.5 px-3 rounded-[8px] bg-surface-2 border border-border hover:border-accent text-text-primary text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[40px]"
                         >
                           <Edit3 className="w-3.5 h-3.5 text-accent" />
                           <span>ویرایش</span>
-                        </button>
+                        </Button>
                       )}
 
                       {onDeleteQuest && (
-                        <button
+                        <Button
                           type="button"
                           onClick={() => handleDeleteQuest(quest.id)}
                           disabled={actionLoading}
@@ -496,7 +498,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>حذف</span>
-                        </button>
+                        </Button>
                       )}
                     </div>
                   )}
@@ -536,7 +538,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
 
             {completingQuest.rewardRef?.xp ? (
               <label className="p-3 rounded-xl bg-surface border border-success/30 flex items-center gap-3 cursor-pointer touch-target min-w-[44px]">
-                <input
+                <Input noWrapper
                   type="checkbox"
                   checked={grantRewardsOnComplete}
                   onChange={(e) => setGrantRewardsOnComplete(e.target.checked)}
@@ -554,15 +556,15 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
             ) : null}
 
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
-              <button
+              <Button
                 type="button"
                 onClick={() => setCompletingQuest(null)}
                 disabled={actionLoading}
                 className="py-2.5 px-4 rounded-xl bg-surface-2 border border-border text-xs font-bold text-text-muted hover:text-text-primary transition touch-target min-w-[44px] min-h-[44px]"
               >
                 انصراف
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleConfirmComplete}
                 disabled={actionLoading}
@@ -570,7 +572,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
               >
                 <Check className="w-4 h-4" />
                 <span>{actionLoading ? 'در حال ثبت...' : 'تأیید و پایان مأموریت'}</span>
-              </button>
+              </Button>
             </div>
           </div>
         </BottomSheet>

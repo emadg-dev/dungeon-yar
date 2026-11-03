@@ -1,3 +1,5 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import React, { useState } from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { ShieldAlert, Check, AlertCircle } from 'lucide-react';
@@ -87,7 +89,7 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">سطح (Level):</label>
-              <input
+              <Input noWrapper
                 type="number"
                 min="1"
                 max="20"
@@ -98,7 +100,7 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
             </div>
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">حداکثر جان (Max HP):</label>
-              <input
+              <Input noWrapper
                 type="number"
                 min="1"
                 value={maxHp}
@@ -110,7 +112,7 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">عنوان زیرکلاس:</label>
-            <input
+            <Input noWrapper
               type="text"
               value={subclassName}
               onChange={e => setSubclassName(e.target.value)}
@@ -125,7 +127,7 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
               {(Object.keys(abilityFa) as AbilityName[]).map(stat => (
                 <div key={stat} className="bg-info p-2 rounded-xl border border-border">
                   <span className="text-xs text-text-muted block">{abilityFa[stat]}</span>
-                  <input
+                  <Input noWrapper
                     type="number"
                     min="1"
                     max="30"
@@ -141,7 +143,7 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">وضعیت قفل برگه:</label>
             <div className="flex gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setSheetLocked(true)}
                 className={`flex-1 py-2 rounded-xl border text-xs font-bold transition ${
@@ -151,8 +153,8 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
                 }`}
               >
                 قفل استاندارد (Locked Core)
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setSheetLocked(false)}
                 className={`flex-1 py-2 rounded-xl border text-xs font-bold transition ${
@@ -162,13 +164,13 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
                 }`}
               >
                 ویرایش آزاد (Respec Window)
-              </button>
+              </Button>
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">دلیل ویرایش دانجن مستر (ثبت در لاگ):</label>
-            <input
+            <Input noWrapper
               type="text"
               value={reason}
               onChange={e => setReason(e.target.value)}
@@ -184,14 +186,14 @@ export const DmOverrideModal: React.FC<DmOverrideModalProps> = ({
             </div>
           )}
 
-          <button
+          <Button
             type="submit"
             disabled={isSubmitting}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-danger to-accent text-on-accent font-black text-xs transition flex items-center justify-center gap-2 touch-target min-w-[44px] min-h-[48px] shadow-lg shadow-accent/20 disabled:opacity-50"
           >
             <Check className="w-4 h-4" />
             <span>{isSubmitting ? 'در حال اعمال...' : 'اعمال تغییرات مستقیم و ثبت در تاریخچه'}</span>
-          </button>
+          </Button>
         </form>
       </div>
     </BottomSheet>

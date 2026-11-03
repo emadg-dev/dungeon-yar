@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, useDeferredValue, startTransition, useCallback, memo } from 'react';
 import { Character, InventoryItem, ItemCategory, CampaignSettings } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -28,7 +32,7 @@ const InventoryItemRow = memo<InventoryItemRowProps>(({
     className="surface-2-card rounded-[12px] p-2.5 border border-border flex flex-wrap items-center justify-between gap-2 gap-2 transition hover:border-border/80 content-visibility-card"
   >
     {/* Left: Item Info (Tap = Detail Sheet) */}
-    <button
+    <Button
       type="button"
       onClick={() => onSelectDetail(item)}
       className="flex items-center gap-2.5 min-w-0 flex-1 text-start touch-target min-w-[44px]"
@@ -67,31 +71,31 @@ const InventoryItemRow = memo<InventoryItemRowProps>(({
           وزن: {item.weight} کیلو • {item.description || 'بدون توضیحات'}
         </div>
       </div>
-    </button>
+    </Button>
 
     {/* Right: Quantity Stepper & ⋯ Action Menu */}
     <div className="flex items-center gap-1.5 shrink-0">
       <div className="flex items-center gap-1 bg-bg p-0.5 rounded-[8px] border border-border">
-        <button
+        <Button
           type="button"
           onClick={() => onAdjustQuantity(item.id, -1)}
           className="w-7 h-7 rounded-[6px] bg-surface-2 text-text-muted hover:text-text-primary font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
         >
           -
-        </button>
+        </Button>
         <span className="font-mono text-xs font-extrabold text-text-primary min-w-[20px] text-center dice-ltr">
           {item.quantity}
         </span>
-        <button
+        <Button
           type="button"
           onClick={() => onAdjustQuantity(item.id, 1)}
           className="w-7 h-7 rounded-[6px] bg-surface-2 text-text-muted hover:text-text-primary font-bold text-xs touch-target min-w-[44px] flex items-center justify-center"
         >
           +
-        </button>
+        </Button>
       </div>
 
-      <button
+      <Button
         type="button"
         onClick={() => onOpenActionMenu(item)}
         className="w-9 h-9 rounded-[8px] bg-surface-2 text-text-muted hover:text-text-primary border border-border flex items-center justify-center touch-target min-w-[44px]"
@@ -99,7 +103,7 @@ const InventoryItemRow = memo<InventoryItemRowProps>(({
         aria-label={`عملیات برای ${item.name}`}
       >
         <MoreVertical className="w-4 h-4" />
-      </button>
+      </Button>
     </div>
   </div>
 ));
@@ -315,25 +319,25 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
-            <button
+            <Button
               type="button"
               onClick={() => updateRations(-1)}
               className="w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="کاهش جیره"
             >
               -
-            </button>
+            </Button>
             <span className="font-mono text-xl font-extrabold text-accent min-w-[32px] text-center dice-ltr">
               {character.rations}
             </span>
-            <button
+            <Button
               type="button"
               onClick={() => updateRations(1)}
               className="w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="افزایش جیره"
             >
               +
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -350,25 +354,25 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
-            <button
+            <Button
               type="button"
               onClick={() => updateLanternOil(-1)}
               className="w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="کاهش روغن"
             >
               -
-            </button>
+            </Button>
             <span className="font-mono text-xl font-extrabold text-accent min-w-[32px] text-center dice-ltr">
               {character.lanternOil}
             </span>
-            <button
+            <Button
               type="button"
               onClick={() => updateLanternOil(1)}
               className="w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="افزایش روغن"
             >
               +
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -385,25 +389,25 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
-            <button
+            <Button
               type="button"
               onClick={() => updateCurrency('gold', -1)}
               className="w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="کاهش طلا"
             >
               -
-            </button>
+            </Button>
             <span className="font-mono text-xl font-extrabold text-stat-ac min-w-[32px] text-center dice-ltr">
               {character.currencies.gold}
             </span>
-            <button
+            <Button
               type="button"
               onClick={() => updateCurrency('gold', 1)}
               className="w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary font-black text-sm touch-target min-w-[44px] flex items-center justify-center"
               title="افزایش طلا"
             >
               +
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -413,7 +417,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
           {/* Search Input */}
           <div className="relative flex-1">
-            <input
+            <Input noWrapper
               type="text"
               placeholder="جستجو در اشیاء و نشان‌ها..."
               value={searchQuery}
@@ -423,16 +427,16 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             <Search className="w-3.5 h-3.5 text-text-muted absolute start-2.5 top-1/2 -translate-y-1/2" />
           </div>
 
-          <button
+          <Button
             type="button"
             onClick={() => setShowTreasuryModal(true)}
             className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-[10px] bg-surface-2 border border-accent/40 text-accent hover:bg-surface-2 text-xs font-bold transition touch-target min-w-[44px] shrink-0"
           >
             <Coins className="w-3.5 h-3.5" />
             <span>خزانه گروه</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             onClick={() => {
               if (isInventoryLocked) {
@@ -445,7 +449,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
           >
             {isInventoryLocked ? <Lock className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
             <span>{isInventoryLocked ? 'افزودن شیء (قفل DM)' : 'ثبت شیء نو'}</span>
-          </button>
+          </Button>
         </div>
 
         {/* Category Filter Chips */}
@@ -455,7 +459,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
           className="pb-1 gap-1.5"
         >
           {categories.map(cat => (
-            <button
+            <Button
               key={cat.id}
               data-key={cat.id}
               type="button"
@@ -471,7 +475,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
               }`}
             >
               <span className="whitespace-nowrap shrink-0">{cat.label}</span>
-            </button>
+            </Button>
           ))}
         </ScrollableRow>
 
@@ -526,7 +530,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             </div>
 
             <div className="flex gap-2 justify-end pt-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   toggleEquipped(selectedItemDetail.id);
@@ -535,14 +539,14 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 className="py-2.5 px-4 rounded-[12px] bg-surface-2 border border-border text-xs font-bold touch-target min-w-[44px]"
               >
                 {selectedItemDetail.isEquipped ? 'خارج کردن از حالت مجهز' : 'مجهز کردن'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setSelectedItemDetail(null)}
                 className="py-2.5 px-5 rounded-[12px] btn-primary-amber text-xs font-bold touch-target min-w-[44px]"
               >
                 بستن
-              </button>
+              </Button>
             </div>
           </div>
         </BottomSheet>
@@ -568,7 +572,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
         <form onSubmit={handleAddItem} className="space-y-3" dir="rtl">
           <div>
             <label className="text-xs text-text-muted block mb-1">نام شیء یا غنیمت:</label>
-            <input
+            <Input noWrapper
               type="text"
               required
               placeholder="مثلاً: خنجر نقره‌ای کاروانسرای ماه"
@@ -581,7 +585,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-xs text-text-muted block mb-1">دسته‌بندی:</label>
-              <select
+              <Select noWrapper
                 value={itemCategory}
                 onChange={(e) => setItemCategory(e.target.value as ItemCategory)}
                 className="w-full py-2.5 px-2 rounded-[12px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent focus:outline-none"
@@ -591,12 +595,12 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 <option value="potion">معجون</option>
                 <option value="scroll">طومار</option>
                 <option value="misc">متفرقه</option>
-              </select>
+              </Select>
             </div>
 
             <div>
               <label className="text-xs text-text-muted block mb-1">وزن (کیلوگرم):</label>
-              <input
+              <Input noWrapper
                 type="number"
                 step="0.1"
                 min="0"
@@ -609,7 +613,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
 
           <div>
             <label className="text-xs text-text-muted block mb-1">شرح و خواص جادویی:</label>
-            <textarea
+            <Textarea noWrapper
               rows={3}
               placeholder="توضیحات و کاربرد..."
               value={itemDescription}
@@ -619,19 +623,19 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
           </div>
 
           <div className="flex gap-2 justify-end pt-2">
-            <button
+            <Button
               type="button"
               onClick={() => setShowAddItem(false)}
               className="py-2.5 px-4 rounded-[12px] text-xs text-text-muted touch-target min-w-[44px]"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               className="py-2.5 px-5 rounded-[12px] btn-primary-amber font-bold text-xs touch-target min-w-[44px]"
             >
               افزودن به کوله
-            </button>
+            </Button>
           </div>
         </form>
       </BottomSheet>

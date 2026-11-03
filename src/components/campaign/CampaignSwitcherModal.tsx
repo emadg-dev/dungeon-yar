@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import React from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Campaign } from '../../types';
@@ -26,7 +27,7 @@ export const CampaignSwitcherModal: React.FC<CampaignSwitcherModalProps> = ({
     <BottomSheet isOpen={isOpen} onClose={onClose} title="جابجایی بین کمپین‌ها">
       <div className="space-y-4 py-2 text-start" dir="rtl">
         {/* Go Home Button */}
-        <button
+        <Button
           onClick={() => {
             onGoHome();
             onClose();
@@ -40,12 +41,12 @@ export const CampaignSwitcherModal: React.FC<CampaignSwitcherModalProps> = ({
             <span>صفحه اصلی (داشبورد کمپین‌ها)</span>
           </div>
           <ChevronLeft className="w-4 h-4" />
-        </button>
+        </Button>
 
         <div className="border-t border-border pt-3">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2 px-1">
             <span className="text-xs font-bold text-text-muted">کمپین‌های من ({campaigns.length})</span>
-            <button
+            <Button
               onClick={() => {
                 onClose();
                 onOpenCreateCampaign();
@@ -54,7 +55,7 @@ export const CampaignSwitcherModal: React.FC<CampaignSwitcherModalProps> = ({
             >
               <Plus className="w-3.5 h-3.5" />
               کمپین جدید
-            </button>
+            </Button>
           </div>
 
           <div className="space-y-2 max-h-72 overflow-y-auto">

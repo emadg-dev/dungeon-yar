@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Textarea } from '../ui/Textarea';
 import React, { useState } from 'react';
 import { MapPin as MapPinIcon, Eye, EyeOff, Plus, Edit2, Trash2, X, Check, Info } from 'lucide-react';
 import { MapPin } from '../../types';
@@ -127,7 +130,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
       {isDm && (
         <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-surface-2 border-b border-border rounded-t-[16px] text-xs">
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => {
                 setIsAddingPin(!isAddingPin);
@@ -141,7 +144,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
             >
               <Plus className="w-3.5 h-3.5" />
               {isAddingPin ? 'لمس روی نقشه برای نشانگر...' : 'افزودن نشانگر جدید'}
-            </button>
+            </Button>
             {isAddingPin && (
               <span className="text-text-muted animate-pulse hidden sm:inline">
                 روی هر نقطه از نقشه ضربه بزنید
@@ -267,40 +270,40 @@ export const MapViewer: React.FC<MapViewerProps> = ({
             <div className="flex items-center gap-1">
               {isDm && (
                 <>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleToggleReveal(selectedPin)}
                     className="p-1.5 rounded-[8px] text-text-muted hover:text-text-primary hover:bg-surface-2 touch-target min-w-[44px]"
                     title={selectedPin.revealed ? 'مخفی‌سازی از بازیکنان' : 'آشکارسازی برای بازیکنان'}
                   >
                     {selectedPin.revealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4 text-success" />}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => handleStartEdit(selectedPin)}
                     className="p-1.5 rounded-[8px] text-text-muted hover:text-text-primary hover:bg-surface-2 touch-target min-w-[44px]"
                     title="ویرایش نشانگر"
                   >
                     <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={handleDeleteCurrentPin}
                     className="p-1.5 rounded-[8px] text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 touch-target min-w-[44px]"
                     title="حذف نشانگر"
                   >
                     <Trash2 className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </>
               )}
-              <button
+              <Button
                 type="button"
                 onClick={() => setSelectedPin(null)}
                 className="p-1.5 rounded-[8px] text-text-muted hover:text-text-primary hover:bg-surface-2 touch-target min-w-[44px]"
                 title="بستن اطلاعات"
               >
                 <X className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -319,24 +322,24 @@ export const MapViewer: React.FC<MapViewerProps> = ({
         <div className="p-3.5 bg-surface-2 border-t border-border rounded-b-[16px] space-y-3" dir="rtl">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h4 className="font-bold text-xs text-text-primary">ویرایش نشانگر</h4>
-            <button
+            <Button
               type="button"
               onClick={() => setIsEditingSelectedPin(false)}
               className="text-text-muted hover:text-white"
             >
               <X className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
 
           <div className="space-y-2">
-            <input
+            <Input noWrapper
               type="text"
               value={pinLabel}
               onChange={(e) => setPinLabel(e.target.value)}
               placeholder="عنوان نشانگر (الزامی)"
               className="w-full px-3 py-2 bg-bg border border-border rounded-[8px] text-xs text-white focus:outline-none focus:border-accent"
             />
-            <textarea
+            <Textarea noWrapper
               value={pinNote}
               onChange={(e) => setPinNote(e.target.value)}
               placeholder="توضیحات و یادداشت مکان..."
@@ -344,7 +347,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
               className="w-full px-3 py-2 bg-bg border border-border rounded-[8px] text-xs text-white focus:outline-none focus:border-accent resize-none"
             />
             <label className="flex items-center gap-2 text-xs text-text-primary cursor-pointer">
-              <input
+              <Input noWrapper
                 type="checkbox"
                 checked={pinRevealed}
                 onChange={(e) => setPinRevealed(e.target.checked)}
@@ -355,21 +358,21 @@ export const MapViewer: React.FC<MapViewerProps> = ({
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-1">
-            <button
+            <Button
               type="button"
               onClick={() => setIsEditingSelectedPin(false)}
               className="px-3 py-1.5 rounded-[8px] bg-surface-2 text-xs text-text-primary hover:bg-surface-3"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={handleSaveEditPin}
               disabled={isSaving || !pinLabel.trim()}
               className="px-3 py-1.5 rounded-[8px] bg-accent text-xs font-bold text-on-accent hover:bg-accent-hover disabled:opacity-40"
             >
               {isSaving ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -384,17 +387,17 @@ export const MapViewer: React.FC<MapViewerProps> = ({
               </span>
               <h4 className="font-bold text-xs text-text-primary">افزودن نشانگر به نقشه</h4>
             </div>
-            <button
+            <Button
               type="button"
               onClick={() => setPendingCoords(null)}
               className="text-text-muted hover:text-white"
             >
               <X className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
 
           <div className="space-y-2">
-            <input
+            <Input noWrapper
               type="text"
               value={pinLabel}
               onChange={(e) => setPinLabel(e.target.value)}
@@ -402,7 +405,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
               autoFocus
               className="w-full px-3 py-2 bg-bg border border-border rounded-[8px] text-xs text-white focus:outline-none focus:border-accent"
             />
-            <textarea
+            <Textarea noWrapper
               value={pinNote}
               onChange={(e) => setPinNote(e.target.value)}
               placeholder="توضیحات اختیاری درباره این موقعیت..."
@@ -410,7 +413,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
               className="w-full px-3 py-2 bg-bg border border-border rounded-[8px] text-xs text-white focus:outline-none focus:border-accent resize-none"
             />
             <label className="flex items-center gap-2 text-xs text-text-primary cursor-pointer">
-              <input
+              <Input noWrapper
                 type="checkbox"
                 checked={pinRevealed}
                 onChange={(e) => setPinRevealed(e.target.checked)}
@@ -421,21 +424,21 @@ export const MapViewer: React.FC<MapViewerProps> = ({
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-1">
-            <button
+            <Button
               type="button"
               onClick={() => setPendingCoords(null)}
               className="px-3 py-1.5 rounded-[8px] bg-surface-2 text-xs text-text-primary hover:bg-surface-3"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={handleSaveNewPin}
               disabled={isSaving || !pinLabel.trim()}
               className="px-3 py-1.5 rounded-[8px] bg-accent text-xs font-bold text-on-accent hover:bg-accent-hover disabled:opacity-40"
             >
               {isSaving ? 'در حال ثبت...' : 'ثبت نشانگر'}
-            </button>
+            </Button>
           </div>
         </div>
       )}

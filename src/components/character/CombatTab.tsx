@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import React, { useState, startTransition } from 'react';
 import { Character, Weapon, Feature, WeaponTemplate, Companion } from '../../types';
 import { deriveSheet } from '../../../shared/rules/engine';
@@ -159,7 +160,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
             </div>
           </div>
 
-          <button
+          <Button
             type="button"
             onClick={() => {
               if (isCombatLocked) {
@@ -172,7 +173,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
           >
             {isCombatLocked ? <Lock className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
             <span>{isCombatLocked ? 'سلاح جدید (قفل DM)' : 'سلاح جدید'}</span>
-          </button>
+          </Button>
         </div>
 
         {character.weapons.length === 0 ? (
@@ -211,14 +212,14 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                           </span>
                         )}
                       </div>
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setDeleteConfirm({ isOpen: true, type: 'weapon', id: w.id, name: w.name })}
                         className="text-text-muted hover:text-danger p-2 touch-target min-w-[44px]"
                         title="حذف سلاح"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
+                      </Button>
                     </div>
 
                     {/* Stats */}
@@ -261,7 +262,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
 
                   {/* Two Big Roll Buttons: Attack & Damage (>= 44px) */}
                   <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => onRollCheck(20, 1, attackBonus, `حمله‌ی ${w.name}`)}
                       className="py-2.5 px-3 rounded-[12px] bg-surface-2 hover:bg-surface-2/80 active:bg-bg text-text-primary text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] border border-border"
@@ -269,8 +270,8 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                       <Dices className="w-4 h-4 text-accent" />
                       <span>حمله</span>
                       <span className="font-mono text-accent dice-ltr font-extrabold">(+{attackBonus})</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => rollWeaponDamage(w)}
                       className="py-2.5 px-3 rounded-[12px] btn-primary-amber text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] shadow-md"
@@ -278,7 +279,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                       <Flame className="w-4 h-4" />
                       <span>صدمه</span>
                       <span className="font-mono dice-ltr font-extrabold">({w.damageDice})</span>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );
@@ -317,13 +318,13 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                 {comp.attack && (
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border text-xs">
                     <span className="text-text-muted text-xs truncate">{comp.attack.name}</span>
-                    <button
+                    <Button
                       type="button"
                       onClick={() => onRollCheck(20, 1, 4, `حمله همراه ${comp.name}`)}
                       className="px-2 py-1 rounded-[8px] bg-surface text-accent border border-border font-mono text-xs font-bold dice-ltr touch-target min-w-[44px]"
                     >
                       {comp.attack.toHit} ({comp.attack.damage})
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -343,7 +344,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
             </div>
           </div>
 
-          <button
+          <Button
             type="button"
             onClick={() => {
               if (isCombatLocked) {
@@ -356,7 +357,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
           >
             {isCombatLocked ? <Lock className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
             <span>{isCombatLocked ? 'توانایی نو (قفل DM)' : 'توانایی نو'}</span>
-          </button>
+          </Button>
         </div>
 
         {/* Filter Chips: All / Short / Long / Session / Season */}
@@ -373,7 +374,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
             { id: 'session', label: 'جلسه' },
             { id: 'season', label: 'فصل' },
           ].map(chip => (
-            <button
+            <Button
               key={chip.id}
               data-key={chip.id}
               type="button"
@@ -389,7 +390,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
               }`}
             >
               <span className="whitespace-nowrap shrink-0">{chip.label}</span>
-            </button>
+            </Button>
           ))}
         </ScrollableRow>
 
@@ -418,7 +419,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <button
+                      <Button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -428,7 +429,7 @@ export const CombatTab: React.FC<CombatTabProps> = ({
                         title="حذف توانایی"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      </Button>
                       {isExpanded ? (
                         <ChevronUp className="w-4 h-4 text-text-muted" />
                       ) : (

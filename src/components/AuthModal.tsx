@@ -1,3 +1,5 @@
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
 import React, { useState, useEffect } from 'react';
 import { User } from '../types';
 import { APP_NAME_FA } from '../config/app';
@@ -181,7 +183,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Mode Selector Tabs */}
         {mode !== 'reset' && mode !== 'forgot' && (
           <div className="flex rounded-[12px] bg-surface-2 p-1 border border-border">
-            <button
+            <Button 
               type="button"
               onClick={() => { setMode('login'); setGeneralError(''); }}
               className={`flex-1 py-2 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
@@ -192,8 +194,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             >
               <LogIn className="w-3.5 h-3.5" />
               <span>ورود به حساب</span>
-            </button>
-            <button
+            </Button>
+            <Button 
               type="button"
               onClick={() => { setMode('register'); setGeneralError(''); }}
               className={`flex-1 py-2 text-xs font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 touch-target min-w-[44px] ${
@@ -204,7 +206,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span>ثبت‌نام با دعوت</span>
-            </button>
+            </Button>
           </div>
         )}
 
@@ -226,13 +228,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <p className="text-xs text-text-muted leading-relaxed">
               جهت حفظ امنیت و محرمانگی سناریوی کمپین، بازنشانی رمز عبور ماجراجویان به صورت مستقیم توسط <strong>دانجن مستر</strong> انجام می‌شود. لطفاً از دانجن مستر خود بخواهید یک «لینک یک‌بار مصرف تغییر رمز» برای شما ارسال کند.
             </p>
-            <button
+            <Button 
               type="button"
               onClick={() => setMode('login')}
               className="w-full py-2.5 rounded-[12px] btn-primary-amber font-extrabold text-xs touch-target min-w-[44px]"
             >
               بازگشت به صفحه ورود
-            </button>
+            </Button>
           </div>
         )}
 
@@ -244,7 +246,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-text-primary">نام نمایشی در بازی</label>
                 <div className="relative">
-                  <input
+                  <Input noWrapper 
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
@@ -252,7 +254,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     autoComplete="nickname"
                     enterKeyHint="next"
                     className="w-full py-2.5 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
-                  />
+                   />
                 </div>
                 {fieldErrors.displayName && (
                   <p className="text-xs text-danger">{fieldErrors.displayName}</p>
@@ -265,7 +267,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-text-primary">رایانامه (ایمیل)</label>
                 <div className="relative">
-                  <input
+                  <Input noWrapper 
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -275,7 +277,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     dir="ltr"
                     enterKeyHint="next"
                     className="w-full py-2.5 ps-9 pe-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
-                  />
+                   />
                   <Mail className="w-4 h-4 text-text-muted absolute top-3.5 start-3 pointer-events-none" />
                 </div>
                 {fieldErrors.email && (
@@ -292,7 +294,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <span className="text-xs text-text-muted">برای ایمیل‌های DM الزامی نیست</span>
                 </div>
                 <div className="relative">
-                  <input
+                  <Input noWrapper 
                     type="text"
                     value={inviteCode}
                     onChange={(e) => setInviteCode(e.target.value)}
@@ -300,7 +302,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     dir="ltr"
                     enterKeyHint="next"
                     className="w-full py-2.5 ps-9 pe-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end font-mono min-h-[44px]"
-                  />
+                   />
                   <KeyRound className="w-4 h-4 text-text-muted absolute top-3.5 start-3 pointer-events-none" />
                 </div>
                 {fieldErrors.inviteCode && (
@@ -313,14 +315,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {mode === 'reset' && (
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-text-primary">توکن بازنشانی</label>
-                <input
+                <Input noWrapper 
                   type="text"
                   value={resetToken}
                   onChange={(e) => setResetToken(e.target.value)}
                   placeholder="توکن دریافت شده از دانجن مستر"
                   dir="ltr"
                   className="w-full py-2.5 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end font-mono min-h-[44px]"
-                />
+                 />
                 {fieldErrors.resetToken && (
                   <p className="text-xs text-danger">{fieldErrors.resetToken}</p>
                 )}
@@ -334,17 +336,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   {mode === 'reset' ? 'رمز عبور جدید' : 'رمز عبور'}
                 </label>
                 {mode === 'login' && (
-                  <button
+                  <Button 
                     type="button"
                     onClick={() => setMode('forgot')}
                     className="text-xs text-accent hover:underline"
                   >
                     فراموشی رمز؟
-                  </button>
+                  </Button>
                 )}
               </div>
               <div className="relative">
-                <input
+                <Input noWrapper 
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -353,16 +355,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   dir="ltr"
                   enterKeyHint={mode === 'reset' ? 'next' : 'done'}
                   className="w-full py-2.5 ps-10 pe-10 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
-                />
+                 />
                 <KeyRound className="w-4 h-4 text-text-muted absolute top-3.5 start-3 pointer-events-none" />
-                <button
+                <Button 
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute top-2.5 end-2.5 p-1.5 rounded-[8px] text-text-muted hover:text-text-primary touch-target min-w-[44px]"
                   title={showPassword ? 'مخفی کردن' : 'نمایش'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+                </Button>
               </div>
 
               {/* Password Strength Meter (Register / Reset) */}
@@ -394,7 +396,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {mode === 'reset' && (
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-text-primary">تکرار رمز عبور جدید</label>
-                <input
+                <Input noWrapper 
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -403,7 +405,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   dir="ltr"
                   enterKeyHint="done"
                   className="w-full py-2.5 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none text-end min-h-[44px]"
-                />
+                 />
                 {fieldErrors.confirmPassword && (
                   <p className="text-xs text-danger">{fieldErrors.confirmPassword}</p>
                 )}
@@ -412,7 +414,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             {/* Sticky Submit Button */}
             <div className="pt-2 sticky bottom-0 bg-surface py-1">
-              <button
+              <Button 
                 type="submit"
                 disabled={loading}
                 className="w-full py-3 px-4 rounded-[12px] btn-primary-amber font-extrabold text-sm shadow-lg flex items-center justify-center gap-2 touch-target min-w-[44px] disabled:opacity-50 min-h-[48px]"
@@ -431,7 +433,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     </span>
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </form>
         )}
@@ -445,7 +447,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
             <div className="grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto">
               {SEED_USERS.map((u) => (
-                <button
+                <Button 
                   key={u.id}
                   type="button"
                   onClick={() => {
@@ -458,7 +460,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     {u.role === 'dm' ? 'دانجن مستر' : 'بازیکن'}
                   </span>
                   <span className="truncate block">{u.displayName || u.name}</span>
-                </button>
+                </Button>
               ))}
             </div>
           </div>

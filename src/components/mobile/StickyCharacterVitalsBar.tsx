@@ -1,6 +1,7 @@
 import React from 'react';
 import { Character } from '../../types';
 import { Heart, Shield, AlertTriangle, Moon, Sun, Zap, Swords, Bot } from 'lucide-react';
+import { Button } from '../ui/Button';
 
 interface StickyCharacterVitalsBarProps {
   character: Character;
@@ -81,14 +82,14 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
 
           {/* Quick HP Controls (>= 48px targets with >= 8px spacing) */}
           <div className="flex items-center gap-2 shrink-0">
-            <button
+            <Button
               type="button"
               onClick={() => adjustHp(-1)}
               className="w-12 h-12 flex items-center justify-center rounded-xl bg-danger/15 active:bg-danger/15 border border-danger/40 text-danger font-black text-sm touch-target min-w-[44px]-lg select-none"
               title="کاهش ۱ جان"
             >
               -۱
-            </button>
+            </Button>
 
             {/* Current / Max HP Badge */}
             <div className="flex flex-col items-center justify-center px-2 py-1 rounded-xl bg-surface border border-border-strong min-w-[58px] sm:min-w-[66px] min-h-[48px]">
@@ -108,34 +109,34 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
               </div>
             </div>
 
-            <button
+            <Button
               type="button"
               onClick={() => adjustHp(+1)}
               className="w-12 h-12 flex items-center justify-center rounded-xl bg-success/15 active:bg-success/15 border border-success/40 text-success font-black text-sm touch-target min-w-[44px]-lg select-none"
               title="افزایش ۱ جان"
             >
               +۱
-            </button>
+            </Button>
           </div>
 
           {/* Desktop Rest Triggers */}
           <div className="hidden md:flex items-center gap-2 ms-2">
-            <button
+            <Button
               type="button"
               onClick={() => onOpenRest('short')}
               className="p-2 rounded-xl bg-surface-2 hover:bg-surface-2 text-text-primary text-xs font-bold touch-target min-w-[44px]"
               title="استراحت کوتاه"
             >
               <Moon className="w-4 h-4 text-accent-hover" />
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => onOpenRest('long')}
               className="p-2 rounded-xl bg-surface-2 hover:bg-surface-2 text-text-primary text-xs font-bold touch-target min-w-[44px]"
               title="استراحت بلند"
             >
               <Sun className="w-4 h-4 text-accent-hover" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -146,7 +147,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
               const Icon = tab.icon;
               const isActive = activeSheetTab === tab.id;
               return (
-                <button
+                <Button
                   type="button"
                   key={tab.id}
                   onClick={() => onSelectSheetTab(tab.id)}
@@ -163,7 +164,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
                       {tab.badge}
                     </span>
                   )}
-                </button>
+                </Button>
               );
             })}
           </div>

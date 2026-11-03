@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState } from 'react';
 import { CampaignNote, CampaignNoteCategory } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -101,7 +105,7 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-border">
           <div className="relative flex-1">
             <Search className="absolute right-3 top-2.5 w-4 h-4 text-text-muted" />
-            <input
+            <Input noWrapper
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -110,19 +114,19 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
             />
           </div>
 
-          <button
+          <Button
             type="button"
             onClick={handleStartCreate}
             className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-on-accent font-bold text-xs transition whitespace-nowrap shrink-0 min-h-[44px]"
           >
             <Plus className="w-4 h-4 shrink-0" />
             <span>یادداشت محرمانه تازه</span>
-          </button>
+          </Button>
         </div>
 
         {/* Filter Pills */}
         <ScrollableRow activeKey={selectedCat} className="items-center gap-1.5 pb-1">
-          <button
+          <Button
             type="button"
             data-scroll-key="all"
             onClick={() => setSelectedCat('all')}
@@ -133,11 +137,11 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
             }`}
           >
             همه ({campaignNotes.length})
-          </button>
+          </Button>
           {(Object.keys(catLabels) as CampaignNoteCategory[]).map(catKey => {
             const count = campaignNotes.filter(n => n.category === catKey).length;
             return (
-              <button
+              <Button
                 key={catKey}
                 type="button"
                 data-scroll-key={catKey}
@@ -149,7 +153,7 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
                 }`}
               >
                 {catLabels[catKey]} ({count})
-              </button>
+              </Button>
             );
           })}
         </ScrollableRow>
@@ -168,7 +172,7 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="sm:col-span-2">
               <label className="text-xs text-text-primary block mb-1">عنوان یادداشت:</label>
-              <input
+              <Input noWrapper
                 type="text"
                 required
                 value={title}
@@ -179,7 +183,7 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
             </div>
             <div>
               <label className="text-xs text-text-primary block mb-1">دسته‌بندی:</label>
-              <select
+              <Select noWrapper
                 value={category}
                 onChange={(e) => setCategory(e.target.value as CampaignNoteCategory)}
                 className="w-full py-2 px-3 rounded-xl bg-bg border border-border-strong text-sm text-text-primary"
@@ -187,13 +191,13 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
                 {(Object.keys(catLabels) as CampaignNoteCategory[]).map(c => (
                   <option key={c} value={c}>{catLabels[c]}</option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
 
           <div>
             <label className="text-xs text-text-primary block mb-1">متن یادداشت و اسرار:</label>
-            <textarea
+            <Textarea noWrapper
               rows={5}
               required
               value={content}
@@ -204,7 +208,7 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
 
           <div>
             <label className="text-xs text-text-primary block mb-1">برچسب‌ها (با کاما جدا کنید):</label>
-            <input
+            <Input noWrapper
               type="text"
               value={tagsStr}
               onChange={(e) => setTagsStr(e.target.value)}
@@ -214,19 +218,19 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
           </div>
 
           <div className="flex gap-2 justify-end pt-2">
-            <button
+            <Button
               type="button"
               onClick={() => setIsCreating(false)}
               className="py-2.5 px-4 rounded-xl text-xs text-text-muted touch-target min-w-[44px]"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               className="py-2.5 px-5 rounded-xl bg-accent text-on-accent font-bold text-xs touch-target min-w-[44px]"
             >
               ذخیره یادداشت
-            </button>
+            </Button>
           </div>
         </form>
       </BottomSheet>
@@ -253,18 +257,18 @@ export const DmCampaignNotes: React.FC<DmCampaignNotesProps> = ({
                 </div>
 
                 <div className="flex items-center gap-1">
-                  <button
+                  <Button
                     onClick={() => handleStartEdit(n)}
                     className="p-1.5 rounded-lg bg-surface-2 text-text-muted hover:text-text-primary"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => onDeleteNote(n.id)}
                     className="p-1.5 rounded-lg bg-surface-2 text-text-muted hover:text-danger"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </div>
               </div>
 

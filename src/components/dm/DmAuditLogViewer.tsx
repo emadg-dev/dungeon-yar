@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
 import React, { useState, useEffect } from 'react';
 import { CampaignAuditLogEntry } from '../../types';
 import { api } from '../../services/api';
@@ -92,7 +95,7 @@ export const DmAuditLogViewer: React.FC<DmAuditLogViewerProps> = ({
         <div className="p-3 border-b border-border bg-surface flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-text-disabled absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
+            <Input noWrapper
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -102,7 +105,7 @@ export const DmAuditLogViewer: React.FC<DmAuditLogViewerProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <select
+            <Select noWrapper
               value={selectedAction}
               onChange={(e) => setSelectedAction(e.target.value)}
               className="py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
@@ -115,16 +118,16 @@ export const DmAuditLogViewer: React.FC<DmAuditLogViewerProps> = ({
               <option value="handout">دست‌نوشته‌ها</option>
               <option value="character">شخصیت‌ها</option>
               <option value="member">اعضا</option>
-            </select>
+            </Select>
 
-            <button
+            <Button
               onClick={loadLogs}
               disabled={loading}
               className="p-2.5 rounded-[10px] bg-surface-2 text-text-muted hover:text-text-primary border border-border touch-target min-w-[44px] min-h-[44px]"
               title="بارگذاری مجدد لاگ‌ها"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -160,13 +163,13 @@ export const DmAuditLogViewer: React.FC<DmAuditLogViewerProps> = ({
                       </span>
 
                       {l.meta && (
-                        <button
+                        <Button
                           onClick={() => setExpandedId(isExpanded ? null : l.id)}
                           className="p-1 rounded text-text-muted hover:text-text-primary"
                           title="نمایش جزئیات فنی"
                         >
                           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>

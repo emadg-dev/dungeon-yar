@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, startTransition } from 'react';
 import { 
   MasterCharacter, CharacterHistoryEvent, CharacterParticipation, BackstorySection,
@@ -219,16 +223,16 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
     <div className="space-y-6 pb-24 text-start" dir="rtl">
       {/* Top Header */}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <button
+        <Button
           onClick={onBack}
           className="flex items-center gap-1.5 text-xs font-bold text-text-muted hover:text-accent-hover transition-colors p-2 rounded-xl bg-bg border border-border min-h-[44px]"
         >
           <ArrowRight className="w-4 h-4" />
           <span>بازگشت به خانه</span>
-        </button>
+        </Button>
 
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
             onClick={() => window.print()}
             className="px-3 py-2 rounded-xl bg-bg border border-border text-text-muted hover:text-accent-hover font-bold text-xs transition-colors flex items-center gap-1.5 min-h-[44px]"
@@ -236,9 +240,9 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           >
             <Printer className="w-4 h-4 text-accent" />
             <span className="hidden sm:inline">چاپ A4</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={handleSave}
             disabled={isSaving}
             className="px-4 py-2 rounded-xl bg-accent text-on-accent font-bold text-xs hover:bg-accent-hover disabled:opacity-50 transition-colors flex items-center gap-1.5 min-h-[44px] shadow-lg shadow-accent/20"
@@ -254,7 +258,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                 <span>{isSaving ? 'در حال ذخیره...' : 'ذخیره شناسنامه'}</span>
               </>
             )}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -279,7 +283,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
               <p className="text-xs text-text-muted mt-0.5">{charData.race} | شناسنامه کلان پلتفرم {APP_NAME_FA}</p>
             </div>
             {/* Status Selector */}
-            <select
+            <Select noWrapper
               value={charData.status}
               onChange={e => setCharData({ ...charData, status: e.target.value as any })}
               className="bg-bg border border-border rounded-xl px-3 py-1.5 text-xs font-semibold text-text-primary self-center sm:self-auto min-h-[44px]"
@@ -288,7 +292,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
               <option value="retired">🟡 وضعیت: بازنشسته</option>
               <option value="dead">🔴 وضعیت: درگذشته</option>
               <option value="archived">⚪ وضعیت: بایگانی</option>
-            </select>
+            </Select>
           </div>
 
           {/* Simple Aggregate Stats Bar */}
@@ -319,7 +323,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
         wrapperClassName="rounded-2xl bg-bg/90 border border-border p-1.5"
         className="gap-1.5"
       >
-        <button
+        <Button
           type="button"
           data-key="identity"
           onClick={() => {
@@ -334,8 +338,8 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           }`}
         >
           <span className="whitespace-nowrap shrink-0">هویت و بک‌استوری</span>
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           data-key="history"
           onClick={() => {
@@ -350,8 +354,8 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           }`}
         >
           <span className="whitespace-nowrap shrink-0">خط زمانی و وقایع ({toPersianDigits(history.length)})</span>
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           data-key="campaigns"
           onClick={() => {
@@ -366,7 +370,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
           }`}
         >
           <span className="whitespace-nowrap shrink-0">کمپین‌های شخصیت ({toPersianDigits(participations.length)})</span>
-        </button>
+        </Button>
       </ScrollableRow>
 
       {/* Tab 1: Identity & Backstory */}
@@ -381,7 +385,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-text-muted mb-1">نام شخصیت</label>
-                <input
+                <Input noWrapper
                   type="text"
                   value={charData.name}
                   onChange={e => setCharData({ ...charData, name: e.target.value })}
@@ -390,7 +394,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
               </div>
               <div>
                 <label className="block text-xs text-text-muted mb-1">نژاد یا تبار</label>
-                <input
+                <Input noWrapper
                   type="text"
                   value={charData.race}
                   onChange={e => setCharData({ ...charData, race: e.target.value })}
@@ -401,7 +405,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
 
             <div>
               <label className="block text-xs text-text-muted mb-1">نشانی تصویر چهره (URL)</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={charData.portraitUrl || ''}
                 onChange={e => setCharData({ ...charData, portraitUrl: e.target.value })}
@@ -412,7 +416,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
 
             <div>
               <label className="block text-xs text-text-muted mb-1">توصیف ظاهری و سیمای ماجراجو</label>
-              <textarea
+              <Textarea noWrapper
                 value={charData.appearance || ''}
                 onChange={e => setCharData({ ...charData, appearance: e.target.value })}
                 rows={2}
@@ -460,20 +464,20 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                 وقایع، ارتقای سطح، مایلیستون‌ها و حضور در جلسات به تفکیک کمپین‌های بازی
               </p>
             </div>
-            <button
+            <Button
               onClick={() => setShowMilestoneForm(!showMilestoneForm)}
               className="px-3 py-1.5 rounded-xl bg-accent/15 border border-accent/30 text-accent-hover text-xs font-bold hover:bg-accent/25 transition-colors flex items-center gap-1.5 min-h-[44px]"
             >
               <Plus className="w-4 h-4" />
               افزودن دستاورد شخصی
-            </button>
+            </Button>
           </div>
 
           {showMilestoneForm && (
             <form onSubmit={handleCreateMilestoneSubmit} className="p-4 rounded-2xl bg-surface border border-accent/30 space-y-3">
               <h4 className="text-xs font-bold text-accent-hover">ثبت دستاورد یا واقعه تاریخی جدید</h4>
               <div>
-                <input
+                <Input noWrapper
                   type="text"
                   value={newMilestoneTitle}
                   onChange={e => setNewMilestoneTitle(e.target.value)}
@@ -482,7 +486,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                 />
               </div>
               <div>
-                <textarea
+                <Textarea noWrapper
                   value={newMilestoneDesc}
                   onChange={e => setNewMilestoneDesc(e.target.value)}
                   placeholder="شرح و پیامدهای این واقعه..."
@@ -491,19 +495,19 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowMilestoneForm(false)}
                   className="px-3 py-1.5 text-xs text-text-muted hover:text-text-primary"
                 >
                   انصراف
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   className="px-4 py-1.5 bg-accent text-on-accent text-xs font-bold rounded-xl hover:bg-accent-hover"
                 >
                   ثبت در خط زمانی
-                </button>
+                </Button>
               </div>
             </form>
           )}
@@ -599,7 +603,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
             <div className="flex items-center gap-2">
               {/* Legacy Join Button */}
               {onLegacyJoin && (
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setLegacyJoinError(null);
@@ -610,15 +614,15 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                 >
                   <RefreshCw className="w-4 h-4 text-purple-400" />
                   <span>ورود میراثی (Legacy Join)</span>
-                </button>
+                </Button>
               )}
-              <button
+              <Button
                 onClick={() => onOpenJoinCampaign(character.id)}
                 className="px-3 py-1.5 rounded-xl bg-accent text-on-accent text-xs font-bold hover:bg-accent-hover transition-colors flex items-center gap-1.5 min-h-[44px]"
               >
                 <Plus className="w-4 h-4" />
                 پیوستن عادی
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -628,12 +632,12 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                 <p className="text-xs text-text-muted">
                   این شخصیت در حال حاضر در هیچ کمپینی شرکت نکرده است.
                 </p>
-                <button
+                <Button
                   onClick={() => onOpenJoinCampaign(character.id)}
                   className="px-4 py-2 rounded-xl bg-accent text-on-accent font-bold text-xs"
                 >
                   پیوستن به اولین کمپین
-                </button>
+                </Button>
               </div>
             ) : (
               participations.map(part => (
@@ -696,7 +700,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
             <form onSubmit={handleLegacyJoinSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-text-primary mb-1.5">انتخاب کمپین مقصد</label>
-                <select
+                <Select noWrapper
                   value={selectedTargetCampaignId}
                   onChange={e => setSelectedTargetCampaignId(e.target.value)}
                   className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-xs text-text-primary focus:border-purple-400 focus:outline-none min-h-[44px]"
@@ -712,7 +716,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
                         </option>
                       );
                     })}
-                </select>
+                </Select>
               </div>
 
               {/* Target Campaign Info Preview */}
@@ -745,7 +749,7 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-text-primary mb-1.5">یادداشت روایی یا توضیحات ورود میراثی (اختیاری)</label>
-                <textarea
+                <Textarea noWrapper
                   value={legacyNotes}
                   onChange={e => setLegacyNotes(e.target.value)}
                   rows={2}
@@ -755,20 +759,20 @@ export const MasterCharacterScreen: React.FC<MasterCharacterScreenProps> = ({
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
-                <button
+                <Button
                   type="button"
                   onClick={() => setLegacyJoinOpen(false)}
                   className="px-4 py-2 text-xs text-text-muted hover:text-text-primary min-h-[44px]"
                 >
                   انصراف
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={isLegacySubmitting || !selectedTargetCampaignId}
                   className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs disabled:opacity-50 transition-all shadow min-h-[44px] flex items-center gap-1.5"
                 >
                   {isLegacySubmitting ? 'در حال ثبت...' : 'تأیید ورود میراثی'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

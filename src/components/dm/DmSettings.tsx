@@ -1,3 +1,5 @@
+import { Button } from '../ui/Button';
+import { Select } from '../ui/Select';
 import React, { useState } from 'react';
 import { User } from '../../types';
 import { Database, Users, Shield, RefreshCw, CheckCircle2, Server, Key } from 'lucide-react';
@@ -61,14 +63,14 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
           </div>
         )}
 
-        <button
+        <Button
           onClick={() => setShowConfirmSheet(true)}
           disabled={importLoading}
           className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-warning to-accent hover:from-accent hover:to-accent-hover text-on-accent font-bold text-xs shadow-lg transition flex items-center gap-2 cursor-pointer disabled:opacity-50 touch-target min-w-[44px]"
         >
           {importLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
           درون‌ریزی و همگام‌سازی اطلاعات پیش‌فرض
-        </button>
+        </Button>
       </div>
 
       {/* Backend & Environment Status */}
@@ -135,14 +137,14 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
 
               {/* Role Toggle */}
               <div className="flex items-center gap-2">
-                <select
+                <Select noWrapper
                   value={u.role}
                   onChange={(e) => onUpdateUserRole(u.id, e.target.value as 'dm' | 'player')}
                   className="bg-surface-2 border border-border-strong text-xs text-text-primary py-1.5 px-2.5 rounded-xl focus:outline-none focus:border-accent"
                 >
                   <option value="player">نقش: بازیکن (Player)</option>
                   <option value="dm">نقش: دانجن مستر (DM)</option>
-                </select>
+                </Select>
               </div>
             </div>
           ))}

@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import React, { useState } from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Campaign, MasterCharacter } from '../../types';
@@ -74,7 +75,7 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
             <label className="text-xs font-bold text-text-primary">انتخاب شخصیت کلان</label>
             {onOpenWizard && (
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   onClose();
@@ -84,14 +85,14 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>یا ساخت شخصیت با ویزارد</span>
-              </button>
+              </Button>
             )}
           </div>
           {myCharacters.length === 0 ? (
             <div className="p-4 rounded-xl bg-surface border border-dashed border-border text-center space-y-2">
               <p className="text-xs text-text-muted">شما هنوز شخصیتی ثبت نکرده‌اید.</p>
               {onOpenWizard && (
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     onClose();
@@ -101,7 +102,7 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
                 >
                   <Sparkles className="w-4 h-4" />
                   ساخت شخصیت با ویزارد 8 مرحله‌ای
-                </button>
+                </Button>
               )}
             </div>
           ) : (
@@ -145,7 +146,7 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
         <div>
           <label className="block text-xs font-bold text-text-primary mb-2">نحوه ورود به کمپین (Entry Mode)</label>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => {
                 setEntryMode('campaign_start');
@@ -158,8 +159,8 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
               }`}
             >
               شروع کمپین (سطح {startingLevel})
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setEntryMode('same_level')}
               className={`p-2.5 rounded-xl border text-xs font-bold transition-all min-h-[44px] ${
@@ -169,8 +170,8 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
               }`}
             >
               با همان سطح قبلی
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setEntryMode('new_level')}
               className={`p-2.5 rounded-xl border text-xs font-bold transition-all min-h-[44px] ${
@@ -180,7 +181,7 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
               }`}
             >
               با سطح سفارشی
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -192,23 +193,23 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
               <span className="text-xs text-text-muted">حداکثر سطح مجاز کمپین: {maxLevel}</span>
             </div>
             <div className="flex items-center gap-3">
-              <button
+              <Button
                 type="button"
                 onClick={() => setLevel(prev => Math.max(1, prev - 1))}
                 disabled={level <= 1}
                 className="w-9 h-9 rounded-xl bg-surface-2 hover:bg-surface-2 text-text-primary disabled:opacity-40 flex items-center justify-center min-h-[44px] min-w-[44px]"
               >
                 <Minus className="w-4 h-4" />
-              </button>
+              </Button>
               <span className="text-lg font-bold text-accent-hover min-w-8 text-center">{level}</span>
-              <button
+              <Button
                 type="button"
                 onClick={() => setLevel(prev => Math.min(maxLevel, prev + 1))}
                 disabled={level >= maxLevel}
                 className="w-9 h-9 rounded-xl bg-surface-2 hover:bg-surface-2 text-text-primary disabled:opacity-40 flex items-center justify-center min-h-[44px] min-w-[44px]"
               >
                 <Plus className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -233,21 +234,21 @@ export const JoinCampaignModal: React.FC<JoinCampaignModalProps> = ({
         </div>
 
         <div className="flex justify-end gap-2 pt-2 border-t border-border">
-          <button
+          <Button
             type="button"
             onClick={onClose}
             className="px-4 py-2.5 rounded-xl text-xs font-bold text-text-muted hover:text-text-primary min-h-[44px]"
           >
             انصراف
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             disabled={isSubmitting || !selectedCharId}
             className="px-5 py-2.5 rounded-xl bg-accent text-on-accent font-bold text-xs hover:bg-accent-hover disabled:opacity-50 transition-colors flex items-center gap-2 min-h-[44px] shadow-lg shadow-accent/20"
           >
             <Sparkles className="w-4 h-4" />
             <span>{isSubmitting ? 'در حال ورود...' : 'ورود به کمپین'}</span>
-          </button>
+          </Button>
         </div>
       </form>
     </BottomSheet>

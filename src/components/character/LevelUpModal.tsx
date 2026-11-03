@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
 import React, { useState, useMemo } from 'react';
 import { 
   Character, 
@@ -266,7 +269,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
             const isCompleted = idx < currentStepIndex;
             const isCurrent = idx === currentStepIndex;
             return (
-              <button
+              <Button
                 key={st.id}
                 type="button"
                 onClick={() => setCurrentStepIndex(idx)}
@@ -280,7 +283,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               >
                 <span>{idx + 1}.</span>
                 <span>{st.label}</span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -328,7 +331,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   <span className="text-xs font-bold text-text-primary">محاسبه افزایش جان (HP)</span>
                 </div>
                 <div className="flex gap-1">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setHpMode('fixed')}
                     className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
@@ -338,8 +341,8 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                     }`}
                   >
                     مقدار ثابت (Fixed)
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => setHpMode('roll')}
                     className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
@@ -349,7 +352,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                     }`}
                   >
                     پرتاب تاس (Roll)
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -382,14 +385,14 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                         +{Math.max(1, rolledHpValue + conMod)} جان
                       </span>
                     </div>
-                    <button
+                    <Button
                       type="button"
                       onClick={handleRollHp}
                       disabled={isRollingHp}
                       className="w-full py-2 rounded-xl bg-surface-2 border border-accent/40 text-accent-hover text-xs font-bold hover:bg-accent/15 transition"
                     >
                       {isRollingHp ? 'در حال پرتاب تاس...' : `پرتاب مجدد تاس 1d${hitDie}`}
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -414,7 +417,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   <span className="text-xs font-bold text-text-primary">بهبود ویژگی‌ها (ASI)</span>
                 </div>
                 <div className="flex gap-1 text-xs">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setAsiMode('plus2')}
                     className={`px-2.5 py-1 rounded-lg border font-bold transition ${
@@ -424,8 +427,8 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                     }`}
                   >
                     +2 به یک ویژگی
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => setAsiMode('plus1plus1')}
                     className={`px-2.5 py-1 rounded-lg border font-bold transition ${
@@ -435,7 +438,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                     }`}
                   >
                     +1 به دو ویژگی
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -446,7 +449,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               {asiMode === 'plus2' ? (
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-text-primary">انتخاب ویژگی (+2):</label>
-                  <select
+                  <Select noWrapper
                     value={asiStat1}
                     onChange={(e) => setAsiStat1(e.target.value as AbilityName)}
                     className="w-full p-2.5 rounded-xl bg-info border border-border-strong text-xs text-text-primary"
@@ -460,13 +463,13 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                         </option>
                       );
                     })}
-                  </select>
+                  </Select>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-text-primary">ویژگی اول (+1):</label>
-                    <select
+                    <Select noWrapper
                       value={asiStat1}
                       onChange={(e) => setAsiStat1(e.target.value as AbilityName)}
                       className="w-full p-2.5 rounded-xl bg-info border border-border-strong text-xs text-text-primary"
@@ -479,12 +482,12 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                           </option>
                         );
                       })}
-                    </select>
+                    </Select>
                   </div>
 
                   <div className="space-y-1.5">
                     <label className="block text-xs font-bold text-text-primary">ویژگی دوم (+1):</label>
-                    <select
+                    <Select noWrapper
                       value={asiStat2}
                       onChange={(e) => setAsiStat2(e.target.value as AbilityName)}
                       className="w-full p-2.5 rounded-xl bg-info border border-border-strong text-xs text-text-primary"
@@ -497,7 +500,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                           </option>
                         );
                       })}
-                    </select>
+                    </Select>
                   </div>
                 </div>
               )}
@@ -521,7 +524,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                 {classTemplate?.subclasses?.map((sub: any) => {
                   const isSelected = chosenSubclass === sub.name;
                   return (
-                    <button
+                    <Button
                       type="button"
                       key={sub.name}
                       onClick={() => setChosenSubclass(sub.name)}
@@ -533,7 +536,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                     >
                       <div className="text-xs font-black">{sub.name}</div>
                       {sub.desc && <p className="text-xs text-text-muted mt-1 leading-relaxed">{sub.desc}</p>}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -554,7 +557,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
               </p>
 
               <div className="flex gap-2">
-                <input
+                <Input noWrapper
                   type="text"
                   value={newSpellInput}
                   onChange={e => setNewSpellInput(e.target.value)}
@@ -568,7 +571,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                     }
                   }}
                 />
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     if (newSpellInput.trim()) {
@@ -579,7 +582,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                   className="px-3 py-2 rounded-xl bg-info/20 border border-info/40 text-info text-xs font-bold"
                 >
                   افزودن
-                </button>
+                </Button>
               </div>
 
               {learnedSpells.length > 0 && (
@@ -590,13 +593,13 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
                       className="px-2.5 py-1 rounded-lg bg-info/15 border border-info/30 text-xs text-info flex items-center gap-1.5"
                     >
                       <span>{sp}</span>
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setLearnedSpells(prev => prev.filter((_, i) => i !== idx))}
                         className="text-danger hover:text-danger"
                       >
                         ×
-                      </button>
+                      </Button>
                     </span>
                   ))}
                 </div>
@@ -715,29 +718,29 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
         {/* Stepper Navigation Buttons */}
         <div className="flex flex-wrap items-center justify-between gap-2 gap-3 pt-3 border-t border-border">
           {currentStepIndex > 0 ? (
-            <button
+            <Button
               type="button"
               onClick={handleBack}
               className="px-4 py-2.5 rounded-xl bg-surface-2 border border-border text-xs font-bold text-text-primary hover:border-accent transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
             >
               <ChevronRight className="w-4 h-4" />
               <span>مرحله قبل</span>
-            </button>
+            </Button>
           ) : (
             <div />
           )}
 
           {currentStepIndex < steps.length - 1 ? (
-            <button
+            <Button
               type="button"
               onClick={handleNext}
               className="px-5 py-2.5 rounded-xl bg-accent text-on-accent text-xs font-extrabold hover:bg-accent-hover transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px] shadow-lg shadow-accent/20"
             >
               <span>مرحله بعد</span>
               <ChevronLeft className="w-4 h-4" />
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
               type="button"
               disabled={isSubmitting}
               onClick={handleSubmit}
@@ -745,7 +748,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({
             >
               <Check className="w-4 h-4" />
               <span>{isSubmitting ? 'در حال ثبت ارتقا...' : `تأیید و صعود به سطح ${nextLevel}`}</span>
-            </button>
+            </Button>
           )}
         </div>
       </div>

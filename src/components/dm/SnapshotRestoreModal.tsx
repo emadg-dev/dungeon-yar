@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import React, { useState, useEffect } from 'react';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { RotateCcw, Clock, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
@@ -114,7 +115,7 @@ export const SnapshotRestoreModal: React.FC<SnapshotRestoreModalProps> = ({
                     </p>
                   </div>
 
-                  <button
+                  <Button
                     type="button"
                     disabled={isRestoring}
                     onClick={() => handleRestore(snap.id)}
@@ -122,7 +123,7 @@ export const SnapshotRestoreModal: React.FC<SnapshotRestoreModalProps> = ({
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>{isRestoring ? 'در حال بازگردانی...' : 'بازگردانی این وضعیت'}</span>
-                  </button>
+                  </Button>
                 </div>
               );
             })}

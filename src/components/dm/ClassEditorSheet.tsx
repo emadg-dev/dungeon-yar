@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, useMemo } from 'react';
 import { ClassTemplate, EquipmentChoiceGroup, CompanionDef } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -330,7 +334,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
             { id: 'companions', label: '7. همراهان' },
             { id: 'hp_table', label: '8. جدول جان' }
           ].map(tab => (
-            <button
+            <Button
               key={tab.id}
               data-key={tab.id}
               type="button"
@@ -342,7 +346,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
               }`}
             >
               <span className="whitespace-nowrap shrink-0">{tab.label}</span>
-            </button>
+            </Button>
           ))}
         </ScrollableRow>
 
@@ -351,7 +355,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
           <div className="space-y-3">
             <div>
               <label className="block text-text-muted mb-1 font-bold">نام اصلی کلاس (شناسه):</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
@@ -362,7 +366,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
 
             <div>
               <label className="block text-text-muted mb-1 font-bold">عنوان تماتیک / لقب:</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
@@ -373,7 +377,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
 
             <div>
               <label className="block text-text-muted mb-1 font-bold">توصیف و زمینه:</label>
-              <textarea
+              <Textarea noWrapper
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 rows={3}
@@ -385,7 +389,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-text-muted mb-1 font-bold">تاس جان (Hit Die):</label>
-                <select
+                <Select noWrapper
                   value={hitDie}
                   onChange={e => setHitDie(Number(e.target.value))}
                   className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:border-accent outline-none"
@@ -394,7 +398,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                   <option value={8}>d8 (روگ، دروید، راهب، کلریک)</option>
                   <option value={10}>d10 (پالادین، رنجر، جنگجو)</option>
                   <option value={12}>d12 (بربرین)</option>
-                </select>
+                </Select>
               </div>
 
               <div>
@@ -403,7 +407,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                   {(['str', 'dex', 'con', 'int', 'wis', 'cha'] as AbilityName[]).map(ab => {
                     const active = savingThrows.includes(ab);
                     return (
-                      <button
+                      <Button
                         key={ab}
                         type="button"
                         onClick={() => {
@@ -418,7 +422,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                         }`}
                       >
                         {ab.toUpperCase()}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -431,7 +435,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                 {(['str', 'dex', 'con', 'int', 'wis', 'cha'] as AbilityName[]).map(ab => (
                   <div key={ab} className="text-center">
                     <span className="block text-xs text-text-muted">{ab.toUpperCase()}</span>
-                    <input
+                    <Input noWrapper
                       type="number"
                       value={baseAbilities[ab] ?? 10}
                       onChange={e => setBaseAbilities(prev => ({ ...prev, [ab]: Number(e.target.value) }))}
@@ -452,7 +456,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                 <span className="font-bold text-text-primary">انتخاب مهارت‌ها:</span>
                 <div className="flex items-center gap-2">
                   <span className="text-text-muted">تعداد انتخاب:</span>
-                  <input
+                  <Input noWrapper
                     type="number"
                     min={1}
                     max={6}
@@ -467,7 +471,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                 {Object.entries(STANDARD_5E_SKILLS).map(([key, meta]) => {
                   const selected = skillChoices.from.includes(key);
                   return (
-                    <button
+                    <Button
                       key={key}
                       type="button"
                       onClick={() => {
@@ -484,7 +488,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                     >
                       <span className="truncate">{meta.nameFa.split('(')[0].trim()}</span>
                       {selected ? <Check className="w-3 h-3 shrink-0" /> : null}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -494,7 +498,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
             <div className="p-3 rounded-xl bg-surface-2/70 border border-border space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-bold text-text-primary">دسته‌های انتخاب تجهیزات آغازین:</span>
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     const newId = `group_${Date.now()}`;
@@ -507,13 +511,13 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                 >
                   <Plus className="w-3 h-3" />
                   <span>افزودن دسته</span>
-                </button>
+                </Button>
               </div>
 
               {startingEquipmentChoices.map((group, gIdx) => (
                 <div key={group.id || gIdx} className="p-2.5 rounded-xl bg-surface border border-border space-y-2">
                   <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
-                    <input
+                    <Input noWrapper
                       type="text"
                       value={group.label}
                       onChange={e => {
@@ -523,13 +527,13 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                       placeholder="عنوان دسته (مثلاً: زره اولیه)"
                       className="bg-surface-2 border border-border rounded-lg px-2 py-1 text-xs text-text-primary flex-1"
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setStartingEquipmentChoices(prev => prev.filter((_, i) => i !== gIdx))}
                       className="text-danger p-1 hover:bg-danger/20 rounded-lg"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </div>
 
                   {/* Options inside this group */}
@@ -537,7 +541,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                     {group.options.map((opt, oIdx) => (
                       <div key={oIdx} className="flex items-center gap-2">
                         <span className="text-xs text-text-muted">({oIdx + 1})</span>
-                        <input
+                        <Input noWrapper
                           type="text"
                           value={opt.label}
                           onChange={e => {
@@ -552,7 +556,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                           placeholder="برچسب انتخاب"
                           className="w-1/3 bg-surface-2 border border-border rounded-lg px-2 py-1 text-xs text-text-primary"
                         />
-                        <input
+                        <Input noWrapper
                           type="text"
                           value={opt.items.join('، ')}
                           onChange={e => {
@@ -569,7 +573,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                         />
                       </div>
                     ))}
-                    <button
+                    <Button
                       type="button"
                       onClick={() => {
                         setStartingEquipmentChoices(prev => prev.map((g, i) => {
@@ -583,7 +587,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                       className="text-xs text-accent hover:underline block pt-1"
                     >
                       + افزودن گزینه به این دسته
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -604,7 +608,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-text-muted mb-1 font-bold">مقدار پایه (Base AC):</label>
-                  <input
+                  <Input noWrapper
                     type="number"
                     value={acFormula.base}
                     onChange={e => setAcFormula(prev => ({ ...prev, base: Number(e.target.value) }))}
@@ -613,7 +617,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 pt-6">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setAcFormula(prev => ({ ...prev, unarmored: !prev.unarmored }))}
                     className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition ${
@@ -624,7 +628,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                   >
                     {acFormula.unarmored ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
                     <span>دفاع بدون زره (Unarmored)</span>
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -634,7 +638,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                   {(['dex', 'con', 'wis', 'int', 'cha'] as AbilityName[]).map(ab => {
                     const active = acFormula.abilityMods.includes(ab);
                     return (
-                      <button
+                      <Button
                         key={ab}
                         type="button"
                         onClick={() => {
@@ -652,7 +656,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                         }`}
                       >
                         +{ab.toUpperCase()} Mod
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -660,7 +664,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
 
               <div>
                 <label className="block text-text-muted mb-1 font-bold">یادداشت فنی یا قانون ویژه AC:</label>
-                <input
+                <Input noWrapper
                   type="text"
                   value={acFormula.note || ''}
                   onChange={e => setAcFormula(prev => ({ ...prev, note: e.target.value }))}
@@ -674,7 +678,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
             <div className="p-3 rounded-xl bg-surface-2/70 border border-border space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-bold text-text-primary">منابع کلاسی (Class Resources):</span>
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setClassResources(prev => [
@@ -686,12 +690,12 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                 >
                   <Plus className="w-3 h-3" />
                   <span>افزودن منبع</span>
-                </button>
+                </Button>
               </div>
 
               {classResources.map((res, rIdx) => (
                 <div key={rIdx} className="p-2.5 rounded-xl bg-surface border border-border grid grid-cols-1 sm:grid-cols-4 gap-2 items-center">
-                  <input
+                  <Input noWrapper
                     type="text"
                     value={res.name}
                     onChange={e => {
@@ -701,7 +705,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                     placeholder="نام منبع (مثلاً: امتیاز کی/لحظه)"
                     className="bg-surface-2 border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
                   />
-                  <input
+                  <Input noWrapper
                     type="text"
                     value={typeof res.formulaOrDiceByLevel === 'string' ? res.formulaOrDiceByLevel : JSON.stringify(res.formulaOrDiceByLevel)}
                     onChange={e => {
@@ -711,7 +715,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                     placeholder="فرمول: = level یا INT mod + 1"
                     className="bg-surface-2 border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
                   />
-                  <select
+                  <Select noWrapper
                     value={res.resetType || 'short'}
                     onChange={e => {
                       const val = e.target.value as any;
@@ -721,15 +725,15 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                   >
                     <option value="short">استراحت کوتاه</option>
                     <option value="long">استراحت بلند</option>
-                  </select>
+                  </Select>
                   <div className="flex justify-end">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setClassResources(prev => prev.filter((_, i) => i !== rIdx))}
                       className="text-danger p-1 hover:bg-danger/20 rounded-lg"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -743,7 +747,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
             <div className="p-3 rounded-xl bg-surface-2/70 border border-border space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-bold text-text-primary">سیستم اجرای جادو (Spellcasting):</span>
-                <button
+                <Button
                   type="button"
                   onClick={() => setSpellcastingEnabled(!spellcastingEnabled)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition ${
@@ -753,7 +757,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                   }`}
                 >
                   {spellcastingEnabled ? 'جادوگری فعال است' : 'فاقد جادوگری'}
-                </button>
+                </Button>
               </div>
 
               {spellcastingEnabled && (
@@ -761,7 +765,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-text-muted mb-1 font-bold">ویژگی جادوگری (Spell Ability):</label>
-                      <select
+                      <Select noWrapper
                         value={spellAbility}
                         onChange={e => setSpellAbility(e.target.value as any)}
                         className="w-full bg-surface border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
@@ -769,19 +773,19 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                         <option value="int">هوش (INT)</option>
                         <option value="wis">حکمت (WIS)</option>
                         <option value="cha">فرهمندی (CHA)</option>
-                      </select>
+                      </Select>
                     </div>
 
                     <div>
                       <label className="block text-text-muted mb-1 font-bold">نوع پیشرفت جایگاه جادو:</label>
-                      <select
+                      <Select noWrapper
                         value={casterType}
                         onChange={e => setCasterType(e.target.value as any)}
                         className="w-full bg-surface border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
                       >
                         <option value="full">جادوگر کامل (Full Caster: سطح 1 تا 9)</option>
                         <option value="half">نیمه‌جادوگر (Half Caster: سطح 1 تا 5)</option>
-                      </select>
+                      </Select>
                     </div>
                   </div>
 
@@ -851,12 +855,12 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                       </div>
                     </div>
 
-                    <button
+                    <Button
                       type="button"
                       className="p-1 rounded bg-surface text-text-muted hover:text-text-primary"
                     >
                       <Edit className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 );
               })}
@@ -869,7 +873,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-text-primary">زیرکلاس‌ها (Subclasses):</span>
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setSubclasses(prev => [
@@ -881,13 +885,13 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
               >
                 <Plus className="w-3 h-3" />
                 <span>افزودن زیرکلاس</span>
-              </button>
+              </Button>
             </div>
 
             {subclasses.map((sub, sIdx) => (
               <div key={sIdx} className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
-                  <input
+                  <Input noWrapper
                     type="text"
                     value={sub.name}
                     onChange={e => {
@@ -898,7 +902,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                   />
                   <div className="flex items-center gap-1">
                     <span className="text-xs text-text-muted">سطح بازشدن:</span>
-                    <input
+                    <Input noWrapper
                       type="number"
                       value={sub.unlockLevel}
                       onChange={e => {
@@ -908,13 +912,13 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                       className="w-12 bg-surface border border-border rounded-lg px-2 py-1 text-center text-xs text-text-primary"
                     />
                   </div>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setSubclasses(prev => prev.filter((_, i) => i !== sIdx))}
                     className="text-danger p-1 hover:bg-danger/20 rounded-lg"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}
@@ -926,7 +930,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-text-primary">همراهان مکانیکی و جادویی (Companions):</span>
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setCompanions(prev => [
@@ -938,13 +942,13 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
               >
                 <Plus className="w-3 h-3" />
                 <span>افزودن همراه</span>
-              </button>
+              </Button>
             </div>
 
             {companions.map((comp, cIdx) => (
               <div key={cIdx} className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
-                  <input
+                  <Input noWrapper
                     type="text"
                     value={comp.name}
                     onChange={e => {
@@ -954,7 +958,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                     placeholder="نام همراه"
                     className="bg-surface border border-border rounded-lg px-2 py-1 text-xs text-text-primary font-bold flex-1"
                   />
-                  <input
+                  <Input noWrapper
                     type="text"
                     value={comp.type || ''}
                     onChange={e => {
@@ -964,17 +968,17 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                     placeholder="نوع (construct/beast)"
                     className="w-24 bg-surface border border-border rounded-lg px-2 py-1 text-xs text-text-primary"
                   />
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setCompanions(prev => prev.filter((_, i) => i !== cIdx))}
                     className="text-danger p-1 hover:bg-danger/20 rounded-lg"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
-                  <input
+                  <Input noWrapper
                     type="text"
                     value={typeof comp.acFormula === 'string' ? comp.acFormula : (comp.acFormula?.base ? String(comp.acFormula.base) : '')}
                     onChange={e => {
@@ -984,7 +988,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                     placeholder="فرمول AC (مثلاً: 13 + CON)"
                     className="bg-surface border border-border rounded-lg px-2 py-1 text-xs text-text-primary"
                   />
-                  <input
+                  <Input noWrapper
                     type="text"
                     value={comp.hpFormula || ''}
                     onChange={e => {
@@ -1005,7 +1009,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-text-primary">جدول پیشرفت جان ثابت (Fixed HP Table 1–20):</span>
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   const die = hitDie;
@@ -1021,14 +1025,14 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
               >
                 <RefreshCw className="w-3 h-3" />
                 <span>محاسبه خودکار میانگین</span>
-              </button>
+              </Button>
             </div>
 
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-64 overflow-y-auto pe-1">
               {Array.from({ length: 20 }, (_, i) => i + 1).map(lvl => (
                 <div key={lvl} className="p-2 rounded-xl bg-surface-2 border border-border text-center">
                   <span className="text-xs text-text-muted block">سطح {lvl}</span>
-                  <input
+                  <Input noWrapper
                     type="number"
                     value={fixedHpByLevel[lvl - 1] ?? 10}
                     onChange={e => {
@@ -1100,15 +1104,15 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
 
         {/* Action Buttons */}
         <div className="pt-3 border-t border-border flex items-center justify-end gap-2">
-          <button
+          <Button
             type="button"
             onClick={onClose}
             className="px-4 py-2 rounded-xl bg-surface-2 border border-border text-text-muted hover:text-text-primary font-bold min-h-[44px]"
           >
             انصراف
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             onClick={handleSaveAll}
             disabled={isSaving}
@@ -1116,7 +1120,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
           >
             <Save className="w-4 h-4" />
             <span>{isSaving ? 'در حال ذخیره‌سازی...' : 'ذخیره کلاس'}</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -1130,7 +1134,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
           <div className="space-y-3 py-2 text-start text-xs" dir="rtl">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-bold text-text-primary">ویژگی‌های آزادشده در این سطح:</span>
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setEditingLevelFeatures(prev => [
@@ -1142,7 +1146,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
               >
                 <Plus className="w-3 h-3" />
                 <span>افزودن قابلیت</span>
-              </button>
+              </Button>
             </div>
 
             {editingLevelFeatures.length === 0 ? (
@@ -1151,7 +1155,7 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
               editingLevelFeatures.map((feat, fIdx) => (
                 <div key={fIdx} className="p-2.5 rounded-xl bg-surface border border-border space-y-2">
                   <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
-                    <input
+                    <Input noWrapper
                       type="text"
                       value={feat.name || ''}
                       onChange={e => {
@@ -1161,15 +1165,15 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
                       placeholder="نام ویژگی"
                       className="bg-surface-2 border border-border rounded-lg px-2 py-1 text-xs text-text-primary font-bold flex-1"
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setEditingLevelFeatures(prev => prev.filter((_, i) => i !== fIdx))}
                       className="text-danger p-1 hover:bg-danger/20 rounded-lg"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </div>
-                  <textarea
+                  <Textarea noWrapper
                     rows={2}
                     value={feat.description || ''}
                     onChange={e => {
@@ -1184,20 +1188,20 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
             )}
 
             <div className="pt-2 flex justify-end gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setEditingLevel(null)}
                 className="px-3 py-1.5 rounded-xl bg-surface-2 text-text-muted min-h-[44px]"
               >
                 لغو
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleSaveLevelFeatures}
                 className="px-4 py-1.5 rounded-xl btn-primary-amber font-bold text-xs min-h-[44px]"
               >
                 تأیید سطح {editingLevel}
-              </button>
+              </Button>
             </div>
           </div>
         </BottomSheet>

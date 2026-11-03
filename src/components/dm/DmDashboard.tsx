@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import React, { useState } from 'react';
 import { 
   Campaign, Character, CharacterNote, CharacterParticipation, 
@@ -167,14 +168,14 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={nextDay}
           className="flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] btn-primary-amber text-xs font-bold transition touch-target min-w-[44px]"
         >
           <span>روز بعد</span>
           <ChevronRight className="w-4 h-4" />
-        </button>
+        </Button>
       </div>
 
       {/* Step 4.1: Next Session / Scheduling Card for DM */}
@@ -231,14 +232,14 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
         </div>
 
         {onOpenSetupChecklist && (
-          <button
+          <Button
             type="button"
             onClick={onOpenSetupChecklist}
             className="px-3 py-1.5 rounded-xl bg-surface-3 hover:bg-surface-3 text-accent-hover text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
           >
             <span>بازبینی چک‌لیست</span>
             <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         )}
       </div>
 
@@ -247,41 +248,41 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
         <span className="text-xs font-bold text-text-muted block px-0.5">عملیات سریع گروهی و پیشرفت</span>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {/* XP Award Quick Action */}
-          <button
+          <Button
             type="button"
             onClick={() => setXpModalOpen(true)}
             className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-accent/15 border border-accent/40 text-accent-hover text-xs font-bold hover:bg-accent/25 transition touch-target min-w-[44px]"
           >
             <Award className="w-4 h-4 text-accent-hover" />
             <span>اعطای امتیاز تجربه (XP)</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             onClick={rollSecretCheck}
             className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-surface-2 border border-border text-text-primary text-xs font-bold hover:border-accent transition touch-target min-w-[44px]"
           >
             <Dices className="w-4 h-4 text-accent" />
             <span>چک ادراک مخفی</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             onClick={() => onApplyGroupRest('short')}
             className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-surface-2 border border-border text-text-primary text-xs font-bold hover:border-accent transition touch-target min-w-[44px]"
           >
             <Moon className="w-4 h-4 text-accent" />
             <span>استراحت کوتاه گروه</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
             onClick={() => onApplyGroupRest('long')}
             className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-[10px] bg-surface-2 border border-border text-text-primary text-xs font-bold hover:border-accent transition touch-target min-w-[44px]"
           >
             <Sun className="w-4 h-4 text-accent" />
             <span>استراحت بلند گروه</span>
-          </button>
+          </Button>
         </div>
 
         {secretCheckNotice && (
@@ -302,14 +303,14 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
             <span className="text-xs text-text-muted hidden sm:inline">• نظارت، کنترل ارتقا، اسنپ‌شات و قفل برگه</span>
           </div>
           {onCreateForPlayer && (
-            <button
+            <Button
               type="button"
               onClick={onCreateForPlayer}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-accent/20 text-accent-hover border border-accent/40 hover:bg-accent/30 text-xs font-bold transition min-h-[44px]"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>ساخت برای بازیکن (ویزارد)</span>
-            </button>
+            </Button>
           )}
         </div>
 
@@ -384,7 +385,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                   <div className="grid grid-cols-2 gap-1.5 text-xs">
                     {/* Milestone Level-Up Toggle */}
                     {onToggleMilestoneLevelUp && part && (
-                      <button
+                      <Button
                         type="button"
                         onClick={() => onToggleMilestoneLevelUp(part.id, !isLevelUpAvailable)}
                         className={`px-2 py-1.5 rounded-lg border flex items-center justify-center gap-1 font-bold transition ${
@@ -395,12 +396,12 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                       >
                         <ArrowUpCircle className="w-3.5 h-3.5" />
                         <span>{isLevelUpAvailable ? 'لغو ارتقا' : 'ارتقای مایلیستون'}</span>
-                      </button>
+                      </Button>
                     )}
 
                     {/* Respec Window Toggle */}
                     {onToggleRespecWindow && part && (
-                      <button
+                      <Button
                         type="button"
                         onClick={() => onToggleRespecWindow(part.id, isSheetLocked)}
                         className={`px-2 py-1.5 rounded-lg border flex items-center justify-center gap-1 font-bold transition ${
@@ -411,24 +412,24 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                       >
                         {isSheetLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
                         <span>{isSheetLocked ? 'بازگشایی Respec' : 'قفل کردن برگه'}</span>
-                      </button>
+                      </Button>
                     )}
 
                     {/* Snapshot Restore Modal */}
                     {part && (
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setSnapshotModalChar({ participationId: part.id, characterName: char.name })}
                         className="px-2 py-1.5 rounded-lg bg-surface-2 border border-border hover:border-accent text-text-primary flex items-center justify-center gap-1 font-bold transition"
                       >
                         <Clock className="w-3.5 h-3.5 text-accent" />
                         <span>اسنپ‌شات‌ها (10)</span>
-                      </button>
+                      </Button>
                     )}
 
                     {/* Undo Last Level-Up */}
                     {onUndoLevelUp && part && char.level > 1 && (
-                      <button
+                      <Button
                         type="button"
                         onClick={() => {
                           if (confirm(`آیا از واگرد آخرین ارتقای سطح برای ${char.name} اطمینان دارید؟`)) {
@@ -439,33 +440,33 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                         <span>واگرد ارتقا (-1)</span>
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
 
                 {/* Bottom Actions: Award Inspiration / DM Override / Inspect */}
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border text-xs gap-2">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => awardInspiration(char)}
                     className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-surface-2 border border-border text-accent hover:border-accent text-xs font-bold transition touch-target min-w-[44px]"
                   >
                     <Award className="w-3.5 h-3.5" />
                     <span>اعطای الهام</span>
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setOverrideModalChar({ character: char, participation: part })}
                     className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-surface-2 border border-border text-text-primary hover:text-accent text-xs font-bold transition touch-target min-w-[44px]"
                   >
                     <Edit3 className="w-3.5 h-3.5 text-accent" />
                     <span>ویرایش مستقیم DM</span>
-                  </button>
+                  </Button>
 
                   {part && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setGrantModalChar({ participationId: part.id, characterName: char.name })}
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-surface-2 border border-border text-accent-hover hover:border-accent text-xs font-bold transition touch-target min-w-[44px]"
@@ -473,17 +474,17 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                     >
                       <Sparkles className="w-3.5 h-3.5 text-accent" />
                       <span>اجازه‌ی ویرایش</span>
-                    </button>
+                    </Button>
                   )}
 
-                  <button
+                  <Button
                     type="button"
                     onClick={() => onInspectCharacter(char.id)}
                     className="flex items-center gap-1 px-2.5 py-1.5 rounded-[8px] bg-surface-2 border border-border text-text-primary hover:text-accent text-xs font-bold transition touch-target min-w-[44px] ms-auto"
                   >
                     <span>برگه</span>
                     <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             );

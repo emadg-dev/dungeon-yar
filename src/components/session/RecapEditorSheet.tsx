@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState, useEffect } from 'react';
 import { SessionRecap, Session, Campaign, SessionRecapVisibility, SessionRecapStatus, NPC, LocationEntry, CampaignNote } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -133,7 +137,7 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
 
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-text-muted">جلسه مربوطه</label>
-          <select
+          <Select noWrapper
             value={sessionId}
             onChange={(e) => {
               setSessionId(e.target.value);
@@ -149,12 +153,12 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
                 جلسه {s.number}: {s.title} ({s.status === 'done' ? 'برگزارشده' : s.status === 'confirmed' ? 'تأییدشده' : 'برنامه‌ریزی‌شده'})
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-text-muted">عنوان سرگذشت</label>
-          <input
+          <Input noWrapper
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -165,7 +169,7 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
 
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-text-muted">متن و شرح وقایع</label>
-          <textarea
+          <Textarea noWrapper
             rows={7}
             value={body}
             onChange={(e) => setBody(e.target.value)}
@@ -177,25 +181,25 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="text-xs font-bold text-text-muted block mb-1">محدوده نمایش</label>
-            <select
+            <Select noWrapper
               value={visibility}
               onChange={(e) => setVisibility(e.target.value as any)}
               className="w-full px-2.5 py-2 rounded-[8px] bg-surface border border-border text-xs text-text-primary"
             >
               <option value="party">نمایش برای همه گروه (Party)</option>
               <option value="dm_only">محرمانه دانجن مستر (DM Only)</option>
-            </select>
+            </Select>
           </div>
           <div>
             <label className="text-xs font-bold text-text-muted block mb-1">وضعیت انتشار</label>
-            <select
+            <Select noWrapper
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
               className="w-full px-2.5 py-2 rounded-[8px] bg-surface border border-border text-xs text-text-primary"
             >
               <option value="published">انتشار در کمپین</option>
               <option value="draft">ذخیره به عنوان پیش‌نویس</option>
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -207,7 +211,7 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
               {locations.slice(0, 8).map(loc => {
                 const sel = linkedLocIds.includes(loc.id);
                 return (
-                  <button
+                  <Button
                     key={loc.id}
                     type="button"
                     onClick={() => toggleLocation(loc.id)}
@@ -217,13 +221,13 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
                   >
                     <MapPin className="w-2.5 h-2.5" />
                     <span>{loc.name}</span>
-                  </button>
+                  </Button>
                 );
               })}
               {npcs.slice(0, 8).map(npc => {
                 const sel = linkedNpcIds.includes(npc.id);
                 return (
-                  <button
+                  <Button
                     key={npc.id}
                     type="button"
                     onClick={() => toggleNpc(npc.id)}
@@ -233,21 +237,21 @@ export const RecapEditorSheet: React.FC<RecapEditorSheetProps> = ({
                   >
                     <UserIcon className="w-2.5 h-2.5" />
                     <span>{npc.name}</span>
-                  </button>
+                  </Button>
                 );
               })}
             </div>
           </div>
         )}
 
-        <button
+        <Button
           type="submit"
           disabled={isSaving}
           className="w-full py-3.5 rounded-[12px] btn-primary-amber font-extrabold text-xs shadow-lg flex items-center justify-center gap-2 min-h-[48px] touch-target min-w-[44px]"
         >
           <Save className="w-4 h-4" />
           <span>{isSaving ? 'در حال ذخیره...' : 'ذخیره خلاصه جلسه'}</span>
-        </button>
+        </Button>
       </form>
     </BottomSheet>
   );

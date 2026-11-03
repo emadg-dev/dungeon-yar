@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState } from 'react';
 import { Quest, QuestStatus, QuestObjective, QuestRewardRef, NPC, LocationEntry, Character } from '../../types';
 import { 
@@ -147,7 +151,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
             <label className="text-xs font-black text-text-primary block">
               عنوان مأموریت <span className="text-accent">*</span>
             </label>
-            <input
+            <Input noWrapper
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -161,7 +165,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-text-primary block">وضعیت مأموریت</label>
-              <select
+              <Select noWrapper
                 value={status}
                 onChange={(e) => setStatus(e.target.value as QuestStatus)}
                 className="w-full py-2 px-3 rounded-[10px] bg-surface border border-border text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
@@ -171,12 +175,12 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                 <option value="completed">تکمیل شده</option>
                 <option value="failed">شکست‌خورده</option>
                 <option value="abandoned">رها شده</option>
-              </select>
+              </Select>
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-text-primary block">اولویت نمایش (ترتیب)</label>
-              <input
+              <Input noWrapper
                 type="number"
                 value={sortIndex}
                 onChange={(e) => setSortIndex(Number(e.target.value))}
@@ -188,7 +192,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
           {/* Description */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-text-primary block">شرح مأموریت (برای بازیکنان)</label>
-            <textarea
+            <Textarea noWrapper
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="توضیحاتی که پس از آشکارسازی در طومار مأموریت‌ها نمایش داده می‌شود..."
@@ -204,14 +208,14 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                 <span>اهداف مأموریت</span>
                 <span className="text-xs text-text-muted">({objectives.length})</span>
               </label>
-              <button
+              <Button
                 type="button"
                 onClick={handleAddObjective}
                 className="text-xs font-bold text-accent hover:text-accent-hover flex items-center gap-1 touch-target min-w-[44px] py-1 px-2 rounded-[8px] hover:bg-accent/10 transition"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>هدف جدید</span>
-              </button>
+              </Button>
             </div>
 
             <div className="space-y-2">
@@ -222,7 +226,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                 >
                   <div className="flex items-center gap-2">
                     {/* Done toggle */}
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleUpdateObjective(obj.id, { done: !obj.done })}
                       className="touch-target min-w-[44px] p-1 text-text-muted hover:text-success transition shrink-0"
@@ -233,10 +237,10 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                       ) : (
                         <Circle className="w-4 h-4 text-text-muted" />
                       )}
-                    </button>
+                    </Button>
 
                     {/* Objective text */}
-                    <input
+                    <Input noWrapper
                       type="text"
                       value={obj.text}
                       onChange={(e) => handleUpdateObjective(obj.id, { text: e.target.value })}
@@ -245,7 +249,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                     />
 
                     {/* Visibility toggle for player */}
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleUpdateObjective(obj.id, { visible: !obj.visible })}
                       className={`touch-target min-w-[44px] p-1 rounded-[6px] transition shrink-0 ${
@@ -254,18 +258,18 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                       title={obj.visible ? 'آشکار برای بازیکنان' : 'پنهان از دید بازیکنان'}
                     >
                       {obj.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                    </button>
+                    </Button>
 
                     {/* Remove objective */}
                     {objectives.length > 1 && (
-                      <button
+                      <Button
                         type="button"
                         onClick={() => handleRemoveObjective(obj.id)}
                         className="touch-target min-w-[44px] p-1 text-rose-400 hover:text-rose-300 transition shrink-0"
                         title="حذف هدف"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
+                      </Button>
                     )}
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-text-muted px-1">
@@ -286,7 +290,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                 <Users className="w-3.5 h-3.5 text-accent" />
                 <span>اعطاکننده مأموریت (شخصیت / NPC)</span>
               </label>
-              <select
+              <Select noWrapper
                 value={giverNpcId}
                 onChange={(e) => setGiverNpcId(e.target.value)}
                 className="w-full py-2 px-3 rounded-[10px] bg-surface border border-border text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
@@ -297,7 +301,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                     {npc.name} ({npc.region || 'زروانیا'})
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             <div className="space-y-1.5">
@@ -305,7 +309,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                 <MapPin className="w-3.5 h-3.5 text-info" />
                 <span>مکان مرتبط</span>
               </label>
-              <select
+              <Select noWrapper
                 value={locationId}
                 onChange={(e) => setLocationId(e.target.value)}
                 className="w-full py-2 px-3 rounded-[10px] bg-surface border border-border text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
@@ -316,7 +320,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                     {loc.name} {loc.revealed ? '(آشکار)' : '(پنهان)'}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
 
@@ -325,7 +329,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
             <label className="text-xs font-black text-text-primary block">دامنه مأموریت</label>
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-2 cursor-pointer touch-target min-w-[44px] py-1">
-                <input
+                <Input noWrapper
                   type="radio"
                   checked={isPartyWide}
                   onChange={() => {
@@ -338,7 +342,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
               </label>
 
               <label className="flex items-center gap-2 cursor-pointer touch-target min-w-[44px] py-1">
-                <input
+                <Input noWrapper
                   type="radio"
                   checked={!isPartyWide}
                   onChange={() => setIsPartyWide(false)}
@@ -356,7 +360,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                     <span className="text-xs text-text-muted">شخصیت فعالی در کمپین یافت نشد.</span>
                   ) : (
                     partyCharacters.map(char => (
-                      <button
+                      <Button
                         key={char.id}
                         type="button"
                         onClick={() => toggleParticipant(char.id)}
@@ -368,7 +372,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                       >
                         <span>{char.name}</span>
                         {participantIds.includes(char.id) && <span>✓</span>}
-                      </button>
+                      </Button>
                     ))
                   )}
                 </div>
@@ -383,7 +387,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                 <Sparkles className="w-3.5 h-3.5 text-success" />
                 <span>پاداش تجربه (XP)</span>
               </label>
-              <input
+              <Input noWrapper
                 type="number"
                 min={0}
                 step={50}
@@ -399,7 +403,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                 <Award className="w-3.5 h-3.5 text-accent" />
                 <span>شرح پاداش تکمیلی یا اشیاء</span>
               </label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={rewardNotes}
                 onChange={(e) => setRewardNotes(e.target.value)}
@@ -417,7 +421,7 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
                 هرگز به بازیکنان ارسال نمی‌شود
               </span>
             </label>
-            <textarea
+            <Textarea noWrapper
               value={dmNotes}
               onChange={(e) => setDmNotes(e.target.value)}
               placeholder="نکات پشت پرده داستان، شروط مخفی پیروزی، سرنخ‌های بعدی، تله‌ها و نکات اجرای مأموریت..."
@@ -428,22 +432,22 @@ export const DmQuestEditorModal: React.FC<DmQuestEditorModalProps> = ({
 
           {/* Actions */}
           <div className="pt-3 border-t border-border flex items-center justify-end gap-2 pb-2">
-            <button
+            <Button
               type="button"
               onClick={onClose}
               disabled={submitting}
               className="py-2.5 px-4 rounded-[12px] bg-surface-2 border border-border text-xs font-bold text-text-muted hover:text-text-primary transition touch-target min-w-[44px] min-h-[44px]"
             >
               انصراف
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={submitting}
               className="py-2.5 px-6 rounded-[12px] bg-gradient-to-l from-warning to-accent text-on-accent text-xs font-black shadow-lg hover:brightness-110 transition flex items-center gap-1.5 touch-target min-w-[44px] min-h-[44px]"
             >
               <Save className="w-4 h-4" />
               <span>{submitting ? 'در حال ذخیره‌سازی...' : (isEditing ? 'ذخیره تغییرات' : 'ثبت مأموریت')}</span>
-            </button>
+            </Button>
           </div>
         </form>
     </BottomSheet>

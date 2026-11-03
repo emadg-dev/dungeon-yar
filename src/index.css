@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "./styles/theme.css";
-@import "./styles/tokens.css";
 
 @theme {
   --font-sans: 'IRANSansWeb', 'IRANSans', 'IranSans', 'IRAN Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -25,12 +24,30 @@
   --color-on-accent: rgb(var(--color-on-accent-rgb) / <alpha-value>);
   --color-danger: rgb(var(--color-danger-rgb) / <alpha-value>);
   --color-danger-hover: rgb(var(--color-danger-hover-rgb) / <alpha-value>);
+  --color-danger-bg: rgb(var(--color-danger-bg-rgb) / <alpha-value>);
   --color-success: rgb(var(--color-success-rgb) / <alpha-value>);
+  --color-success-bg: rgb(var(--color-success-bg-rgb) / <alpha-value>);
   --color-warning: rgb(var(--color-warning-rgb) / <alpha-value>);
+  --color-warning-bg: rgb(var(--color-warning-bg-rgb) / <alpha-value>);
   --color-info: rgb(var(--color-info-rgb) / <alpha-value>);
+  --color-info-bg: rgb(var(--color-info-bg-rgb) / <alpha-value>);
   --color-focus-ring: rgb(var(--color-focus-ring-rgb) / <alpha-value>);
   --color-overlay: rgb(var(--color-overlay-rgb) / <alpha-value>);
   --color-selection: rgb(var(--color-selection-rgb) / <alpha-value>);
+
+  --color-neutral-slate: var(--color-neutral-slate);
+  --color-neutral-slate-dark: var(--color-neutral-slate-dark);
+  --color-neutral-zinc: var(--color-neutral-zinc);
+  --color-neutral-zinc-dark: var(--color-neutral-zinc-dark);
+  --color-neutral-zinc-muted: var(--color-neutral-zinc-muted);
+  --color-neutral-cool: var(--color-neutral-cool);
+
+  --color-brand-google-blue: var(--brand-google-blue);
+  --color-brand-google-green: var(--brand-google-green);
+  --color-brand-google-yellow: var(--brand-google-yellow);
+  --color-brand-google-red: var(--brand-google-red);
+  --color-brand-cyan: var(--brand-cyan);
+
   --color-role-owner: var(--role-owner);
   --color-role-codm: var(--role-codm);
   --color-role-player: var(--role-player);

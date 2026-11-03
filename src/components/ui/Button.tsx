@@ -1,8 +1,8 @@
 import React, { forwardRef } from 'react';
 import { Loader2 } from 'lucide-react';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline' | 'unstyled';
+export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'none';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -19,12 +19,16 @@ const variantStyles: Record<ButtonVariant, string> = {
   secondary: 'btn-secondary',
   ghost: 'btn-ghost',
   danger: 'btn-danger',
+  outline: 'btn-outline',
+  unstyled: '',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
+  xs: 'min-h-[36px] px-2.5 py-1 text-xs rounded-lg gap-1.5',
   sm: 'min-h-[44px] px-3.5 py-2 text-xs rounded-lg gap-1.5',
   md: 'min-h-[44px] px-4 py-2 text-sm rounded-xl gap-2',
   lg: 'min-h-[48px] px-5 py-2.5 text-base rounded-xl gap-2.5',
+  none: '',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -65,7 +69,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ) : (
           <>
             {leftIcon && <span className="shrink-0 inline-flex items-center">{leftIcon}</span>}
-            <span className="whitespace-nowrap shrink-0">{children}</span>
+            {typeof children === 'string' || typeof children === 'number' ? (
+              <span className="whitespace-nowrap shrink-0">{children}</span>
+            ) : (
+              children
+            )}
             {rightIcon && <span className="shrink-0 inline-flex items-center">{rightIcon}</span>}
           </>
         )}

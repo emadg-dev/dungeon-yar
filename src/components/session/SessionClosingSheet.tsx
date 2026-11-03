@@ -1,3 +1,7 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Textarea } from '../ui/Textarea';
 import React, { useState } from 'react';
 import { 
   Session, Character, CharacterParticipation, NPC, LocationEntry, 
@@ -221,7 +225,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
 
           <div className="space-y-2">
             <label className="text-xs font-bold text-text-muted">عنوان سرگذشت</label>
-            <input
+            <Input noWrapper
               type="text"
               value={recapTitle}
               onChange={(e) => setRecapTitle(e.target.value)}
@@ -237,7 +241,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                 <span>پشتیبانی از پاراگراف‌بندی و نشانه‌گذاری</span>
               </div>
             </div>
-            <textarea
+            <Textarea noWrapper
               rows={5}
               value={recapBody}
               onChange={(e) => setRecapBody(e.target.value)}
@@ -249,25 +253,25 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
           <div className="grid grid-cols-2 gap-2 pt-1">
             <div>
               <label className="text-xs font-bold text-text-muted block mb-1">محدوده نمایش</label>
-              <select
+              <Select noWrapper
                 value={visibility}
                 onChange={(e) => setVisibility(e.target.value as any)}
                 className="w-full px-2.5 py-2 rounded-[8px] bg-bg border border-border text-xs text-text-primary"
               >
                 <option value="party">نمایش برای همه گروه (Party)</option>
                 <option value="dm_only">محرمانه دانجن مستر (DM Only)</option>
-              </select>
+              </Select>
             </div>
             <div>
               <label className="text-xs font-bold text-text-muted block mb-1">وضعیت انتشار</label>
-              <select
+              <Select noWrapper
                 value={status}
                 onChange={(e) => setStatus(e.target.value as any)}
                 className="w-full px-2.5 py-2 rounded-[8px] bg-bg border border-border text-xs text-text-primary"
               >
                 <option value="published">انتشار عمومی در کمپین</option>
                 <option value="draft">ذخیره به عنوان پیش‌نویس</option>
-              </select>
+              </Select>
             </div>
           </div>
         </div>
@@ -284,7 +288,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
           </div>
 
           <div className="flex rounded-[10px] bg-bg p-1 border border-border">
-            <button
+            <Button
               type="button"
               onClick={() => setRewardMode('xp')}
               className={`flex-1 py-1.5 text-xs font-bold rounded-[8px] transition ${
@@ -292,8 +296,8 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
               }`}
             >
               امتیاز تجربه (XP)
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setRewardMode('milestone')}
               className={`flex-1 py-1.5 text-xs font-bold rounded-[8px] transition ${
@@ -301,8 +305,8 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
               }`}
             >
               صعود مایلیستون
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setRewardMode('none')}
               className={`flex-1 py-1.5 text-xs font-bold rounded-[8px] transition ${
@@ -310,7 +314,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
               }`}
             >
               بدون پاداش
-            </button>
+            </Button>
           </div>
 
           {rewardMode === 'xp' && (
@@ -320,7 +324,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                   میزان XP برای هر یک از اعضای گروه
                 </label>
                 <div className="flex items-center gap-2">
-                  <input
+                  <Input noWrapper
                     type="number"
                     min="0"
                     step="50"
@@ -330,14 +334,14 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                   />
                   <div className="flex items-center gap-1">
                     {[100, 250, 500, 1000].map(amt => (
-                      <button
+                      <Button
                         key={amt}
                         type="button"
                         onClick={() => setXpAmount(amt)}
                         className="px-2 py-1.5 rounded-[6px] bg-white/5 hover:bg-white/10 text-xs font-bold text-accent transition"
                       >
                         +{amt}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -345,7 +349,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
 
               <div>
                 <label className="text-xs font-bold text-text-muted block mb-1">دلیل اعطا</label>
-                <input
+                <Input noWrapper
                   type="text"
                   value={xpReason}
                   onChange={(e) => setXpReason(e.target.value)}
@@ -365,7 +369,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                   const char = characters.find(c => c.id === p.characterId);
                   const isChecked = Boolean(selectedMilestoneParts[p.id]);
                   return (
-                    <button
+                    <Button
                       key={p.id}
                       type="button"
                       onClick={() => toggleMilestonePart(p.id)}
@@ -389,7 +393,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                       <span className="text-xs font-bold text-accent-hover">
                         {isChecked ? 'آماده ارتقا' : ''}
                       </span>
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -418,7 +422,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                 <div key={char.id} className="p-3 rounded-[10px] bg-bg border border-border space-y-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-xs font-bold text-text-primary">{char.name}</span>
-                    <button
+                    <Button
                       type="button"
                       onClick={() => toggleHighlightVisible(char.id)}
                       className={`text-xs font-medium px-2 py-0.5 rounded transition ${
@@ -426,9 +430,9 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                       }`}
                     >
                       {hl.visible ? 'نمایش برای بازیکن' : 'فقط دانجن مستر'}
-                    </button>
+                    </Button>
                   </div>
-                  <input
+                  <Input noWrapper
                     type="text"
                     value={hl.text}
                     onChange={(e) => handleHighlightChange(char.id, e.target.value)}
@@ -459,7 +463,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                 {locations.map(loc => {
                   const sel = linkedLocIds.includes(loc.id);
                   return (
-                    <button
+                    <Button
                       key={loc.id}
                       type="button"
                       onClick={() => toggleLocation(loc.id)}
@@ -469,7 +473,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                     >
                       <MapPin className="w-3 h-3" />
                       <span>{loc.name}</span>
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -483,7 +487,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                 {npcs.map(npc => {
                   const sel = linkedNpcIds.includes(npc.id);
                   return (
-                    <button
+                    <Button
                       key={npc.id}
                       type="button"
                       onClick={() => toggleNpc(npc.id)}
@@ -493,7 +497,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                     >
                       <UserIcon className="w-3 h-3" />
                       <span>{npc.name}</span>
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -507,7 +511,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                 {campaignNotes.map(note => {
                   const sel = linkedQuestIds.includes(note.id);
                   return (
-                    <button
+                    <Button
                       key={note.id}
                       type="button"
                       onClick={() => toggleQuest(note.id)}
@@ -517,7 +521,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                     >
                       <Scroll className="w-3 h-3" />
                       <span>{note.title}</span>
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -527,7 +531,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
 
         {/* SUBMIT BUTTON */}
         <div className="pt-2">
-          <button
+          <Button
             type="button"
             disabled={isSubmitting}
             onClick={handleFinalSubmit}
@@ -535,7 +539,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
           >
             <CheckCircle2 className="w-4 h-4" />
             <span>{isSubmitting ? 'در حال ثبت و بستن جلسه...' : 'ثبت خلاصه، پاداش‌ها و پایان قطعی جلسه'}</span>
-          </button>
+          </Button>
         </div>
       </div>
     </BottomSheet>

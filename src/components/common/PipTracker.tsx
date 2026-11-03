@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '../ui/Button';
 
 interface PipTrackerProps {
   label: string;
@@ -50,7 +51,7 @@ export const PipTracker: React.FC<PipTrackerProps> = ({
       {/* Row of Pips */}
       <div className="flex flex-wrap items-center gap-2 py-0.5">
         {pips.map((filled, idx) => (
-          <button
+          <Button
             key={idx}
             type="button"
             disabled={readOnly}
@@ -64,7 +65,7 @@ export const PipTracker: React.FC<PipTrackerProps> = ({
             {filled && (
               <span className="w-2 h-2 rounded-full bg-bg/70 shadow-sm" />
             )}
-          </button>
+          </Button>
         ))}
       </div>
     </div>

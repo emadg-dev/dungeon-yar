@@ -1,3 +1,6 @@
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { Textarea } from '../ui/Textarea';
 import React, { useState } from 'react';
 import { BackgroundTemplate, BackgroundPersonalityTables } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
@@ -131,7 +134,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">نام پیشینه *</label>
-            <input
+            <Input noWrapper
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
@@ -143,7 +146,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">توصیف گذشته و جایگاه اجتماعی</label>
-            <textarea
+            <Textarea noWrapper
               value={description}
               onChange={e => setDescription(e.target.value)}
               rows={3}
@@ -163,7 +166,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">مهارت‌های مهارتی (2 مهارت)</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={skillProficienciesText}
                 onChange={e => setSkillProficienciesText(e.target.value)}
@@ -174,7 +177,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">مهارت در افزارها / سازها</label>
-              <input
+              <Input noWrapper
                 type="text"
                 value={toolProficienciesText}
                 onChange={e => setToolProficienciesText(e.target.value)}
@@ -186,7 +189,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">زبان‌های آموخته‌شده</label>
-            <input
+            <Input noWrapper
               type="text"
               value={languagesText}
               onChange={e => setLanguagesText(e.target.value)}
@@ -197,7 +200,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">تجهیزات آغازین (هر خط یک آیتم)</label>
-            <textarea
+            <Textarea noWrapper
               value={equipmentText}
               onChange={e => setEquipmentText(e.target.value)}
               rows={3}
@@ -216,7 +219,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">نام ویژگی</label>
-            <input
+            <Input noWrapper
               type="text"
               value={featureName}
               onChange={e => setFeatureName(e.target.value)}
@@ -227,7 +230,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-text-primary mb-1">شرح اثر مکانیکی یا مزیّت روایی</label>
-            <textarea
+            <Textarea noWrapper
               value={featureDescription}
               onChange={e => setFeatureDescription(e.target.value)}
               rows={3}
@@ -250,7 +253,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">ویژگی‌های رفتاری (Traits)</label>
-              <textarea
+              <Textarea noWrapper
                 value={traitsText}
                 onChange={e => setTraitsText(e.target.value)}
                 rows={3}
@@ -261,7 +264,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">آرمان‌ها و اصول (Ideals)</label>
-              <textarea
+              <Textarea noWrapper
                 value={idealsText}
                 onChange={e => setIdealsText(e.target.value)}
                 rows={3}
@@ -272,7 +275,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">پیوندها و علایق (Bonds)</label>
-              <textarea
+              <Textarea noWrapper
                 value={bondsText}
                 onChange={e => setBondsText(e.target.value)}
                 rows={3}
@@ -283,7 +286,7 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-text-primary mb-1">نقایص و ضعف‌ها (Flaws)</label>
-              <textarea
+              <Textarea noWrapper
                 value={flawsText}
                 onChange={e => setFlawsText(e.target.value)}
                 rows={3}
@@ -296,21 +299,21 @@ export const BackgroundEditorSheet: React.FC<BackgroundEditorSheetProps> = ({
 
         {/* Submit Actions */}
         <div className="pt-2 flex items-center gap-2">
-          <button
+          <Button
             type="submit"
             disabled={saving}
             className="flex-1 py-3 px-4 rounded-xl btn-primary-amber font-extrabold text-xs shadow-md flex items-center justify-center gap-2 min-h-[44px]"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? 'در حال ذخیره‌سازی...' : 'ذخیره پیشینه در کتابخانه'}</span>
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onClose}
             className="py-3 px-4 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary font-bold text-xs min-h-[44px]"
           >
             انصراف
-          </button>
+          </Button>
         </div>
       </form>
     </BottomSheet>
