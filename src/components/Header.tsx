@@ -7,7 +7,7 @@ import { BottomSheet } from './mobile/BottomSheet';
 import { 
   Menu, X,
   CheckCircle2, RefreshCw, Shield, BookOpen, 
-  SunMedium, Type, LogOut, ChevronDown, MoreVertical, Sparkles, Swords, Bell,
+  SunMedium, Sun, Moon, Type, LogOut, ChevronDown, MoreVertical, Sparkles, Swords, Bell,
   WifiOff, AlertTriangle, Eye, Wifi
 } from 'lucide-react';
 import { getRoleLabelFa, CampaignRole } from '../../shared/permissions';
@@ -58,6 +58,8 @@ export interface HeaderProps {
   appVersion?: string;
   onCheckForUpdates?: () => void;
   isCheckingUpdates?: boolean;
+  theme?: 'dark' | 'light';
+  onToggleTheme?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -103,6 +105,8 @@ export const Header: React.FC<HeaderProps> = ({
   appVersion = APP_VERSION,
   onCheckForUpdates,
   isCheckingUpdates = false,
+  theme = 'dark',
+  onToggleTheme,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [syncSheetOpen, setSyncSheetOpen] = useState(false);
@@ -453,6 +457,19 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Type className="w-4 h-4" />
             </Button>
+
+            {/* Theme Toggle (Light / Dark mode) */}
+            {onToggleTheme && (
+              <Button 
+                type="button"
+                onClick={onToggleTheme}
+                className="p-1.5 rounded-[10px] text-xs font-bold transition border border-border bg-surface-2 text-text-muted hover:text-text-primary hover:border-accent touch-target min-w-[44px]"
+                title={theme === 'dark' ? 'تغییر به تم روشن (روز)' : 'تغییر به تم تاریک (شب)'}
+                aria-label={theme === 'dark' ? 'تغییر به تم روشن' : 'تغییر به تم تاریک'}
+              >
+                {theme === 'dark' ? <Sun className="w-4 h-4 text-accent" /> : <Moon className="w-4 h-4 text-accent" />}
+              </Button>
+            )}
           </div>
 
           {/* Notifications Bell */}
@@ -791,6 +808,22 @@ export const Header: React.FC<HeaderProps> = ({
                   {fontScale === 'xlarge' ? 'خیلی بزرگ' : fontScale === 'large' ? 'بزرگ' : 'استاندارد'}
                 </span>
               </Button>
+
+              {onToggleTheme && (
+                <Button 
+                  type="button"
+                  onClick={onToggleTheme}
+                  className="w-full flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary touch-target min-w-[44px]"
+                >
+                  <span className="flex items-center gap-1.5">
+                    {theme === 'dark' ? <Sun className="w-4 h-4 text-accent" /> : <Moon className="w-4 h-4 text-accent" />}
+                    حالت ظاهری (تم)
+                  </span>
+                  <span className="text-xs font-bold text-accent">
+                    {theme === 'dark' ? 'تاریک (شب)' : 'روشن (روز)'}
+                  </span>
+                </Button>
+              )}
             </div>
 
             {/* Connection & Offline Status in Drawer */}

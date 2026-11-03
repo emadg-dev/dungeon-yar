@@ -8,7 +8,7 @@ import { toPersianDigits } from '../../shared/rules/historyEngine';
 import { usePWARefresh } from '../hooks/usePWARefresh';
 import { 
   X, User as UserIcon, Mail, KeyRound, Smartphone, Download, 
-  LogOut, Shield, Check, AlertCircle, Trash2, Globe, Clock, CheckCircle2, RefreshCw 
+  LogOut, Shield, Check, AlertCircle, Trash2, Globe, Clock, CheckCircle2, RefreshCw, Sun, Moon 
 } from 'lucide-react';
 import { ScrollableRow } from './ui/ScrollableRow';
 import { BottomSheet } from './mobile/BottomSheet';
@@ -22,6 +22,8 @@ interface AccountModalProps {
   onSelectActiveCharacter: (charId: string) => void;
   onUpdateUser: (user: User) => void;
   onLogout: () => void;
+  theme?: 'dark' | 'light';
+  onToggleTheme?: () => void;
 }
 
 export const AccountModal: React.FC<AccountModalProps> = ({
@@ -33,6 +35,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   onSelectActiveCharacter,
   onUpdateUser,
   onLogout,
+  theme = 'dark',
+  onToggleTheme,
 }) => {
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'sessions' | 'data'>('profile');
 
@@ -385,6 +389,35 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                       )}
                     </Button>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Theme Preference */}
+            {onToggleTheme && (
+              <div className="pt-3 border-t border-border space-y-2">
+                <label className="block text-xs font-bold text-text-primary">حالت ظاهری برنامه (تم):</label>
+                <div className="flex items-center justify-between p-3 rounded-[10px] bg-surface-2 border border-border gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-accent/15 flex items-center justify-center shrink-0">
+                      {theme === 'dark' ? <Moon className="w-4 h-4 text-accent" /> : <Sun className="w-4 h-4 text-accent" />}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-text-primary truncate">
+                        {theme === 'dark' ? 'تم زغالی کهن (تاریک)' : 'تم کاغذپوستی روشن'}
+                      </div>
+                      <div className="text-xs text-text-muted truncate">
+                        {theme === 'dark' ? 'مناسب برای بازی در نور کم و محیط‌های تاریک' : 'کنتراست بالای خوانایی برای روز'}
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={onToggleTheme}
+                    className="px-3 py-1.5 rounded-lg bg-surface border border-border hover:border-accent text-xs font-bold text-accent shrink-0"
+                  >
+                    {theme === 'dark' ? 'تغییر به روشن' : 'تغییر به تاریک'}
+                  </Button>
                 </div>
               </div>
             )}

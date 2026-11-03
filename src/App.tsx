@@ -305,6 +305,40 @@ export default function App() {
     localStorage.setItem('zorvania_font_scale', fontScale);
   }, [fontScale]);
 
+  // Global theme state with localStorage persistence and system preference fallback
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      const saved = localStorage.getItem('zorvania_theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+      if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        return 'light';
+      }
+    } catch {
+      // ignore storage access errors
+    }
+    return 'dark';
+  });
+
+  const handleToggleTheme = useCallback(() => {
+    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+  }, []);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.remove('light');
+        document.documentElement.classList.add('dark');
+      }
+    }
+    try {
+      localStorage.setItem('zorvania_theme', theme);
+    } catch {}
+  }, [theme]);
+
   // Synchronize document.title at runtime with pageTitle()
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -1239,6 +1273,8 @@ export default function App() {
         wakeLockSupported={wakeLockSupported}
         fontScale={fontScale}
         onToggleFontScale={toggleFontScale}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
         activeEncounter={activeLiveEncounter ? { id: activeLiveEncounter.id, name: activeLiveEncounter.name } : null}
         onOpenActiveEncounter={() => setLiveEncounterModalOpen(true)}
         // Multi-Campaign Props
@@ -2225,6 +2261,8 @@ export default function App() {
               showToast('مشخصات حساب ذخیره شد.');
             }}
             onLogout={handleLogout}
+            theme={theme}
+            onToggleTheme={handleToggleTheme}
           />
         )}
 

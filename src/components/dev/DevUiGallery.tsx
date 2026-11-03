@@ -43,7 +43,11 @@ import {
 } from 'lucide-react';
 
 export const DevUiGallery: React.FC = () => {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return (document.documentElement.getAttribute('data-theme') as 'dark' | 'light') ||
+      (localStorage.getItem('zorvania_theme') as 'dark' | 'light') ||
+      'dark';
+  });
   const [activeTab, setActiveTab] = useState('buttons');
   const [stepperVal, setStepperVal] = useState(12);
   const [switchVal, setSwitchVal] = useState(true);
@@ -58,19 +62,21 @@ export const DevUiGallery: React.FC = () => {
   const toggleTheme = (next: 'dark' | 'light') => {
     setTheme(next);
     document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('zorvania_theme', next);
     if (next === 'light') {
       document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
     } else {
+      document.documentElement.classList.remove('light');
       document.documentElement.classList.add('dark');
     }
   };
 
   useEffect(() => {
-    return () => {
-      // Revert to dark on unmount
-      document.documentElement.setAttribute('data-theme', 'dark');
-      document.documentElement.classList.add('dark');
-    };
+    const current = (document.documentElement.getAttribute('data-theme') as 'dark' | 'light') ||
+      (localStorage.getItem('zorvania_theme') as 'dark' | 'light') ||
+      'dark';
+    toggleTheme(current);
   }, []);
 
   const galleryTabs = [
@@ -83,34 +89,34 @@ export const DevUiGallery: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-stone-950 text-stone-100 p-4 sm:p-8 space-y-8" dir="rtl">
+    <div className="min-h-screen bg-bg text-text-primary p-4 sm:p-8 space-y-8 transition-colors duration-200" dir="rtl">
       {/* Top Bar with Theme Switcher */}
-      <header className="flex flex-wrap items-center justify-between gap-2 gap-4 border-b border-stone-800 pb-4 max-w-5xl mx-auto">
+      <header className="flex flex-wrap items-center justify-between gap-2 gap-4 border-b border-border pb-4 max-w-5xl mx-auto">
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-bold">
+          <div className="w-10 h-10 rounded-xl bg-accent/20 text-accent border border-accent/40 flex items-center justify-center font-bold">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-amber-400">گالری کامپوننت‌های پایه (UI Gallery)</h1>
-            <p className="text-xs text-stone-400">محیط تست و اعتبارسنجی ظاهری و دسترسی‌پذیری</p>
+            <h1 className="text-lg font-bold text-accent">گالری کامپوننت‌های پایه (UI Gallery)</h1>
+            <p className="text-xs text-text-muted">محیط تست و اعتبارسنجی ظاهری و دسترسی‌پذیری</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <a
             href="#/"
-            className="text-xs text-stone-400 hover:text-stone-200 ps-2 flex items-center gap-1"
+            className="text-xs text-text-muted hover:text-text-primary ps-2 flex items-center gap-1"
           >
             <span>بازگشت به برنامه</span>
             <ChevronLeft className="w-4 h-4" />
           </a>
 
-          <div className="flex items-center bg-stone-900 border border-stone-800 rounded-xl p-1 gap-1">
+          <div className="flex items-center bg-surface-2 border border-border rounded-xl p-1 gap-1">
             <Button
               type="button"
               onClick={() => toggleTheme('dark')}
               className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
-                theme === 'dark' ? 'bg-amber-500 text-stone-950' : 'text-stone-400'
+                theme === 'dark' ? 'bg-accent text-on-accent' : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <Moon className="w-3.5 h-3.5" />
@@ -120,7 +126,7 @@ export const DevUiGallery: React.FC = () => {
               type="button"
               onClick={() => toggleTheme('light')}
               className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
-                theme === 'light' ? 'bg-amber-500 text-stone-950' : 'text-stone-400'
+                theme === 'light' ? 'bg-accent text-on-accent' : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <Sun className="w-3.5 h-3.5" />
@@ -138,7 +144,7 @@ export const DevUiGallery: React.FC = () => {
         {activeTab === 'buttons' && (
           <section className="space-y-6">
             <Card variant="surface" className="space-y-4">
-              <h2 className="text-sm font-bold text-amber-400">گونه‌های دکمه (Button Variants)</h2>
+              <h2 className="text-sm font-bold text-accent">گونه‌های دکمه (Button Variants)</h2>
               <div className="flex flex-wrap items-center gap-3">
                 <Button variant="primary">دکمه اصلی (Primary)</Button>
                 <Button variant="secondary">دکمه ثانویه (Secondary)</Button>
@@ -154,7 +160,7 @@ export const DevUiGallery: React.FC = () => {
             </Card>
 
             <Card variant="surface" className="space-y-4">
-              <h2 className="text-sm font-bold text-amber-400">اندازه‌های دکمه (Button Sizes)</h2>
+              <h2 className="text-sm font-bold text-accent">اندازه‌های دکمه (Button Sizes)</h2>
               <div className="flex flex-wrap items-center gap-3">
                 <Button size="sm" variant="primary">
                   کوچک (sm - 40px)
@@ -169,7 +175,7 @@ export const DevUiGallery: React.FC = () => {
             </Card>
 
             <Card variant="surface" className="space-y-4">
-              <h2 className="text-sm font-bold text-amber-400">دکمه‌های آیکونی (IconButton ≥ 44px)</h2>
+              <h2 className="text-sm font-bold text-accent">دکمه‌های آیکونی (IconButton ≥ 44px)</h2>
               <div className="flex flex-wrap items-center gap-3">
                 <IconButton icon={<Heart className="w-5 h-5" />} aria-label="پسندیدن" variant="primary" />
                 <IconButton icon={<Dice5 className="w-5 h-5" />} aria-label="پرتاب تاس" variant="secondary" />
@@ -181,8 +187,8 @@ export const DevUiGallery: React.FC = () => {
             </Card>
 
             <Card variant="surface" className="space-y-4">
-              <h2 className="text-sm font-bold text-amber-400">ردیف اسکرول‌پذیر دکمه‌ها و تب‌ها (ScrollableRow)</h2>
-              <p className="text-xs text-stone-400">
+              <h2 className="text-sm font-bold text-accent">ردیف اسکرول‌پذیر دکمه‌ها و تب‌ها (ScrollableRow)</h2>
+              <p className="text-xs text-text-muted">
                 جلوگیری از شکستن خط متن در موبایل، عدم شکستن تب‌ها به دو ردیف، همراه با اسکرول افقی ملایم، فید لبه‌های راست/چپ RTL و تراز خودکار تب فعال:
               </p>
               <ScrollableRow activeKey="tab-3" className="gap-2">
@@ -202,7 +208,7 @@ export const DevUiGallery: React.FC = () => {
         {activeTab === 'forms' && (
           <section className="space-y-6">
             <Card variant="surface" className="space-y-4">
-              <h2 className="text-sm font-bold text-amber-400">فیلدهای متنی و انتخابگرها</h2>
+              <h2 className="text-sm font-bold text-accent">فیلدهای متنی و انتخابگرها</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input label="نام شخصیت" placeholder="مثلاً: آریامنش" />
                 <Input
@@ -225,7 +231,7 @@ export const DevUiGallery: React.FC = () => {
             </Card>
 
             <Card variant="surface" className="space-y-4">
-              <h2 className="text-sm font-bold text-amber-400">کنترل‌های عددی و وضعیت (Toggles)</h2>
+              <h2 className="text-sm font-bold text-accent">کنترل‌های عددی و وضعیت (Toggles)</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <NumberStepper
                   label="امتیاز توانایی (تارگت لمسی 44px)"
@@ -251,7 +257,7 @@ export const DevUiGallery: React.FC = () => {
               </div>
 
               <div className="pt-2 border-t border-stone-800">
-                <span className="block text-xs font-semibold text-stone-300 mb-2">انتخابگر رادیویی</span>
+                <span className="block text-xs font-semibold text-text-muted mb-2">انتخابگر رادیویی</span>
                 <RadioGroup
                   value={radioVal}
                   onChange={setRadioVal}
@@ -270,20 +276,20 @@ export const DevUiGallery: React.FC = () => {
           <section className="space-y-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <StatCard label="سلامت فعلی" value={38} subValue={45} icon={<Heart className="w-4 h-4 text-red-400" />} />
-              <StatCard label="کلاس زره (AC)" value={16} modifier={2} icon={<Shield className="w-4 h-4 text-amber-400" />} />
+              <StatCard label="کلاس زره (AC)" value={16} modifier={2} icon={<Shield className="w-4 h-4 text-accent" />} />
               <StatCard label="سرعت حرکت" value="30" subValue="فوت" />
               <StatCard label="ابتکار نبرد" value="+3" modifier="مدافع" />
             </div>
 
             <Card variant="surface" hasGoldTop>
               <h3 className="font-bold text-base text-stone-100 mb-1">کارت ویژه با نوار بالایی طلا (card-gold-top)</h3>
-              <p className="text-xs text-stone-400 leading-relaxed">
+              <p className="text-xs text-text-muted leading-relaxed">
                 این کارت دارای خط ظریف گرادینت کهربایی در لبه بالایی است که برای عناصر مهم مانند کاراکتر فعال، جلسه بعدی و ماموریت‌های افسانه‌ای کاربرد دارد.
               </p>
             </Card>
 
             <div className="space-y-2">
-              <h3 className="text-sm font-bold text-amber-400 mb-2">ردیف‌های لیستی (ListRow)</h3>
+              <h3 className="text-sm font-bold text-accent mb-2">ردیف‌های لیستی (ListRow)</h3>
               <ListRow
                 title="شمشیر آتشین موبدان"
                 subtitle="سلاح افسانه‌ای — آسیب: 2d6+3 آذرین"
@@ -306,7 +312,7 @@ export const DevUiGallery: React.FC = () => {
         {activeTab === 'chips' && (
           <section className="space-y-6">
             <Card variant="surface" className="space-y-4">
-              <h2 className="text-sm font-bold text-amber-400">انواع نشان‌ها (Badges)</h2>
+              <h2 className="text-sm font-bold text-accent">انواع نشان‌ها (Badges)</h2>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="neutral">خنثی (Neutral)</Badge>
                 <Badge variant="accent" dot>
@@ -324,7 +330,7 @@ export const DevUiGallery: React.FC = () => {
             </Card>
 
             <Card variant="surface" className="space-y-4">
-              <h2 className="text-sm font-bold text-amber-400">انواع چیپ‌ها (Chips)</h2>
+              <h2 className="text-sm font-bold text-accent">انواع چیپ‌ها (Chips)</h2>
               <div className="flex flex-wrap items-center gap-2">
                 <Chip label="همه اقلام" selected onClick={() => {}} badge={14} />
                 <Chip label="سلاح‌ها" onClick={() => {}} badge={6} />
@@ -340,8 +346,8 @@ export const DevUiGallery: React.FC = () => {
         {activeTab === 'overlays' && (
           <section className="space-y-6">
             <Card variant="surface" className="space-y-4">
-              <h2 className="text-sm font-bold text-amber-400">پنجره‌های رویه‌ای (Modals & Sheets)</h2>
-              <p className="text-xs text-stone-400">
+              <h2 className="text-sm font-bold text-accent">پنجره‌های رویه‌ای (Modals & Sheets)</h2>
+              <p className="text-xs text-text-muted">
                 پنجره‌های کشویی موبایل‌فرست با بسته‌شدن با درگ به پایین، کلید Escape، نوار امن زیرین و قفل اسکرول بدنه:
               </p>
               <div className="flex flex-wrap gap-3">
@@ -365,7 +371,7 @@ export const DevUiGallery: React.FC = () => {
               subtitle="نمونه کامپوننت قابل جمع‌شدن برای لیست‌های فشرده موبایل"
               badge={<Badge variant="accent">3 آیتم</Badge>}
             >
-              <p className="text-xs text-stone-300 py-2 leading-relaxed">
+              <p className="text-xs text-text-muted py-2 leading-relaxed">
                 این کامپوننت به شکل کاملاً دسترسی‌پذیر با `aria-expanded` و انیمیشن آرام برای فشرده‌سازی اطلاعات طولانی در شیت کاراکتر و داشبورد مستر طراحی شده است.
               </p>
             </SectionAccordion>
@@ -376,7 +382,7 @@ export const DevUiGallery: React.FC = () => {
         {activeTab === 'feedback' && (
           <section className="space-y-6">
             <Card variant="surface" className="space-y-4">
-              <h2 className="text-sm font-bold text-amber-400">نوارهای پیشرفت و ترکرها</h2>
+              <h2 className="text-sm font-bold text-accent">نوارهای پیشرفت و ترکرها</h2>
               <div className="space-y-3">
                 <ProgressBar label="نوار سلامت خودکار (Auto-HP)" value={65} max={100} color="auto-hp" showValueText />
                 <ProgressBar label="نوار پیشرفت ماموریت" value={4} max={5} color="accent" showValueText />
@@ -392,10 +398,10 @@ export const DevUiGallery: React.FC = () => {
             </Card>
 
             <Card variant="surface" className="space-y-4">
-              <h2 className="text-sm font-bold text-amber-400">اسکلت‌های بارگذاری (Skeleton & Spinner)</h2>
+              <h2 className="text-sm font-bold text-accent">اسکلت‌های بارگذاری (Skeleton & Spinner)</h2>
               <div className="flex items-center gap-3">
                 <Spinner size="md" />
-                <span className="text-xs text-stone-400">اسپینر لودینگ دسترسی‌پذیر</span>
+                <span className="text-xs text-text-muted">اسپینر لودینگ دسترسی‌پذیر</span>
               </div>
               <div className="space-y-2">
                 <Skeleton variant="text" width="60%" />
@@ -443,7 +449,7 @@ export const DevUiGallery: React.FC = () => {
           </div>
         }
       >
-        <div className="space-y-4 text-xs text-stone-300 leading-relaxed">
+        <div className="space-y-4 text-xs text-text-muted leading-relaxed">
           <p>
             پنجره‌های باتم‌شیت در موبایل به صورت خودکار لبه‌های امن پایین (Safe Area Insets) را لحاظ می‌کنند، بدنه را قفل می‌کنند و با لمس و کشیدن به سمت پایین یا کلید بازگشت مرورگر بسته می‌شوند.
           </p>

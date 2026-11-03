@@ -88,17 +88,17 @@
   --radius-card: 1rem;
   --radius-sm: 0.75rem;
 
-  /* Legacy hex aliases (kept for Tailwind arbitrary values across the app) */
-  --bg: #0E0D0C;
-  --surface: #171513;
-  --surface-2: #201D19;
-  --border: #2F2A23;
-  --text: #EDE6D8;
-  --text-muted: #A39A89;
-  --amber: #E0A030;
-  --amber-glow: #F2C265;
-  --ember: #C2512B;
-  --heal: #6F9E78;
+  /* Legacy aliases mapped to dynamic design tokens for full light/dark theme support */
+  --bg: var(--color-bg);
+  --surface: var(--color-surface);
+  --surface-2: var(--color-surface-2);
+  --border: var(--color-border);
+  --text: var(--color-text);
+  --text-muted: var(--color-text-muted);
+  --amber: var(--color-primary);
+  --amber-glow: var(--color-primary-hover);
+  --ember: var(--color-danger);
+  --heal: var(--color-success);
 
   /* Region accents */
   --region-varna: #6F9E78;       /* ورنا */
@@ -125,7 +125,7 @@
 @layer base {
   *, *::before, *::after {
     box-sizing: border-box;
-    border-color: #2F2A23;
+    border-color: var(--color-border);
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -139,10 +139,19 @@
     overscroll-behavior-y: none !important;
     overscroll-behavior-x: none !important;
     font-size: 100%;
-    /* Subtle multi-stop warm gradient instead of flat #0E0D0C (Jib-be-jib §3) */
-    background: linear-gradient(135deg, #0E0D0C 0%, #12100F 40%, #0A0A09 100%);
+    background-color: var(--color-bg);
+    color: var(--color-text);
     background-attachment: fixed;
-    color: var(--text);
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+
+  html:not([data-theme="light"]),
+  html[data-theme="dark"] {
+    background-image: linear-gradient(135deg, #0E0D0C 0%, #12100F 40%, #0A0A09 100%);
+  }
+
+  html[data-theme="light"] {
+    background-image: linear-gradient(135deg, #F7F4EE 0%, #FAF7F2 40%, #EDE6D8 100%);
   }
 
   /* Font scale setting via rem */
@@ -170,7 +179,8 @@
     font-size: 0.9375rem; /* 15px body */
     line-height: 1.5;
     background: transparent; /* gradient lives on html; orbs below sit on top of it */
-    color: #EDE6D8;
+    color: var(--color-text);
+    transition: color 200ms ease;
   }
 
   /* Decorative soft radial orbs for depth (Jib-be-jib §3) */
