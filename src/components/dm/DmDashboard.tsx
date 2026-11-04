@@ -374,7 +374,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
                 />
 
                 {/* Step 3.4 Level-Up, Lock & Snapshot Controls for DM */}
-                <div className="p-2.5 rounded-xl bg-info border border-border space-y-2">
+                <div className="p-2.5 rounded-xl color-info border border-border space-y-2">
                   <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                     <span className="text-text-muted font-bold">ابزارهای دانجن مستر:</span>
                     <span className="text-xs text-text-primary font-mono">

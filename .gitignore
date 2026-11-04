@@ -17,3 +17,5 @@ tmp/seed-bundle.mjs
 .deploy.bat
 # Throwaway audit scaffolding from this session's verification
 audit-*.mjs
+.wrangler/
+gg
