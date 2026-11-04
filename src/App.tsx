@@ -201,6 +201,7 @@ export default function App() {
   const [campaignParticipations, setCampaignParticipations] = useState<CharacterParticipation[]>([]);
   const [levelUpModalOpen, setLevelUpModalOpen] = useState(false);
   const [sheetChangeRequestOpen, setSheetChangeRequestOpen] = useState(false);
+  const [sheetChangeRequestField, setSheetChangeRequestField] = useState<string>('');
   const [campaignEditGrants, setCampaignEditGrants] = useState<any[]>([]);
   const [isDmEditMode, setIsDmEditMode] = useState<boolean>(false);
   const [lockedFieldModal, setLockedFieldModal] = useState<{
@@ -251,6 +252,7 @@ export default function App() {
     isOpen: false,
     recap: null
   });
+  const [pendingJoinCode, setPendingJoinCode] = useState<string>('');
 
   // Step 4.4: Quests State
   const [campaignQuests, setCampaignQuests] = useState<Quest[]>([]);
@@ -595,6 +597,29 @@ export default function App() {
     }
     if (clean === 'login') {
       setAuthModalState({ isOpen: true, mode: 'login' });
+      return;
+    }
+    if (clean === 'join') {
+      const code = query.get('code') || '';
+      if (!currentUser) {
+        setAuthModalState({ isOpen: true, mode: 'login', inviteCode: code });
+        return;
+      }
+      setViewMode('home');
+      if (code) {
+        setPendingJoinCode(code);
+      }
+      requestAnimationFrame(() => {
+        const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+        const section = document.getElementById('invite-section');
+        if (section) {
+          section.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
+        }
+        const input = document.getElementById('invite-code-input') as HTMLInputElement | null;
+        if (input) {
+          input.focus();
+        }
+      });
       return;
     }
     if (clean === 'dev/ui' || clean === 'dev') {
@@ -1331,6 +1356,7 @@ export default function App() {
               pendingInvites={pendingInvites}
               pendingApprovals={pendingApprovals}
               draftParticipations={draftParticipations}
+              initialInviteCode={pendingJoinCode}
               onSelectCampaign={handleSelectCampaign}
               onOpenCreateCampaign={() => {
                 setWizardDraftCampaign(null);
@@ -2092,17 +2118,58 @@ export default function App() {
           />
         )}
 
+        {/* Locked Field Modal (Step 3.4) */}
+        {lockedFieldModal.isOpen && (
+          <Suspense fallback={null}>
+            <LockedFieldModal
+              isOpen={lockedFieldModal.isOpen}
+              fieldName={lockedFieldModal.fieldName}
+              characterName={activeCharacter?.name || ''}
+              onClose={() => setLockedFieldModal({ isOpen: false, fieldName: '' })}
+              onRequestChange={(field) => {
+                const targetField = field || lockedFieldModal.fieldName;
+                setLockedFieldModal({ isOpen: false, fieldName: '' });
+                setSheetChangeRequestField(targetField);
+                setSheetChangeRequestOpen(true);
+              }}
+            />
+          </Suspense>
+        )}
+
+        {/* Edit Grant Modal (from character sheet DM action) */}
+        {editGrantModalState.isOpen && activeCampaign && (
+          <Suspense fallback={null}>
+            <EditGrantModal
+              isOpen={editGrantModalState.isOpen}
+              onClose={() => setEditGrantModalState({ isOpen: false, participationId: '', characterName: '' })}
+              characterName={editGrantModalState.characterName}
+              campaignId={activeCampaign.id}
+              participationId={editGrantModalState.participationId}
+              onGrantCreated={async () => {
+                setEditGrantModalState({ isOpen: false, participationId: '', characterName: '' });
+                showToast('مجوز ویرایش برگه با موفقیت صادر گردید.');
+                await loadCampaignWorkspace(activeCampaign.id);
+              }}
+            />
+          </Suspense>
+        )}
+
         {/* Sheet Change Request Modal (Step 3.4) */}
         {sheetChangeRequestOpen && activeCharacter && activeCampaign && activeParticipation && (
           <SheetChangeRequestModal
             isOpen={sheetChangeRequestOpen}
-            onClose={() => setSheetChangeRequestOpen(false)}
+            onClose={() => {
+              setSheetChangeRequestOpen(false);
+              setSheetChangeRequestField('');
+            }}
+            initialField={sheetChangeRequestField}
             characterName={activeCharacter.name}
             campaignId={activeCampaign.id}
             participationId={activeParticipation.id}
             onSubmitRequest={async (req) => {
               await api.createSheetChangeRequest(activeCampaign.id, activeParticipation.id, JSON.stringify(req), req.reason);
               showToast('درخواست تغییر برگه برای دانجن مستر ارسال گردید.');
+              setSheetChangeRequestField('');
               await loadCampaignWorkspace(activeCampaign.id);
             }}
           />

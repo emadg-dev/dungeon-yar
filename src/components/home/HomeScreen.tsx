@@ -1,4 +1,4 @@
-import React, { useState, startTransition } from 'react';
+import React, { useState, startTransition, useRef, useEffect } from 'react';
 import { Campaign, MasterCharacter, CampaignInvite, User, CharacterParticipation } from '../../types';
 import { Plus, ChevronLeft, Clock } from 'lucide-react';
 import { toPersianDigits, partitionCampaigns, calculateCountdown } from '../../../shared/rules/historyEngine';
@@ -13,6 +13,7 @@ interface HomeScreenProps {
   pendingApprovals: any[];
   draftParticipations?: CharacterParticipation[];
   isLoading?: boolean;
+  initialInviteCode?: string;
   onSelectCampaign: (campaignId: string) => void;
   onOpenCreateCampaign: () => void;
   onOpenCharacterMaster: (characterId: string) => void;
@@ -78,6 +79,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   pendingApprovals,
   draftParticipations = [],
   isLoading = false,
+  initialInviteCode = '',
   onSelectCampaign,
   onOpenCreateCampaign,
   onOpenCharacterMaster,
@@ -87,7 +89,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenApprovals,
   onAcceptInvite,
 }) => {
-  const [inviteInput, setInviteInput] = useState('');
+  const [inviteInput, setInviteInput] = useState(initialInviteCode);
+  const inviteInputRef = useRef<HTMLInputElement>(null);
   const [campaignTab, setCampaignTab] = useState<'current' | 'past'>('current');
 
   const { current: currentCampaigns, past: pastCampaigns } = partitionCampaigns(myCampaigns);
