@@ -965,7 +965,7 @@ export const BackstoryEditor: React.FC<BackstoryEditorProps> = ({
       </div>
 
       {/* SECTION 8: DM ONLY SECRETS & HOOKS */}
-      <div className="rounded-2xl bg-accent border border-danger/30 p-5 space-y-4">
+      <div className="rounded-2xl color-accent-rgb border border-danger/30 p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-bold text-danger flex items-center gap-2">
             <Lock className="w-4 h-4 text-danger-hover" />

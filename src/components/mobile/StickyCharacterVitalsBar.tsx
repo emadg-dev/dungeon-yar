@@ -45,7 +45,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
   ];
 
   return (
-    <div className="sticky top-[49px] sm:top-[53px] z-20 bg-bg/95 backdrop-blur-md border-b border-accent/20 px-2.5 sm:px-4 py-1.5 sm:py-2 shadow-md">
+    <div className="sticky top-[var(--app-header-h,3.5rem)] z-20 bg-bg/95 backdrop-blur-md border-b border-accent/20 px-2.5 sm:px-4 py-1.5 sm:py-2 shadow-md">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-3">
         {/* Top / Left: Identity & HP Controls */}
         <div className="flex items-center justify-between sm:justify-start gap-2 min-w-0">
@@ -69,11 +69,11 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
               </div>
               <div className="flex items-center gap-1.5 text-xs text-text-muted">
                 <span className="flex items-center gap-0.5">
-                  <Shield className="w-2.5 h-2.5 text-accent-hover" /> AC {character.ac}
+                  <Shield className="w-3.5 h-3.5 text-accent-hover" /> AC {character.ac}
                 </span>
                 {character.exhaustion > 0 && (
                   <span className="flex items-center gap-0.5 text-danger font-bold">
-                    <AlertTriangle className="w-2.5 h-2.5" /> {character.exhaustion}
+                    <AlertTriangle className="w-3.5 h-3.5" /> {character.exhaustion}
                   </span>
                 )}
               </div>
@@ -85,7 +85,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
             <Button
               type="button"
               onClick={() => adjustHp(-1)}
-              className="w-12 h-12 flex items-center justify-center rounded-xl bg-danger/15 active:bg-danger/15 border border-danger/40 text-danger font-black text-sm touch-target min-w-[44px]-lg select-none"
+              className="w-12 h-12 flex items-center justify-center rounded-xl bg-danger/15 active:bg-danger/15 border border-danger/40 text-danger font-black text-sm touch-target select-none"
               title="کاهش ۱ جان"
             >
               -۱
@@ -112,7 +112,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
             <Button
               type="button"
               onClick={() => adjustHp(+1)}
-              className="w-12 h-12 flex items-center justify-center rounded-xl bg-success/15 active:bg-success/15 border border-success/40 text-success font-black text-sm touch-target min-w-[44px]-lg select-none"
+              className="w-12 h-12 flex items-center justify-center rounded-xl bg-success/15 active:bg-success/15 border border-success/40 text-success font-black text-sm touch-target select-none"
               title="افزایش ۱ جان"
             >
               +۱
@@ -124,7 +124,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
             <Button
               type="button"
               onClick={() => onOpenRest('short')}
-              className="p-2 rounded-xl bg-surface-2 hover:bg-surface-2 text-text-primary text-xs font-bold touch-target min-w-[44px]"
+              className="p-2 rounded-xl bg-surface-2 hover:bg-surface-3 text-text-primary text-xs font-bold touch-target min-w-[44px]"
               title="استراحت کوتاه"
             >
               <Moon className="w-4 h-4 text-accent-hover" />
@@ -132,7 +132,7 @@ export const StickyCharacterVitalsBar: React.FC<StickyCharacterVitalsBarProps> =
             <Button
               type="button"
               onClick={() => onOpenRest('long')}
-              className="p-2 rounded-xl bg-surface-2 hover:bg-surface-2 text-text-primary text-xs font-bold touch-target min-w-[44px]"
+              className="p-2 rounded-xl bg-surface-2 hover:bg-surface-3 text-text-primary text-xs font-bold touch-target min-w-[44px]"
               title="استراحت بلند"
             >
               <Sun className="w-4 h-4 text-accent-hover" />

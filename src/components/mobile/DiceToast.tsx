@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { DiceRollResult } from '../../types';
 import { formatModifier } from '../../utils/dice';
-import { Dices, Flame, Sparkles, X } from 'lucide-react';
+import { Dices, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 interface DiceToastProps {
@@ -9,6 +9,9 @@ interface DiceToastProps {
   onClose: () => void;
   onOpenRollerModal: () => void;
 }
+
+const iconBtn =
+  'inline-flex items-center justify-center w-11 h-11 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60';
 
 export const DiceToast: React.FC<DiceToastProps> = ({
   latestRoll,
@@ -41,78 +44,58 @@ export const DiceToast: React.FC<DiceToastProps> = ({
 
   if (!latestRoll) return null;
 
+  // Only the two moments that matter change the look; a normal roll stays quiet.
+  const tone = latestRoll.isCritical
+    ? 'border-accent shadow-glow-amber'
+    : latestRoll.isFumble
+    ? 'border-danger'
+    : 'border-border';
+
+  const outcome = latestRoll.isCritical ? '۲۰ بحرانی' : latestRoll.isFumble ? '۱ طبیعی' : '';
+  const outcomeTone = latestRoll.isCritical ? 'text-accent-hover' : 'text-danger';
+
   return (
-    <div 
-      className="fixed top-16 inset-x-3 z-50 max-w-sm mx-auto animate-in slide-in-from-top-4 duration-200"
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed inset-x-3 z-50 max-w-sm mx-auto animate-in slide-in-from-top-4 duration-200 top-[calc(var(--app-header-h,3.5rem)+0.5rem)]"
       dir="rtl"
     >
-      <div 
-        className={`p-3.5 rounded-2xl border shadow-2xl backdrop-blur-md flex flex-wrap items-center justify-between gap-2 gap-3 ${
-          latestRoll.isCritical
-            ? 'bg-accent/15 border-accent-hover text-accent-hover shadow-[0_0_25px_rgba(245,158,11,0.4)]'
-            : latestRoll.isFumble
-            ? 'bg-danger/15 border-danger/70 text-danger'
-            : 'bg-info/95 border-accent/30 text-text-primary'
-        }`}
-      >
-        <div className="flex items-center gap-3">
-          {/* Big Total Badge */}
-          <div className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-bg border border-accent/40 shrink-0">
-            <span className="text-2xl font-black text-accent-hover font-mono dice-ltr">
-              {latestRoll.total}
-            </span>
-            <span className="text-[9px] text-text-muted font-mono dice-ltr">
-              {latestRoll.diceCount}d{latestRoll.diceSides}{latestRoll.modifier ? formatModifier(latestRoll.modifier) : ''}
-            </span>
-          </div>
-
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h4 className="font-bold text-xs text-accent-hover">{latestRoll.label}</h4>
-              {latestRoll.isCritical && (
-                <span className="px-1.5 py-0.5 text-[9px] font-black bg-accent text-on-accent rounded-full flex items-center gap-0.5">
-                  <Flame className="w-2.5 h-2.5" /> ۲۰ بحرانی!
-                </span>
-              )}
-              {latestRoll.isFumble && (
-                <span className="px-1.5 py-0.5 text-[9px] font-black bg-danger text-white rounded-full">
-                  ۱ طبیعی
-                </span>
-              )}
-            </div>
-
-            <div className="text-xs text-text-primary mt-0.5">
-              <span>تاس‌ها: </span>
-              <span className="font-mono text-accent-hover dice-ltr">[{latestRoll.rolls.join(', ')}]</span>
-              {latestRoll.modifier !== 0 && (
-                <span className="text-text-muted me-1">
-                  (مادیفایر: <strong className="dice-ltr">{formatModifier(latestRoll.modifier)}</strong>)
-                </span>
-              )}
-              {latestRoll.advantage && (
-                <span className="text-accent-hover me-1 font-semibold">
-                  {latestRoll.advantage === 'adv' ? '• با مزیت' : '• با ضعف'}
-                </span>
-              )}
-            </div>
-          </div>
+      <div className={`p-3 rounded-xl border bg-surface shadow-2xl flex items-center gap-3 ${tone}`}>
+        {/* The total is the answer, so it is the biggest thing */}
+        <div className="flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-bg border border-border shrink-0">
+          <span className="text-2xl font-bold text-text-primary font-mono dice-ltr">{latestRoll.total}</span>
+          <span className="text-xs text-text-muted font-mono dice-ltr">
+            {latestRoll.diceCount}d{latestRoll.diceSides}{latestRoll.modifier ? formatModifier(latestRoll.modifier) : ''}
+          </span>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex items-center gap-1">
-          <Button
-            onClick={onOpenRollerModal}
-            className="p-2 rounded-xl bg-surface-2/80 hover:bg-surface-2 text-accent-hover touch-target min-w-[44px]"
-            title="مشاهده کیسه تاس"
-          >
-            <Dices className="w-4 h-4" />
+        <div className="min-w-0 flex-1 space-y-0.5">
+          <div className="flex items-center gap-2 min-w-0">
+            <h4 className="text-sm font-bold text-text-primary truncate">{latestRoll.label}</h4>
+            {outcome && <span className={`text-xs font-bold shrink-0 ${outcomeTone}`}>{outcome}</span>}
+          </div>
+          <p className="text-xs text-text-muted">
+            <span className="font-mono dice-ltr text-text-primary">[{latestRoll.rolls.join(', ')}]</span>
+            {latestRoll.modifier !== 0 && (
+              <span className="ms-2">
+                مادیفایر <span className="dice-ltr">{formatModifier(latestRoll.modifier)}</span>
+              </span>
+            )}
+            {latestRoll.advantage && (
+              <span className="ms-2 font-bold text-accent-hover">
+                {latestRoll.advantage === 'adv' ? 'با مزیت' : 'با ضعف'}
+              </span>
+            )}
+          </p>
+        </div>
+
+        <div className="flex items-center shrink-0">
+          <Button onClick={onOpenRollerModal} className={iconBtn} title="باز کردن کیسه تاس" aria-label="باز کردن کیسه تاس">
+            <Dices className="w-5 h-5" />
           </Button>
-          <Button
-            onClick={onClose}
-            className="p-2 rounded-xl text-text-muted hover:text-text-primary touch-target min-w-[44px]"
-            title="بستن"
-          >
-            <X className="w-4 h-4" />
+          <Button onClick={onClose} className={iconBtn} title="بستن" aria-label="بستن">
+            <X className="w-5 h-5" />
           </Button>
         </div>
       </div>

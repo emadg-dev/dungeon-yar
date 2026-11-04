@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '../ui/Button';
 import {
   Heart, Dices, FileText, Compass, MoreHorizontal,
-  Shield, UserCheck, LayoutDashboard, LogIn
+  Shield, UserCheck, LayoutDashboard, User
 } from 'lucide-react';
 
 interface BottomNavProps {
@@ -48,7 +48,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       { id: 'campaigns', label: 'کمپین‌ها', icon: Shield },
       { id: 'characters', label: 'شخصیت‌ها', icon: Heart },
       { id: 'invites', label: 'دعوت‌ها', icon: UserCheck },
-      { id: 'account', label: 'حساب', icon: LogIn },
+      { id: 'account', label: 'حساب', icon: User },
     ];
     return (
       <nav aria-label="منوی ناوبری اصلی" className="liquid-dock" dir="rtl">
@@ -77,7 +77,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
   if (isDmView) {
     const dmItems = [
-      { id: 'dm', label: 'میز دی‌ام', icon: LayoutDashboard },
+      { id: 'dm', label: 'میز مستر', icon: LayoutDashboard },
       { id: 'sheet', label: 'برگه', icon: Heart },
       { id: 'dice', label: 'تاس', icon: Dices },
       { id: 'notes', label: 'یادداشت', icon: FileText },

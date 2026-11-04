@@ -2,13 +2,13 @@ import { Button } from './ui/Button';
 import { Select } from './ui/Select';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { User, Character } from '../types';
-import { APP_NAME_FA, APP_NAME_LATIN, APP_TAGLINE, APP_VERSION } from '../config/app';
+import { APP_NAME_FA, APP_TAGLINE, APP_VERSION } from '../config/app';
 import { BottomSheet } from './mobile/BottomSheet';
-import { 
-  Menu, X,
-  CheckCircle2, RefreshCw, Shield, BookOpen, 
-  Coffee, Sun, Moon, Type, LogOut, ChevronDown, MoreVertical, Sparkles, Swords, Bell,
-  WifiOff, AlertTriangle, Eye, Wifi
+import {
+  Menu, X, Home, ArrowLeftRight, Settings, Users, KeyRound, ClipboardCheck, UserCog,
+  CheckCircle2, RefreshCw, Shield, BookOpen,
+  Coffee, Sun, Moon, Type, LogOut, ChevronDown, ChevronLeft, Sparkles, Swords, Bell,
+  WifiOff, AlertTriangle, Eye,
 } from 'lucide-react';
 import { getRoleLabelFa, CampaignRole } from '../../shared/permissions';
 import { toPersianDigits } from '../../shared/rules/historyEngine';
@@ -62,6 +62,71 @@ export interface HeaderProps {
   onToggleTheme?: () => void;
 }
 
+/* ------------------------------------------------------------------
+   Shared look.
+   Rules used across this file:
+   - Header bar: only context + the few things needed mid-game. Everything
+     else (theme, font, wake lock, version, admin, approvals) lives in the menu.
+   - One row height (44px) for every tappable thing.
+   - Icon buttons are quiet (no border/fill) so filled buttons stand out.
+   - Corner radius: rounded-lg for controls, rounded-xl for groups.
+   - Red (danger) = conflict or live fight. Offline = warning. Nothing pulses
+     except the small dot on a live encounter.
+   ------------------------------------------------------------------ */
+const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60';
+const ghostIconBtn = `relative inline-flex items-center justify-center w-11 h-11 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-2 transition ${focusRing}`;
+
+const roleTone = (role?: string | null) =>
+  role === 'owner' ? 'text-accent-hover'
+  : role === 'co_dm' ? 'text-role-codm'
+  : role === 'player' ? 'text-info'
+  : 'text-text-muted';
+
+interface MenuGroupProps { title: string; children: React.ReactNode }
+const MenuGroup: React.FC<MenuGroupProps> = ({ title, children }) => (
+  <section>
+    <h3 className="px-1 mb-1.5 text-xs font-bold text-text-muted">{title}</h3>
+    <div className="rounded-xl border border-border bg-surface-2/40 divide-y divide-border overflow-hidden">
+      {children}
+    </div>
+  </section>
+);
+
+interface MenuRowProps {
+  icon: React.ReactNode;
+  label: string;
+  onClick?: () => void;
+  trailing?: React.ReactNode;
+  tone?: 'default' | 'danger';
+  disabled?: boolean;
+  selected?: boolean;
+}
+const MenuRow: React.FC<MenuRowProps> = ({ icon, label, onClick, trailing, tone = 'default', disabled, selected }) => (
+  <Button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    aria-pressed={selected}
+    className={`w-full min-h-[44px] flex items-center gap-3 px-3 py-2 text-sm text-start transition hover:bg-surface-2 disabled:opacity-50 ${
+      tone === 'danger' ? 'text-danger' : selected ? 'text-accent font-bold' : 'text-text-primary'
+    } ${focusRing}`}
+  >
+    <span className="shrink-0 text-text-muted">{icon}</span>
+    <span className="flex-1 min-w-0 truncate">{label}</span>
+    {trailing}
+  </Button>
+);
+
+const CountBadge: React.FC<{ value: number; tone?: 'accent' | 'danger' }> = ({ value, tone = 'accent' }) => (
+  <span
+    className={`min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold inline-flex items-center justify-center ${
+      tone === 'danger' ? 'bg-danger text-on-danger' : 'bg-accent text-on-accent'
+    }`}
+  >
+    {value > 99 ? '۹۹+' : toPersianDigits(value)}
+  </span>
+);
+
 export const Header: React.FC<HeaderProps> = ({
   currentUser,
   allUsers,
@@ -108,24 +173,51 @@ export const Header: React.FC<HeaderProps> = ({
   theme = 'dark',
   onToggleTheme,
 }) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [syncSheetOpen, setSyncSheetOpen] = useState(false);
-  const isDm = activeCampaignRole === 'owner' || activeCampaignRole === 'co_dm' || currentUser?.role === 'dm';
   const menuPanelRef = useRef<HTMLDivElement>(null);
-  const hamburgerRef = useRef<HTMLButtonElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
 
-  // Close menu on viewport grow past mobile (md = 768px)
+  // Publish the real header height (incl. safe area and the spectator banner)
+  // so sticky bars below it can sit flush: top-[var(--app-header-h)].
   useEffect(() => {
-    const onResize = () => {
-      if (window.innerWidth >= 768) setMobileMenuOpen(false);
-    };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    const el = headerRef.current;
+    if (!el) return;
+    const publish = () =>
+      document.documentElement.style.setProperty('--app-header-h', `${el.getBoundingClientRect().height}px`);
+    publish();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(publish);
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
-  // Lock scroll while menu open (reuse existing body class)
+  const isDm = activeCampaignRole === 'owner' || activeCampaignRole === 'co_dm' || currentUser?.role === 'dm';
+  const inCampaign = viewMode === 'campaign_space';
+  const isOffline = !isOnline || saveStatus === 'offline';
+  const hasConflict = saveStatus === 'conflict';
+  const showSync = isOffline || queueLength > 0 || hasConflict;
+  const showLevelUp = inCampaign && levelUpAvailable && !isDmView && !!onOpenLevelUp;
+  const showApprovals = inCampaign && isDm && !!onOpenCampaignApprovals && pendingApprovalsCount > 0;
+  // A dot on the menu button when something inside the menu needs attention.
+  const menuNeedsAttention = showApprovals || showLevelUp;
+  const displayName = currentUser ? (currentUser.displayName || currentUser.name) : '';
+
+  const closeMenu = useCallback(() => {
+    setMenuOpen(false);
+    setTimeout(() => menuTriggerRef.current?.focus(), 100);
+  }, []);
+
+  // Run an action and close the menu without stealing focus back.
+  const act = (fn?: () => void) => () => {
+    setMenuOpen(false);
+    fn?.();
+  };
+
+  // Lock page scroll while the menu is open.
   useEffect(() => {
-    if (mobileMenuOpen) {
+    if (menuOpen) {
       document.body.classList.add('sheet-open');
       document.body.style.overflow = 'hidden';
     } else {
@@ -136,19 +228,28 @@ export const Header: React.FC<HeaderProps> = ({
       document.body.classList.remove('sheet-open');
       document.body.style.overflow = '';
     };
-  }, [mobileMenuOpen]);
+  }, [menuOpen]);
 
-  // Focus trap inside drawer + return focus to hamburger on close
+  // Focus trap + Escape. Focusable items are re-read on every Tab so the
+  // collapsible "switch user" section is included once opened.
   useEffect(() => {
-    if (!mobileMenuOpen) return;
+    if (!menuOpen) return;
     const panel = menuPanelRef.current;
     if (!panel) return;
-    const focusable = panel.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-    const first = focusable[0];
+    const getFocusable = () =>
+      Array.from(
+        panel.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, summary, [tabindex]:not([tabindex="-1"])')
+      ).filter(el => !(el as HTMLButtonElement).disabled);
+    const first = getFocusable()[0];
     if (first) setTimeout(() => first.focus(), 50);
-    const handleTab = (e: KeyboardEvent) => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeMenu();
+        return;
+      }
       if (e.key !== 'Tab') return;
-      const all = Array.from(focusable);
+      const all = getFocusable();
       if (all.length === 0) return;
       const firstEl = all[0];
       const lastEl = all[all.length - 1];
@@ -160,837 +261,505 @@ export const Header: React.FC<HeaderProps> = ({
         firstEl.focus();
       }
     };
-    panel.addEventListener('keydown', handleTab);
-    return () => panel.removeEventListener('keydown', handleTab);
-  }, [mobileMenuOpen]);
+    panel.addEventListener('keydown', onKeyDown);
+    return () => panel.removeEventListener('keydown', onKeyDown);
+  }, [menuOpen, closeMenu]);
 
-  // Close menu when clicking outside backdrop or pressing Escape (backed by BottomSheet already, keep extra here)
-  const closeMenu = useCallback(() => {
-    setMobileMenuOpen(false);
-    setTimeout(() => hamburgerRef.current?.focus(), 100);
-  }, []);
+  const syncLabel = hasConflict
+    ? `${toPersianDigits(conflictCount || 1)} مغایرت در همگام‌سازی`
+    : isOffline && queueLength > 0
+    ? `آفلاین، ${toPersianDigits(queueLength)} تغییر در صف ارسال`
+    : isOffline
+    ? 'آفلاین: اتصال اینترنت قطع است'
+    : `در حال همگام‌سازی، ${toPersianDigits(queueLength)} تغییر در صف`;
+
+  const syncTone = hasConflict
+    ? 'text-danger bg-danger/15'
+    : isOffline
+    ? 'text-warning bg-warning/15'
+    : 'text-accent bg-accent/10';
+
+  const roleLabel = activeCampaignRole ? getRoleLabelFa(activeCampaignRole as CampaignRole) : '';
+
+  // Campaign name + role, shown as one two-line control instead of three chips.
+  const campaignLabel = (
+    <>
+      <span className="flex flex-col min-w-0 leading-tight text-start">
+        <span className="text-sm font-bold text-text-primary truncate">{activeCampaignName || 'کمپین'}</span>
+        {roleLabel && <span className={`text-xs truncate ${roleTone(activeCampaignRole)}`}>{roleLabel}</span>}
+      </span>
+      {onOpenCampaignSwitcher && <ChevronDown className="w-4 h-4 text-text-muted shrink-0" />}
+    </>
+  );
 
   return (
     <>
-    <header className="sticky top-0 z-20 w-full max-w-full glass-panel border-b border-border shadow-md pt-[env(safe-area-inset-top,0px)] ps-[env(safe-area-inset-left,0px)] pe-[env(safe-area-inset-right,0px)]">
-      <div className="max-w-7xl mx-auto px-2.5 sm:px-4 py-2 flex flex-wrap items-center justify-between gap-2 gap-2">
-        {/* Mobile hamburger — left of header, mobile only */}
-        <Button 
-          ref={hamburgerRef}
-          type="button"
-          onClick={() => setMobileMenuOpen(o => !o)}
-          aria-label={mobileMenuOpen ? 'بستن منو' : 'باز کردن منو'}
-          aria-expanded={mobileMenuOpen}
-          aria-controls="mobile-header-menu"
-          className="md:hidden flex items-center justify-center w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary hover:border-accent transition touch-target min-w-[44px] shrink-0"
-          title={mobileMenuOpen ? 'بستن منو' : 'باز کردن منو'}
-        >
-          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </Button>
+      <header ref={headerRef} className="sticky top-0 z-20 w-full max-w-full glass-panel border-b border-border pt-[env(safe-area-inset-top,0px)] ps-[env(safe-area-inset-left,0px)] pe-[env(safe-area-inset-right,0px)]">
+        <div className="max-w-7xl mx-auto px-2.5 sm:px-4 h-14 flex items-center gap-2">
+          {/* ---------- Start: where am I ---------- */}
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <Button
+              type="button"
+              onClick={onGoHome}
+              aria-label="صفحه اصلی"
+              title={APP_NAME_FA}
+              className={`flex items-center justify-center w-11 h-11 rounded-lg bg-gradient-to-br from-accent to-danger ${focusRing}`}
+            >
+              <span className="text-lg font-black text-on-accent leading-none">ز</span>
+            </Button>
 
-        {/* Brand & Campaign Switcher / Breadcrumb */}
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          {/* Brand Seal Logo Mark */}
-          <Button 
-            type="button"
-            onClick={onGoHome}
-            className="relative flex items-center justify-center w-8 h-8 rounded-[10px] bg-gradient-to-br from-accent to-danger border border-accent-hover/40 shadow-glow-amber shrink-0 hover:scale-105 transition-transform"
-            title={APP_NAME_FA}
-          >
-            <span className="text-base font-black text-on-accent leading-none">ز</span>
-          </Button>
-
-          {viewMode === 'campaign_space' ? (
-            <div className="flex items-center gap-1.5 min-w-0">
-              {/* Campaign Switcher Chip */}
-              {onOpenCampaignSwitcher && (
-                <Button 
-                  type="button"
-                  onClick={onOpenCampaignSwitcher}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] bg-surface-2 border border-border hover:border-accent text-xs font-black text-text-primary truncate max-w-[130px] sm:max-w-[180px] touch-target min-w-[44px] transition"
-                  title="تغییر یا انتخاب کمپین"
-                >
-                  <span className="truncate text-accent">{activeCampaignName || 'کمپین'}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-text-muted shrink-0" />
-                </Button>
-              )}
-
-              {/* Role Badge in campaign space */}
-              {activeCampaignRole && (
-                <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded-[8px] text-xs font-black shrink-0 ${
-                    activeCampaignRole === 'owner'
-                      ? 'bg-accent/20 text-accent-hover border border-accent/40'
-                      : activeCampaignRole === 'co_dm'
-                      ? 'bg-role-codm/20 text-role-codm border border-role-codm/40'
-                      : activeCampaignRole === 'player'
-                      ? 'bg-info/30 text-info border border-info/40'
-                      : 'bg-text-disabled/30 text-text-muted border border-text-disabled/40'
-                  }`}
-                  title={`نقش شما: ${getRoleLabelFa(activeCampaignRole as CampaignRole)}`}
-                >
-                  {getRoleLabelFa(activeCampaignRole as CampaignRole)}
-                </span>
-              )}
-
-              {/* Character Dropdown inside campaign */}
-              {currentUser && characters.length > 0 && !isDmView && (
-                <div className="relative min-w-0 max-w-[120px] sm:max-w-[160px]">
-                  <Select noWrapper 
-                    value={activeCharacterId || ''}
-                    onChange={(e) => onSelectCharacter(e.target.value)}
-                    className="w-full bg-surface-2 text-xs font-bold text-accent py-1.5 pe-6 ps-2 rounded-[10px] border border-border focus:outline-none appearance-none cursor-pointer truncate touch-target min-w-[44px]"
-                    title="تغییر کاراکتر در این کمپین"
+            {inCampaign ? (
+              <>
+                {onOpenCampaignSwitcher ? (
+                  <Button
+                    type="button"
+                    onClick={onOpenCampaignSwitcher}
+                    title="تغییر یا انتخاب کمپین"
+                    className={`flex items-center gap-1.5 shrink min-w-0 max-w-[12rem] sm:max-w-xs h-11 px-2 rounded-lg hover:bg-surface-2 transition ${focusRing}`}
                   >
-                    {characters.map(c => (
-                      <option key={c.id} value={c.id} className="bg-surface text-text-primary">
-                        {c.name}
-                      </option>
-                    ))}
-                  </Select>
-                  <ChevronDown className="w-3 h-3 text-text-muted absolute start-auto end-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-              )}
+                    {campaignLabel}
+                  </Button>
+                ) : (
+                  <div className="flex items-center gap-1.5 min-w-0 px-2">{campaignLabel}</div>
+                )}
 
-              {/* Level-Up Ready Indicator Button */}
-              {levelUpAvailable && onOpenLevelUp && !isDmView && (
-                <Button 
-                  type="button"
-                  onClick={onOpenLevelUp}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-gradient-to-r from-warning to-accent text-on-accent text-xs font-black animate-pulse shadow-md shadow-accent/20 touch-target min-w-[44px] shrink-0"
-                  title="ارتقای سطح آماده است!"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">ارتقای سطح!</span>
-                </Button>
-              )}
-            </div>
-          ) : viewMode === 'character_master' ? (
-            <div className="flex items-center gap-2 truncate">
-              {onGoHome && (
-                <Button 
-                  type="button"
-                  onClick={onGoHome}
-                  className="text-xs font-bold text-text-muted hover:text-accent transition flex items-center gap-1"
-                >
-                  خانه /
-                </Button>
-              )}
-              <h1 className="text-xs sm:text-sm font-black text-text-primary truncate">
-                پرونده جامع شخصیت
-              </h1>
-            </div>
-          ) : (
-            <div className="truncate">
-              <h1 className="text-xs sm:text-sm font-black tracking-wide text-text-primary truncate">
-                {APP_NAME_FA} <span className="text-accent text-xs font-bold sm:inline hidden">• {APP_TAGLINE}</span>
-              </h1>
-            </div>
-          )}
-        </div>
-
-        {/* Visual Offline / Queue / Conflict Indicator — visible in navigation bar on ALL viewports */}
-        {(!isOnline || saveStatus === 'offline' || queueLength > 0 || saveStatus === 'conflict') && (
-          <Button 
-            type="button"
-            onClick={() => {
-              if (saveStatus === 'conflict') {
-                onOpenConflicts?.();
-              } else {
-                setSyncSheetOpen(true);
-              }
-            }}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[10px] text-xs font-black transition shrink-0 touch-target min-w-[44px] min-h-[38px] ${
-              saveStatus === 'conflict'
-                ? 'bg-danger/25 text-accent-hover border border-danger/70 shadow-[0_0_8px_rgba(194,81,43,0.35)] animate-pulse'
-                : (!isOnline || saveStatus === 'offline') && queueLength > 0
-                ? 'bg-danger/25 text-accent-hover border border-danger/70 shadow-[0_0_10px_rgba(194,81,43,0.4)] animate-pulse'
-                : (!isOnline || saveStatus === 'offline')
-                ? 'bg-surface-2 text-text-primary border border-text-muted/40 hover:border-accent'
-                : 'bg-surface-2 text-accent border border-accent/40'
-            }`}
-            aria-label={
-              saveStatus === 'conflict'
-                ? `${toPersianDigits(conflictCount || 1)} مغایرت در همگام‌سازی`
-                : (!isOnline || saveStatus === 'offline') && queueLength > 0
-                ? `آفلاین - ${toPersianDigits(queueLength)} تغییر در صف انتظار`
-                : (!isOnline || saveStatus === 'offline')
-                ? 'حالت آفلاین - اتصال اینترنت قطع است'
-                : `در حال همگام‌سازی - ${toPersianDigits(queueLength)} تغییر در صف`
-            }
-            title={
-              saveStatus === 'conflict'
-                ? `${toPersianDigits(conflictCount || 1)} مغایرت در همگام‌سازی - جهت رفع لمس کنید`
-                : (!isOnline || saveStatus === 'offline') && queueLength > 0
-                ? `آفلاین: ${toPersianDigits(queueLength)} تغییر در صف ارسال منتظر اتصال است (جهت جزئیات لمس کنید)`
-                : (!isOnline || saveStatus === 'offline')
-                ? 'اتصال اینترنت قطع است (جهت جزئیات لمس کنید)'
-                : 'در حال ارسال تغییرات به سرور...'
-            }
-          >
-            {saveStatus === 'conflict' ? (
-              <>
-                <AlertTriangle className="w-3.5 h-3.5 text-accent-hover shrink-0" />
-                <span className="text-xs font-extrabold">{toPersianDigits(conflictCount || 1)} مغایرت</span>
+                {/* Character picker: header on wide screens, menu on phones */}
+                {currentUser && characters.length > 0 && !isDmView && (
+                  <div className="relative hidden md:block min-w-0 max-w-[11rem]">
+                    <Select
+                      noWrapper
+                      value={activeCharacterId || ''}
+                      onChange={(e) => onSelectCharacter(e.target.value)}
+                      className={`w-full h-11 bg-surface-2 font-medium text-text-primary ps-3 pe-8 rounded-lg border border-border appearance-none cursor-pointer truncate ${focusRing}`}
+                      title="تغییر شخصیت در این کمپین"
+                      aria-label="شخصیت فعال"
+                    >
+                      {characters.map(c => (
+                        <option key={c.id} value={c.id} className="bg-surface text-text-primary">
+                          {c.name}
+                        </option>
+                      ))}
+                    </Select>
+                    <ChevronDown className="w-4 h-4 text-text-muted absolute end-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                )}
               </>
-            ) : (!isOnline || saveStatus === 'offline') ? (
-              <>
-                <WifiOff className="w-3.5 h-3.5 text-accent-hover shrink-0" />
-                <span className="text-xs font-extrabold flex items-center gap-1">
-                  <span>آفلاین</span>
-                  {queueLength > 0 && (
-                    <span className="px-1.5 py-0.5 rounded-full bg-danger text-white text-xs font-black leading-none">
-                      {toPersianDigits(queueLength)} در صف
-                    </span>
-                  )}
-                </span>
-              </>
+            ) : viewMode === 'character_master' ? (
+              <div className="flex items-center gap-1 min-w-0">
+                {onGoHome && (
+                  <Button
+                    type="button"
+                    onClick={onGoHome}
+                    className={`h-11 px-2 rounded-lg text-sm text-text-muted hover:text-text-primary hover:bg-surface-2 transition ${focusRing}`}
+                  >
+                    خانه
+                  </Button>
+                )}
+                <ChevronLeft className="w-4 h-4 text-text-disabled shrink-0" />
+                <h1 className="text-sm sm:text-base font-bold text-text-primary truncate">پرونده جامع شخصیت</h1>
+              </div>
             ) : (
-              <>
-                <RefreshCw className="w-3.5 h-3.5 text-accent animate-spin shrink-0" />
-                <span className="text-xs text-accent font-bold">
-                  {toPersianDigits(queueLength)} در صف
-                </span>
-              </>
-            )}
-          </Button>
-        )}
-
-        {/* Action Controls & Utilities — hidden on mobile; hamburger replaces below md */}
-        <div className="hidden md:flex items-center gap-1.5 shrink-0">
-          {/* DM Pending Approvals notification */}
-          {pendingApprovalsCount > 0 && onOpenCampaignApprovals && (
-            <Button 
-              type="button"
-              onClick={onOpenCampaignApprovals}
-              className="flex items-center gap-1 px-2 py-1 rounded-[10px] text-xs font-black bg-accent/20 text-accent-hover border border-accent/40 hover:bg-accent/30 transition touch-target min-w-[44px] animate-pulse"
-              title={`${pendingApprovalsCount} درخواست در انتظار بررسی`}
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>{pendingApprovalsCount}</span>
-            </Button>
-          )}
-
-          {/* Live Encounter Button for Players or DM */}
-          {viewMode === 'campaign_space' && activeEncounter && onOpenActiveEncounter && (
-            <Button 
-              type="button"
-              onClick={onOpenActiveEncounter}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] text-xs font-black bg-danger hover:bg-danger text-white animate-pulse border border-accent-hover shadow-[0_0_12px_rgba(194,81,43,0.6)] touch-target min-w-[44px] transition"
-              title={`مبارزه فعال: ${activeEncounter.name}`}
-            >
-              <Swords className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span className="hidden sm:inline">مبارزه زنده</span>
-            </Button>
-          )}
-
-          {/* Desktop Synced Status (when all saved and online) */}
-          {isOnline && saveStatus === 'saved' && queueLength === 0 && (
-            <div
-              className="flex items-center gap-1 px-1.5 py-1 text-xs text-success"
-              title="همه تغییرات ذخیره شدند"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5 text-success" />
-              <span className="text-xs font-bold hidden lg:inline">ذخیره شد</span>
-            </div>
-          )}
-
-          {/* Desktop App Version & Check for Updates Button */}
-          {onCheckForUpdates && (
-            <Button 
-              type="button"
-              onClick={onCheckForUpdates}
-              disabled={isCheckingUpdates}
-              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-[10px] bg-surface-2 border border-border hover:border-accent text-xs font-bold text-text-muted hover:text-text-primary transition touch-target min-w-[44px]"
-              title={`نسخه ${toPersianDigits(appVersion || APP_VERSION)} - بررسی به‌روزرسانی`}
-            >
-              <RefreshCw className={`w-3 h-3 ${isCheckingUpdates ? 'animate-spin text-accent' : 'text-text-muted'}`} />
-              <span>نسخه {toPersianDigits(appVersion || APP_VERSION)}</span>
-            </Button>
-          )}
-
-          {/* DM / Player View Switcher (if user is DM in this campaign) */}
-          {viewMode === 'campaign_space' && isDm && onToggleDmView && (
-            <Button 
-              type="button"
-              onClick={onToggleDmView}
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] text-xs font-bold transition border touch-target min-w-[44px] ${
-                isDmView
-                  ? 'bg-accent text-on-accent border-accent'
-                  : 'bg-surface-2 text-text-primary border-border hover:border-accent'
-              }`}
-              title={isDmView ? 'تغییر به کاراکترشیت' : 'تغییر به ابزارهای مستر'}
-            >
-              {isDmView ? <Shield className="w-3.5 h-3.5" /> : <BookOpen className="w-3.5 h-3.5" />}
-              <span className="hidden sm:inline">{isDmView ? 'ابزارهای مستر' : 'کاراکترشیت'}</span>
-            </Button>
-          )}
-
-          {/* Desktop-only Quick Tools */}
-          <div className="hidden sm:flex items-center gap-1.5">
-            {/* Screen Wake Lock toggle */}
-            {wakeLockSupported && (
-              <Button 
-                type="button"
-                onClick={onToggleWakeLock}
-                className={`p-1.5 rounded-[10px] text-xs font-bold transition border touch-target min-w-[44px] ${
-                  wakeLockActive
-                    ? 'bg-accent/20 text-accent border-accent/50 shadow-glow-amber'
-                    : 'bg-surface-2 text-text-muted border-border hover:text-text-primary'
-                }`}
-                title={wakeLockActive ? 'روشن ماندن صفحه فعال است' : 'فعال‌سازی روشن ماندن صفحه در حین بازی'}
-              >
-                <Coffee className="w-4 h-4" />
-              </Button>
-            )}
-
-            {/* Font Scale toggle */}
-            <Button 
-              type="button"
-              onClick={onToggleFontScale}
-              className={`p-1.5 rounded-[10px] text-xs font-bold transition border touch-target min-w-[44px] ${
-                fontScale !== 'normal'
-                  ? 'bg-accent/20 text-accent border-accent/40'
-                  : 'bg-surface-2 text-text-muted border-border hover:text-text-primary'
-              }`}
-              title={fontScale === 'xlarge' ? 'فونت خیلی بزرگ' : fontScale === 'large' ? 'فونت بزرگ' : 'فونت استاندارد'}
-            >
-              <Type className="w-4 h-4" />
-            </Button>
-
-            {/* Theme Toggle (Light / Dark mode) */}
-            {onToggleTheme && (
-              <Button 
-                type="button"
-                onClick={onToggleTheme}
-                className="p-1.5 rounded-[10px] text-xs font-bold transition border border-border bg-surface-2 text-text-muted hover:text-text-primary hover:border-accent touch-target min-w-[44px]"
-                title={theme === 'dark' ? 'تغییر به تم روشن (روز)' : 'تغییر به تم تاریک (شب)'}
-                aria-label={theme === 'dark' ? 'تغییر به تم روشن' : 'تغییر به تم تاریک'}
-              >
-                {theme === 'dark' ? <Sun className="w-4 h-4 text-accent" /> : <Moon className="w-4 h-4 text-accent" />}
-              </Button>
+              <div className="flex items-baseline gap-2 min-w-0">
+                <h1 className="text-base font-bold text-text-primary truncate">{APP_NAME_FA}</h1>
+                <span className="hidden md:inline text-sm text-text-muted truncate">{APP_TAGLINE}</span>
+              </div>
             )}
           </div>
 
-          {/* Notifications Bell */}
-          {onOpenNotifications && (
-            <Button 
-              type="button"
-              onClick={onOpenNotifications}
-              className="relative p-1.5 rounded-[10px] text-xs font-bold transition border border-border bg-surface-2 text-text-muted hover:text-text-primary hover:border-accent touch-target min-w-[44px]"
-              title="اعلان‌ها و رویدادها"
-            >
-              <Bell className="w-4 h-4" />
-              {unreadNotificationsCount > 0 && (
-                <span className="absolute -top-1 -end-1 min-w-[18px] h-[18px] px-1 rounded-full bg-danger text-on-danger text-xs font-bold flex items-center justify-center border border-bg shadow-sm animate-pulse">
-                  {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
-                </span>
-              )}
-            </Button>
-          )}
-
-          {/* User Account / Login Button */}
-          {currentUser ? (
-            <div className="flex items-center gap-1.5">
-              {currentUser.platformRole === 'admin' && onOpenAdminConsole && (
-                <Button 
-                  type="button"
-                  onClick={onOpenAdminConsole}
-                  className="py-1 px-2.5 rounded-[10px] bg-accent/15 border border-accent/40 text-accent hover:bg-accent/25 text-xs font-bold transition touch-target min-w-[44px] flex items-center gap-1 min-h-[44px]"
-                  title="کنسول مدیریت سامانه"
-                >
-                  <Shield className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">مدیریت</span>
-                </Button>
-              )}
-              <Button 
+          {/* ---------- End: what needs me, then the menu ---------- */}
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Sync problems only. When everything is saved, the bar says nothing. */}
+            {showSync && (
+              <Button
                 type="button"
-                onClick={() => setMobileMenuOpen(true)}
-                className="flex items-center gap-1.5 py-1 px-2 rounded-[10px] bg-surface-2 border border-border text-xs font-bold text-text-primary hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 active:scale-95 transition touch-target min-w-[44px]"
-                title={currentUser.displayName || currentUser.name}
+                onClick={() => (hasConflict ? onOpenConflicts?.() : setSyncSheetOpen(true))}
+                aria-label={syncLabel}
+                title={syncLabel}
+                className={`relative inline-flex items-center justify-center w-11 h-11 rounded-lg transition ${syncTone} ${focusRing}`}
               >
-                <span className="w-2 h-2 rounded-full bg-success" />
-                <span className="truncate max-w-[80px] sm:max-w-[120px]">{currentUser.displayName || currentUser.name}</span>
-                <MoreVertical className="w-3.5 h-3.5 text-text-muted" />
+                {hasConflict ? (
+                  <AlertTriangle className="w-5 h-5" />
+                ) : isOffline ? (
+                  <WifiOff className="w-5 h-5" />
+                ) : (
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                )}
+                {(hasConflict || queueLength > 0) && (
+                  <span className="absolute top-0.5 end-0.5">
+                    <CountBadge value={hasConflict ? conflictCount || 1 : queueLength} tone={hasConflict ? 'danger' : 'accent'} />
+                  </span>
+                )}
               </Button>
-            </div>
-          ) : (
-            <Button 
-              type="button"
-              onClick={onOpenAuth}
-              className="py-1.5 px-3 rounded-[10px] btn-primary font-bold text-xs shadow-md transition touch-target min-w-[44px] flex items-center gap-1"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>ورود / عضویت</span>
-            </Button>
-          )}
-        </div>
-      </div>
+            )}
 
-      {/* Persistent Spectator Banner */}
-      {viewMode === 'campaign_space' && activeCampaignRole === 'spectator' && (
-        <div className="w-full bg-surface border-t border-text-disabled/60 px-3 py-1.5 flex items-center justify-center gap-2 text-xs font-bold text-text-muted">
-          <Eye className="w-4 h-4 text-text-muted shrink-0" />
-          <span>حالت تماشا — فقط‌خواندنی (مشاهده برگه و تاس‌های روی میز مجاز است)</span>
+            {/* Live fight: the one loud thing in the bar */}
+            {inCampaign && activeEncounter && onOpenActiveEncounter && (
+              <Button
+                type="button"
+                onClick={onOpenActiveEncounter}
+                aria-label={`مبارزه زنده: ${activeEncounter.name}`}
+                title={`مبارزه فعال: ${activeEncounter.name}`}
+                className={`inline-flex items-center gap-2 h-11 px-3 rounded-lg bg-danger text-on-danger text-sm font-bold ${focusRing}`}
+              >
+                <span className="w-2 h-2 rounded-full bg-on-danger animate-pulse" aria-hidden="true" />
+                <Swords className="w-4 h-4" />
+                <span className="hidden sm:inline">مبارزه زنده</span>
+              </Button>
+            )}
+
+            {showLevelUp && (
+              <Button
+                type="button"
+                onClick={onOpenLevelUp}
+                title="ارتقای سطح آماده است"
+                className={`hidden sm:inline-flex items-center gap-1.5 h-11 px-3 rounded-lg bg-accent text-on-accent text-sm font-bold ${focusRing}`}
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>ارتقای سطح</span>
+              </Button>
+            )}
+
+            {inCampaign && isDm && onToggleDmView && (
+              <Button
+                type="button"
+                onClick={onToggleDmView}
+                aria-pressed={isDmView}
+                title={isDmView ? 'بازگشت به برگه شخصیت' : 'رفتن به ابزارهای مستر'}
+                className={`hidden md:inline-flex items-center gap-1.5 h-11 px-3 rounded-lg border text-sm font-medium transition ${
+                  isDmView
+                    ? 'bg-accent text-on-accent border-accent'
+                    : 'bg-surface-2 text-text-primary border-border hover:border-accent'
+                } ${focusRing}`}
+              >
+                {isDmView ? <Shield className="w-4 h-4" /> : <BookOpen className="w-4 h-4" />}
+                <span>{isDmView ? 'ابزارهای مستر' : 'برگه شخصیت'}</span>
+              </Button>
+            )}
+
+            {onOpenNotifications && (
+              <Button
+                type="button"
+                onClick={onOpenNotifications}
+                aria-label="اعلان‌ها"
+                title="اعلان‌ها و رویدادها"
+                className={`${ghostIconBtn} hidden md:inline-flex`}
+              >
+                <Bell className="w-5 h-5" />
+                {unreadNotificationsCount > 0 && (
+                  <span className="absolute top-0.5 end-0.5">
+                    <CountBadge value={unreadNotificationsCount} />
+                  </span>
+                )}
+              </Button>
+            )}
+
+            {!currentUser && (
+              <Button
+                type="button"
+                onClick={onOpenAuth}
+                className={`h-11 px-4 rounded-lg btn-primary text-sm font-bold ${focusRing}`}
+              >
+                ورود / عضویت
+              </Button>
+            )}
+
+            {/* One menu button for everyone: avatar when signed in, hamburger otherwise */}
+            <Button
+              ref={menuTriggerRef}
+              type="button"
+              onClick={() => setMenuOpen(o => !o)}
+              aria-label={menuOpen ? 'بستن منو' : 'باز کردن منو'}
+              aria-expanded={menuOpen}
+              aria-controls="header-menu"
+              title={displayName || 'منو'}
+              className={ghostIconBtn}
+            >
+              {currentUser ? (
+                <span className="w-8 h-8 rounded-full bg-surface-2 border border-border text-sm font-bold text-accent flex items-center justify-center">
+                  {displayName?.[0] || 'ز'}
+                </span>
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
+              {menuNeedsAttention && (
+                <span className="absolute top-1.5 end-1.5 w-2.5 h-2.5 rounded-full bg-accent border-2 border-bg" aria-hidden="true" />
+              )}
+            </Button>
+          </div>
         </div>
-      )}
-    </header>
-      {mobileMenuOpen && (
+
+        {inCampaign && activeCampaignRole === 'spectator' && (
+          <div className="w-full bg-surface border-t border-border px-3 py-1.5 flex items-center justify-center gap-2 text-xs text-text-muted">
+            <Eye className="w-4 h-4 shrink-0" />
+            <span>حالت تماشا: فقط می‌توانید برگه و تاس‌های روی میز را ببینید</span>
+          </div>
+        )}
+      </header>
+
+      {/* ================= Menu drawer ================= */}
+      {menuOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-overlay/60 backdrop-blur-sm transition-opacity duration-200"
+            className="fixed inset-0 z-40 bg-overlay/60 backdrop-blur-sm"
             onClick={closeMenu}
             aria-hidden="true"
           />
           <div
-            id="mobile-header-menu"
+            id="header-menu"
             ref={menuPanelRef}
             role="dialog"
             aria-modal="true"
             aria-label="منوی اصلی"
-            className="fixed top-0 inset-inline-end-0 z-50 w-[min(22rem,92vw)] h-full bg-surface/98 backdrop-blur-xl border-s border-border shadow-2xl overflow-y-auto overscroll-contain transition-transform duration-200 ease-out"
+            dir="rtl"
+            className="fixed top-0 end-0 z-50 w-[min(22rem,92vw)] h-full bg-surface border-s border-border shadow-2xl overflow-y-auto overscroll-contain"
           >
-            <div className="flex items-center justify-between px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] border-b border-border sticky top-0 bg-surface/98 z-10">
-              <div>
-                <h2 className="text-xs font-black text-text-primary">{APP_NAME_FA}</h2>
-                <span className="text-xs text-text-muted">منوی اصلی</span>
-              </div>
-              <Button 
+            <div className="sticky top-0 z-10 flex items-center justify-between gap-3 px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top,0px))] bg-surface border-b border-border">
+              {currentUser ? (
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="w-10 h-10 rounded-full bg-surface-2 border border-border text-base font-bold text-accent flex items-center justify-center shrink-0">
+                    {displayName?.[0] || 'ز'}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-sm font-bold text-text-primary truncate">{displayName}</div>
+                    {currentUser.email && <div className="text-xs text-text-muted truncate">{currentUser.email}</div>}
+                  </div>
+                </div>
+              ) : (
+                <h2 className="text-base font-bold text-text-primary">{APP_NAME_FA}</h2>
+              )}
+              <Button
                 type="button"
                 onClick={closeMenu}
                 aria-label="بستن منو"
-                className="w-10 h-10 rounded-[10px] bg-surface-2 border border-border text-text-primary hover:border-accent flex items-center justify-center transition touch-target min-w-[44px]"
+                className={ghostIconBtn}
               >
                 <X className="w-5 h-5" />
               </Button>
             </div>
 
-            <div className="p-3 space-y-1.5">
-            {/* User identity summary */}
-            {currentUser && (
-              <div className="flex items-center gap-2.5 p-3 rounded-[12px] bg-surface-2/60 border border-border">
-                <div className="w-10 h-10 rounded-[10px] bg-gradient-to-br from-accent to-danger text-on-accent font-black flex items-center justify-center shrink-0">
-                  {(currentUser.displayName || currentUser.name)?.[0] || 'ز'}
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-xs font-bold text-text-primary truncate">{currentUser.displayName || currentUser.name}</h3>
-                  <span className="text-xs text-text-muted">{currentUser.email}</span>
-                </div>
-                <span className="ms-auto w-2 h-2 rounded-full bg-success shrink-0" title="آنلاین" />
-              </div>
-            )}
-
-            {/* Navigation & Campaign Controls */}
-            <div className="space-y-1.5">
-              {onGoHome && (
-                <Button 
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onGoHome();
-                  }}
-                  className="w-full py-2.5 px-3 rounded-[10px] bg-surface-2 border border-border hover:border-accent text-xs font-bold text-text-primary flex items-center gap-2 touch-target min-w-[44px]"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-accent" />
-                  <span>صفحه اصلی (کمپین‌ها و کاراکترها)</span>
-                </Button>
-              )}
-
-              {onOpenCampaignSwitcher && (
-                <Button 
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenCampaignSwitcher();
-                  }}
-                  className="w-full py-2.5 px-3 rounded-[10px] bg-surface-2 border border-border hover:border-accent text-xs font-bold text-accent flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
-                >
-                  <span>جابجایی بین کمپین‌ها</span>
-                  <ChevronDown className="w-3.5 h-3.5" />
-                </Button>
-              )}
-
-              {/* DM Campaign Management Tools */}
-              {isDm && viewMode === 'campaign_space' && (
-                <div className="space-y-1 pt-1.5 border-t border-border/60">
-                  <span className="text-xs font-bold text-text-muted">مدیریت این کمپین:</span>
-                  {onOpenCampaignSettings && (
-                    <Button 
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        onOpenCampaignSettings();
-                      }}
-                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-surface-2/60 hover:bg-surface-2 text-xs text-text-primary flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
-                    >
-                      <span>تنظیمات قوانین و واحدها</span>
-                    </Button>
-                  )}
-                  {onOpenCampaignMembers && (
-                    <Button 
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        onOpenCampaignMembers();
-                      }}
-                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-surface-2/60 hover:bg-surface-2 text-xs text-text-primary flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
-                    >
-                      <span>اعضا و تعیین نقش‌ها</span>
-                    </Button>
-                  )}
-                  {onOpenCampaignInvites && (
-                    <Button 
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        onOpenCampaignInvites();
-                      }}
-                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-surface-2/60 hover:bg-surface-2 text-xs text-text-primary flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
-                    >
-                      <span>ساخت و مدیریت کدهای دعوت</span>
-                    </Button>
-                  )}
-                  {onOpenCampaignApprovals && (
-                    <Button 
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        onOpenCampaignApprovals();
-                      }}
-                      className="w-full text-start py-2 px-2.5 rounded-[8px] bg-surface-2/60 hover:bg-surface-2 text-xs text-text-primary flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
-                    >
-                      <span>تأیید کاراکترها و ارتقای لول</span>
-                      {pendingApprovalsCount > 0 && (
-                        <span className="px-1.5 py-0.2 rounded-full bg-accent/20 text-accent-hover text-xs font-bold">
-                          {pendingApprovalsCount}
-                        </span>
-                      )}
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Account Management Button */}
-            {onOpenAccount && (
-              <Button 
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenAccount();
-                }}
-                className="w-full py-2.5 px-3 rounded-[10px] bg-surface-2 border border-border hover:border-accent text-xs font-bold text-text-primary flex items-center justify-center gap-2 touch-target min-w-[44px]"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-accent" />
-                <span>مدیریت حساب کاربری و نشست‌ها</span>
-              </Button>
-            )}
-
-            {/* Instance Admin Console Button */}
-            {currentUser?.platformRole === 'admin' && onOpenAdminConsole && (
-              <Button 
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenAdminConsole();
-                }}
-                className="w-full py-2.5 px-3 rounded-[10px] bg-accent/15 border border-accent/40 text-xs font-extrabold text-accent flex items-center justify-center gap-2 touch-target min-w-[44px] min-h-[44px]"
-              >
-                <Shield className="w-3.5 h-3.5" />
-                <span>کنسول مدیریت سامانه (ادمین)</span>
-              </Button>
-            )}
-
-            {/* Notifications and Events Button */}
-            {onOpenNotifications && (
-              <Button 
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenNotifications();
-                }}
-                className="w-full py-2.5 px-3 rounded-[10px] bg-surface-2 border border-border hover:border-accent text-xs font-bold text-text-primary flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
-              >
-                <div className="flex items-center gap-2">
-                  <Bell className="w-3.5 h-3.5 text-accent" />
-                  <span>اعلان‌ها و رویدادها</span>
-                </div>
-                {unreadNotificationsCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-danger text-white text-xs font-bold">
-                    {unreadNotificationsCount} جدید
-                  </span>
+            <div className="p-3 space-y-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))]">
+              <MenuGroup title="ناوبری">
+                {onGoHome && <MenuRow icon={<Home className="w-4 h-4" />} label="صفحه اصلی" onClick={act(onGoHome)} />}
+                {onOpenCampaignSwitcher && (
+                  <MenuRow icon={<ArrowLeftRight className="w-4 h-4" />} label="جابه‌جایی بین کمپین‌ها" onClick={act(onOpenCampaignSwitcher)} />
                 )}
-              </Button>
-            )}
+                {onOpenNotifications && (
+                  <MenuRow
+                    icon={<Bell className="w-4 h-4" />}
+                    label="اعلان‌ها و رویدادها"
+                    onClick={act(onOpenNotifications)}
+                    trailing={unreadNotificationsCount > 0 ? <CountBadge value={unreadNotificationsCount} /> : undefined}
+                  />
+                )}
+              </MenuGroup>
 
-            {/* Character selection if multiple */}
-            {characters.length > 0 && (
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-text-muted">کاراکتر انتخابی شما:</label>
-                <div className="space-y-1 max-h-40 overflow-y-auto">
+              {inCampaign && (isDm || showLevelUp) && (
+                <MenuGroup title="این کمپین">
+                  {showLevelUp && (
+                    <MenuRow icon={<Sparkles className="w-4 h-4 text-accent" />} label="ارتقای سطح آماده است" onClick={act(onOpenLevelUp)} />
+                  )}
+                  {isDm && onToggleDmView && (
+                    <MenuRow
+                      icon={isDmView ? <BookOpen className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
+                      label={isDmView ? 'رفتن به برگه شخصیت' : 'رفتن به ابزارهای مستر'}
+                      onClick={act(onToggleDmView)}
+                    />
+                  )}
+                  {isDm && onOpenCampaignApprovals && (
+                    <MenuRow
+                      icon={<ClipboardCheck className="w-4 h-4" />}
+                      label="تأیید شخصیت‌ها و ارتقای سطح"
+                      onClick={act(onOpenCampaignApprovals)}
+                      trailing={pendingApprovalsCount > 0 ? <CountBadge value={pendingApprovalsCount} /> : undefined}
+                    />
+                  )}
+                  {isDm && onOpenCampaignMembers && (
+                    <MenuRow icon={<Users className="w-4 h-4" />} label="اعضا و نقش‌ها" onClick={act(onOpenCampaignMembers)} />
+                  )}
+                  {isDm && onOpenCampaignInvites && (
+                    <MenuRow icon={<KeyRound className="w-4 h-4" />} label="کدهای دعوت" onClick={act(onOpenCampaignInvites)} />
+                  )}
+                  {isDm && onOpenCampaignSettings && (
+                    <MenuRow icon={<Settings className="w-4 h-4" />} label="تنظیمات و قوانین کمپین" onClick={act(onOpenCampaignSettings)} />
+                  )}
+                </MenuGroup>
+              )}
+
+              {characters.length > 0 && (
+                <MenuGroup title="شخصیت فعال">
                   {characters.map(c => (
-                    <Button 
+                    <MenuRow
                       key={c.id}
-                      type="button"
-                      onClick={() => {
-                        onSelectCharacter(c.id);
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`w-full text-start p-2.5 rounded-[10px] text-xs font-bold transition flex flex-wrap items-center justify-between gap-2 border touch-target min-w-[44px] ${
-                        activeCharacterId === c.id
-                          ? 'bg-accent/15 text-accent border-accent/40'
-                          : 'bg-surface-2 text-text-primary border-border'
-                      }`}
-                    >
-                      <span className="truncate">{c.name}</span>
-                      <span className="text-xs text-text-muted">L{c.level}</span>
-                    </Button>
+                      icon={activeCharacterId === c.id ? <CheckCircle2 className="w-4 h-4 text-accent" /> : <span className="w-4 h-4 block" />}
+                      label={c.name}
+                      selected={activeCharacterId === c.id}
+                      onClick={act(() => onSelectCharacter(c.id))}
+                      trailing={<span className="text-xs text-text-muted">سطح {toPersianDigits(c.level)}</span>}
+                    />
                   ))}
-                </div>
-              </div>
-            )}
-
-            {/* User Switcher for playtesting */}
-            {allUsers.length > 1 && (
-              <div className="space-y-1.5 pt-2 border-t border-border">
-                <label className="text-xs font-bold text-text-muted">سوئیچ کاربر برای تست بازی:</label>
-                <div className="space-y-1 max-h-36 overflow-y-auto">
-                  {allUsers.map(u => (
-                    <Button 
-                      key={u.id}
-                      type="button"
-                      onClick={() => {
-                        onSwitchUser(u.id);
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`w-full text-start p-2 rounded-[8px] text-xs font-bold transition flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px] ${
-                        currentUser?.id === u.id
-                          ? 'bg-accent/10 text-accent'
-                          : 'text-text-muted hover:text-text-primary'
-                      }`}
-                    >
-                      <span className="truncate">{u.displayName || u.name}</span>
-                      <span className="text-xs">{u.role === 'dm' ? 'مستر' : 'بازیکن'}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Utility Toggles */}
-            <div className="space-y-2 pt-2 border-t border-border">
-              {wakeLockSupported && (
-                <Button 
-                  type="button"
-                  onClick={onToggleWakeLock}
-                  className="w-full flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary touch-target min-w-[44px]"
-                >
-                  <span className="flex items-center gap-1.5">
-                    <Coffee className="w-4 h-4 text-accent" />
-                    روشن ماندن صفحه
-                  </span>
-                  <span className="text-xs font-bold text-accent">
-                    {wakeLockActive ? 'فعال' : 'غیرفعال'}
-                  </span>
-                </Button>
+                </MenuGroup>
               )}
 
-              <Button 
-                type="button"
-                onClick={onToggleFontScale}
-                className="w-full flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary touch-target min-w-[44px]"
-              >
-                <span className="flex items-center gap-1.5">
-                  <Type className="w-4 h-4 text-accent" />
-                  اندازه قلم
-                </span>
-                <span className="text-xs font-bold text-accent">
-                  {fontScale === 'xlarge' ? 'خیلی بزرگ' : fontScale === 'large' ? 'بزرگ' : 'استاندارد'}
-                </span>
-              </Button>
-
-              {onToggleTheme && (
-                <Button 
-                  type="button"
-                  onClick={onToggleTheme}
-                  className="w-full flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary touch-target min-w-[44px]"
-                >
-                  <span className="flex items-center gap-1.5">
-                    {theme === 'dark' ? <Sun className="w-4 h-4 text-accent" /> : <Moon className="w-4 h-4 text-accent" />}
-                    حالت ظاهری (تم)
-                  </span>
-                  <span className="text-xs font-bold text-accent">
-                    {theme === 'dark' ? 'تاریک (شب)' : 'روشن (روز)'}
-                  </span>
-                </Button>
-              )}
-            </div>
-
-            {/* Connection & Offline Status in Drawer */}
-            <div className={`p-3.5 rounded-[12px] border space-y-2 text-start ${
-              !isOnline || saveStatus === 'offline'
-                ? 'bg-danger/15 border-danger/40'
-                : 'bg-surface-2 border-border'
-            }`}>
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  {!isOnline || saveStatus === 'offline' ? (
-                    <WifiOff className="w-4 h-4 text-accent-hover" />
-                  ) : (
-                    <CheckCircle2 className="w-4 h-4 text-success" />
-                  )}
-                  <span className="text-xs font-bold text-text-primary">
-                    {!isOnline || saveStatus === 'offline' ? 'حالت آفلاین (بدون اینترنت)' : 'اتصال اینترنت برقرار است'}
-                  </span>
-                </div>
-                {queueLength > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-accent/20 text-accent-hover text-xs font-black border border-accent/40">
-                    {toPersianDigits(queueLength)} در صف
-                  </span>
+              <MenuGroup title="نمایش">
+                {onToggleTheme && (
+                  <MenuRow
+                    icon={theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                    label="حالت ظاهری"
+                    onClick={onToggleTheme}
+                    trailing={<span className="text-xs text-text-muted">{theme === 'dark' ? 'تاریک' : 'روشن'}</span>}
+                  />
                 )}
-              </div>
-              {(!isOnline || queueLength > 0) && (
-                <p className="text-xs text-text-primary leading-relaxed">
-                  {queueLength > 0
-                    ? `${toPersianDigits(queueLength)} تغییر ویرایشی در حافظه محلی دستگاه منتظر ارسال به سرور است.`
-                    : 'اطلاعات در دستگاه ذخیره شده و پس از اتصال اینترنت همگام خواهند شد.'}
-                </p>
-              )}
-              {onSyncNow && (
-                <Button 
-                  type="button"
-                  onClick={onSyncNow}
-                  className="w-full py-2 px-3 rounded-[8px] bg-surface-2 hover:bg-surface-3 border border-border-strong text-xs font-bold text-accent-hover flex items-center justify-center gap-1.5 transition touch-target min-h-[44px]"
-                >
-                  <RefreshCw className="w-3.5 h-3.5 text-accent" />
-                  <span>تلاش برای همگام‌سازی اکنون</span>
-                </Button>
-              )}
-            </div>
+                <MenuRow
+                  icon={<Type className="w-4 h-4" />}
+                  label="اندازه قلم"
+                  onClick={onToggleFontScale}
+                  trailing={
+                    <span className="text-xs text-text-muted">
+                      {fontScale === 'xlarge' ? 'خیلی بزرگ' : fontScale === 'large' ? 'بزرگ' : 'استاندارد'}
+                    </span>
+                  }
+                />
+                {wakeLockSupported && (
+                  <MenuRow
+                    icon={<Coffee className="w-4 h-4" />}
+                    label="روشن ماندن صفحه"
+                    onClick={onToggleWakeLock}
+                    trailing={<span className={`text-xs ${wakeLockActive ? 'text-accent' : 'text-text-muted'}`}>{wakeLockActive ? 'روشن' : 'خاموش'}</span>}
+                  />
+                )}
+              </MenuGroup>
 
-            {/* App Version & Check for Updates in Drawer */}
-            <div className="p-3.5 rounded-[12px] bg-surface border border-border space-y-2.5 text-start">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-accent shadow-glow-amber" />
-                  <span className="text-xs font-black text-text-primary">{APP_NAME_FA}</span>
+              <MenuGroup title="اتصال و نسخه">
+                <div className="flex items-center gap-3 px-3 py-3 min-h-[44px] text-sm text-text-primary">
+                  {isOffline ? (
+                    <WifiOff className="w-4 h-4 text-warning shrink-0" />
+                  ) : queueLength > 0 ? (
+                    <RefreshCw className="w-4 h-4 text-accent shrink-0 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                  )}
+                  <span className="flex-1 min-w-0">
+                    {isOffline
+                      ? 'آفلاین: تغییرات روی دستگاه ذخیره می‌شوند'
+                      : queueLength > 0
+                      ? 'در حال ارسال تغییرات'
+                      : 'همه تغییرات ذخیره شده است'}
+                  </span>
+                  {queueLength > 0 && <CountBadge value={queueLength} />}
                 </div>
-                <span className="text-xs font-bold text-accent bg-accent/15 border border-accent/40 px-2 py-0.5 rounded-[6px]">
-                  نسخه {toPersianDigits(appVersion || APP_VERSION)}
-                </span>
-              </div>
+                {onSyncNow && (isOffline || queueLength > 0) && (
+                  <MenuRow icon={<RefreshCw className="w-4 h-4" />} label="همگام‌سازی اکنون" onClick={onSyncNow} />
+                )}
+                {onCheckForUpdates ? (
+                  <MenuRow
+                    icon={<RefreshCw className={`w-4 h-4 ${isCheckingUpdates ? 'animate-spin text-accent' : ''}`} />}
+                    label={isCheckingUpdates ? 'در حال بررسی…' : 'بررسی به‌روزرسانی'}
+                    onClick={onCheckForUpdates}
+                    disabled={isCheckingUpdates}
+                    trailing={<span className="text-xs text-text-muted">نسخه {toPersianDigits(appVersion || APP_VERSION)}</span>}
+                  />
+                ) : (
+                  <div className="flex items-center justify-between px-3 py-3 min-h-[44px] text-sm text-text-muted">
+                    <span>نسخه</span>
+                    <span className="text-xs">{toPersianDigits(appVersion || APP_VERSION)}</span>
+                  </div>
+                )}
+              </MenuGroup>
 
-              <p className="text-xs text-text-muted leading-relaxed">
-                پلتفرم همراه نقش‌آفرینی رومیزی — سازگار با حالت آفلاین
-              </p>
+              {currentUser && (
+                <MenuGroup title="حساب">
+                  {onOpenAccount && <MenuRow icon={<UserCog className="w-4 h-4" />} label="حساب کاربری و نشست‌ها" onClick={act(onOpenAccount)} />}
+                  {currentUser.platformRole === 'admin' && onOpenAdminConsole && (
+                    <MenuRow icon={<Shield className="w-4 h-4" />} label="کنسول مدیریت سامانه" onClick={act(onOpenAdminConsole)} />
+                  )}
+                  <MenuRow icon={<LogOut className="w-4 h-4" />} label="خروج از حساب" tone="danger" onClick={act(onLogout)} />
+                </MenuGroup>
+              )}
 
-              {onCheckForUpdates && (
-                <Button 
-                  type="button"
-                  onClick={onCheckForUpdates}
-                  disabled={isCheckingUpdates}
-                  className="w-full py-2.5 px-3 rounded-[8px] bg-surface-2 border border-border hover:border-accent active:scale-[0.99] disabled:opacity-50 text-xs font-black text-text-primary hover:text-accent flex items-center justify-center gap-2 transition touch-target min-h-[44px]"
-                  title="بررسی انتشار نسخه جدید اپلیکیشن"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isCheckingUpdates ? 'animate-spin text-accent' : 'text-accent'}`} />
-                  <span>{isCheckingUpdates ? 'در حال بررسی به‌روزرسانی...' : 'بررسی به‌روزرسانی'}</span>
-                </Button>
+              {allUsers.length > 1 && (
+                <details className="rounded-xl border border-border">
+                  <summary className="min-h-[44px] flex items-center px-3 text-sm text-text-muted cursor-pointer">
+                    تعویض کاربر (برای آزمایش)
+                  </summary>
+                  <div className="border-t border-border divide-y divide-border">
+                    {allUsers.map(u => (
+                      <MenuRow
+                        key={u.id}
+                        icon={<span className="w-4 h-4 block" />}
+                        label={u.displayName || u.name}
+                        selected={currentUser?.id === u.id}
+                        onClick={act(() => onSwitchUser(u.id))}
+                        trailing={<span className="text-xs text-text-muted">{u.role === 'dm' ? 'مستر' : 'بازیکن'}</span>}
+                      />
+                    ))}
+                  </div>
+                </details>
               )}
             </div>
-
-            {/* Logout Action */}
-            <Button 
-              type="button"
-              onClick={() => {
-                onLogout();
-                setMobileMenuOpen(false);
-              }}
-              className="w-full py-2.5 px-3 rounded-[10px] bg-danger/15 hover:bg-danger/25 text-danger border border-danger/30 text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px]"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>خروج از حساب</span>
-            </Button>
           </div>
-        </div>
         </>
       )}
 
-      {/* Offline Sync Details Bottom Sheet */}
+      {/* ================= Sync details sheet ================= */}
       <BottomSheet
         isOpen={syncSheetOpen}
         onClose={() => setSyncSheetOpen(false)}
         title="وضعیت اتصال و همگام‌سازی"
-        subtitle="مدیریت وضعیت آفلاین و صف تغییرات محلی"
+        subtitle="تغییرات منتظر ارسال روی دستگاه شما"
       >
         <div className="space-y-4 p-4 text-start" dir="rtl">
-          {/* Network connection badge */}
-          <div className={`p-4 rounded-[12px] border flex items-start gap-3 ${
-            !isOnline || saveStatus === 'offline'
-              ? 'bg-danger/15 border-danger/40 text-accent-hover'
-              : 'bg-success/15 border-success/40 text-success'
-          }`}>
-            {!isOnline || saveStatus === 'offline' ? (
-              <WifiOff className="w-5 h-5 text-accent-hover shrink-0 mt-0.5" />
+          <div
+            className={`p-4 rounded-xl border flex items-start gap-3 ${
+              isOffline ? 'bg-warning/15 border-warning/40' : 'bg-success/15 border-success/40'
+            }`}
+          >
+            {isOffline ? (
+              <WifiOff className="w-5 h-5 text-warning shrink-0 mt-0.5" />
             ) : (
               <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
             )}
             <div className="space-y-1">
-              <h4 className="text-sm font-extrabold text-text-primary">
-                {!isOnline || saveStatus === 'offline'
-                  ? 'حالت آفلاین (ارتباط با سرور قطع است)'
-                  : 'اتصال اینترنت برقرار است'}
+              <h4 className="text-sm font-bold text-text-primary">
+                {isOffline ? 'آفلاین: ارتباط با سرور قطع است' : 'اتصال برقرار است'}
               </h4>
-              <p className="text-xs text-text-primary leading-relaxed">
-                {!isOnline || saveStatus === 'offline'
-                  ? 'دستگاه شما در حال حاضر به اینترنت متصل نیست. تمام ویرایش‌های شما در حافظه محلی دستگاه محفوظ می‌ماند.'
-                  : 'ارتباط با سرور برقرار است و تغییرات بلافاصله همگام‌سازی می‌شوند.'}
+              <p className="text-sm text-text-primary leading-relaxed">
+                {isOffline
+                  ? 'اینترنت دستگاه قطع است. ویرایش‌های شما روی دستگاه می‌مانند و بعد از اتصال ارسال می‌شوند.'
+                  : 'تغییرات بلافاصله با سرور همگام می‌شوند.'}
               </p>
             </div>
           </div>
 
-          {/* Queued changes detail */}
-          <div className="p-4 rounded-[12px] bg-surface border border-border space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-text-muted">تغییرات منتظر در صف ارسال:</span>
-              <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded-[6px] ${
-                queueLength > 0
-                  ? 'bg-accent/20 text-accent-hover border border-accent/40'
-                  : 'bg-surface-2 text-text-muted'
-              }`}>
-                {toPersianDigits(queueLength)} تغییر
-              </span>
+          <div className="p-4 rounded-xl bg-surface-2/40 border border-border space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm text-text-muted">تغییرات منتظر ارسال</span>
+              <span className="text-sm font-bold text-text-primary">{toPersianDigits(queueLength)}</span>
             </div>
-
-            {queueLength > 0 ? (
-              <p className="text-xs text-text-primary leading-relaxed">
-                {toPersianDigits(queueLength)} تغییر انجام‌شده (از قبیل جان، یادداشت‌ها، کوله‌پشتی یا تاس‌ها) در این دستگاه ذخیره شده‌اند. به محض برقراری اتصال اینترنت، این موارد به صورت خودکار با سرور هماهنگ می‌شوند.
-              </p>
-            ) : (
-              <p className="text-xs text-text-muted">
-                هیچ تغییری در صف انتظار نیست و اطلاعات دستگاه شما با سرور یکسان است.
-              </p>
-            )}
+            <p className="text-sm text-text-muted leading-relaxed">
+              {queueLength > 0
+                ? 'جان، یادداشت‌ها، کوله‌پشتی یا تاس‌ها روی این دستگاه ذخیره شده‌اند و با برقراری اتصال خودکار ارسال می‌شوند.'
+                : 'صف خالی است و اطلاعات دستگاه شما با سرور یکسان است.'}
+            </p>
           </div>
 
-          {/* Manual flush / retry button */}
-          <div className="pt-2 flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             {onSyncNow && (
-              <Button 
+              <Button
                 type="button"
                 onClick={() => {
                   onSyncNow();
                   setSyncSheetOpen(false);
                 }}
-                className="flex-1 py-3 px-4 rounded-[10px] btn-primary font-bold text-xs flex items-center justify-center gap-2 touch-target min-h-[44px]"
+                className={`flex-1 h-11 px-4 rounded-lg btn-primary text-sm font-bold flex items-center justify-center gap-2 ${focusRing}`}
               >
                 <RefreshCw className="w-4 h-4" />
                 <span>تلاش مجدد برای همگام‌سازی</span>
               </Button>
             )}
-            <Button 
+            <Button
               type="button"
               onClick={() => setSyncSheetOpen(false)}
-              className="py-3 px-4 rounded-[10px] bg-surface-2 border border-border text-text-primary font-bold text-xs hover:border-accent touch-target min-h-[44px]"
+              className={`h-11 px-4 rounded-lg bg-surface-2 border border-border text-sm font-medium text-text-primary hover:border-accent ${focusRing}`}
             >
               بستن
             </Button>

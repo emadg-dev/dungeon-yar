@@ -1,13 +1,7 @@
 import React, { useState, startTransition } from 'react';
 import { Campaign, MasterCharacter, CampaignInvite, User, CharacterParticipation } from '../../types';
-import { APP_NAME_FA } from '../../config/app';
-import { 
-  Plus, Compass, Users, Scroll, CheckCircle2, Shield, Sparkles, 
-  ChevronLeft, Award, Clock, ArrowRight, UserCheck, Wand2, History,
-  Archive, AlertCircle, Eye
-} from 'lucide-react';
+import { Plus, ChevronLeft, Clock } from 'lucide-react';
 import { toPersianDigits, partitionCampaigns, calculateCountdown } from '../../../shared/rules/historyEngine';
-import { ScrollableRow } from '../ui/ScrollableRow';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 
@@ -29,11 +23,58 @@ interface HomeScreenProps {
   onAcceptInvite: (code: string) => void;
 }
 
+/* ------------------------------------------------------------------
+   Page order follows what the person most likely needs next:
+   1. something waiting for them (approvals, unfinished drafts)
+   2. their campaigns   3. their characters   4. join with a code
+   Each block has one heading and at most one primary button.
+   ------------------------------------------------------------------ */
+const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60';
+const primaryBtn = `inline-flex items-center justify-center gap-1.5 h-11 px-4 rounded-lg bg-accent text-on-accent text-sm font-bold hover:bg-accent-hover transition disabled:opacity-50 ${focusRing}`;
+const secondaryBtn = `inline-flex items-center justify-center gap-1.5 h-11 px-4 rounded-lg border border-border bg-surface-2 text-text-primary text-sm font-medium hover:border-accent transition ${focusRing}`;
+const cardBase = `rounded-xl bg-surface border border-border hover:border-accent/50 transition cursor-pointer ${focusRing}`;
+
+const ROLE_LABEL: Record<string, string> = {
+  owner: 'مالک کمپین',
+  co_dm: 'دستیار دانجن مستر',
+  spectator: 'تماشاچی',
+};
+const roleLabel = (role?: string) => ROLE_LABEL[role || ''] || 'ماجراجو';
+const roleTone = (role?: string) =>
+  role === 'owner' ? 'text-accent-hover'
+  : role === 'co_dm' ? 'text-role-codm'
+  : role === 'spectator' ? 'text-text-muted'
+  : 'text-info';
+
+const onActivate = (fn: () => void) => (e: React.KeyboardEvent) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    fn();
+  }
+};
+
+const SectionHeading: React.FC<{ title: string; count?: number; actions?: React.ReactNode }> = ({ title, count, actions }) => (
+  <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="flex items-baseline gap-2">
+      <h2 className="text-base font-bold text-text-primary">{title}</h2>
+      {count !== undefined && count > 0 && <span className="text-sm text-text-muted">{toPersianDigits(count)}</span>}
+    </div>
+    {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+  </div>
+);
+
+const EmptyState: React.FC<{ title: string; body: string; action?: React.ReactNode }> = ({ title, body, action }) => (
+  <div className="rounded-xl border border-dashed border-border p-6 text-center space-y-3">
+    <h3 className="text-base font-bold text-text-primary">{title}</h3>
+    <p className="text-sm text-text-muted max-w-sm mx-auto leading-relaxed">{body}</p>
+    {action}
+  </div>
+);
+
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   currentUser,
   myCampaigns,
   myCharacters,
-  pendingInvites,
   pendingApprovals,
   draftParticipations = [],
   isLoading = false,
@@ -44,155 +85,118 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenCharacterWizard,
   onResumeDraft,
   onOpenApprovals,
-  onAcceptInvite
+  onAcceptInvite,
 }) => {
   const [inviteInput, setInviteInput] = useState('');
   const [campaignTab, setCampaignTab] = useState<'current' | 'past'>('current');
 
-  // Partition campaigns into active/current and past/archived
   const { current: currentCampaigns, past: pastCampaigns } = partitionCampaigns(myCampaigns);
   const draftCampaigns = currentCampaigns.filter(c => c.status === 'draft');
   const activeCampaigns = currentCampaigns.filter(c => c.status !== 'draft');
 
-  const displayedCampaigns = campaignTab === 'current' ? activeCampaigns : pastCampaigns;
+  // The "past" tab only exists once there is something in it.
+  const hasPast = pastCampaigns.length > 0;
+  const tab = hasPast ? campaignTab : 'current';
+  const displayedCampaigns = tab === 'current' ? activeCampaigns : pastCampaigns;
 
-  const getRoleBadge = (role?: string) => {
-    switch (role) {
-      case 'owner':
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-accent/20 text-accent-hover border border-accent/30 font-medium">مالک کمپین</span>;
-      case 'co_dm':
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-role-codm/20 text-role-codm border border-role-codm/30 font-medium">دستیار دانجن مستر</span>;
-      case 'spectator':
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-surface-2 text-text-primary border border-border-strong font-medium">تماشاچی</span>;
-      default:
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-success/20 text-success border border-success/30 font-medium">ماجراجو</span>;
-    }
-  };
+  const displayName = currentUser?.displayName || currentUser?.name || 'ماجراجو';
+  const hasDrafts = draftCampaigns.length > 0 || draftParticipations.length > 0;
+  const startCharacter = onOpenCharacterWizard ? () => onOpenCharacterWizard() : onOpenCreateCharacter;
 
-  const getStatusBadge = (status?: string) => {
-    switch (status) {
-      case 'active':
-        return <span className="w-2.5 h-2.5 rounded-full bg-success shadow-glow-heal animate-pulse shrink-0" title="کمپین فعال" />;
-      case 'paused':
-        return <span className="w-2.5 h-2.5 rounded-full bg-accent shrink-0" title="متوقف شده" />;
-      case 'archived':
-        return <span className="w-2.5 h-2.5 rounded-full bg-surface-3 shrink-0" title="بایگانی شده" />;
-      default:
-        return null;
-    }
-  };
-
-  const getCharacterStatusBadge = (status?: string) => {
-    switch (status) {
-      case 'active':
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-success/15 text-success border border-success/30 font-bold">فعال</span>;
-      case 'retired':
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-primary/15 text-primary border border-primary/30 font-bold">بازنشسته</span>;
-      case 'dead':
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-danger/15 text-danger border border-danger/30 font-bold">درگذشته</span>;
-      case 'archived':
-      default:
-        return <span className="px-2 py-0.5 text-xs rounded-full bg-surface-2 text-text-muted border border-border font-bold">بایگانی</span>;
-    }
+  const submitInvite = () => {
+    const code = inviteInput.trim();
+    if (!code) return;
+    onAcceptInvite(code);
+    setInviteInput('');
   };
 
   return (
-    <div className="space-y-6 pb-4 text-start" dir="rtl">
-      {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-l from-surface-2/40 via-surface to-bg border border-accent/20 p-5 shadow-xl">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-accent/20 text-accent-hover border border-accent/30">
-                پلتفرم چندکمپینی {APP_NAME_FA} ۵e
-              </span>
-              {currentUser?.platformRole === 'admin' && (
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-role-codm/20 text-role-codm border border-role-codm/30">
-                  مدیر سیستم
-                </span>
-              )}
-            </div>
-            <h1 className="text-2xl font-bold text-accent-hover mt-2">
-              خوش آمدید، {currentUser?.displayName || currentUser?.name || 'ماجراجو'}
-            </h1>
-            <p className="text-xs sm:text-sm text-text-muted mt-1 max-w-lg leading-relaxed">
-              پلتفرم مدیریت بازی رومیزی، شناسنامه و پیشینه مشترک شخصیت‌ها، و ورود به جهان‌های مستقل ماجراجویی.
-            </p>
-          </div>
-          <div className="hidden sm:flex w-14 h-14 rounded-2xl bg-accent/10 border border-accent/20 items-center justify-center text-accent-hover shadow-inner">
-            <Compass className="w-7 h-7" />
-          </div>
-        </div>
-
-        {/* DM Pending Approvals Banner */}
-        {pendingApprovals.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-accent/15 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-accent-hover animate-ping" />
-              <span className="text-sm font-semibold text-accent-hover">
-                {toPersianDigits(pendingApprovals.length)} درخواست تأیید در انتظار بررسی دانجن مستر
-              </span>
-            </div>
-            <Button
-              onClick={onOpenApprovals}
-              className="px-3 py-1.5 rounded-xl bg-accent text-on-accent text-xs font-bold hover:bg-accent-hover transition-colors flex items-center gap-1 shadow"
-            >
-              بررسی صف تأیید
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-          </div>
+    <div className="space-y-8 pb-4 text-start" dir="rtl">
+      {/* Greeting: one line, no marketing copy */}
+      <div className="space-y-1">
+        <h1 className="text-xl font-bold text-text-primary">سلام، {displayName}</h1>
+        {!isLoading && myCampaigns.length === 0 && myCharacters.length === 0 && (
+          <p className="text-sm text-text-muted leading-relaxed max-w-lg">
+            با ساخت کمپین یا شخصیت شروع کنید، یا با کد دعوت وارد کمپین دوستانتان شوید.
+          </p>
         )}
       </div>
 
-      {/* Loading Skeletons */}
+      {/* Waiting on you */}
+      {pendingApprovals.length > 0 && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-accent/40 bg-accent/10 px-3 py-2.5">
+          <span className="text-sm text-text-primary">
+            {toPersianDigits(pendingApprovals.length)} درخواست منتظر تأیید شماست
+          </span>
+          <Button onClick={onOpenApprovals} className={`${primaryBtn} shrink-0`}>
+            بررسی
+          </Button>
+        </div>
+      )}
+
       {isLoading && (
-        <div className="space-y-4 animate-pulse">
-          <div className="h-6 w-40 bg-surface-2 rounded-lg" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="h-36 bg-surface rounded-2xl border border-border" />
-            <div className="h-36 bg-surface rounded-2xl border border-border" />
+        <div className="space-y-3 animate-pulse" aria-busy="true">
+          <div className="h-5 w-32 bg-surface-2 rounded-lg" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="h-28 bg-surface rounded-xl border border-border" />
+            <div className="h-28 bg-surface rounded-xl border border-border" />
           </div>
         </div>
       )}
 
-      {/* Draft Campaigns Section (Phase 2 Wizard Drafts) */}
-      {!isLoading && draftCampaigns.length > 0 && (
-        <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-accent-hover" />
-            <h2 className="text-lg font-bold text-text-primary">پیش‌نویس‌ها (در حال ساخت)</h2>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-accent/20 text-accent-hover border border-accent/30 font-bold">
-              {toPersianDigits(draftCampaigns.length)}
-            </span>
-          </div>
-
+      {/* Unfinished: campaign drafts and character drafts together */}
+      {!isLoading && hasDrafts && (
+        <section className="space-y-3" aria-label="کارهای نیمه‌تمام">
+          <SectionHeading title="کارهای نیمه‌تمام" count={draftCampaigns.length + draftParticipations.length} />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {draftCampaigns.map(draft => {
               const completedCount = draft.wizardState?.completed?.length || 1;
               const percent = Math.round((completedCount / 8) * 100);
               return (
-                <div
-                  key={draft.id}
-                  className="rounded-2xl bg-surface border border-accent/30 p-4 flex flex-col justify-between shadow-lg"
-                >
-                  <div>
-                    <div className="flex items-start justify-between">
+                <div key={draft.id} className="rounded-xl bg-surface border border-border p-3 space-y-2.5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
                       <h3 className="text-sm font-bold text-text-primary truncate">{draft.name}</h3>
-                      <span className="text-xs text-accent font-bold">گام {toPersianDigits(completedCount)} از ۸</span>
+                      <p className="text-xs text-text-muted">
+                        پیش‌نویس کمپین، گام {toPersianDigits(completedCount)} از ۸
+                      </p>
                     </div>
-                    <p className="text-xs text-text-muted mt-1 line-clamp-2 leading-relaxed">
-                      {draft.description || 'کمپین در حال طراحی و تنظیم جهان بازی...'}
-                    </p>
-                  </div>
-
-                  <div className="mt-3 pt-3 border-t border-border flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-xs text-text-muted">{toPersianDigits(percent)}٪ تکمیل شده</span>
-                    <Button
-                      onClick={() => onSelectCampaign(draft.id)}
-                      className="px-3 py-1 rounded-xl bg-accent text-on-accent text-xs font-bold hover:bg-accent-hover transition-colors"
-                    >
-                      ادامه ویزارد
+                    <Button onClick={() => onSelectCampaign(draft.id)} className={`${secondaryBtn} shrink-0`}>
+                      ادامه
                     </Button>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-surface-2 overflow-hidden" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
+                    <div className="h-full rounded-full bg-accent" style={{ width: `${percent}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+
+            {draftParticipations.map(draft => {
+              const camp = myCampaigns.find(c => c.id === draft.campaignId);
+              const char = myCharacters.find(c => c.id === draft.characterId);
+              const step = draft.build?.step || 1;
+              const percent = Math.round((step / 8) * 100);
+              const name = char?.name || draft.build?.masterData?.name || 'شخصیت در حال ساخت';
+              return (
+                <div key={draft.id} className="rounded-xl bg-surface border border-border p-3 space-y-2.5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-bold text-text-primary truncate">{name}</h3>
+                      <p className="text-xs text-text-muted truncate">
+                        پیش‌نویس شخصیت، گام {toPersianDigits(step)} از ۸{camp?.name ? `، کمپین ${camp.name}` : ''}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => onResumeDraft && onResumeDraft(draft)}
+                      className={`${secondaryBtn} shrink-0`}
+                    >
+                      ادامه
+                    </Button>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-surface-2 overflow-hidden" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
+                    <div className="h-full rounded-full bg-accent" style={{ width: `${percent}%` }} />
                   </div>
                 </div>
               );
@@ -201,191 +205,116 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </section>
       )}
 
-      {/* Campaigns Section with Current / Past Tabs */}
+      {/* Campaigns */}
       {!isLoading && (
-        <section className="space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-accent-hover" />
-              <h2 className="text-lg font-bold text-text-primary">کمپین‌های من</h2>
-            </div>
-
-            <ScrollableRow activeKey={campaignTab} className="gap-2 shrink-0">
-              {/* Current vs Past Tabs */}
-              <div className="flex items-center p-1 bg-bg border border-border rounded-xl text-xs shrink-0">
-                <Button
-                  type="button"
-                  data-key="current"
-                  onClick={() => {
-                    startTransition(() => {
-                      setCampaignTab('current');
-                    });
-                  }}
-                  className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start ${
-                    campaignTab === 'current'
-                      ? 'bg-accent/15 text-accent-hover border border-accent/40 shadow-sm'
-                      : 'text-text-muted hover:text-text-primary border border-transparent'
-                  }`}
-                >
-                  <Compass className="w-3.5 h-3.5 shrink-0" />
-                  <span className="whitespace-nowrap shrink-0">جاری</span>
-                  <span className={`text-xs px-1.5 py-0.2 rounded-full shrink-0 ${campaignTab === 'current' ? 'bg-accent/25 text-accent-hover' : 'bg-surface-2 text-text-muted'}`}>
-                    {toPersianDigits(activeCampaigns.length)}
-                  </span>
-                </Button>
-                <Button
-                  type="button"
-                  data-key="past"
-                  onClick={() => {
-                    startTransition(() => {
-                      setCampaignTab('past');
-                    });
-                  }}
-                  className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start ${
-                    campaignTab === 'past'
-                      ? 'bg-accent/15 text-accent-hover border border-accent/40 shadow-sm'
-                      : 'text-text-muted hover:text-text-primary border border-transparent'
-                  }`}
-                >
-                  <Archive className="w-3.5 h-3.5 shrink-0" />
-                  <span className="whitespace-nowrap shrink-0">گذشته / بایگانی</span>
-                  <span className={`text-xs px-1.5 py-0.2 rounded-full shrink-0 ${campaignTab === 'past' ? 'bg-accent/25 text-accent-hover' : 'bg-surface-2 text-text-muted'}`}>
-                    {toPersianDigits(pastCampaigns.length)}
-                  </span>
-                </Button>
-              </div>
-
-              <Button
-                type="button"
-                onClick={onOpenCreateCampaign}
-                className="px-3.5 py-1.5 rounded-xl bg-accent/15 border border-accent/30 text-accent-hover text-xs font-bold hover:bg-accent/25 transition-colors flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
-              >
-                <Plus className="w-4 h-4 shrink-0" />
-                <span className="whitespace-nowrap shrink-0">کمپین جدید</span>
+        <section id="home-campaigns" className="space-y-3 scroll-mt-4" aria-label="کمپین‌های من">
+          <SectionHeading
+            title="کمپین‌های من"
+            actions={
+              <Button type="button" onClick={onOpenCreateCampaign} className={primaryBtn}>
+                <Plus className="w-4 h-4" />
+                <span>کمپین جدید</span>
               </Button>
-            </ScrollableRow>
-          </div>
+            }
+          />
+
+          {hasPast && (
+            <div className="inline-flex p-1 rounded-lg bg-surface-2 border border-border" role="group" aria-label="نوع کمپین‌ها">
+              {([
+                { id: 'current', label: 'جاری', count: activeCampaigns.length },
+                { id: 'past', label: 'بایگانی', count: pastCampaigns.length },
+              ] as const).map(t => (
+                <Button
+                  key={t.id}
+                  type="button"
+                  aria-pressed={tab === t.id}
+                  onClick={() => startTransition(() => setCampaignTab(t.id))}
+                  className={`h-9 px-4 rounded-md text-sm transition ${focusRing} ${
+                    tab === t.id ? 'bg-surface text-text-primary font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'
+                  }`}
+                >
+                  {t.label} {toPersianDigits(t.count)}
+                </Button>
+              ))}
+            </div>
+          )}
 
           {displayedCampaigns.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border bg-bg/60 p-8 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-accent/10 text-accent-hover flex items-center justify-center mx-auto">
-                {campaignTab === 'current' ? <Compass className="w-6 h-6" /> : <Archive className="w-6 h-6" />}
-              </div>
-              <h3 className="text-base font-semibold text-text-primary">
-                {campaignTab === 'current' ? 'شما هنوز عضو هیچ کمپین فعالی نیستید' : 'هیچ کمپین بایگانی‌شده یا خاتمه‌یافته‌ای وجود ندارد'}
-              </h3>
-              <p className="text-xs text-text-muted max-w-sm mx-auto leading-relaxed">
-                {campaignTab === 'current' 
-                  ? 'می‌توانید یک کمپین جدید بر پایه قوانین زروانیا یا D&D 5e بسازید یا با کد دعوتی که دانجن مستر داده وارد شوید.'
-                  : 'کمپین‌هایی که بایگانی شده یا از آن‌ها خارج شده‌اید در این بخش به عنوان تاریخچه فقط خواندنی نمایش داده می‌شوند.'}
-              </p>
-              {campaignTab === 'current' && (
-                <Button
-                  onClick={onOpenCreateCampaign}
-                  className="px-4 py-2 rounded-xl bg-accent text-on-accent font-bold text-sm hover:bg-accent-hover transition-all shadow-lg shadow-accent/20"
-                >
-                  ساخت اولین کمپین
-                </Button>
-              )}
-            </div>
+            <EmptyState
+              title={tab === 'current' ? 'هنوز در هیچ کمپینی نیستید' : 'کمپین بایگانی‌شده‌ای ندارید'}
+              body={
+                tab === 'current'
+                  ? 'یک کمپین بسازید یا با کد دعوتی که دانجن مستر به شما داده وارد شوید.'
+                  : 'کمپین‌های بایگانی‌شده اینجا به‌صورت فقط‌خواندنی نمایش داده می‌شوند.'
+              }
+              action={
+                tab === 'current' ? (
+                  <Button onClick={onOpenCreateCampaign} className={primaryBtn}>
+                    ساخت اولین کمپین
+                  </Button>
+                ) : undefined
+              }
+            />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {displayedCampaigns.map(camp => {
-                const isPast = campaignTab === 'past' || camp.isReadOnly || camp.status === 'archived';
-                const countdown = camp.nextSession?.scheduledAt 
-                  ? calculateCountdown(camp.nextSession.scheduledAt) 
+                const isPast = tab === 'past' || camp.isReadOnly || camp.status === 'archived';
+                const countdown = camp.nextSession?.scheduledAt
+                  ? calculateCountdown(camp.nextSession.scheduledAt)
                   : camp.nextSession?.countdown;
+                const open = () => onSelectCampaign(camp.id);
+                const unread = typeof camp.unreadCount === 'number' ? camp.unreadCount : 0;
 
                 return (
                   <div
                     key={camp.id}
-                    onClick={() => onSelectCampaign(camp.id)}
-                    className="group relative overflow-hidden rounded-2xl bg-surface border border-border hover:border-accent/40 p-5 transition-all cursor-pointer shadow-lg hover:shadow-surface-2/20 flex flex-col justify-between"
+                    role="link"
+                    tabIndex={0}
+                    aria-label={camp.name}
+                    onClick={open}
+                    onKeyDown={onActivate(open)}
+                    className={`${cardBase} p-4 flex flex-col gap-2`}
                   >
-                    <div>
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                          <span className="mt-1 shrink-0">{getStatusBadge(camp.status)}</span>
-                          <h3 className="text-base font-bold text-text-primary group-hover:text-accent-hover transition-colors line-clamp-2 leading-snug">
-                            {camp.name}
-                          </h3>
-                        </div>
-                        {typeof camp.unreadCount === 'number' && camp.unreadCount > 0 && (
-                          <div className="shrink-0">
-                            <span className="px-2 py-0.5 rounded-full text-xs font-black bg-danger/20 text-danger border border-danger/40 flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-danger animate-ping" />
-                              {toPersianDigits(camp.unreadCount)} تازه
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      <p className="text-xs text-text-muted mt-2 line-clamp-2 leading-relaxed">
-                        {camp.description || 'ماجراجویی در آستانه زمان و رازهای اساطیری زروانیا.'}
-                      </p>
-
-                      {/* Next Session Countdown (Active campaigns) */}
-                      {!isPast && camp.nextSession && (
-                        <div className={`mt-3 flex flex-wrap items-center justify-between gap-2 gap-2 px-3 py-1.5 rounded-xl text-xs border ${
-                          countdown?.isImminent
-                            ? 'bg-primary/15 border-primary/40 text-primary'
-                            : 'bg-surface-2 border-border text-accent-hover'
-                        }`}>
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <Clock className={`w-3.5 h-3.5 shrink-0 ${countdown?.isImminent ? 'text-primary animate-spin' : 'text-accent'}`} />
-                            <span className="truncate font-medium">
-                              جلسه {toPersianDigits(camp.nextSession.number)}: {countdown?.text || new Date(camp.nextSession.scheduledAt).toLocaleDateString('fa-IR')}
-                            </span>
-                          </div>
-                          {countdown?.isImminent && (
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-primary text-on-accent font-black shrink-0">
-                              به‌زودی!
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Character Final State (Past / Archived campaigns) */}
-                      {isPast && camp.finalCharacterState && (
-                        <div className="mt-3 p-3 rounded-xl bg-bg border border-border text-xs space-y-1">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <span className="font-bold text-text-primary">
-                              {camp.finalCharacterState.characterName}
-                            </span>
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-surface-2 text-accent-hover border border-border">
-                              سطح {toPersianDigits(camp.finalCharacterState.level)} • {camp.finalCharacterState.className}
-                            </span>
-                          </div>
-                          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-text-muted pt-1">
-                            <span>وضعیت: {camp.finalCharacterState.status === 'dead' ? 'درگذشته' : camp.finalCharacterState.status === 'retired' ? 'بازنشسته' : 'فعال'}</span>
-                            <span>{toPersianDigits(camp.finalCharacterState.sessionsAttended)} جلسه حضور</span>
-                          </div>
-                        </div>
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="text-base font-bold text-text-primary line-clamp-2 leading-snug">{camp.name}</h3>
+                      {unread > 0 && (
+                        <span className="shrink-0 px-2 py-0.5 rounded-full text-xs font-bold bg-accent text-on-accent">
+                          {toPersianDigits(unread)} تازه
+                        </span>
                       )}
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-border/60 flex flex-wrap items-center justify-between gap-2 text-xs text-text-muted">
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                        {isPast ? (
-                          <span className="px-2 py-0.5 text-xs rounded-full bg-surface-2 text-text-muted border border-border">
-                            فقط خواندنی
-                          </span>
-                        ) : (
-                          getRoleBadge(camp.myRole)
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5 text-text-muted" />
-                          {toPersianDigits(camp.memberCount || 1)} عضو
+                    {camp.description && (
+                      <p className="text-sm text-text-muted line-clamp-1">{camp.description}</p>
+                    )}
+
+                    {!isPast && camp.nextSession && (
+                      <p className={`flex items-center gap-1.5 text-sm ${countdown?.isImminent ? 'text-accent-hover font-bold' : 'text-text-primary'}`}>
+                        <Clock className="w-4 h-4 shrink-0 text-text-muted" />
+                        <span className="truncate">
+                          جلسه {toPersianDigits(camp.nextSession.number)}:{' '}
+                          {countdown?.text || new Date(camp.nextSession.scheduledAt).toLocaleDateString('fa-IR')}
                         </span>
-                        <span className="flex items-center gap-1">
-                          <Award className="w-3.5 h-3.5 text-text-muted" />
-                          {toPersianDigits(camp.characterCount || 0)} شخصیت
+                      </p>
+                    )}
+
+                    {isPast && camp.finalCharacterState && (
+                      <p className="text-sm text-text-muted truncate">
+                        {camp.finalCharacterState.characterName}، سطح {toPersianDigits(camp.finalCharacterState.level)} {camp.finalCharacterState.className}
+                        {camp.finalCharacterState.status === 'dead' ? '، درگذشته' : camp.finalCharacterState.status === 'retired' ? '، بازنشسته' : ''}
+                      </p>
+                    )}
+
+                    <div className="mt-auto pt-2 flex items-center justify-between gap-2 text-xs text-text-muted">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 min-w-0">
+                        <span className={`font-bold ${isPast ? 'text-text-muted' : roleTone(camp.myRole)}`}>
+                          {isPast ? 'فقط خواندنی' : roleLabel(camp.myRole)}
                         </span>
+                        <span>{toPersianDigits(camp.memberCount || 1)} عضو</span>
+                        <span>{toPersianDigits(camp.characterCount || 0)} شخصیت</span>
+                        {camp.status === 'paused' && <span className="text-warning">متوقف</span>}
                       </div>
-                      <div className="flex items-center gap-1 text-accent-hover font-medium group-hover:translate-x-[-2px] transition-transform">
-                        <span>{isPast ? 'مشاهده سوابق کمپین' : 'ورود به میز بازی'}</span>
-                        <ChevronLeft className="w-4 h-4" />
-                      </div>
+                      <ChevronLeft className="w-4 h-4 shrink-0" aria-hidden="true" />
                     </div>
                   </div>
                 );
@@ -395,171 +324,90 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </section>
       )}
 
-      {/* Draft Character Participations Section (Step 3.3 Wizard Drafts) */}
-      {!isLoading && draftParticipations.length > 0 && (
-        <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-accent-hover" />
-            <h2 className="text-lg font-bold text-text-primary">پیش‌نویس کاراکترها (در حال ساخت)</h2>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-accent/20 text-accent-hover border border-accent/30 font-bold">
-              {toPersianDigits(draftParticipations.length)}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {draftParticipations.map(draft => {
-              const camp = myCampaigns.find(c => c.id === draft.campaignId);
-              const char = myCharacters.find(c => c.id === draft.characterId);
-              const step = draft.build?.step || 1;
-              const percent = Math.round((step / 8) * 100);
-              const displayName = char?.name || draft.build?.masterData?.name || 'کاراکتر در حال ساخت';
-              const displayClass = draft.className || 'کلاس مشخص‌نشده';
-
-              return (
-                <div
-                  key={draft.id}
-                  className="rounded-2xl bg-surface border border-accent/30 p-4 flex flex-col justify-between shadow-lg"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-accent/20 text-accent-hover border border-accent/30 font-bold shrink-0">
-                          پیش‌نویس کاراکتر
-                        </span>
-                        <h3 className="text-sm font-bold text-text-primary truncate">
-                          {displayName}
-                        </h3>
-                      </div>
-                      <p className="text-xs text-text-muted mt-1 truncate">
-                        {displayClass} • کمپین: {camp?.name || 'نامشخص'}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-xl bg-bg border border-border text-xs font-bold text-accent-hover">
-                      <span>گام {toPersianDigits(step)} از ۸</span>
-                    </div>
-                  </div>
-
-                  <div className="w-full bg-surface-2 h-1.5 rounded-full mt-3 overflow-hidden">
-                    <div 
-                      className="bg-accent h-full rounded-full transition-all duration-300" 
-                      style={{ width: `${percent}%` }}
-                    />
-                  </div>
-
-                  <div className="mt-3 pt-2.5 border-t border-border flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-xs text-text-muted">سطح: {toPersianDigits(draft.level || 1)}</span>
-                    <Button
-                      type="button"
-                      onClick={() => onResumeDraft && onResumeDraft(draft)}
-                      className="px-3.5 py-1.5 rounded-xl btn-primary text-xs font-bold shadow-md flex items-center gap-1 min-h-[44px]"
-                    >
-                      <span>ادامه (Resume)</span>
-                      <ChevronLeft className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Master Characters Section with Status, Campaigns Count, Sessions & Highest Level */}
+      {/* Characters */}
       {!isLoading && (
-        <section className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Scroll className="w-5 h-5 text-accent-hover" />
-              <h2 className="text-lg font-bold text-text-primary">شخصیت‌های من (شناسنامه کلان)</h2>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-surface-2 text-text-muted">
-                {toPersianDigits(myCharacters.length)}
-              </span>
-            </div>
-            <ScrollableRow className="gap-2 shrink-0">
-              {onOpenCharacterWizard && (
-                <Button
-                  type="button"
-                  onClick={() => onOpenCharacterWizard()}
-                  className="px-3 py-1.5 rounded-xl bg-accent text-on-accent text-xs font-bold hover:bg-accent-hover transition-colors flex items-center gap-1.5 min-h-[44px] shadow-sm whitespace-nowrap shrink-0 snap-start"
-                >
-                  <Sparkles className="w-4 h-4 shrink-0" />
-                  <span className="whitespace-nowrap shrink-0">ساخت کاراکتر با ویزارد</span>
+        <section id="home-characters" className="space-y-3 scroll-mt-4" aria-label="شخصیت‌های من">
+          <SectionHeading
+            title="شخصیت‌های من"
+            count={myCharacters.length}
+            actions={
+              <>
+                {onOpenCharacterWizard && (
+                  <Button type="button" onClick={onOpenCreateCharacter} className={secondaryBtn}>
+                    شناسنامه ساده
+                  </Button>
+                )}
+                <Button type="button" onClick={startCharacter} className={primaryBtn}>
+                  <Plus className="w-4 h-4" />
+                  <span>شخصیت جدید</span>
                 </Button>
-              )}
-              <Button
-                type="button"
-                onClick={onOpenCreateCharacter}
-                className="px-3 py-1.5 rounded-xl bg-accent/15 border border-accent/30 text-accent-hover text-xs font-bold hover:bg-accent/25 transition-colors flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
-              >
-                <Plus className="w-4 h-4 shrink-0" />
-                <span className="whitespace-nowrap shrink-0">شناسنامه ساده</span>
-              </Button>
-            </ScrollableRow>
-          </div>
+              </>
+            }
+          />
 
           {myCharacters.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border bg-bg/60 p-6 text-center space-y-2">
-              <p className="text-xs text-text-muted leading-relaxed">
-                شما هنوز هیچ شخصیت کلانی ثبت نکرده‌اید. با ایجاد شناسنامه کلان می‌توانید یک شخصیت را به چند کمپین ببرید.
-              </p>
-              <Button
-                onClick={onOpenCreateCharacter}
-                className="px-4 py-2 rounded-xl bg-surface-2 hover:bg-surface-2 text-accent-hover text-xs font-bold transition-all"
-              >
-                ایجاد اولین شخصیت
-              </Button>
-            </div>
+            <EmptyState
+              title="هنوز شخصیتی نساخته‌اید"
+              body="یک شخصیت را می‌توانید به چند کمپین ببرید و پیشینه و سطحش را نگه دارید."
+              action={
+                <Button onClick={startCharacter} className={primaryBtn}>
+                  ساخت اولین شخصیت
+                </Button>
+              }
+            />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {myCharacters.map(char => {
                 const campaignsCount = char.campaignsCount ?? char.participations?.length ?? 0;
                 const sessionsTotal = char.sessionsAttendedTotal ?? 0;
                 const highestLevel = char.highestLevel ?? 1;
+                const open = () => onOpenCharacterMaster(char.id);
+                const statusLabel =
+                  char.status === 'dead' ? 'درگذشته'
+                  : char.status === 'retired' ? 'بازنشسته'
+                  : char.status === 'archived' ? 'بایگانی'
+                  : '';
 
                 return (
                   <div
                     key={char.id}
-                    onClick={() => onOpenCharacterMaster(char.id)}
-                    className="rounded-2xl bg-surface border border-border hover:border-accent/40 p-4 transition-all cursor-pointer shadow-md flex flex-col justify-between group"
+                    role="link"
+                    tabIndex={0}
+                    aria-label={char.name}
+                    onClick={open}
+                    onKeyDown={onActivate(open)}
+                    className={`${cardBase} p-3 flex flex-col gap-2.5`}
                   >
-                    <div className="flex items-start gap-3.5">
-                      <img
-                        src={char.portraitUrl || 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=300&q=80'}
-                        alt={char.name}
-                        loading="lazy"
-                        decoding="async"
-                        width={56}
-                        height={56}
-                        className="w-14 h-14 rounded-xl object-cover border border-accent/30 shrink-0 group-hover:scale-105 transition-transform"
-                      />
+                    <div className="flex items-center gap-3">
+                      {char.portraitUrl ? (
+                        <img
+                          src={char.portraitUrl}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-lg object-cover border border-border shrink-0"
+                        />
+                      ) : (
+                        <span className="w-12 h-12 rounded-lg bg-surface-2 border border-border text-lg font-bold text-accent flex items-center justify-center shrink-0" aria-hidden="true">
+                          {char.name?.[0] || '؟'}
+                        </span>
+                      )}
                       <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center justify-between gap-2 gap-1">
-                          <h4 className="text-sm font-bold text-text-primary truncate group-hover:text-accent-hover transition-colors">
-                            {char.name}
-                          </h4>
-                          {getCharacterStatusBadge(char.status)}
-                        </div>
-                        <p className="text-xs text-text-muted mt-0.5 truncate">
-                          نژاد: {char.race}
-                        </p>
+                        <h3 className="text-sm font-bold text-text-primary truncate">{char.name}</h3>
+                        <p className="text-xs text-text-muted truncate">{char.race}</p>
                       </div>
+                      {statusLabel && (
+                        <span className={`shrink-0 text-xs font-bold ${char.status === 'dead' ? 'text-danger' : 'text-text-muted'}`}>
+                          {statusLabel}
+                        </span>
+                      )}
                     </div>
-
-                    {/* Stats Footer on Character Card */}
-                    <div className="mt-3 pt-2.5 border-t border-border grid grid-cols-3 gap-1 text-center text-xs text-text-muted">
-                      <div className="p-1 rounded bg-bg/60">
-                        <span className="block text-xs text-text-muted">کمپین‌ها</span>
-                        <span className="font-bold text-text-primary">{toPersianDigits(campaignsCount)}</span>
-                      </div>
-                      <div className="p-1 rounded bg-bg/60">
-                        <span className="block text-xs text-text-muted">جلسات</span>
-                        <span className="font-bold text-text-primary">{toPersianDigits(sessionsTotal)}</span>
-                      </div>
-                      <div className="p-1 rounded bg-bg/60">
-                        <span className="block text-xs text-text-muted">بیشترین سطح</span>
-                        <span className="font-bold text-accent-hover">سطح {toPersianDigits(highestLevel)}</span>
-                      </div>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-muted">
+                      <span>{toPersianDigits(campaignsCount)} کمپین</span>
+                      <span>{toPersianDigits(sessionsTotal)} جلسه</span>
+                      <span>بالاترین سطح {toPersianDigits(highestLevel)}</span>
                     </div>
                   </div>
                 );
@@ -569,30 +417,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </section>
       )}
 
-      {/* Invite Code Quick Join Section */}
-      <section className="rounded-2xl bg-bg border border-border p-4 space-y-3">
-        <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
-          <UserCheck className="w-4 h-4 text-accent-hover" />
-          پیوستن به کمپین با کد دعوت
-        </h3>
+      {/* Join with a code */}
+      <section id="home-invites" className="space-y-2 scroll-mt-4" aria-label="پیوستن با کد دعوت">
+        <h2 className="text-base font-bold text-text-primary">کد دعوت دارید؟</h2>
         <div className="flex gap-2">
-          <Input noWrapper 
+          <Input
+            noWrapper
             type="text"
             value={inviteInput}
             onChange={(e) => setInviteInput(e.target.value)}
-            placeholder="کد دعوت کمپین را اینجا وارد کنید..."
-            className="flex-1 bg-bg/80 border border-border rounded-xl px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
-          />
-          <Button
-            onClick={() => {
-              if (inviteInput.trim()) {
-                onAcceptInvite(inviteInput.trim());
-                setInviteInput('');
-              }
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+              if (e.key === 'Enter') submitInvite();
             }}
-            disabled={!inviteInput.trim()}
-            className="px-4 py-2 rounded-xl bg-accent text-on-accent font-bold text-xs hover:bg-accent-hover disabled:opacity-50 transition-colors min-h-[44px]"
-          >
+            placeholder="کد دعوت را وارد کنید"
+            aria-label="کد دعوت کمپین"
+            className="flex-1 min-w-0 h-11 bg-surface border border-border rounded-lg px-3 text-text-primary placeholder:text-text-muted"
+          />
+          <Button onClick={submitInvite} disabled={!inviteInput.trim()} className={`${primaryBtn} shrink-0`}>
             پیوستن
           </Button>
         </div>

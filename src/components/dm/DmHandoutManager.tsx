@@ -1,16 +1,18 @@
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  FileText, Image as ImageIcon, Map as MapIcon, Plus, Search, 
-  Eye, EyeOff, Users, ArrowUp, ArrowDown, Edit2, Trash2, MapPin, 
-  ExternalLink, Filter, Check, ShieldAlert, Sparkles
+import {
+  FileText, Image as ImageIcon, Map as MapIcon, Plus, Search,
+  Eye, EyeOff, Users, ArrowUp, ArrowDown, Edit2, Trash2, MapPin,
+  ExternalLink, MoreVertical, X
 } from 'lucide-react';
 import { Handout, HandoutKind, HandoutVisibility, MapPin as MapPinType } from '../../types';
 import { api } from '../../services/api';
 import { HandoutEditorSheet } from '../handout/HandoutEditorSheet';
 import { HandoutViewerModal } from '../handout/HandoutViewerModal';
 import { BottomSheet } from '../mobile/BottomSheet';
+import { ScrollableRow } from '../ui/ScrollableRow';
+import { Badge, IconButton, StickyFooter, pillCls, inputCls, primaryBtnCls, secondaryBtnCls } from '../ui/FormLayout';
 
 interface DmHandoutManagerProps {
   campaignId: string;
@@ -18,6 +20,43 @@ interface DmHandoutManagerProps {
   isCompact?: boolean; // For encounter quick-reveal panel
   onCloseCompact?: () => void;
 }
+
+/** Overflow menu for the less frequent row actions (native <details>, no extra dependency). */
+const RowMenu: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <details className="relative">
+    <summary
+      aria-label="عملیات بیشتر"
+      title="عملیات بیشتر"
+      className="list-none min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-2 cursor-pointer"
+    >
+      <MoreVertical className="w-4 h-4" />
+    </summary>
+    <div className="absolute end-0 mt-1 z-20 min-w-[12rem] rounded-xl border border-border bg-surface shadow-lg p-1">
+      {children}
+    </div>
+  </details>
+);
+
+const MenuItem: React.FC<{
+  icon: React.ComponentType<{ className?: string }>;
+  onClick: () => void;
+  danger?: boolean;
+  children: React.ReactNode;
+}> = ({ icon: Icon, onClick, danger, children }) => (
+  <button
+    type="button"
+    onClick={e => {
+      (e.currentTarget.closest('details') as HTMLDetailsElement | null)?.removeAttribute('open');
+      onClick();
+    }}
+    className={`w-full min-h-[44px] px-3 rounded-lg flex items-center gap-2 text-sm text-start hover:bg-surface-2 ${
+      danger ? 'text-danger' : 'text-text-primary'
+    }`}
+  >
+    <Icon className="w-4 h-4 shrink-0" />
+    <span>{children}</span>
+  </button>
+);
 
 export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
   campaignId,
@@ -31,22 +70,18 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
   const [kindFilter, setKindFilter] = useState<'all' | HandoutKind>('all');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  // Modals & Sheets
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingHandout, setEditingHandout] = useState<Handout | null>(null);
   const [viewingHandout, setViewingHandout] = useState<Handout | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  // Recipient selection quick modal
   const [recipientModalHandout, setRecipientModalHandout] = useState<Handout | null>(null);
   const [tempRecipients, setTempRecipients] = useState<string[]>([]);
 
-  // Load handouts
   const loadHandouts = useCallback(async () => {
     try {
       setLoading(true);
       const list = await api.listHandouts(campaignId, { includeHidden: true });
-      // Sort by sortIndex asc
       list.sort((a, b) => (a.sortIndex ?? 0) - (b.sortIndex ?? 0));
       setHandouts(list);
     } catch (err: any) {
@@ -60,39 +95,31 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
     loadHandouts();
   }, [loadHandouts]);
 
-  // Character mapping for names
   const characterNamesById = campaignCharacters.reduce((acc, c) => {
     acc[c.id] = c.name + (c.playerName ? ` (${c.playerName})` : '');
     return acc;
   }, {} as Record<string, string>);
 
-  // 1-Tap Quick Reveal to everyone
   const handleQuickReveal = async (handout: Handout) => {
     try {
       await api.revealHandout(campaignId, handout.id, 'revealed');
       await loadHandouts();
-      if (viewingHandout?.id === handout.id) {
-        setViewingHandout(prev => prev ? { ...prev, visibility: 'revealed' } : null);
-      }
+      if (viewingHandout?.id === handout.id) setViewingHandout(prev => (prev ? { ...prev, visibility: 'revealed' } : null));
     } catch (err: any) {
       setActionError(err.message || 'خطا در آشکارسازی');
     }
   };
 
-  // 1-Tap Quick Hide
   const handleQuickHide = async (handout: Handout) => {
     try {
       await api.revealHandout(campaignId, handout.id, 'hidden');
       await loadHandouts();
-      if (viewingHandout?.id === handout.id) {
-        setViewingHandout(prev => prev ? { ...prev, visibility: 'hidden' } : null);
-      }
+      if (viewingHandout?.id === handout.id) setViewingHandout(prev => (prev ? { ...prev, visibility: 'hidden' } : null));
     } catch (err: any) {
       setActionError(err.message || 'خطا در مخفی‌سازی');
     }
   };
 
-  // Open recipient picker
   const handleOpenRecipientModal = (handout: Handout) => {
     setRecipientModalHandout(handout);
     setTempRecipients(handout.recipients || []);
@@ -109,14 +136,13 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
     }
   };
 
-  // Reorder
+  // index is the position in the FULL list (not the filtered one)
   const handleMoveSort = async (index: number, direction: 'up' | 'down') => {
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= handouts.length) return;
 
     const current = handouts[index];
     const target = handouts[targetIndex];
-
     const currentSort = current.sortIndex ?? index;
     const targetSort = target.sortIndex ?? targetIndex;
 
@@ -129,9 +155,8 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
     }
   };
 
-  // Delete
   const handleDeleteHandout = async (id: string) => {
-    if (!window.confirm('آیا از حذف این سند/نقشه اطمینان دارید؟ این عمل غیرقابل بازگشت است.')) return;
+    if (!window.confirm('این سند یا نقشه حذف شود؟ این کار قابل بازگشت نیست.')) return;
     try {
       await api.deleteHandout(campaignId, id);
       if (viewingHandout?.id === id) setViewingHandout(null);
@@ -141,38 +166,20 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
     }
   };
 
-  // Pin operations for viewingHandout
   const handleAddPin = async (pinData: { x: number; y: number; label: string; note?: string; revealed: boolean }) => {
     if (!viewingHandout) return;
     const newPin = await api.createMapPin(campaignId, viewingHandout.id, pinData);
-    setViewingHandout(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        pins: [...(prev.pins || []), newPin],
-      };
-    });
-    // refresh list state as well
-    setHandouts(prev =>
-      prev.map(h => (h.id === viewingHandout.id ? { ...h, pins: [...(h.pins || []), newPin] } : h))
-    );
+    setViewingHandout(prev => (prev ? { ...prev, pins: [...(prev.pins || []), newPin] } : null));
+    setHandouts(prev => prev.map(h => (h.id === viewingHandout.id ? { ...h, pins: [...(h.pins || []), newPin] } : h)));
   };
 
   const handleUpdatePin = async (pinId: string, updates: Partial<MapPinType>) => {
     if (!viewingHandout) return;
     const updated = await api.updateMapPin(campaignId, viewingHandout.id, pinId, updates);
-    setViewingHandout(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        pins: (prev.pins || []).map(p => (p.id === pinId ? updated : p)),
-      };
-    });
+    setViewingHandout(prev => (prev ? { ...prev, pins: (prev.pins || []).map(p => (p.id === pinId ? updated : p)) } : null));
     setHandouts(prev =>
       prev.map(h =>
-        h.id === viewingHandout.id
-          ? { ...h, pins: (h.pins || []).map(p => (p.id === pinId ? updated : p)) }
-          : h
+        h.id === viewingHandout.id ? { ...h, pins: (h.pins || []).map(p => (p.id === pinId ? updated : p)) } : h
       )
     );
   };
@@ -180,23 +187,12 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
   const handleDeletePin = async (pinId: string) => {
     if (!viewingHandout) return;
     await api.deleteMapPin(campaignId, viewingHandout.id, pinId);
-    setViewingHandout(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        pins: (prev.pins || []).filter(p => p.id !== pinId),
-      };
-    });
+    setViewingHandout(prev => (prev ? { ...prev, pins: (prev.pins || []).filter(p => p.id !== pinId) } : null));
     setHandouts(prev =>
-      prev.map(h =>
-        h.id === viewingHandout.id
-          ? { ...h, pins: (h.pins || []).filter(p => p.id !== pinId) }
-          : h
-      )
+      prev.map(h => (h.id === viewingHandout.id ? { ...h, pins: (h.pins || []).filter(p => p.id !== pinId) } : h))
     );
   };
 
-  // Save from editor sheet
   const handleSaveHandout = async (payload: {
     id?: string;
     title: string;
@@ -230,344 +226,214 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
     await loadHandouts();
   };
 
-  // Upload handler for editor
   const handleUploadMedia = async (file: File) => {
     const res = await api.uploadMedia(file, campaignId);
-    return {
-      mediaId: res.mediaId || res.id,
-      mediaUrl: res.mediaUrl || res.url,
-    };
+    return { mediaId: res.mediaId || res.id, mediaUrl: res.mediaUrl || res.url };
   };
 
-  // Filtering
   const allTags = Array.from(new Set(handouts.flatMap(h => h.tags || [])));
+  const filtersActive = kindFilter !== 'all' || !!selectedTag || !!searchQuery.trim();
   const filteredHandouts = handouts.filter(h => {
     if (kindFilter !== 'all' && h.kind !== kindFilter) return false;
     if (selectedTag && !(h.tags || []).includes(selectedTag)) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      const matchTitle = h.title.toLowerCase().includes(q);
-      const matchBody = (h.body || '').toLowerCase().includes(q);
-      const matchTag = (h.tags || []).some(t => t.toLowerCase().includes(q));
-      if (!matchTitle && !matchBody && !matchTag) return false;
+      const hit =
+        h.title.toLowerCase().includes(q) ||
+        (h.body || '').toLowerCase().includes(q) ||
+        (h.tags || []).some(t => t.toLowerCase().includes(q));
+      if (!hit) return false;
     }
     return true;
   });
 
+  const kindFilters: Array<{ id: 'all' | HandoutKind; label: string }> = [
+    { id: 'all', label: `همه (${handouts.length})` },
+    { id: 'map', label: 'نقشه‌ها' },
+    { id: 'image', label: 'تصاویر' },
+    { id: 'text', label: 'متون' },
+  ];
+
   return (
     <div className={`space-y-4 ${isCompact ? 'p-2' : ''}`} dir="rtl">
-      {/* Top Banner & Action */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className={`${isCompact ? 'text-sm' : 'text-base sm:text-lg'} font-black text-text-primary flex items-center gap-2`}>
-            <MapIcon className="w-5 h-5 text-accent" />
-            <span>اسناد و نقشه‌های کمپین</span>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className={`${isCompact ? 'text-base' : 'text-lg'} font-bold text-text-primary flex items-center gap-2`}>
+            <MapIcon className="w-5 h-5 text-accent" aria-hidden />
+            <span>اسناد و نقشه‌ها</span>
           </h2>
           {!isCompact && (
-            <p className="text-xs text-text-muted mt-0.5">
-              مدیریت اسناد، نامه‌ها، تصاویر و نقشه‌های تعاملی همراه با نشانگر و کنترل دسترسی زنده.
+            <p className="mt-1 text-xs text-text-muted leading-relaxed">
+              نامه‌ها، تصاویر و نقشه‌های تعاملی را مدیریت کنید و تعیین کنید چه کسی ببیند.
             </p>
           )}
         </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            onClick={() => {
-              setEditingHandout(null);
-              setIsEditorOpen(true);
-            }}
-            className="px-3.5 py-2 rounded-[10px] bg-accent hover:bg-accent-hover text-on-accent text-xs font-bold transition flex items-center gap-1.5 touch-target min-w-[44px] shadow-md"
-          >
-            <Plus className="w-4 h-4" />
-            <span>سند یا نقشه جدید</span>
-          </Button>
-        </div>
+        <Button
+          type="button"
+          onClick={() => {
+            setEditingHandout(null);
+            setIsEditorOpen(true);
+          }}
+          className={`${primaryBtnCls} shrink-0`}
+        >
+          <Plus className="w-4 h-4" />
+          <span>سند جدید</span>
+        </Button>
       </div>
 
       {actionError && (
-        <div className="p-3 bg-danger/10 border border-danger/30 rounded-[10px] text-xs text-danger flex flex-wrap items-center justify-between gap-2">
-          <span>{actionError}</span>
-          <Button type="button" onClick={() => setActionError(null)} className="text-danger hover:text-text-primary">
-            ×
-          </Button>
+        <div role="alert" className="ps-3 pe-1 rounded-lg bg-danger/15 border border-danger/30 text-sm text-danger flex items-center justify-between gap-2">
+          <span className="py-2.5">{actionError}</span>
+          <IconButton label="بستن پیام" onClick={() => setActionError(null)}>
+            <X className="w-4 h-4" />
+          </IconButton>
         </div>
       )}
 
-      {/* Filter & Search Bar */}
-      <div className="surface-card p-3 rounded-[14px] border border-border space-y-2.5">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-text-muted absolute start-3 top-1/2 -translate-y-1/2" />
-            <Input noWrapper
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="جستجو در عنوان، متن یا برچسب‌ها..."
-              className="w-full ps-9 pe-3 py-2 bg-bg border border-border rounded-[10px] text-xs text-white placeholder-border-strong focus:outline-none focus:border-accent"
-            />
-          </div>
-
-          {/* Kind Filter Tabs */}
-          <div className="flex items-center gap-1 bg-bg p-1 rounded-[10px] border border-border shrink-0 overflow-x-auto">
-            <Button
-              type="button"
-              onClick={() => setKindFilter('all')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition touch-target min-w-[44px] ${
-                kindFilter === 'all' ? 'bg-accent text-on-accent' : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              همه ({handouts.length})
-            </Button>
-            <Button
-              type="button"
-              onClick={() => setKindFilter('map')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
-                kindFilter === 'map' ? 'bg-success text-on-accent' : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <MapIcon className="w-3.5 h-3.5" />
-              <span>نقشه‌ها</span>
-            </Button>
-            <Button
-              type="button"
-              onClick={() => setKindFilter('image')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
-                kindFilter === 'image' ? 'bg-info text-on-accent' : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <ImageIcon className="w-3.5 h-3.5" />
-              <span>تصاویر</span>
-            </Button>
-            <Button
-              type="button"
-              onClick={() => setKindFilter('text')}
-              className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
-                kindFilter === 'text' ? 'bg-accent text-on-accent' : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>متون</span>
-            </Button>
-          </div>
+      {/* Search + filters (no wrapper card) */}
+      <div className="space-y-3">
+        <div className="relative">
+          <Search className="w-4 h-4 text-text-muted absolute start-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden />
+          <Input noWrapper
+            type="search"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="جستجو در عنوان، متن یا برچسب"
+            aria-label="جستجو در اسناد"
+            className={`${inputCls} ps-10`}
+          />
         </div>
 
-        {/* Tag Pills */}
+        <ScrollableRow activeKey={kindFilter} className="items-center gap-2 pb-1">
+          {kindFilters.map(f => (
+            <Button key={f.id} type="button" data-scroll-key={f.id} onClick={() => setKindFilter(f.id)} className={pillCls(kindFilter === f.id)}>
+              {f.label}
+            </Button>
+          ))}
+        </ScrollableRow>
+
         {allTags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 pt-1">
-            <span className="text-xs text-text-muted">برچسب:</span>
+          <ScrollableRow activeKey={selectedTag ?? ''} className="items-center gap-2 pb-1">
             {allTags.map(tag => (
               <Button
                 key={tag}
                 type="button"
+                data-scroll-key={tag}
                 onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                className={`px-2 py-0.5 rounded-full text-xs font-medium border transition ${
+                className={`px-3 min-h-[36px] rounded-full text-sm whitespace-nowrap shrink-0 border transition ${
                   selectedTag === tag
-                    ? 'bg-accent text-on-accent border-accent'
-                    : 'bg-bg text-text-muted border-border hover:text-text-primary'
+                    ? 'bg-accent/15 text-accent-hover border-accent'
+                    : 'bg-surface-2 text-text-muted border-border hover:text-text-primary'
                 }`}
               >
                 #{tag}
               </Button>
             ))}
-          </div>
+          </ScrollableRow>
         )}
       </div>
 
-      {/* Handouts List */}
+      {/* List */}
       {loading ? (
-        <div className="p-8 text-center text-xs text-text-muted animate-pulse">
-          در حال بارگذاری اسناد و نقشه‌ها...
-        </div>
+        <div className="py-12 text-center text-sm text-text-muted animate-pulse">در حال بارگذاری...</div>
       ) : filteredHandouts.length === 0 ? (
-        <div className="surface-card p-8 rounded-[16px] border border-border text-center space-y-3">
-          <div className="w-12 h-12 rounded-full bg-surface border border-border flex items-center justify-center mx-auto text-text-muted">
-            <MapIcon className="w-6 h-6 opacity-40" />
-          </div>
-          <h3 className="text-sm font-bold text-text-primary">سندی یافت نشد</h3>
-          <p className="text-xs text-text-muted max-w-sm mx-auto">
-            هنوز سندی ایجاد نشده یا با فیلترهای جستجو همخوانی ندارد. می‌توانید با کلیک روی «سند یا نقشه جدید» اولین سند را اضافه کنید.
+        <div className="py-12 text-center space-y-2">
+          <MapIcon className="w-8 h-8 mx-auto text-text-muted opacity-50" aria-hidden />
+          <h3 className="text-base font-bold text-text-primary">سندی پیدا نشد</h3>
+          <p className="text-sm text-text-muted max-w-sm mx-auto leading-relaxed">
+            {handouts.length === 0
+              ? 'هنوز سندی نساخته‌اید. با «سند جدید» شروع کنید.'
+              : 'هیچ سندی با این فیلترها مطابقت ندارد.'}
           </p>
         </div>
       ) : (
-        <div className="space-y-2.5">
-          {filteredHandouts.map((handout, index) => {
+        <ul className="rounded-xl border border-border bg-surface divide-y divide-border">
+          {filteredHandouts.map(handout => {
+            const fullIndex = handouts.findIndex(h => h.id === handout.id);
             const kindIcon = {
-              text: <FileText className="w-4 h-4 text-accent" />,
-              image: <ImageIcon className="w-4 h-4 text-info" />,
-              map: <MapIcon className="w-4 h-4 text-success" />,
+              text: <FileText className="w-5 h-5 text-accent" />,
+              image: <ImageIcon className="w-5 h-5 text-info" />,
+              map: <MapIcon className="w-5 h-5 text-success" />,
             }[handout.kind];
 
             const isRevealed = handout.visibility === 'revealed';
             const isSelected = handout.visibility === 'selected';
-            const isHidden = handout.visibility === 'hidden';
 
             return (
-              <div
-                key={handout.id}
-                className="surface-card p-3 sm:p-3.5 rounded-[14px] border border-border hover:border-border-strong transition flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-              >
-                {/* Left: Info & Type */}
-                <div className="flex items-start gap-3 min-w-0 flex-1">
-                  {/* Thumbnail / Kind Icon */}
-                  <div
-                    onClick={() => setViewingHandout(handout)}
-                    className="w-12 h-12 rounded-[10px] bg-bg border border-border flex items-center justify-center shrink-0 cursor-pointer overflow-hidden group"
-                  >
+              <li key={handout.id} className="p-2 sm:p-3 flex items-center gap-2">
+                {/* Main area: opens the viewer */}
+                <button
+                  type="button"
+                  onClick={() => setViewingHandout(handout)}
+                  className="flex items-center gap-3 min-w-0 flex-1 text-start rounded-lg p-1 hover:bg-surface-2 transition"
+                >
+                  <span className="w-12 h-12 rounded-lg bg-surface-2 border border-border flex items-center justify-center shrink-0 overflow-hidden">
                     {handout.mediaUrl || handout.mediaId ? (
                       <img
                         src={handout.mediaUrl || `/api/media/${handout.mediaId}`}
-                        alt={handout.title}
+                        alt=""
                         loading="lazy"
                         decoding="async"
                         width={48}
                         height={48}
-                        className="w-full h-full object-cover group-hover:scale-110 transition duration-200"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
                       kindIcon
                     )}
-                  </div>
+                  </span>
 
-                  {/* Title, Kind, Tags, Pins Count */}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h4
-                        onClick={() => setViewingHandout(handout)}
-                        className="font-bold text-sm text-text-primary hover:text-accent cursor-pointer truncate"
-                      >
-                        {handout.title}
-                      </h4>
-
-                      {/* Visibility Badge */}
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${
-                          isRevealed
-                            ? 'bg-success/15 text-success border border-success/30'
-                            : isSelected
-                            ? 'bg-info/15 text-info border border-info/30'
-                            : 'bg-danger/15 text-danger border border-danger/30'
-                        }`}
-                      >
-                        {isRevealed && <Eye className="w-2.5 h-2.5" />}
-                        {isSelected && <Users className="w-2.5 h-2.5" />}
-                        {isHidden && <EyeOff className="w-2.5 h-2.5" />}
-                        {isRevealed ? 'آشکار برای همه' : isSelected ? 'بازیکنان منتخب' : 'مخفی'}
-                      </span>
-
-                      {/* Map Pins Count */}
+                  <span className="min-w-0 flex-1 space-y-1">
+                    <span className="block text-sm font-bold text-text-primary truncate">{handout.title}</span>
+                    <span className="flex items-center gap-2 flex-wrap">
+                      <Badge tone={isRevealed ? 'success' : isSelected ? 'info' : 'neutral'}
+                        icon={isRevealed ? Eye : isSelected ? Users : EyeOff}>
+                        {isRevealed ? 'آشکار برای همه' : isSelected ? `${(handout.recipients || []).length} بازیکن` : 'مخفی'}
+                      </Badge>
                       {handout.kind === 'map' && (
-                        <span className="text-xs text-text-muted bg-bg px-2 py-0.5 rounded-[6px] border border-border flex items-center gap-1">
-                          <MapPin className="w-2.5 h-2.5 text-accent" />
-                          {(handout.pins || []).length} نشانگر
-                        </span>
+                        <Badge icon={MapPin}>{(handout.pins || []).length} نشانگر</Badge>
                       )}
-                    </div>
-
-                    {/* Excerpt or tags */}
-                    <div className="flex items-center gap-2 mt-1 text-xs text-text-muted flex-wrap">
                       {handout.tags && handout.tags.length > 0 && (
-                        <span>{handout.tags.map(t => `#${t}`).join(' ')}</span>
+                        <span className="text-xs text-text-muted truncate">{handout.tags.map(t => `#${t}`).join(' ')}</span>
                       )}
-                      {isSelected && handout.recipients && (
-                        <span className="text-info">
-                          ({handout.recipients.length} بازیکن مجاز)
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                    </span>
+                  </span>
+                </button>
 
-                {/* Right: 1-Tap Quick Reveal Buttons & Actions */}
-                <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center border-t sm:border-t-0 pt-2 sm:pt-0 border-border/60 w-full sm:w-auto justify-between sm:justify-end">
-                  {/* Sort reordering */}
-                  <div className="flex items-center">
-                    <Button
-                      type="button"
-                      disabled={index === 0}
-                      onClick={() => handleMoveSort(index, 'up')}
-                      className="p-1.5 rounded-[6px] text-text-muted hover:text-text-primary disabled:opacity-20 touch-target min-w-[44px]"
-                      title="انتقال به بالا"
-                    >
-                      <ArrowUp className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      type="button"
-                      disabled={index === filteredHandouts.length - 1}
-                      onClick={() => handleMoveSort(index, 'down')}
-                      className="p-1.5 rounded-[6px] text-text-muted hover:text-text-primary disabled:opacity-20 touch-target min-w-[44px]"
-                      title="انتقال به پایین"
-                    >
-                      <ArrowDown className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
+                {/* One primary action per row + overflow menu */}
+                <Button
+                  type="button"
+                  onClick={() => (isRevealed ? handleQuickHide(handout) : handleQuickReveal(handout))}
+                  title={isRevealed ? 'مخفی‌سازی از بازیکنان' : 'آشکارسازی فوری برای همه'}
+                  className={`min-h-[44px] px-3 rounded-lg text-sm font-medium border inline-flex items-center gap-1.5 shrink-0 transition ${
+                    isRevealed
+                      ? 'bg-surface-2 text-text-primary border-border hover:border-border-strong'
+                      : 'bg-success/15 text-success border-success/40 hover:bg-success/25'
+                  }`}
+                >
+                  {isRevealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  <span className="hidden sm:inline">{isRevealed ? 'مخفی کردن' : 'آشکارسازی'}</span>
+                </Button>
 
-                  {/* 1-Tap Reveal To Everyone */}
-                  <Button
-                    type="button"
-                    onClick={() => (isRevealed ? handleQuickHide(handout) : handleQuickReveal(handout))}
-                    className={`px-2.5 py-1.5 rounded-[8px] text-xs font-bold transition flex items-center gap-1 touch-target min-w-[44px] ${
-                      isRevealed
-                        ? 'bg-danger/15 text-danger hover:bg-danger/25 border border-danger/30'
-                        : 'bg-success/20 text-success hover:bg-success/30 border border-success/40'
-                    }`}
-                    title={isRevealed ? 'مخفی‌سازی از بازیکنان' : 'آشکارسازی فوری برای همه بازیکنان'}
-                  >
-                    {isRevealed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    <span>{isRevealed ? 'مخفی کردن' : 'آشکارسازی همه'}</span>
-                  </Button>
-
-                  {/* 1-Tap Reveal to Selected */}
-                  <Button
-                    type="button"
-                    onClick={() => handleOpenRecipientModal(handout)}
-                    className="p-1.5 rounded-[8px] bg-bg hover:bg-surface-2 text-info border border-info/40 touch-target min-w-[44px]"
-                    title="انتخاب بازیکنان مجاز"
-                  >
-                    <Users className="w-3.5 h-3.5" />
-                  </Button>
-
-                  {/* View / Pin Editor */}
-                  <Button
-                    type="button"
-                    onClick={() => setViewingHandout(handout)}
-                    className="p-1.5 rounded-[8px] bg-bg hover:bg-surface-2 text-accent border border-border touch-target min-w-[44px]"
-                    title="مشاهده و ویرایش نشانگرها"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </Button>
-
-                  {/* Edit details */}
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      setEditingHandout(handout);
-                      setIsEditorOpen(true);
-                    }}
-                    className="p-1.5 rounded-[8px] bg-bg hover:bg-surface-2 text-text-muted hover:text-text-primary border border-border touch-target min-w-[44px]"
-                    title="ویرایش مشخصات"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </Button>
-
-                  {/* Delete */}
-                  <Button
-                    type="button"
-                    onClick={() => handleDeleteHandout(handout.id)}
-                    className="p-1.5 rounded-[8px] bg-bg hover:bg-danger/20 text-text-muted hover:text-danger border border-border touch-target min-w-[44px]"
-                    title="حذف سند"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              </div>
+                <RowMenu>
+                  <MenuItem icon={Users} onClick={() => handleOpenRecipientModal(handout)}>انتخاب بازیکنان</MenuItem>
+                  <MenuItem icon={ExternalLink} onClick={() => setViewingHandout(handout)}>مشاهده و نشانگرها</MenuItem>
+                  <MenuItem icon={Edit2} onClick={() => { setEditingHandout(handout); setIsEditorOpen(true); }}>ویرایش مشخصات</MenuItem>
+                  {!filtersActive && fullIndex > 0 && (
+                    <MenuItem icon={ArrowUp} onClick={() => handleMoveSort(fullIndex, 'up')}>انتقال به بالا</MenuItem>
+                  )}
+                  {!filtersActive && fullIndex < handouts.length - 1 && (
+                    <MenuItem icon={ArrowDown} onClick={() => handleMoveSort(fullIndex, 'down')}>انتقال به پایین</MenuItem>
+                  )}
+                  <MenuItem icon={Trash2} danger onClick={() => handleDeleteHandout(handout.id)}>حذف</MenuItem>
+                </RowMenu>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
 
-      {/* Editor Sheet Modal */}
       {isEditorOpen && (
         <HandoutEditorSheet
           isOpen={isEditorOpen}
@@ -580,7 +446,6 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
         />
       )}
 
-      {/* Handout Viewer Modal (with Pinch-Zoom and Pin management for DM) */}
       {viewingHandout && (
         <HandoutViewerModal
           isOpen={Boolean(viewingHandout)}
@@ -599,7 +464,6 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
         />
       )}
 
-      {/* Quick Recipient Selection Modal */}
       {recipientModalHandout && (
         <BottomSheet
           isOpen={true}
@@ -607,66 +471,48 @@ export const DmHandoutManager: React.FC<DmHandoutManagerProps> = ({
           title={
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-info" />
-              <span>انتخاب بازیکنان برای «{recipientModalHandout.title}»</span>
+              <span>گیرندگان «{recipientModalHandout.title}»</span>
             </div>
           }
-          subtitle="شخصیت‌های انتخاب‌شده می‌توانند این سند را در بخش اسناد خود مشاهده کنند"
+          subtitle="شخصیت‌های انتخاب‌شده این سند را در بخش اسناد خود می‌بینند"
           maxWidth="max-w-md"
         >
-          <div className="space-y-4 text-start">
-            <div className="space-y-1.5 max-h-60 overflow-y-auto">
-              {campaignCharacters.length === 0 ? (
-                <p className="text-xs text-text-muted italic">شخصیتی در کمپین یافت نشد.</p>
-              ) : (
-                campaignCharacters.map(char => {
-                  const isChecked = tempRecipients.includes(char.id);
-                  return (
-                    <label
-                      key={char.id}
-                      className={`flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl border cursor-pointer transition ${
-                        isChecked
-                          ? 'bg-info/20 border-info/50 text-text-primary'
-                          : 'bg-surface border-border text-text-muted'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Input noWrapper
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() =>
-                            setTempRecipients(prev =>
-                              prev.includes(char.id) ? prev.filter(id => id !== char.id) : [...prev, char.id]
-                            )
-                          }
-                          className="w-4 h-4 rounded text-info focus:ring-info bg-bg border-border"
-                        />
-                        <span className="text-xs font-bold truncate">{char.name}</span>
-                      </div>
-                      {char.playerName && (
-                        <span className="text-xs text-text-muted">({char.playerName})</span>
-                      )}
-                    </label>
-                  );
-                })
-              )}
-            </div>
+          <div className="text-start space-y-2" dir="rtl">
+            {campaignCharacters.length === 0 ? (
+              <p className="text-sm text-text-muted py-4 text-center">شخصیتی در کمپین پیدا نشد.</p>
+            ) : (
+              campaignCharacters.map(char => {
+                const isChecked = tempRecipients.includes(char.id);
+                return (
+                  <label
+                    key={char.id}
+                    className={`min-h-[48px] px-3 rounded-lg border flex items-center gap-3 cursor-pointer transition ${
+                      isChecked ? 'bg-info/15 border-info/50' : 'bg-surface-2 border-border'
+                    }`}
+                  >
+                    <Input noWrapper
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() =>
+                        setTempRecipients(prev => (prev.includes(char.id) ? prev.filter(id => id !== char.id) : [...prev, char.id]))
+                      }
+                      className="w-5 h-5 rounded accent-accent shrink-0"
+                    />
+                    <span className="flex-1 min-w-0 text-sm font-medium text-text-primary truncate">{char.name}</span>
+                    {char.playerName && <span className="text-xs text-text-muted">{char.playerName}</span>}
+                  </label>
+                );
+              })
+            )}
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
-              <Button
-                type="button"
-                onClick={() => setRecipientModalHandout(null)}
-                className="px-4 py-2.5 rounded-xl bg-surface-2 border border-border text-xs font-bold text-text-muted hover:text-text-primary transition touch-target min-w-[44px] min-h-[44px]"
-              >
-                انصراف
-              </Button>
-              <Button
-                type="button"
-                onClick={handleSaveRecipients}
-                className="px-5 py-2.5 rounded-xl bg-info hover:bg-info/90 text-xs font-black text-on-accent shadow-md transition touch-target min-w-[44px] min-h-[44px]"
-              >
-                ثبت و اشتراک‌گذاری
-              </Button>
-            </div>
+            <StickyFooter>
+              <div className="flex gap-2">
+                <Button type="button" onClick={handleSaveRecipients} className={`${primaryBtnCls} flex-1 sm:flex-none`}>
+                  ثبت و اشتراک‌گذاری
+                </Button>
+                <Button type="button" onClick={() => setRecipientModalHandout(null)} className={secondaryBtnCls}>انصراف</Button>
+              </div>
+            </StickyFooter>
           </div>
         </BottomSheet>
       )}

@@ -11,15 +11,74 @@ import {
   INITIAL_ENDING_STATE
 } from '../../data/endings';
 import { api } from '../../services/api';
-import { 
-  Compass, Shield, AlertTriangle, Flame, Key, Sparkles, 
-  CheckCircle2, Lock, Unlock, Eye, Check, RefreshCw 
-} from 'lucide-react';
+import { Badge, Tone, inputCls } from '../ui/FormLayout';
+import { Compass, AlertTriangle, Flame, Key, Sparkles, Lock, Unlock, Eye, Minus, Plus } from 'lucide-react';
 
 interface DmEndingTrackerProps {
   state?: CampaignEndingState;
   onUpdateState?: (updated: CampaignEndingState) => Promise<void>;
 }
+
+/** One checklist row: whole row is the 44px touch target. */
+const CheckRow: React.FC<{
+  checked: boolean;
+  onChange: () => void;
+  trailing?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ checked, onChange, trailing, children }) => (
+  <label
+    className={`min-h-[44px] px-3 py-2 rounded-lg border flex items-center gap-3 cursor-pointer select-none transition ${
+      checked ? 'bg-accent/10 border-accent/40' : 'bg-surface-2 border-border hover:border-border-strong'
+    }`}
+  >
+    <Input noWrapper type="checkbox" checked={checked} onChange={onChange}
+      className="w-5 h-5 rounded accent-accent shrink-0 cursor-pointer" />
+    <span className={`flex-1 text-sm leading-relaxed ${checked ? 'text-text-primary font-medium' : 'text-text-muted'}`}>
+      {children}
+    </span>
+    {trailing}
+  </label>
+);
+
+/** −  value  + with real 44px buttons (the old ones had an invalid min-width class and no size). */
+const Stepper: React.FC<{
+  value: number;
+  onChange: (delta: number) => void;
+  label: string;
+  tone?: 'default' | 'good';
+}> = ({ value, onChange, label, tone = 'default' }) => (
+  <div className="flex items-center gap-1 shrink-0" role="group" aria-label={label}>
+    <Button type="button" onClick={() => onChange(-1)} aria-label="کم کردن"
+      className="min-h-[44px] min-w-[44px] rounded-lg bg-surface border border-border text-text-primary inline-flex items-center justify-center">
+      <Minus className="w-4 h-4" />
+    </Button>
+    <span className={`min-w-[2rem] text-center text-base font-bold tabular-nums ${tone === 'good' ? 'text-success' : 'text-text-primary'}`}>
+      {value}
+    </span>
+    <Button type="button" onClick={() => onChange(1)} aria-label="زیاد کردن"
+      className="min-h-[44px] min-w-[44px] rounded-lg bg-surface border border-border text-text-primary inline-flex items-center justify-center">
+      <Plus className="w-4 h-4" />
+    </Button>
+  </div>
+);
+
+const Panel: React.FC<{
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  meta?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ title, icon: Icon, meta, children }) => (
+  <section className="rounded-xl border border-border bg-surface p-4 space-y-3">
+    <header className="flex flex-wrap items-center justify-between gap-2">
+      <h3 className="text-base font-bold text-text-primary flex items-center gap-2">
+        <Icon className="w-4 h-4 text-accent" />
+        {title}
+      </h3>
+      {meta}
+    </header>
+    {children}
+  </section>
+);
 
 export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
   state: propState,
@@ -50,435 +109,247 @@ export const DmEndingTracker: React.FC<DmEndingTrackerProps> = ({
   const chaosScore = calculateChaosScore(state.chaos);
   const endingEvaluations = evaluateEndings(state);
 
-  const toggleTruthSource = async (key: keyof CampaignEndingState['truthSources']) => {
-    const nextSources = {
-      ...state.truthSources,
-      [key]: !state.truthSources[key]
-    };
-    await onUpdateState({
-      ...state,
-      truthSources: nextSources
-    });
-  };
+  const toggleTruthSource = (key: keyof CampaignEndingState['truthSources']) =>
+    onUpdateState({ ...state, truthSources: { ...state.truthSources, [key]: !state.truthSources[key] } });
 
-  const toggleAryamanTrigger = async (key: keyof CampaignEndingState['aryamanTriggers']) => {
-    const nextTriggers = {
-      ...state.aryamanTriggers,
-      [key]: !state.aryamanTriggers[key]
-    };
-    await onUpdateState({
-      ...state,
-      aryamanTriggers: nextTriggers
-    });
-  };
+  const toggleAryamanTrigger = (key: keyof CampaignEndingState['aryamanTriggers']) =>
+    onUpdateState({ ...state, aryamanTriggers: { ...state.aryamanTriggers, [key]: !state.aryamanTriggers[key] } });
 
   const adjustChaos = async (field: keyof CampaignEndingState['chaos'], delta: number) => {
     if (typeof state.chaos[field] === 'number') {
       const current = state.chaos[field] as number;
       const nextVal = Math.max(0, Math.min(3, current + delta));
-      await onUpdateState({
-        ...state,
-        chaos: {
-          ...state.chaos,
-          [field]: nextVal
-        }
-      });
+      await onUpdateState({ ...state, chaos: { ...state.chaos, [field]: nextVal } });
     }
   };
 
-  const toggleChaosThreshold = async () => {
-    await onUpdateState({
-      ...state,
-      chaos: {
-        ...state.chaos,
-        unrestrainedThreshold: !state.chaos.unrestrainedThreshold
-      }
-    });
-  };
+  const toggleChaosThreshold = () =>
+    onUpdateState({ ...state, chaos: { ...state.chaos, unrestrainedThreshold: !state.chaos.unrestrainedThreshold } });
 
   const toggleEmberSource = async (idx: number) => {
-    const nextSources = state.emberSources.map((s, i) =>
-      i === idx ? { ...s, collected: !s.collected } : s
-    );
+    const nextSources = state.emberSources.map((s, i) => (i === idx ? { ...s, collected: !s.collected } : s));
     const sum = nextSources.reduce((acc, s) => acc + (s.collected ? s.percentage : 0), 0);
-    await onUpdateState({
-      ...state,
-      emberSources: nextSources,
-      embersPercentage: Math.min(100, sum)
-    });
+    await onUpdateState({ ...state, emberSources: nextSources, embersPercentage: Math.min(100, sum) });
   };
 
   const truthLabels: Record<keyof CampaignEndingState['truthSources'], string> = {
-    fairies: 'حقیقت پریان ورنا (Fairies)',
-    divs: 'حقیقت دیوان باستان (Divs)',
-    kandavaran: 'حقیقت کنداوران و کاتبان (Kandavaran)',
-    mehzedegan: 'حقیقت مهزادگان (Mehzedegan)',
-    mobads: 'حقیقت موبدان آذرین (Mobads)',
-    documents: 'اسناد و کتیبه‌های تاریخی (Ancient Documents)'
+    fairies: 'حقیقت پریان ورنا',
+    divs: 'حقیقت دیوان باستان',
+    kandavaran: 'حقیقت کنداوران و کاتبان',
+    mehzedegan: 'حقیقت مهزادگان',
+    mobads: 'حقیقت موبدان آذرین',
+    documents: 'اسناد و کتیبه‌های تاریخی'
   };
 
   const aryamanLabels: Record<keyof CampaignEndingState['aryamanTriggers'], string> = {
-    shahbazFriendOrHigher: 'شهباز در وضعیت «دوست» یا بالاتر با گروه قرار دارد',
+    shahbazFriendOrHigher: 'شهباز در وضعیت «دوست» یا بالاتر با گروه است',
     farrehMarkRevealed: 'نشان فره در برابر آریامن آشکار شده است',
-    divanzadPresent: 'حضور دیوانزاد (سامان) در کنار گروه تأیید شده است',
+    divanzadPresent: 'حضور دیوانزاد (سامان) کنار گروه تأیید شده است',
     emptyCrownOnFarrehDar: 'تاج خالی بر سر فره‌دار (پردیس) نهاده شده است',
     motherEmberMemory: 'خاطره‌ی اخگر مادر زنده شده است'
   };
 
+  const aryamanTone: Tone = aryaman.state === 'returned' ? 'success' : aryaman.state === 'hesitant' ? 'accent' : 'danger';
+  const chaosTone: Tone = chaosScore >= 7 ? 'danger' : chaosScore >= 4 ? 'warning' : 'neutral';
+  const chaosNote = chaosScore >= 7 ? 'سقوط اجباری جهان' : chaosScore >= 4 ? 'زخم در پایان‌ها' : 'ثبات نسبی';
+
+  const chaosRows: Array<{ field: keyof CampaignEndingState['chaos']; label: string; good?: boolean }> = [
+    { field: 'brokenKeySeals', label: 'مهر کلید شکسته (+1 هر کدام، حداکثر 3)' },
+    { field: 'mainAlliesDead', label: 'متحد اصلی کشته‌شده (+1 هر کدام، حداکثر 3)' },
+    { field: 'ordersTurnedEnemy', label: 'فرقه یا جناح دشمن‌شده (+1 هر کدام، حداکثر 3)' },
+    { field: 'reconciledOrdersOrSavedAllies', label: 'آشتی دادن جناح یا نجات متحد (−1 هر کدام)', good: true }
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl bg-surface border border-accent/30 shadow-lg">
+      {/* Summary: three quiet stat tiles; no pulsing, no gradient */}
+      <header className="space-y-3">
         <div>
-          <div className="flex items-center gap-2">
-            <Compass className="w-5 h-5 text-accent-hover" />
-            <h2 className="text-base font-black text-accent-hover">ردیاب پایان‌های هفت‌گانه زروانیا</h2>
-          </div>
-          <p className="text-xs text-text-muted mt-1 leading-relaxed">
-            محاسبه خودکار وضعیت سرنوشت جهان بر اساس حقیقت‌ها، محرک‌های آریامن، درصد اخگرها و آشفتگی
+          <h2 className="text-lg font-bold text-text-primary flex items-center gap-2">
+            <Compass className="w-5 h-5 text-accent" aria-hidden />
+            ردیاب پایان‌های هفت‌گانه
+          </h2>
+          <p className="mt-1 text-xs text-text-muted leading-relaxed">
+            وضعیت سرنوشت جهان از روی حقیقت‌ها، راه‌اندازهای آریامن، اخگرها و آشفتگی محاسبه می‌شود.
           </p>
         </div>
-
-        {/* Status Pills */}
-        <div className="flex items-center gap-2 flex-wrap text-xs font-bold">
-          <div className="px-3 py-1.5 rounded-xl bg-surface-2 border border-border-strong">
-            حقیقت: <span className="text-accent-hover font-mono">{truthCount}/6</span>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-lg border border-border bg-surface p-3">
+            <p className="text-xs text-text-muted">حقیقت</p>
+            <p className="mt-0.5 text-lg font-bold text-text-primary tabular-nums">{truthCount}<span className="text-sm text-text-muted"> / 6</span></p>
           </div>
-          <div className={`px-3 py-1.5 rounded-xl border ${
-            aryaman.state === 'returned'
-              ? 'bg-success/15 border-success/50 text-success'
-              : aryaman.state === 'hesitant'
-              ? 'bg-accent/15 border-accent/50 text-accent-hover'
-              : 'bg-danger/15 border-danger/50 text-danger'
-          }`}>
-            آریامن: {aryaman.stateFa}
+          <div className="rounded-lg border border-border bg-surface p-3">
+            <p className="text-xs text-text-muted">آریامن</p>
+            <div className="mt-1"><Badge tone={aryamanTone}>{aryaman.stateFa}</Badge></div>
           </div>
-          <div className={`px-3 py-1.5 rounded-xl border ${
-            chaosScore >= 7
-              ? 'bg-danger/15 border-danger text-danger animate-pulse font-black'
-              : chaosScore >= 4
-              ? 'bg-accent/15 border-accent text-accent-hover'
-              : 'bg-surface-2 border-border-strong text-text-primary'
-          }`}>
-            آشفتگی: {chaosScore}/10 {chaosScore >= 7 ? '(سقوط حتمی!)' : chaosScore >= 4 ? '(زخم سرنوشت)' : ''}
+          <div className="rounded-lg border border-border bg-surface p-3">
+            <p className="text-xs text-text-muted">آشفتگی</p>
+            <p className="mt-0.5 text-lg font-bold text-text-primary tabular-nums">{chaosScore}<span className="text-sm text-text-muted"> / 10</span></p>
+            <div className="mt-1"><Badge tone={chaosTone}>{chaosNote}</Badge></div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Grid: 4 Core Trackers */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* 1. Truth Sources (0 to 6) */}
-        <div className="p-4 rounded-2xl bg-surface border border-border space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
-            <span className="text-xs font-black text-accent-hover flex items-center gap-1.5">
-              <Eye className="w-4 h-4 text-accent-hover" />
-              حقیقت ({truthCount} از 6 منبع)
-            </span>
-            <span className="text-xs text-text-muted">کشف اسرار بنیادی</span>
-          </div>
+      {/* Trackers */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Panel title={`حقیقت (${truthCount} از 6)`} icon={Eye}>
           <div className="space-y-2">
             {(Object.keys(truthLabels) as Array<keyof CampaignEndingState['truthSources']>).map(k => (
-              <label
-                key={k}
-                className="flex items-center gap-2.5 p-2 rounded-xl bg-info border border-border hover:border-border-strong cursor-pointer transition select-none text-xs"
-              >
-                <Input noWrapper
-                  type="checkbox"
-                  checked={state.truthSources[k]}
-                  onChange={() => toggleTruthSource(k)}
-                  className="w-4 h-4 rounded text-accent focus:ring-0 cursor-pointer"
-                />
-                <span className={state.truthSources[k] ? 'text-accent-hover font-bold' : 'text-text-muted'}>
-                  {truthLabels[k]}
-                </span>
-              </label>
+              <CheckRow key={k} checked={state.truthSources[k]} onChange={() => toggleTruthSource(k)}>
+                {truthLabels[k]}
+              </CheckRow>
             ))}
           </div>
-        </div>
+        </Panel>
 
-        {/* 2. Aryaman Triggers (0 to 5) */}
-        <div className="p-4 rounded-2xl bg-surface border border-border space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
-            <span className="text-xs font-black text-accent-hover flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-accent-hover" />
-              راه‌اندازهای آریامن ({aryaman.count} از 5)
-            </span>
-            <span className={`text-xs font-bold px-2 py-0.5 rounded-lg border ${
-              aryaman.state === 'returned' ? 'bg-success/15 text-success border-success/40' :
-              aryaman.state === 'hesitant' ? 'bg-accent/15 text-accent-hover border-accent/40' :
-              'bg-danger/15 text-danger border-danger/40'
-            }`}>
-              {aryaman.stateFa}
-            </span>
-          </div>
+        <Panel
+          title={`راه‌اندازهای آریامن (${aryaman.count} از 5)`}
+          icon={Sparkles}
+          meta={<Badge tone={aryamanTone}>{aryaman.stateFa}</Badge>}
+        >
           <div className="space-y-2">
             {(Object.keys(aryamanLabels) as Array<keyof CampaignEndingState['aryamanTriggers']>).map(k => (
-              <label
-                key={k}
-                className="flex items-center gap-2.5 p-2 rounded-xl bg-info border border-border hover:border-border-strong cursor-pointer transition select-none text-xs"
-              >
-                <Input noWrapper
-                  type="checkbox"
-                  checked={state.aryamanTriggers[k]}
-                  onChange={() => toggleAryamanTrigger(k)}
-                  className="w-4 h-4 rounded text-accent focus:ring-0 cursor-pointer"
-                />
-                <span className={state.aryamanTriggers[k] ? 'text-accent-hover font-bold' : 'text-text-muted'}>
-                  {aryamanLabels[k]}
-                </span>
-              </label>
+              <CheckRow key={k} checked={state.aryamanTriggers[k]} onChange={() => toggleAryamanTrigger(k)}>
+                {aryamanLabels[k]}
+              </CheckRow>
             ))}
           </div>
-        </div>
+        </Panel>
 
-        {/* 3. Embers & Mother Ember (0 to 100%) */}
-        <div className="p-4 rounded-2xl bg-surface border border-border space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
-            <span className="text-xs font-black text-accent-hover flex items-center gap-1.5">
-              <Flame className="w-4 h-4 text-accent-hover" />
-              اخگرها ({state.embersPercentage}٪ از 100٪)
-            </span>
-            <label className="flex items-center gap-1 text-xs text-accent-hover cursor-pointer font-bold">
-              <Input noWrapper
-                type="checkbox"
-                checked={state.motherEmberObtained}
-                onChange={async () => {
-                  await onUpdateState({
-                    ...state,
-                    motherEmberObtained: !state.motherEmberObtained
-                  });
-                }}
-                className="w-3.5 h-3.5 rounded text-accent"
-              />
-              <span>اخگر مادر به‌دست آمد</span>
-            </label>
-          </div>
-
-          {/* Embers progress bar */}
-          <div className="w-full h-2.5 bg-surface-2 rounded-full overflow-hidden">
+        <Panel title={`اخگرها (${state.embersPercentage}٪)`} icon={Flame}>
+          <div
+            role="progressbar"
+            aria-valuenow={state.embersPercentage}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="درصد اخگرها"
+            className="w-full h-2.5 bg-surface-2 rounded-full overflow-hidden"
+          >
             <div
-              className={`h-full transition-all ${
-                state.embersPercentage >= 60 ? 'bg-gradient-to-r from-accent to-accent-hover' : 'bg-warning'
-              }`}
+              className={`h-full transition-all ${state.embersPercentage >= 60 ? 'bg-accent' : 'bg-warning'}`}
               style={{ width: `${state.embersPercentage}%` }}
             />
           </div>
 
-          <div className="space-y-1.5 pt-1">
+          <div className="space-y-2">
             {state.emberSources.map((src, i) => (
-              <label
+              <CheckRow
                 key={i}
-                className="flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border text-xs cursor-pointer select-none"
+                checked={src.collected}
+                onChange={() => toggleEmberSource(i)}
+                trailing={<span className="text-sm font-bold text-accent-hover tabular-nums">+{src.percentage}٪</span>}
               >
-                <div className="flex items-center gap-2">
-                  <Input noWrapper
-                    type="checkbox"
-                    checked={src.collected}
-                    onChange={() => toggleEmberSource(i)}
-                    className="w-3.5 h-3.5 rounded text-accent"
-                  />
-                  <span className={src.collected ? 'text-text-primary font-bold' : 'text-text-muted'}>
-                    {src.name}
-                  </span>
-                </div>
-                <span className="font-mono text-xs text-accent-hover font-bold">+{src.percentage}٪</span>
-              </label>
+                {src.name}
+              </CheckRow>
             ))}
+            <CheckRow
+              checked={state.motherEmberObtained}
+              onChange={() => onUpdateState({ ...state, motherEmberObtained: !state.motherEmberObtained })}
+            >
+              اخگر مادر به‌دست آمد
+            </CheckRow>
           </div>
-        </div>
+        </Panel>
 
-        {/* 4. Chaos Tracker (0 to 10) */}
-        <div className="p-4 rounded-2xl bg-surface border border-border space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
-            <span className="text-xs font-black text-danger flex items-center gap-1.5">
-              <AlertTriangle className="w-4 h-4 text-danger" />
-              آشفتگی ({chaosScore} از 10)
-            </span>
-            <span className="text-xs text-text-muted">
-              {chaosScore >= 7 ? 'سقوط اجباری جهان' : chaosScore >= 4 ? 'زخم در پایان‌ها' : 'ثبات نسبی'}
-            </span>
+        <Panel
+          title={`آشفتگی (${chaosScore} از 10)`}
+          icon={AlertTriangle}
+          meta={<Badge tone={chaosTone}>{chaosNote}</Badge>}
+        >
+          <div className="space-y-2">
+            {chaosRows.map(row => (
+              <div key={row.field} className="px-3 py-2 rounded-lg border border-border bg-surface-2 flex items-center justify-between gap-3">
+                <span className={`text-sm leading-relaxed ${row.good ? 'text-success' : 'text-text-primary'}`}>{row.label}</span>
+                <Stepper
+                  label={row.label}
+                  tone={row.good ? 'good' : 'default'}
+                  value={state.chaos[row.field] as number}
+                  onChange={d => adjustChaos(row.field, d)}
+                />
+              </div>
+            ))}
+            <CheckRow checked={state.chaos.unrestrainedThreshold} onChange={toggleChaosThreshold}>
+              آستانه مهارنشده سنگ‌خواب یا وردان (+1)
+            </CheckRow>
           </div>
-
-          <div className="space-y-2 text-xs">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border">
-              <span className="text-text-primary min-w-0 truncate">مهر کلید شکسته (+1 هر کدام، حداکثر 3):</span>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  onClick={() => adjustChaos('brokenKeySeals', -1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >-1</Button>
-                <span className="font-mono font-bold text-accent-hover">{state.chaos.brokenKeySeals}</span>
-                <Button
-                  type="button"
-                  onClick={() => adjustChaos('brokenKeySeals', +1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >+1</Button>
-              </div>
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border">
-              <span className="text-text-primary">متحد اصلی کشته‌شده (+1 هر کدام، حداکثر 3):</span>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  onClick={() => adjustChaos('mainAlliesDead', -1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >-1</Button>
-                <span className="font-mono font-bold text-accent-hover">{state.chaos.mainAlliesDead}</span>
-                <Button
-                  type="button"
-                  onClick={() => adjustChaos('mainAlliesDead', +1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >+1</Button>
-              </div>
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border">
-              <span className="text-text-primary">فرقه/جناح دشمن‌شده (+1 هر کدام، حداکثر 3):</span>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  onClick={() => adjustChaos('ordersTurnedEnemy', -1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >-1</Button>
-                <span className="font-mono font-bold text-accent-hover">{state.chaos.ordersTurnedEnemy}</span>
-                <Button
-                  type="button"
-                  onClick={() => adjustChaos('ordersTurnedEnemy', +1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >+1</Button>
-              </div>
-            </div>
-
-            <label className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border cursor-pointer select-none">
-              <span className="text-text-primary">آستانه مهارنشده سنگ‌خواب یا وردان (+1):</span>
-              <Input noWrapper
-                type="checkbox"
-                checked={state.chaos.unrestrainedThreshold}
-                onChange={toggleChaosThreshold}
-                className="w-4 h-4 rounded text-danger"
-              />
-            </label>
-
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 p-2 rounded-xl bg-info border border-border">
-              <span className="text-success">آشتی دادن جناح یا نجات متحد (-1 کاهش):</span>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  onClick={() => adjustChaos('reconciledOrdersOrSavedAllies', -1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >-1</Button>
-                <span className="font-mono font-bold text-success">{state.chaos.reconciledOrdersOrSavedAllies}</span>
-                <Button
-                  type="button"
-                  onClick={() => adjustChaos('reconciledOrdersOrSavedAllies', +1)}
-                  className="touch-target min-w-[44px]-lg rounded-[12px] bg-surface-2 text-text-primary font-bold"
-                >+1</Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        </Panel>
       </div>
 
-      {/* Second Half Seal Checkbox & Method */}
-      <div className="p-4 rounded-2xl bg-surface border border-accent/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-        <label className="flex items-center gap-2 text-text-primary font-bold cursor-pointer select-none">
-          <Input noWrapper
-            type="checkbox"
-            checked={state.secondHalfSealObtained}
-            onChange={async () => {
-              await onUpdateState({
-                ...state,
-                secondHalfSealObtained: !state.secondHalfSealObtained
-              });
-            }}
-            className="w-4 h-4 rounded text-accent cursor-pointer"
-          />
-          <Key className="w-4 h-4 text-accent-hover" />
-          <span>نیمه دوم مهر آریامن به‌دست آمد (مهر کامل شد)</span>
-        </label>
-
+      {/* Second half of the seal */}
+      <section className="rounded-xl border border-border bg-surface p-4 space-y-3">
+        <CheckRow
+          checked={state.secondHalfSealObtained}
+          onChange={() => onUpdateState({ ...state, secondHalfSealObtained: !state.secondHalfSealObtained })}
+          trailing={<Key className="w-4 h-4 text-accent" aria-hidden />}
+        >
+          نیمه دوم مهر آریامن به‌دست آمد
+        </CheckRow>
         {state.secondHalfSealObtained && (
-          <div className="flex items-center gap-2">
-            <span className="text-text-muted text-xs">نحوه دستیابی:</span>
+          <label className="block">
+            <span className="block text-sm font-medium text-text-primary mb-1.5">نحوه دستیابی</span>
             <Select noWrapper
               value={state.secondHalfSealMethod}
-              onChange={async (e) => {
-                await onUpdateState({
-                  ...state,
-                  secondHalfSealMethod: e.target.value as any
-                });
-              }}
-              className="p-1.5 rounded-xl bg-info border border-border-strong text-xs text-accent-hover"
+              onChange={e => onUpdateState({ ...state, secondHalfSealMethod: e.target.value as any })}
+              className={inputCls}
             >
               <option value="given">اهدایی و صلح‌آمیز</option>
               <option value="defeat">پس از شکست دشمن</option>
               <option value="stolen_by_shahbaz">دزدیده‌شده توسط شهباز</option>
             </Select>
-          </div>
+          </label>
         )}
-      </div>
+      </section>
 
-      {/* 7 Endings Evaluation Table */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-black text-accent-hover flex items-center gap-2">
-          <Compass className="w-4 h-4 text-accent-hover" />
-          <span>ارزیابی سرنوشت و پایان‌های کمپین (Seven Endings)</span>
+      {/* Outcome */}
+      <section className="space-y-3">
+        <h3 className="text-base font-bold text-text-primary flex items-center gap-2">
+          <Compass className="w-4 h-4 text-accent" aria-hidden />
+          پایان‌های کمپین
         </h3>
 
-        <div className="space-y-2.5">
+        <ul className="space-y-3">
           {endingEvaluations.map(ending => (
-            <div
+            <li
               key={ending.id}
-              className={`p-3.5 rounded-2xl border transition-all ${
-                ending.available
-                  ? 'bg-info border-accent/50 shadow-md'
-                  : 'bg-info border-border/80 opacity-70'
+              className={`rounded-xl border bg-surface p-4 space-y-2.5 ${
+                ending.available ? 'border-accent/50' : 'border-border'
               }`}
             >
-              <div className="flex items-start sm:items-center justify-between gap-2 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <div className={`p-1.5 rounded-lg ${
-                    ending.available ? 'bg-accent/20 text-accent-hover' : 'bg-surface-2 text-text-muted'
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3 min-w-0">
+                  <span className={`mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                    ending.available ? 'bg-accent/15 text-accent-hover' : 'bg-surface-2 text-text-muted'
                   }`}>
-                    {ending.available ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                  </div>
-                  <div>
-                    <h4 className={`text-xs font-bold ${ending.available ? 'text-accent-hover' : 'text-text-muted'}`}>
-                      {ending.name} ({ending.nameEn})
-                    </h4>
-                    <span className="text-xs text-text-muted block mt-0.5">{ending.notes}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-md border ${
-                    ending.available
-                      ? 'bg-success/15 text-success border-success/40'
-                      : 'bg-surface-2/60 text-text-muted border-border-strong'
-                  }`}>
-                    {ending.available ? 'دسترس‌پذیر' : 'قفل‌شده'}
+                    {ending.available ? <Unlock className="w-4 h-4" aria-hidden /> : <Lock className="w-4 h-4" aria-hidden />}
                   </span>
+                  <div className="min-w-0">
+                    <h4 className="text-base font-bold text-text-primary">
+                      {ending.name}
+                      <span dir="ltr" className="ms-2 text-xs font-normal text-text-muted">{ending.nameEn}</span>
+                    </h4>
+                    <p className="mt-0.5 text-sm text-text-muted leading-relaxed">{ending.notes}</p>
+                  </div>
                 </div>
+                <Badge tone={ending.available ? 'success' : 'neutral'}>
+                  {ending.available ? 'دسترس‌پذیر' : 'قفل‌شده'}
+                </Badge>
               </div>
 
-              {/* Requirements row */}
-              <div className="mt-2 text-xs text-text-muted bg-bg p-2 rounded-xl border border-border/80">
-                <strong>پیش‌نیاز:</strong> {ending.requirements}
-              </div>
+              <p className="text-sm text-text-muted leading-relaxed">
+                <span className="font-medium text-text-primary">پیش‌نیاز: </span>
+                {ending.requirements}
+              </p>
 
-              {/* Wound notification if applicable */}
               {ending.available && ending.woundEffect && (
-                <div className="mt-2 text-xs text-accent-hover bg-accent/15 p-2 rounded-xl border border-accent/30 flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5 text-accent-hover shrink-0" />
+                <p className="text-sm text-warning bg-warning/10 border border-warning/30 rounded-lg p-2.5 flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden />
                   <span>{ending.woundEffect}</span>
-                </div>
+                </p>
               )}
-            </div>
+            </li>
           ))}
-        </div>
-      </div>
+        </ul>
+      </section>
     </div>
   );
 };

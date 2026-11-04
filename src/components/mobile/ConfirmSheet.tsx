@@ -1,6 +1,5 @@
 import React from 'react';
 import { BottomSheet } from './BottomSheet';
-import { AlertTriangle } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 interface ConfirmSheetProps {
@@ -18,6 +17,8 @@ interface ConfirmSheetProps {
   destructive?: boolean;
 }
 
+const focusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60';
+
 export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
   isOpen,
   onClose,
@@ -32,51 +33,40 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
   isDestructive,
   destructive,
 }) => {
-  const displayMessage = description || message || '';
-  const finalConfirmLabel = confirmText || confirmLabel || 'تأیید و حذف';
-  const finalCancelLabel = cancelText || cancelLabel || 'انصراف';
-  const isDanger = destructive ?? isDestructive ?? true;
   if (!isOpen) return null;
 
-  return (
-    <BottomSheet
-      isOpen={isOpen}
-      onClose={onClose}
-      title={title}
-      subtitle="تأیید اقدام"
-    >
-      <div className="space-y-4 text-text-primary">
-        <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-accent/15 border border-accent/30">
-          <div className="p-2 rounded-xl bg-accent/20 text-accent-hover shrink-0 mt-0.5">
-            <AlertTriangle className="w-5 h-5 text-accent-hover" />
-          </div>
-          <p className="text-xs sm:text-sm text-text-primary leading-relaxed selectable-text">
-            {displayMessage}
-          </p>
-        </div>
+  const displayMessage = description || message || '';
+  const isDanger = destructive ?? isDestructive ?? true;
+  // The default label matches what the button does: "Delete" only when it deletes.
+  const finalConfirmLabel = confirmText || confirmLabel || (isDanger ? 'حذف' : 'تأیید');
+  const finalCancelLabel = cancelText || cancelLabel || 'انصراف';
 
-        {/* Large thumb-friendly action buttons */}
-        <div className="grid grid-cols-2 gap-3 pt-2">
-          {/* Cancel button */}
+  return (
+    <BottomSheet isOpen={isOpen} onClose={onClose} title={title} maxWidth="max-w-md">
+      <div className="space-y-5 text-text-primary">
+        {displayMessage && (
+          <p className="text-sm leading-relaxed selectable-text">{displayMessage}</p>
+        )}
+
+        <div className="grid grid-cols-2 gap-3">
           <Button
             type="button"
             onClick={onClose}
-            className="py-3 px-4 rounded-xl bg-surface-2 hover:bg-surface-2 text-text-primary text-xs font-bold transition touch-target min-w-[44px]"
+            className={`h-12 px-4 rounded-lg bg-surface-2 border border-border text-sm font-medium text-text-primary hover:border-accent transition ${focusRing}`}
           >
             {finalCancelLabel}
           </Button>
 
-          {/* Confirm/Destructive button on thumb side (in RTL, left is outer thumb side for right-handed or right for one-handed) */}
           <Button
             type="button"
             onClick={() => {
               onConfirm();
               onClose();
             }}
-            className={`py-3 px-4 rounded-xl text-xs font-black shadow-lg transition touch-target min-w-[44px] ${
+            className={`h-12 px-4 rounded-lg text-sm font-bold transition ${focusRing} ${
               isDanger
-                ? 'bg-gradient-to-r from-danger to-accent hover:from-danger hover:to-warning text-white border border-danger/50 shadow-bg/50'
-                : 'bg-accent hover:bg-accent-hover text-on-accent shadow-surface-2/40'
+                ? 'bg-danger text-on-danger hover:opacity-90'
+                : 'bg-accent text-on-accent hover:bg-accent-hover'
             }`}
           >
             {finalConfirmLabel}

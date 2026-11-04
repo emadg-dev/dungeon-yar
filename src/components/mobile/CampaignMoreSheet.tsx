@@ -1,10 +1,13 @@
 /**
- * Flat, 1-tap campaign secondary sheet (removes nested collapsible menus).
+ * Flat, 1-tap campaign secondary sheet.
+ * Built on BottomSheet so Escape, the Android back button, drag-to-close and
+ * safe-area padding behave like every other sheet in the app.
  */
 import React from 'react';
 import { Button } from '../ui/Button';
+import { BottomSheet } from './BottomSheet';
 import {
-  Package, Users, Coffee, CalendarDays, FileText, Settings, LogOut, Sparkles
+  Package, Users, Bot, Moon, CalendarDays, FileText, Settings, LogOut, ChevronLeft
 } from 'lucide-react';
 
 interface CampaignMoreSheetProps {
@@ -13,47 +16,51 @@ interface CampaignMoreSheetProps {
   onJump: (key: string) => void;
 }
 
+const items = [
+  { id: 'inventory', label: 'کوله‌پشتی', icon: Package },
+  { id: 'companions', label: 'یاران', icon: Bot },
+  { id: 'rest', label: 'استراحت', icon: Moon },
+  { id: 'sessions', label: 'جلسات', icon: CalendarDays },
+  { id: 'recaps', label: 'خلاصه‌ها', icon: FileText },
+  { id: 'members', label: 'اعضا', icon: Users },
+  { id: 'settings', label: 'تنظیمات', icon: Settings },
+];
+
+const rowClass =
+  'w-full min-h-[48px] flex items-center gap-3 px-3 text-sm text-start transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60';
+
 export const CampaignMoreSheet: React.FC<CampaignMoreSheetProps> = ({ isOpen, onClose, onJump }) => {
   if (!isOpen) return null;
 
-  const items = [
-    { id: 'inventory', label: 'کوله‌پشتی', icon: Package },
-    { id: 'companions', label: 'همراهان', icon: Users },
-    { id: 'rest', label: 'استراحت', icon: Coffee },
-    { id: 'sessions', label: 'جلسات', icon: CalendarDays },
-    { id: 'recaps', label: 'خلاصه‌ها', icon: FileText },
-    { id: 'members', label: 'اعضا', icon: Sparkles },
-    { id: 'settings', label: 'تنظیمات', icon: Settings },
-    { id: 'logout', label: 'خروج', icon: LogOut },
-  ];
+  const jump = (id: string) => {
+    onJump(id);
+    onClose();
+  };
 
   return (
-    <div dir="rtl" className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-overlay/60 backdrop-blur-sm" />
-      <div
-        className="relative w-full max-w-md bg-surface/95 border-t border-accent/20 rounded-t-3xl p-5 shadow-2xl"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-black text-accent-hover">بیشتر</h2>
-          <Button onClick={onClose} className="p-2 rounded-xl hover:bg-accent/10 text-text-muted hover:text-text-primary" aria-label="بستن">✕</Button>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
+    <BottomSheet isOpen={isOpen} onClose={onClose} title="بیشتر" maxWidth="max-w-md">
+      <div className="space-y-4">
+        <div className="rounded-xl border border-border bg-surface-2/40 divide-y divide-border overflow-hidden">
           {items.map(it => {
             const Icon = it.icon;
             return (
-              <Button
-                key={it.id}
-                onClick={() => { onJump(it.id); onClose(); }}
-                className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-surface-2/60 hover:bg-accent/10 border border-border hover:border-accent/40 transition touch-target min-h-[64px]"
-              >
-                <Icon className="w-6 h-6 text-accent stroke-[2]" />
-                <span className="text-xs font-bold text-text-primary whitespace-nowrap">{it.label}</span>
+              <Button key={it.id} type="button" onClick={() => jump(it.id)} className={`${rowClass} text-text-primary`}>
+                <Icon className="w-5 h-5 text-text-muted shrink-0" />
+                <span className="flex-1 min-w-0 truncate">{it.label}</span>
+                <ChevronLeft className="w-4 h-4 text-text-disabled shrink-0" aria-hidden="true" />
               </Button>
             );
           })}
         </div>
+
+        {/* Leaving is kept apart from navigation so it is never tapped by accident */}
+        <div className="rounded-xl border border-border overflow-hidden">
+          <Button type="button" onClick={() => jump('logout')} className={`${rowClass} text-danger`}>
+            <LogOut className="w-5 h-5 shrink-0" />
+            <span>خروج از حساب</span>
+          </Button>
+        </div>
       </div>
-    </div>
+    </BottomSheet>
   );
 };

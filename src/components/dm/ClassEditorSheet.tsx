@@ -5,16 +5,19 @@ import { Textarea } from '../ui/Textarea';
 import React, { useState, useMemo } from 'react';
 import { ClassTemplate, EquipmentChoiceGroup, CompanionDef } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
-import { 
-  computeMaxHp, computeSlots, computeClassResources, computeAC, 
-  AbilityScoresInput, AbilityName, STANDARD_5E_SKILLS 
+import {
+  computeMaxHp, computeSlots, computeClassResources, computeAC,
+  AbilityScoresInput, AbilityName, STANDARD_5E_SKILLS
 } from '../../../shared/rules/engine';
-import { 
-  Shield, Swords, Heart, Sparkles, BookOpen, Layers, 
-  Check, Plus, Trash2, Edit, Sliders, CheckSquare, Square, 
-  AlertCircle, ChevronDown, ChevronUp, Save, X, RefreshCw
+import {
+  Shield, Sparkles, Check, Plus, Trash2, Edit, CheckSquare, Square,
+  AlertCircle, Save, RefreshCw, ChevronDown
 } from 'lucide-react';
 import { ScrollableRow } from '../ui/ScrollableRow';
+import {
+  Field, Section, SectionStack, StickyFooter, ToggleChip, AddButton, IconButton,
+  inputCls, textareaCls, primaryBtnCls, secondaryBtnCls, cardCls
+} from '../ui/FormLayout';
 
 interface ClassEditorSheetProps {
   isOpen: boolean;
@@ -304,789 +307,606 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
     }
   };
 
+  // Six tabs instead of eight: related settings live together (defense + resources + HP; level features + subclasses).
+  const TABS: Array<{ id: TabType; label: string }> = [
+    { id: 'basics', label: 'مبانی' },
+    { id: 'skills_equip', label: 'مهارت و تجهیزات' },
+    { id: 'ac_resources', label: 'دفاع و منابع' },
+    { id: 'spells', label: 'جادو' },
+    { id: 'features', label: 'پیشرفت سطحی' },
+    { id: 'companions', label: 'همراهان' }
+  ];
+
+  const ABILITIES: AbilityName[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+
   return (
     <BottomSheet
       isOpen={isOpen}
       onClose={onClose}
-      title={initialData ? `ویرایش کلاس: ${initialData.name}` : 'تعریف کلاس جدید'}
+      title={initialData ? `ویرایش کلاس: ${initialData.name}` : 'کلاس جدید'}
     >
-      <div className="space-y-4 py-2 text-start text-xs" dir="rtl">
-        {error && (
-          <div className="p-3 rounded-xl bg-danger/15 border border-danger/30 text-danger flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {/* 8 Tab Navigation Buttons */}
-        <ScrollableRow
-          activeKey={activeTab}
-          wrapperClassName="border-b border-border"
-          className="pb-1.5 gap-1.5"
-        >
-          {[
-            { id: 'basics', label: '1. مبانی' },
-            { id: 'skills_equip', label: '2. مهارت و تجهیزات' },
-            { id: 'ac_resources', label: '3. زره و منابع' },
-            { id: 'spells', label: '4. جادوها' },
-            { id: 'features', label: '5. ویژگی‌های 1–20' },
-            { id: 'subclasses', label: '6. زیرکلاس‌ها' },
-            { id: 'companions', label: '7. همراهان' },
-            { id: 'hp_table', label: '8. جدول جان' }
-          ].map(tab => (
+      <div dir="rtl" className="text-start">
+        {/* Tabs */}
+        <ScrollableRow activeKey={activeTab} wrapperClassName="border-b border-border" className="pb-2 gap-2">
+          {TABS.map(tab => (
             <Button
               key={tab.id}
               data-key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id as TabType)}
-              className={`px-3.5 py-2 rounded-xl font-bold whitespace-nowrap shrink-0 snap-start transition min-h-[44px] flex items-center justify-center text-xs ${
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 rounded-lg text-sm font-medium whitespace-nowrap shrink-0 snap-start transition min-h-[44px] border ${
                 activeTab === tab.id
-                  ? 'bg-accent text-on-accent font-black shadow-sm'
-                  : 'bg-surface-2 border border-border text-text-primary hover:border-border-strong'
+                  ? 'bg-accent/15 text-accent-hover border-accent'
+                  : 'bg-surface-2 border-border text-text-muted hover:text-text-primary'
               }`}
             >
-              <span className="whitespace-nowrap shrink-0">{tab.label}</span>
+              {tab.label}
             </Button>
           ))}
         </ScrollableRow>
 
-        {/* TAB 1: BASICS */}
-        {activeTab === 'basics' && (
-          <div className="space-y-3">
-            <div>
-              <label className="block text-text-muted mb-1 font-bold">نام اصلی کلاس (شناسه):</label>
-              <Input noWrapper
-                type="text"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="مثلاً: فرهدار، موبد آذرین، جنگاور"
-                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:border-accent outline-none"
-              />
-            </div>
+        <div className="pt-5">
+          {/* TAB: BASICS */}
+          {activeTab === 'basics' && (
+            <SectionStack>
+              <Section title="هویت کلاس">
+                <Field label="نام کلاس" required>
+                  <Input noWrapper type="text" value={name} onChange={e => setName(e.target.value)}
+                    placeholder="مثلاً: فرهدار، موبد آذرین" className={inputCls} />
+                </Field>
+                <Field label="عنوان یا لقب">
+                  <Input noWrapper type="text" value={title} onChange={e => setTitle(e.target.value)}
+                    placeholder="مثلاً: نگهبان سوگندهای باستان" className={inputCls} />
+                </Field>
+                <Field label="توصیف">
+                  <Textarea noWrapper value={description} onChange={e => setDescription(e.target.value)} rows={3}
+                    placeholder="نقش و مفهوم این کلاس در جهان بازی" className={textareaCls} />
+                </Field>
+              </Section>
 
-            <div>
-              <label className="block text-text-muted mb-1 font-bold">عنوان تماتیک / لقب:</label>
-              <Input noWrapper
-                type="text"
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-                placeholder="مثلاً: نگهبان سوگندهای باستان"
-                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:border-accent outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-text-muted mb-1 font-bold">توصیف و زمینه:</label>
-              <Textarea noWrapper
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                rows={3}
-                placeholder="توضیح نقش و مفهوم این کلاس در جهان بازی..."
-                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:border-accent outline-none"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-text-muted mb-1 font-bold">تاس جان (Hit Die):</label>
-                <Select noWrapper
-                  value={hitDie}
-                  onChange={e => setHitDie(Number(e.target.value))}
-                  className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:border-accent outline-none"
-                >
-                  <option value={6}>d6 (جادوگران، ساحران)</option>
-                  <option value={8}>d8 (روگ، دروید، راهب، کلریک)</option>
-                  <option value={10}>d10 (پالادین، رنجر، جنگجو)</option>
-                  <option value={12}>d12 (بربرین)</option>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-text-muted mb-1 font-bold">تاس‌های نجات مسلط:</label>
-                <div className="grid grid-cols-3 gap-1">
-                  {(['str', 'dex', 'con', 'int', 'wis', 'cha'] as AbilityName[]).map(ab => {
-                    const active = savingThrows.includes(ab);
-                    return (
-                      <Button
+              <Section title="جان و تاس نجات">
+                <Field label="تاس جان">
+                  <Select noWrapper value={hitDie} onChange={e => setHitDie(Number(e.target.value))} className={inputCls}>
+                    <option value={6}>d6 (جادوگران، ساحران)</option>
+                    <option value={8}>d8 (روگ، دروید، راهب، کلریک)</option>
+                    <option value={10}>d10 (پالادین، رنجر، جنگجو)</option>
+                    <option value={12}>d12 (بربرین)</option>
+                  </Select>
+                </Field>
+                <Field label="تاس‌های نجات مسلط" group>
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    {ABILITIES.map(ab => (
+                      <ToggleChip
                         key={ab}
-                        type="button"
-                        onClick={() => {
-                          setSavingThrows(prev => 
-                            active ? prev.filter(a => a !== ab) : [...prev, ab]
-                          );
-                        }}
-                        className={`py-1 rounded-lg text-center font-bold text-xs border transition ${
-                          active 
-                            ? 'bg-accent text-on-accent border-accent' 
-                            : 'bg-surface-2 text-text-muted border-border'
-                        }`}
+                        active={savingThrows.includes(ab)}
+                        onClick={() =>
+                          setSavingThrows(prev => (prev.includes(ab) ? prev.filter(a => a !== ab) : [...prev, ab]))
+                        }
                       >
                         {ab.toUpperCase()}
-                      </Button>
+                      </ToggleChip>
+                    ))}
+                  </div>
+                </Field>
+              </Section>
+
+              <Section title="ویژگی‌های پایه توصیه‌شده" description="مقادیری که هنگام ساخت شخصیت پیشنهاد می‌شود.">
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                  {ABILITIES.map(ab => (
+                    <Field key={ab} label={ab.toUpperCase()}>
+                      <Input noWrapper type="number" inputMode="numeric" value={baseAbilities[ab] ?? 10}
+                        onChange={e => setBaseAbilities(prev => ({ ...prev, [ab]: Number(e.target.value) }))}
+                        className={`${inputCls} text-center`} />
+                    </Field>
+                  ))}
+                </div>
+              </Section>
+            </SectionStack>
+          )}
+
+          {/* TAB: SKILLS & EQUIPMENT */}
+          {activeTab === 'skills_equip' && (
+            <SectionStack>
+              <Section title="مهارت‌های قابل انتخاب" description="بازیکن از این فهرست به تعداد مشخص‌شده انتخاب می‌کند.">
+                <Field label="تعداد مهارت قابل انتخاب" className="max-w-[10rem]">
+                  <Input noWrapper type="number" inputMode="numeric" min={1} max={6} value={skillChoices.count}
+                    onChange={e => setSkillChoices(prev => ({ ...prev, count: Number(e.target.value) }))}
+                    className={`${inputCls} text-center`} />
+                </Field>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {Object.entries(STANDARD_5E_SKILLS).map(([key, meta]) => {
+                    const selected = skillChoices.from.includes(key);
+                    return (
+                      <ToggleChip
+                        key={key}
+                        active={selected}
+                        className="justify-between"
+                        onClick={() =>
+                          setSkillChoices(prev => ({
+                            ...prev,
+                            from: selected ? prev.from.filter(k => k !== key) : [...prev.from, key]
+                          }))
+                        }
+                      >
+                        <span className="truncate">{meta.nameFa.split('(')[0].trim()}</span>
+                        {selected && <Check className="w-4 h-4 shrink-0" aria-hidden />}
+                      </ToggleChip>
                     );
                   })}
                 </div>
-              </div>
-            </div>
+              </Section>
 
-            <div>
-              <label className="block text-text-muted mb-1 font-bold">ویژگی‌های پایه توصیه‌شده (Base Abilities):</label>
-              <div className="grid grid-cols-6 gap-1.5">
-                {(['str', 'dex', 'con', 'int', 'wis', 'cha'] as AbilityName[]).map(ab => (
-                  <div key={ab} className="text-center">
-                    <span className="block text-xs text-text-muted">{ab.toUpperCase()}</span>
-                    <Input noWrapper
-                      type="number"
-                      value={baseAbilities[ab] ?? 10}
-                      onChange={e => setBaseAbilities(prev => ({ ...prev, [ab]: Number(e.target.value) }))}
-                      className="w-full bg-surface-2 border border-border rounded-lg p-1 text-center text-xs text-text-primary"
-                    />
+              <Section
+                title="تجهیزات آغازین"
+                description="هر دسته یک انتخاب برای بازیکن است."
+                action={
+                  <AddButton
+                    onClick={() => {
+                      const newId = `group_${Date.now()}`;
+                      setStartingEquipmentChoices(prev => [
+                        ...prev,
+                        { id: newId, label: 'گزینه جدید', options: [{ label: 'مورد اول', items: ['آیتم 1'] }] }
+                      ]);
+                    }}
+                  >
+                    <Plus className="w-4 h-4" aria-hidden />
+                    <span>دسته</span>
+                  </AddButton>
+                }
+              >
+                {startingEquipmentChoices.map((group, gIdx) => (
+                  <div key={group.id || gIdx} className={cardCls}>
+                    <div className="flex items-center gap-2">
+                      <Input noWrapper type="text" value={group.label} aria-label="عنوان دسته"
+                        onChange={e => {
+                          const val = e.target.value;
+                          setStartingEquipmentChoices(prev => prev.map((g, i) => (i === gIdx ? { ...g, label: val } : g)));
+                        }}
+                        placeholder="عنوان دسته (مثلاً: زره اولیه)" className={`${inputCls} flex-1 font-bold`} />
+                      <IconButton label="حذف دسته" danger
+                        onClick={() => setStartingEquipmentChoices(prev => prev.filter((_, i) => i !== gIdx))}>
+                        <Trash2 className="w-4 h-4" />
+                      </IconButton>
+                    </div>
+
+                    <div className="space-y-3">
+                      {group.options.map((opt, oIdx) => (
+                        <div key={oIdx} className="flex flex-col sm:flex-row gap-2">
+                          <Input noWrapper type="text" value={opt.label} aria-label={`برچسب گزینه ${oIdx + 1}`}
+                            onChange={e => {
+                              const val = e.target.value;
+                              setStartingEquipmentChoices(prev => prev.map((g, i) => {
+                                if (i !== gIdx) return g;
+                                const newOpts = [...g.options];
+                                newOpts[oIdx] = { ...newOpts[oIdx], label: val };
+                                return { ...g, options: newOpts };
+                              }));
+                            }}
+                            placeholder="برچسب گزینه" className={`${inputCls} sm:w-1/3`} />
+                          <Input noWrapper type="text" value={opt.items.join('، ')} aria-label={`آیتم‌های گزینه ${oIdx + 1}`}
+                            onChange={e => {
+                              const val = e.target.value.split(/[,،]/).map(s => s.trim()).filter(Boolean);
+                              setStartingEquipmentChoices(prev => prev.map((g, i) => {
+                                if (i !== gIdx) return g;
+                                const newOpts = [...g.options];
+                                newOpts[oIdx] = { ...newOpts[oIdx], items: val };
+                                return { ...g, options: newOpts };
+                              }));
+                            }}
+                            placeholder="آیتم‌ها، با ویرگول جدا کنید" className={`${inputCls} flex-1`} />
+                        </div>
+                      ))}
+                    </div>
+
+                    <AddButton
+                      className="w-full sm:w-auto"
+                      onClick={() =>
+                        setStartingEquipmentChoices(prev => prev.map((g, i) =>
+                          i !== gIdx ? g : { ...g, options: [...g.options, { label: 'گزینه جدید', items: ['آیتم'] }] }
+                        ))
+                      }
+                    >
+                      <Plus className="w-4 h-4" aria-hidden />
+                      <span>گزینه</span>
+                    </AddButton>
                   </div>
                 ))}
-              </div>
-            </div>
-          </div>
-        )}
+              </Section>
+            </SectionStack>
+          )}
 
-        {/* TAB 2: SKILLS & EQUIPMENT */}
-        {activeTab === 'skills_equip' && (
-          <div className="space-y-4">
-            <div className="p-3 rounded-xl bg-surface-2/70 border border-border space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-bold text-text-primary">انتخاب مهارت‌ها:</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-text-muted">تعداد انتخاب:</span>
-                  <Input noWrapper
-                    type="number"
-                    min={1}
-                    max={6}
-                    value={skillChoices.count}
-                    onChange={e => setSkillChoices(prev => ({ ...prev, count: Number(e.target.value) }))}
-                    className="w-12 bg-surface border border-border rounded-lg px-2 py-1 text-center text-xs text-text-primary"
-                  />
+          {/* TAB: DEFENSE, RESOURCES & HP */}
+          {activeTab === 'ac_resources' && (
+            <SectionStack>
+              <Section title="کلاس زره (AC)" icon={Shield}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                  <Field label="مقدار پایه">
+                    <Input noWrapper type="number" inputMode="numeric" value={acFormula.base}
+                      onChange={e => setAcFormula(prev => ({ ...prev, base: Number(e.target.value) }))}
+                      className={inputCls} />
+                  </Field>
+                  <ToggleChip active={Boolean(acFormula.unarmored)}
+                    onClick={() => setAcFormula(prev => ({ ...prev, unarmored: !prev.unarmored }))}>
+                    {acFormula.unarmored ? <CheckSquare className="w-4 h-4" aria-hidden /> : <Square className="w-4 h-4" aria-hidden />}
+                    <span>دفاع بدون زره</span>
+                  </ToggleChip>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-40 overflow-y-auto pt-1">
-                {Object.entries(STANDARD_5E_SKILLS).map(([key, meta]) => {
-                  const selected = skillChoices.from.includes(key);
-                  return (
-                    <Button
-                      key={key}
-                      type="button"
-                      onClick={() => {
-                        setSkillChoices(prev => ({
-                          ...prev,
-                          from: selected ? prev.from.filter(k => k !== key) : [...prev.from, key]
-                        }));
-                      }}
-                      className={`text-start px-2 py-1.5 rounded-lg text-xs font-medium border flex flex-wrap items-center justify-between gap-2 transition ${
-                        selected 
-                          ? 'bg-accent/20 text-accent-hover border-accent' 
-                          : 'bg-surface text-text-muted border-border'
-                      }`}
-                    >
-                      <span className="truncate">{meta.nameFa.split('(')[0].trim()}</span>
-                      {selected ? <Check className="w-3 h-3 shrink-0" /> : null}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Starting Equipment Choice Groups */}
-            <div className="p-3 rounded-xl bg-surface-2/70 border border-border space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-bold text-text-primary">دسته‌های انتخاب تجهیزات آغازین:</span>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    const newId = `group_${Date.now()}`;
-                    setStartingEquipmentChoices(prev => [
-                      ...prev,
-                      { id: newId, label: 'گزینه جدید', options: [{ label: 'مورد اول', items: ['آیتم 1'] }] }
-                    ]);
-                  }}
-                  className="px-2 py-1 rounded-lg bg-accent/20 text-accent-hover border border-accent/40 text-xs font-bold flex items-center gap-1"
-                >
-                  <Plus className="w-3 h-3" />
-                  <span>افزودن دسته</span>
-                </Button>
-              </div>
-
-              {startingEquipmentChoices.map((group, gIdx) => (
-                <div key={group.id || gIdx} className="p-2.5 rounded-xl bg-surface border border-border space-y-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
-                    <Input noWrapper
-                      type="text"
-                      value={group.label}
-                      onChange={e => {
-                        const val = e.target.value;
-                        setStartingEquipmentChoices(prev => prev.map((g, i) => i === gIdx ? { ...g, label: val } : g));
-                      }}
-                      placeholder="عنوان دسته (مثلاً: زره اولیه)"
-                      className="bg-surface-2 border border-border rounded-lg px-2 py-1 text-xs text-text-primary flex-1"
-                    />
-                    <Button
-                      type="button"
-                      onClick={() => setStartingEquipmentChoices(prev => prev.filter((_, i) => i !== gIdx))}
-                      className="text-danger p-1 hover:bg-danger/20 rounded-lg"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                <Field label="تعدیل‌کننده‌های افزوده به AC" group>
+                  <div className="flex flex-wrap gap-2">
+                    {(['dex', 'con', 'wis', 'int', 'cha'] as AbilityName[]).map(ab => {
+                      const active = acFormula.abilityMods.includes(ab);
+                      return (
+                        <ToggleChip key={ab} active={active}
+                          onClick={() =>
+                            setAcFormula(prev => ({
+                              ...prev,
+                              abilityMods: active ? prev.abilityMods.filter(a => a !== ab) : [...prev.abilityMods, ab]
+                            }))
+                          }>
+                          +{ab.toUpperCase()}
+                        </ToggleChip>
+                      );
+                    })}
                   </div>
+                </Field>
 
-                  {/* Options inside this group */}
-                  <div className="space-y-1.5 ps-2">
-                    {group.options.map((opt, oIdx) => (
-                      <div key={oIdx} className="flex items-center gap-2">
-                        <span className="text-xs text-text-muted">({oIdx + 1})</span>
-                        <Input noWrapper
-                          type="text"
-                          value={opt.label}
+                <Field label="یادداشت قانون ویژه">
+                  <Input noWrapper type="text" value={acFormula.note || ''}
+                    onChange={e => setAcFormula(prev => ({ ...prev, note: e.target.value }))}
+                    placeholder="مثلاً: با سپر اعمال نمی‌شود" className={inputCls} />
+                </Field>
+              </Section>
+
+              <Section
+                title="منابع کلاسی"
+                action={
+                  <AddButton
+                    onClick={() =>
+                      setClassResources(prev => [
+                        ...prev,
+                        { name: 'منبع جدید', type: 'points', formulaOrDiceByLevel: '= level', resetType: 'short' }
+                      ])
+                    }
+                  >
+                    <Plus className="w-4 h-4" aria-hidden />
+                    <span>منبع</span>
+                  </AddButton>
+                }
+              >
+                {classResources.length === 0 && (
+                  <p className="text-sm text-text-muted">این کلاس منبع ویژه‌ای ندارد.</p>
+                )}
+                {classResources.map((res, rIdx) => (
+                  <div key={rIdx} className={cardCls}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Field label="نام منبع">
+                        <Input noWrapper type="text" value={res.name}
                           onChange={e => {
                             const val = e.target.value;
-                            setStartingEquipmentChoices(prev => prev.map((g, i) => {
-                              if (i !== gIdx) return g;
-                              const newOpts = [...g.options];
-                              newOpts[oIdx] = { ...newOpts[oIdx], label: val };
-                              return { ...g, options: newOpts };
-                            }));
+                            setClassResources(prev => prev.map((r, i) => (i === rIdx ? { ...r, name: val } : r)));
                           }}
-                          placeholder="برچسب انتخاب"
-                          className="w-1/3 bg-surface-2 border border-border rounded-lg px-2 py-1 text-xs text-text-primary"
-                        />
-                        <Input noWrapper
-                          type="text"
-                          value={opt.items.join('، ')}
+                          placeholder="مثلاً: امتیاز کی" className={inputCls} />
+                      </Field>
+                      <Field label="فرمول">
+                        <Input noWrapper type="text" dir="ltr"
+                          value={typeof res.formulaOrDiceByLevel === 'string' ? res.formulaOrDiceByLevel : JSON.stringify(res.formulaOrDiceByLevel)}
                           onChange={e => {
-                            const val = e.target.value.split(/[,،]/).map(s => s.trim()).filter(Boolean);
-                            setStartingEquipmentChoices(prev => prev.map((g, i) => {
-                              if (i !== gIdx) return g;
-                              const newOpts = [...g.options];
-                              newOpts[oIdx] = { ...newOpts[oIdx], items: val };
-                              return { ...g, options: newOpts };
-                            }));
+                            const val = e.target.value;
+                            setClassResources(prev => prev.map((r, i) => (i === rIdx ? { ...r, formulaOrDiceByLevel: val } : r)));
                           }}
-                          placeholder="آیتم‌ها با کاما"
-                          className="flex-1 bg-surface-2 border border-border rounded-lg px-2 py-1 text-xs text-text-primary"
-                        />
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        setStartingEquipmentChoices(prev => prev.map((g, i) => {
-                          if (i !== gIdx) return g;
-                          return {
-                            ...g,
-                            options: [...g.options, { label: 'گزینه جدید', items: ['آیتم'] }]
-                          };
-                        }));
-                      }}
-                      className="text-xs text-accent hover:underline block pt-1"
-                    >
-                      + افزودن گزینه به این دسته
-                    </Button>
+                          placeholder="= level" className={inputCls} />
+                      </Field>
+                    </div>
+                    <div className="flex items-end gap-2">
+                      <Field label="بازیابی" className="flex-1">
+                        <Select noWrapper value={res.resetType || 'short'}
+                          onChange={e => {
+                            const val = e.target.value as any;
+                            setClassResources(prev => prev.map((r, i) => (i === rIdx ? { ...r, resetType: val } : r)));
+                          }}
+                          className={inputCls}>
+                          <option value="short">استراحت کوتاه</option>
+                          <option value="long">استراحت بلند</option>
+                        </Select>
+                      </Field>
+                      <IconButton label="حذف منبع" danger
+                        onClick={() => setClassResources(prev => prev.filter((_, i) => i !== rIdx))}>
+                        <Trash2 className="w-4 h-4" />
+                      </IconButton>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+                ))}
+              </Section>
 
-        {/* TAB 3: AC & RESOURCES */}
-        {activeTab === 'ac_resources' && (
-          <div className="space-y-4">
-            {/* Structured AC Formula */}
-            <div className="p-3 rounded-xl bg-surface-2/70 border border-border space-y-3">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-accent-hover" />
-                <span className="font-bold text-text-primary">فرمول ساختاریافته کلاس زره (AC Formula):</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-text-muted mb-1 font-bold">مقدار پایه (Base AC):</label>
-                  <Input noWrapper
-                    type="number"
-                    value={acFormula.base}
-                    onChange={e => setAcFormula(prev => ({ ...prev, base: Number(e.target.value) }))}
-                    className="w-full bg-surface border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2 pt-6">
-                  <Button
-                    type="button"
-                    onClick={() => setAcFormula(prev => ({ ...prev, unarmored: !prev.unarmored }))}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition ${
-                      acFormula.unarmored 
-                        ? 'bg-accent/20 text-accent-hover border-accent' 
-                        : 'bg-surface text-text-muted border-border'
-                    }`}
+              <Section
+                title="جدول جان ثابت (سطح 1 تا 20)"
+                action={
+                  <AddButton
+                    onClick={() => {
+                      const die = hitDie;
+                      const conBonus = 2;
+                      const avg = Math.floor(die / 2) + 1;
+                      const arr: number[] = [die + conBonus];
+                      for (let l = 2; l <= 20; l++) arr.push(arr[arr.length - 1] + avg + conBonus);
+                      setFixedHpByLevel(arr);
+                    }}
                   >
-                    {acFormula.unarmored ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
-                    <span>دفاع بدون زره (Unarmored)</span>
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-text-muted mb-1 font-bold">تعدیل‌کننده‌های افزوده به AC:</label>
-                <div className="flex gap-2">
-                  {(['dex', 'con', 'wis', 'int', 'cha'] as AbilityName[]).map(ab => {
-                    const active = acFormula.abilityMods.includes(ab);
-                    return (
-                      <Button
-                        key={ab}
-                        type="button"
-                        onClick={() => {
-                          setAcFormula(prev => ({
-                            ...prev,
-                            abilityMods: active 
-                              ? prev.abilityMods.filter(a => a !== ab)
-                              : [...prev.abilityMods, ab]
-                          }));
+                    <RefreshCw className="w-4 h-4" aria-hidden />
+                    <span>میانگین خودکار</span>
+                  </AddButton>
+                }
+              >
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                  {Array.from({ length: 20 }, (_, i) => i + 1).map(lvl => (
+                    <Field key={lvl} label={`سطح ${lvl}`}>
+                      <Input noWrapper type="number" inputMode="numeric" value={fixedHpByLevel[lvl - 1] ?? 10}
+                        onChange={e => {
+                          const val = Number(e.target.value);
+                          setFixedHpByLevel(prev => {
+                            const copy = [...prev];
+                            copy[lvl - 1] = val;
+                            return copy;
+                          });
                         }}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition ${
-                          active 
-                            ? 'bg-accent text-on-accent border-accent' 
-                            : 'bg-surface text-text-muted border-border'
-                        }`}
-                      >
-                        +{ab.toUpperCase()} Mod
-                      </Button>
-                    );
-                  })}
+                        className={`${inputCls} text-center`} />
+                    </Field>
+                  ))}
                 </div>
-              </div>
+              </Section>
+            </SectionStack>
+          )}
 
-              <div>
-                <label className="block text-text-muted mb-1 font-bold">یادداشت فنی یا قانون ویژه AC:</label>
-                <Input noWrapper
-                  type="text"
-                  value={acFormula.note || ''}
-                  onChange={e => setAcFormula(prev => ({ ...prev, note: e.target.value }))}
-                  placeholder="مثلاً: در صورت استفاده از سپر اعمال نمی‌شود..."
-                  className="w-full bg-surface border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
-                />
-              </div>
-            </div>
-
-            {/* Class Resources */}
-            <div className="p-3 rounded-xl bg-surface-2/70 border border-border space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-bold text-text-primary">منابع کلاسی (Class Resources):</span>
-                <Button
-                  type="button"
+          {/* TAB: SPELLS */}
+          {activeTab === 'spells' && (
+            <SectionStack>
+              <Section title="جادوگری">
+                <ToggleChip
+                  active={spellcastingEnabled}
                   onClick={() => {
-                    setClassResources(prev => [
-                      ...prev,
-                      { name: 'منبع جدید', type: 'points', formulaOrDiceByLevel: '= level', resetType: 'short' }
-                    ]);
+                    const next = !spellcastingEnabled;
+                    setSpellcastingEnabled(next);
+                    // 'none' is not a selectable option; default to something valid when enabling
+                    if (next && casterType === 'none') setCasterType('half');
                   }}
-                  className="px-2 py-1 rounded-lg bg-accent/20 text-accent-hover border border-accent/40 text-xs font-bold flex items-center gap-1"
+                  className="w-full sm:w-auto"
                 >
-                  <Plus className="w-3 h-3" />
-                  <span>افزودن منبع</span>
-                </Button>
-              </div>
+                  {spellcastingEnabled ? <CheckSquare className="w-4 h-4" aria-hidden /> : <Square className="w-4 h-4" aria-hidden />}
+                  <span>این کلاس جادو اجرا می‌کند</span>
+                </ToggleChip>
 
-              {classResources.map((res, rIdx) => (
-                <div key={rIdx} className="p-2.5 rounded-xl bg-surface border border-border grid grid-cols-1 sm:grid-cols-4 gap-2 items-center">
-                  <Input noWrapper
-                    type="text"
-                    value={res.name}
-                    onChange={e => {
-                      const val = e.target.value;
-                      setClassResources(prev => prev.map((r, i) => i === rIdx ? { ...r, name: val } : r));
-                    }}
-                    placeholder="نام منبع (مثلاً: امتیاز کی/لحظه)"
-                    className="bg-surface-2 border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
-                  />
-                  <Input noWrapper
-                    type="text"
-                    value={typeof res.formulaOrDiceByLevel === 'string' ? res.formulaOrDiceByLevel : JSON.stringify(res.formulaOrDiceByLevel)}
-                    onChange={e => {
-                      const val = e.target.value;
-                      setClassResources(prev => prev.map((r, i) => i === rIdx ? { ...r, formulaOrDiceByLevel: val } : r));
-                    }}
-                    placeholder="فرمول: = level یا INT mod + 1"
-                    className="bg-surface-2 border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
-                  />
-                  <Select noWrapper
-                    value={res.resetType || 'short'}
-                    onChange={e => {
-                      const val = e.target.value as any;
-                      setClassResources(prev => prev.map((r, i) => i === rIdx ? { ...r, resetType: val } : r));
-                    }}
-                    className="bg-surface-2 border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
-                  >
-                    <option value="short">استراحت کوتاه</option>
-                    <option value="long">استراحت بلند</option>
-                  </Select>
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      onClick={() => setClassResources(prev => prev.filter((_, i) => i !== rIdx))}
-                      className="text-danger p-1 hover:bg-danger/20 rounded-lg"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: SPELLS */}
-        {activeTab === 'spells' && (
-          <div className="space-y-4">
-            <div className="p-3 rounded-xl bg-surface-2/70 border border-border space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-bold text-text-primary">سیستم اجرای جادو (Spellcasting):</span>
-                <Button
-                  type="button"
-                  onClick={() => setSpellcastingEnabled(!spellcastingEnabled)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition ${
-                    spellcastingEnabled 
-                      ? 'bg-accent text-on-accent border-accent' 
-                      : 'bg-surface text-text-muted border-border'
-                  }`}
-                >
-                  {spellcastingEnabled ? 'جادوگری فعال است' : 'فاقد جادوگری'}
-                </Button>
-              </div>
-
-              {spellcastingEnabled && (
-                <div className="space-y-3 pt-2">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-text-muted mb-1 font-bold">ویژگی جادوگری (Spell Ability):</label>
-                      <Select noWrapper
-                        value={spellAbility}
-                        onChange={e => setSpellAbility(e.target.value as any)}
-                        className="w-full bg-surface border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
-                      >
-                        <option value="int">هوش (INT)</option>
-                        <option value="wis">حکمت (WIS)</option>
-                        <option value="cha">فرهمندی (CHA)</option>
-                      </Select>
+                {spellcastingEnabled && (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Field label="ویژگی جادوگری">
+                        <Select noWrapper value={spellAbility} onChange={e => setSpellAbility(e.target.value as any)} className={inputCls}>
+                          <option value="int">هوش (INT)</option>
+                          <option value="wis">حکمت (WIS)</option>
+                          <option value="cha">فرهمندی (CHA)</option>
+                        </Select>
+                      </Field>
+                      <Field label="پیشرفت جایگاه جادو">
+                        <Select noWrapper value={casterType === 'none' ? 'half' : casterType}
+                          onChange={e => setCasterType(e.target.value as any)} className={inputCls}>
+                          <option value="full">کامل (سطح 1 تا 9)</option>
+                          <option value="half">نیمه (سطح 1 تا 5)</option>
+                        </Select>
+                      </Field>
                     </div>
 
                     <div>
-                      <label className="block text-text-muted mb-1 font-bold">نوع پیشرفت جایگاه جادو:</label>
-                      <Select noWrapper
-                        value={casterType}
-                        onChange={e => setCasterType(e.target.value as any)}
-                        className="w-full bg-surface border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
-                      >
-                        <option value="full">جادوگر کامل (Full Caster: سطح 1 تا 9)</option>
-                        <option value="half">نیمه‌جادوگر (Half Caster: سطح 1 تا 5)</option>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-surface text-xs text-text-muted">
-                    <span className="text-accent-hover font-bold block mb-1">پیش‌نمایش اسلات‌های جادو در سطح 5:</span>
-                    {spellcastingEnabled && (
-                      <div className="flex gap-2">
+                      <p className="text-sm font-medium text-text-primary mb-2">جایگاه‌های جادو در سطح 5</p>
+                      <div className="flex flex-wrap gap-2">
                         {computeSlots(casterType === 'full' ? 'full_caster' : 'half_caster', 5).map((qty, idx) => (
-                          <span key={idx} className="px-2 py-1 rounded bg-surface-2 border border-border text-text-primary">
+                          <span key={idx} className="px-3 py-1.5 rounded-lg bg-surface-2 border border-border text-sm text-text-primary">
                             سطح {idx + 1}: {qty}
                           </span>
                         ))}
                       </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 5: FEATURES BY LEVEL 1–20 */}
-        {activeTab === 'features' && (
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-bold text-text-primary">مرور کلی ویژگی‌ها (سطوح 1 تا 20):</span>
-              <div className="flex items-center gap-2 text-xs text-text-muted">
-                <span>حمله مضاعف: سطح {extraAttackLevel || '—'}</span>
-              </div>
-            </div>
-
-            {/* Read-Only Scrollable Overview */}
-            <div className="max-h-72 overflow-y-auto space-y-2 pe-1">
-              {Array.from({ length: 20 }, (_, i) => i + 1).map(lvl => {
-                const feats = featuresByLevel[lvl] || [];
-                const isAsi = asiLevels.includes(lvl);
-                const isExtra = extraAttackLevel === lvl;
-
-                return (
-                  <div
-                    key={lvl}
-                    onClick={() => handleOpenLevelEditor(lvl)}
-                    className="p-2.5 rounded-xl bg-surface-2 border border-border hover:border-accent/50 transition cursor-pointer flex flex-wrap items-center justify-between gap-2 gap-3"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-lg bg-accent/20 text-accent-hover font-bold flex items-center justify-center text-xs shrink-0">
-                        {lvl}
-                      </span>
-                      <div>
-                        {feats.length === 0 ? (
-                          <span className="text-text-muted text-xs italic">بدون ویژگی ویژه</span>
-                        ) : (
-                          <div className="flex flex-wrap gap-1">
-                            {feats.map((f, fi) => (
-                              <span key={fi} className="px-1.5 py-0.5 rounded bg-surface text-text-primary text-xs">
-                                {f.name || f}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        {(isAsi || isExtra) && (
-                          <div className="flex gap-1 mt-0.5">
-                            {isAsi && <span className="text-[9px] text-accent-hover">بهبود ویژگی (ASI)</span>}
-                            {isExtra && <span className="text-[9px] text-info">Extra Attack</span>}
-                          </div>
-                        )}
-                      </div>
                     </div>
+                  </>
+                )}
+              </Section>
+            </SectionStack>
+          )}
 
-                    <Button
-                      type="button"
-                      className="p-1 rounded bg-surface text-text-muted hover:text-text-primary"
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 6: SUBCLASSES */}
-        {activeTab === 'subclasses' && (
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-bold text-text-primary">زیرکلاس‌ها (Subclasses):</span>
-              <Button
-                type="button"
-                onClick={() => {
-                  setSubclasses(prev => [
-                    ...prev,
-                    { name: 'زیرکلاس جدید', unlockLevel: 3, featuresByLevel: {} }
-                  ]);
-                }}
-                className="px-2 py-1 rounded-lg bg-accent/20 text-accent-hover border border-accent/40 text-xs font-bold flex items-center gap-1"
+          {/* TAB: LEVEL FEATURES + SUBCLASSES */}
+          {activeTab === 'features' && (
+            <SectionStack>
+              <Section
+                title="ویژگی‌ها در هر سطح"
+                description={`برای ویرایش، روی هر سطح بزنید. حمله مضاعف: سطح ${extraAttackLevel || '—'}`}
               >
-                <Plus className="w-3 h-3" />
-                <span>افزودن زیرکلاس</span>
-              </Button>
-            </div>
+                <ul className="rounded-xl border border-border divide-y divide-border">
+                  {Array.from({ length: 20 }, (_, i) => i + 1).map(lvl => {
+                    const feats = featuresByLevel[lvl] || [];
+                    const isAsi = asiLevels.includes(lvl);
+                    const isExtra = extraAttackLevel === lvl;
+                    return (
+                      <li key={lvl}>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenLevelEditor(lvl)}
+                          className="w-full min-h-[56px] p-3 flex items-center gap-3 text-start hover:bg-surface-2 transition"
+                        >
+                          <span className="w-8 h-8 rounded-lg bg-accent/15 text-accent-hover font-bold flex items-center justify-center text-sm shrink-0">
+                            {lvl}
+                          </span>
+                          <span className="flex-1 min-w-0 space-y-1">
+                            {feats.length === 0 ? (
+                              <span className="block text-sm text-text-muted">بدون ویژگی ویژه</span>
+                            ) : (
+                              <span className="flex flex-wrap gap-1.5">
+                                {feats.map((f, fi) => (
+                                  <span key={fi} className="px-2 py-0.5 rounded-md bg-surface-2 text-text-primary text-sm">
+                                    {f.name || f}
+                                  </span>
+                                ))}
+                              </span>
+                            )}
+                            {(isAsi || isExtra) && (
+                              <span className="flex gap-2 text-xs">
+                                {isAsi && <span className="text-accent-hover">بهبود ویژگی (ASI)</span>}
+                                {isExtra && <span className="text-info">حمله مضاعف</span>}
+                              </span>
+                            )}
+                          </span>
+                          <Edit className="w-4 h-4 text-text-muted shrink-0" aria-hidden />
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Section>
 
-            {subclasses.map((sub, sIdx) => (
-              <div key={sIdx} className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
-                  <Input noWrapper
-                    type="text"
-                    value={sub.name}
-                    onChange={e => {
-                      const val = e.target.value;
-                      setSubclasses(prev => prev.map((s, i) => i === sIdx ? { ...s, name: val } : s));
-                    }}
-                    className="bg-surface border border-border rounded-lg px-2 py-1 text-xs text-text-primary font-bold flex-1"
-                  />
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-text-muted">سطح بازشدن:</span>
-                    <Input noWrapper
-                      type="number"
-                      value={sub.unlockLevel}
-                      onChange={e => {
-                        const val = Number(e.target.value);
-                        setSubclasses(prev => prev.map((s, i) => i === sIdx ? { ...s, unlockLevel: val } : s));
-                      }}
-                      className="w-12 bg-surface border border-border rounded-lg px-2 py-1 text-center text-xs text-text-primary"
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    onClick={() => setSubclasses(prev => prev.filter((_, i) => i !== sIdx))}
-                    className="text-danger p-1 hover:bg-danger/20 rounded-lg"
+              <Section
+                title="زیرکلاس‌ها"
+                action={
+                  <AddButton
+                    onClick={() =>
+                      setSubclasses(prev => [...prev, { name: 'زیرکلاس جدید', unlockLevel: 3, featuresByLevel: {} }])
+                    }
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* TAB 7: COMPANIONS */}
-        {activeTab === 'companions' && (
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-bold text-text-primary">همراهان مکانیکی و جادویی (Companions):</span>
-              <Button
-                type="button"
-                onClick={() => {
-                  setCompanions(prev => [
-                    ...prev,
-                    { name: 'همراه جدید', type: 'construct', acFormula: '13 + CON', hpFormula: '2×level + 2×CON' }
-                  ]);
-                }}
-                className="px-2 py-1 rounded-lg bg-accent/20 text-accent-hover border border-accent/40 text-xs font-bold flex items-center gap-1"
+                    <Plus className="w-4 h-4" aria-hidden />
+                    <span>زیرکلاس</span>
+                  </AddButton>
+                }
               >
-                <Plus className="w-3 h-3" />
-                <span>افزودن همراه</span>
-              </Button>
-            </div>
+                {subclasses.length === 0 && <p className="text-sm text-text-muted">زیرکلاسی تعریف نشده است.</p>}
+                {subclasses.map((sub, sIdx) => (
+                  <div key={sIdx} className={cardCls}>
+                    <div className="flex items-end gap-2">
+                      <Field label="نام" className="flex-1">
+                        <Input noWrapper type="text" value={sub.name}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setSubclasses(prev => prev.map((s, i) => (i === sIdx ? { ...s, name: val } : s)));
+                          }}
+                          className={`${inputCls} font-bold`} />
+                      </Field>
+                      <Field label="سطح بازشدن" className="w-24">
+                        <Input noWrapper type="number" inputMode="numeric" value={sub.unlockLevel}
+                          onChange={e => {
+                            const val = Number(e.target.value);
+                            setSubclasses(prev => prev.map((s, i) => (i === sIdx ? { ...s, unlockLevel: val } : s)));
+                          }}
+                          className={`${inputCls} text-center`} />
+                      </Field>
+                      <IconButton label="حذف زیرکلاس" danger
+                        onClick={() => setSubclasses(prev => prev.filter((_, i) => i !== sIdx))}>
+                        <Trash2 className="w-4 h-4" />
+                      </IconButton>
+                    </div>
+                  </div>
+                ))}
+              </Section>
+            </SectionStack>
+          )}
 
-            {companions.map((comp, cIdx) => (
-              <div key={cIdx} className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
-                  <Input noWrapper
-                    type="text"
-                    value={comp.name}
-                    onChange={e => {
-                      const val = e.target.value;
-                      setCompanions(prev => prev.map((c, i) => i === cIdx ? { ...c, name: val } : c));
-                    }}
-                    placeholder="نام همراه"
-                    className="bg-surface border border-border rounded-lg px-2 py-1 text-xs text-text-primary font-bold flex-1"
-                  />
-                  <Input noWrapper
-                    type="text"
-                    value={comp.type || ''}
-                    onChange={e => {
-                      const val = e.target.value;
-                      setCompanions(prev => prev.map((c, i) => i === cIdx ? { ...c, type: val } : c));
-                    }}
-                    placeholder="نوع (construct/beast)"
-                    className="w-24 bg-surface border border-border rounded-lg px-2 py-1 text-xs text-text-primary"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => setCompanions(prev => prev.filter((_, i) => i !== cIdx))}
-                    className="text-danger p-1 hover:bg-danger/20 rounded-lg"
+          {/* TAB: COMPANIONS */}
+          {activeTab === 'companions' && (
+            <SectionStack>
+              <Section
+                title="همراهان مکانیکی و جادویی"
+                action={
+                  <AddButton
+                    onClick={() =>
+                      setCompanions(prev => [
+                        ...prev,
+                        { name: 'همراه جدید', type: 'construct', acFormula: '13 + CON', hpFormula: '2×level + 2×CON' }
+                      ])
+                    }
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <Input noWrapper
-                    type="text"
-                    value={typeof comp.acFormula === 'string' ? comp.acFormula : (comp.acFormula?.base ? String(comp.acFormula.base) : '')}
-                    onChange={e => {
-                      const val = e.target.value;
-                      setCompanions(prev => prev.map((c, i) => i === cIdx ? { ...c, acFormula: val } : c));
-                    }}
-                    placeholder="فرمول AC (مثلاً: 13 + CON)"
-                    className="bg-surface border border-border rounded-lg px-2 py-1 text-xs text-text-primary"
-                  />
-                  <Input noWrapper
-                    type="text"
-                    value={comp.hpFormula || ''}
-                    onChange={e => {
-                      const val = e.target.value;
-                      setCompanions(prev => prev.map((c, i) => i === cIdx ? { ...c, hpFormula: val } : c));
-                    }}
-                    placeholder="فرمول HP (مثلاً: 2×level + 2×CON)"
-                    className="bg-surface border border-border rounded-lg px-2 py-1 text-xs text-text-primary"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* TAB 8: HP TABLE */}
-        {activeTab === 'hp_table' && (
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-bold text-text-primary">جدول پیشرفت جان ثابت (Fixed HP Table 1–20):</span>
-              <Button
-                type="button"
-                onClick={() => {
-                  const die = hitDie;
-                  const conBonus = 2;
-                  const avg = Math.floor(die / 2) + 1;
-                  const arr: number[] = [die + conBonus];
-                  for (let l = 2; l <= 20; l++) {
-                    arr.push(arr[arr.length - 1] + avg + conBonus);
-                  }
-                  setFixedHpByLevel(arr);
-                }}
-                className="px-2 py-1 rounded-lg bg-accent/20 text-accent-hover border border-accent/40 text-xs font-bold flex items-center gap-1"
+                    <Plus className="w-4 h-4" aria-hidden />
+                    <span>همراه</span>
+                  </AddButton>
+                }
               >
-                <RefreshCw className="w-3 h-3" />
-                <span>محاسبه خودکار میانگین</span>
-              </Button>
-            </div>
+                {companions.length === 0 && <p className="text-sm text-text-muted">همراهی تعریف نشده است.</p>}
+                {companions.map((comp, cIdx) => (
+                  <div key={cIdx} className={cardCls}>
+                    <div className="flex items-end gap-2">
+                      <Field label="نام" className="flex-1">
+                        <Input noWrapper type="text" value={comp.name}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setCompanions(prev => prev.map((c, i) => (i === cIdx ? { ...c, name: val } : c)));
+                          }}
+                          className={`${inputCls} font-bold`} />
+                      </Field>
+                      <Field label="نوع" className="w-32">
+                        <Input noWrapper type="text" dir="ltr" value={comp.type || ''}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setCompanions(prev => prev.map((c, i) => (i === cIdx ? { ...c, type: val } : c)));
+                          }}
+                          placeholder="construct" className={inputCls} />
+                      </Field>
+                      <IconButton label="حذف همراه" danger
+                        onClick={() => setCompanions(prev => prev.filter((_, i) => i !== cIdx))}>
+                        <Trash2 className="w-4 h-4" />
+                      </IconButton>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Field label="فرمول AC">
+                        <Input noWrapper type="text" dir="ltr"
+                          value={typeof comp.acFormula === 'string' ? comp.acFormula : (comp.acFormula?.base ? String(comp.acFormula.base) : '')}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setCompanions(prev => prev.map((c, i) => (i === cIdx ? { ...c, acFormula: val } : c)));
+                          }}
+                          placeholder="13 + CON" className={inputCls} />
+                      </Field>
+                      <Field label="فرمول HP">
+                        <Input noWrapper type="text" dir="ltr" value={comp.hpFormula || ''}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setCompanions(prev => prev.map((c, i) => (i === cIdx ? { ...c, hpFormula: val } : c)));
+                          }}
+                          placeholder="2×level + 2×CON" className={inputCls} />
+                      </Field>
+                    </div>
+                  </div>
+                ))}
+              </Section>
+            </SectionStack>
+          )}
+        </div>
 
-            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-64 overflow-y-auto pe-1">
-              {Array.from({ length: 20 }, (_, i) => i + 1).map(lvl => (
-                <div key={lvl} className="p-2 rounded-xl bg-surface-2 border border-border text-center">
-                  <span className="text-xs text-text-muted block">سطح {lvl}</span>
-                  <Input noWrapper
-                    type="number"
-                    value={fixedHpByLevel[lvl - 1] ?? 10}
-                    onChange={e => {
-                      const val = Number(e.target.value);
-                      setFixedHpByLevel(prev => {
-                        const copy = [...prev];
-                        copy[lvl - 1] = val;
-                        return copy;
-                      });
-                    }}
-                    className="w-full bg-surface border border-border rounded-lg p-1 text-center font-bold text-xs text-text-primary"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* VALIDATION PANEL (Levels 1, 5, 11, 20) */}
-        <div className="mt-4 p-3 rounded-2xl bg-surface border border-accent/40 space-y-2.5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-accent-hover" />
-              <span className="font-extrabold text-accent-hover">اعتبارسنجی زنده با موتور قوانین (Rules Engine Validation):</span>
-            </div>
-            <span className="text-xs text-text-muted">پیش‌نمایش سطوح 1، 5، 11 و 20</span>
-          </div>
-
-          {/* Validation Matrix Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-start text-xs border-collapse">
+        {/* Live validation: secondary, so it is collapsed instead of always sitting under every tab */}
+        <details className="mt-6 rounded-xl border border-border group">
+          <summary className="min-h-[48px] px-4 flex items-center justify-between gap-3 cursor-pointer list-none">
+            <span className="text-sm font-bold text-text-primary flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-accent" aria-hidden />
+              پیش‌نمایش محاسبات (سطح 1، 5، 11، 20)
+            </span>
+            <ChevronDown className="w-4 h-4 text-text-muted transition group-open:rotate-180" aria-hidden />
+          </summary>
+          <div className="overflow-x-auto px-4 pb-4">
+            <table className="w-full text-start text-sm border-collapse">
               <thead>
                 <tr className="border-b border-border text-text-muted">
-                  <th className="py-1 px-2">سطح</th>
-                  <th className="py-1 px-2">HP کل</th>
-                  <th className="py-1 px-2">AC پیش‌فرض</th>
-                  <th className="py-1 px-2">اسلات‌های جادو</th>
-                  <th className="py-1 px-2">منابع کلاسی فعال</th>
+                  <th className="py-2 pe-3 font-medium text-start">سطح</th>
+                  <th className="py-2 pe-3 font-medium text-start">HP</th>
+                  <th className="py-2 pe-3 font-medium text-start">AC</th>
+                  <th className="py-2 pe-3 font-medium text-start">جایگاه جادو</th>
+                  <th className="py-2 font-medium text-start">منابع</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {validationResults.map(res => (
-                  <tr key={res.level} className="hover:bg-surface-2">
-                    <td className="py-1.5 px-2 font-black text-accent-hover">سطح {res.level}</td>
-                    <td className="py-1.5 px-2 font-bold text-text-primary">{res.hp}</td>
-                    <td className="py-1.5 px-2 font-bold text-info">{res.ac}</td>
-                    <td className="py-1.5 px-2 text-text-muted">
+                  <tr key={res.level}>
+                    <td className="py-2 pe-3 font-bold text-accent-hover whitespace-nowrap">سطح {res.level}</td>
+                    <td className="py-2 pe-3 font-bold text-text-primary">{res.hp}</td>
+                    <td className="py-2 pe-3 font-bold text-info">{res.ac}</td>
+                    <td className="py-2 pe-3 text-text-muted whitespace-nowrap">
                       {res.slots && res.slots.length > 0 ? res.slots.join(' / ') : 'ندارد'}
                     </td>
-                    <td className="py-1.5 px-2 text-xs text-text-primary">
+                    <td className="py-2 text-text-primary">
                       {Object.keys(res.resources).length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1.5">
                           {Object.values(res.resources).map((r: any, idx: number) => (
-                            <span key={idx} className="px-1.5 py-0.5 rounded bg-surface-2 border border-border">
+                            <span key={idx} className="px-2 py-0.5 rounded-md bg-surface-2 whitespace-nowrap">
                               {r.name.split('(')[0].trim()}: {r.currentDice || r.max}
                             </span>
                           ))}
@@ -1100,109 +920,81 @@ export const ClassEditorSheet: React.FC<ClassEditorSheetProps> = ({
               </tbody>
             </table>
           </div>
-        </div>
+        </details>
 
-        {/* Action Buttons */}
-        <div className="pt-3 border-t border-border flex items-center justify-end gap-2">
-          <Button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-surface-2 border border-border text-text-muted hover:text-text-primary font-bold min-h-[44px]"
-          >
-            انصراف
-          </Button>
-
-          <Button
-            type="button"
-            onClick={handleSaveAll}
-            disabled={isSaving}
-            className="px-5 py-2 rounded-xl btn-primary font-extrabold shadow-md flex items-center gap-1.5 min-h-[44px]"
-          >
-            <Save className="w-4 h-4" />
-            <span>{isSaving ? 'در حال ذخیره‌سازی...' : 'ذخیره کلاس'}</span>
-          </Button>
-        </div>
+        {/* Sticky actions: always reachable on a long form; error shown next to them */}
+        <StickyFooter>
+          {error && (
+            <div role="alert" className="p-3 rounded-lg bg-danger/15 border border-danger/30 text-danger text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" aria-hidden />
+              <span>{error}</span>
+            </div>
+          )}
+          <div className="flex gap-2">
+            <Button type="button" onClick={handleSaveAll} disabled={isSaving} className={`${primaryBtnCls} flex-1 sm:flex-none`}>
+              <Save className="w-4 h-4" aria-hidden />
+              <span>{isSaving ? 'در حال ذخیره...' : 'ذخیره کلاس'}</span>
+            </Button>
+            <Button type="button" onClick={onClose} className={secondaryBtnCls}>انصراف</Button>
+          </div>
+        </StickyFooter>
       </div>
 
-      {/* SUB-SHEET: Edit Level Features One Level at a Time */}
+      {/* SUB-SHEET: edit one level's features */}
       {editingLevel !== null && (
         <BottomSheet
           isOpen={editingLevel !== null}
           onClose={() => setEditingLevel(null)}
-          title={`ویرایش ویژگی‌های سطح ${editingLevel}`}
+          title={`ویژگی‌های سطح ${editingLevel}`}
         >
-          <div className="space-y-3 py-2 text-start text-xs" dir="rtl">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-bold text-text-primary">ویژگی‌های آزادشده در این سطح:</span>
-              <Button
-                type="button"
-                onClick={() => {
-                  setEditingLevelFeatures(prev => [
-                    ...prev,
-                    { name: 'قابلیت جدید', description: 'توضیحات اثر مکانیکی...' }
-                  ]);
-                }}
-                className="px-2 py-1 rounded-lg bg-accent/20 text-accent-hover border border-accent/40 text-xs font-bold flex items-center gap-1"
+          <div dir="rtl" className="text-start space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-medium text-text-primary">ویژگی‌هایی که در این سطح باز می‌شوند</span>
+              <AddButton
+                onClick={() =>
+                  setEditingLevelFeatures(prev => [...prev, { name: 'قابلیت جدید', description: 'توضیحات اثر مکانیکی...' }])
+                }
               >
-                <Plus className="w-3 h-3" />
-                <span>افزودن قابلیت</span>
-              </Button>
+                <Plus className="w-4 h-4" aria-hidden />
+                <span>قابلیت</span>
+              </AddButton>
             </div>
 
             {editingLevelFeatures.length === 0 ? (
-              <p className="text-center text-text-muted py-4">هیچ قابلیتی برای سطح {editingLevel} ثبت نشده است.</p>
+              <p className="text-center text-sm text-text-muted py-6">برای سطح {editingLevel} قابلیتی ثبت نشده است.</p>
             ) : (
               editingLevelFeatures.map((feat, fIdx) => (
-                <div key={fIdx} className="p-2.5 rounded-xl bg-surface border border-border space-y-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
-                    <Input noWrapper
-                      type="text"
-                      value={feat.name || ''}
+                <div key={fIdx} className={cardCls}>
+                  <div className="flex items-center gap-2">
+                    <Input noWrapper type="text" value={feat.name || ''} aria-label="نام ویژگی"
                       onChange={e => {
                         const val = e.target.value;
-                        setEditingLevelFeatures(prev => prev.map((f, i) => i === fIdx ? { ...f, name: val } : f));
+                        setEditingLevelFeatures(prev => prev.map((f, i) => (i === fIdx ? { ...f, name: val } : f)));
                       }}
-                      placeholder="نام ویژگی"
-                      className="bg-surface-2 border border-border rounded-lg px-2 py-1 text-xs text-text-primary font-bold flex-1"
-                    />
-                    <Button
-                      type="button"
-                      onClick={() => setEditingLevelFeatures(prev => prev.filter((_, i) => i !== fIdx))}
-                      className="text-danger p-1 hover:bg-danger/20 rounded-lg"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                      placeholder="نام ویژگی" className={`${inputCls} flex-1 font-bold`} />
+                    <IconButton label="حذف قابلیت" danger
+                      onClick={() => setEditingLevelFeatures(prev => prev.filter((_, i) => i !== fIdx))}>
+                      <Trash2 className="w-4 h-4" />
+                    </IconButton>
                   </div>
-                  <Textarea noWrapper
-                    rows={2}
-                    value={feat.description || ''}
+                  <Textarea noWrapper rows={3} value={feat.description || ''} aria-label="شرح ویژگی"
                     onChange={e => {
                       const val = e.target.value;
-                      setEditingLevelFeatures(prev => prev.map((f, i) => i === fIdx ? { ...f, description: val } : f));
+                      setEditingLevelFeatures(prev => prev.map((f, i) => (i === fIdx ? { ...f, description: val } : f)));
                     }}
-                    placeholder="شرح اثر مکانیکی یا کارکرد ویژگی..."
-                    className="w-full bg-surface-2 border border-border rounded-lg px-2 py-1 text-xs text-text-primary"
-                  />
+                    placeholder="شرح اثر مکانیکی یا کارکرد ویژگی" className={textareaCls} />
                 </div>
               ))
             )}
 
-            <div className="pt-2 flex justify-end gap-2">
-              <Button
-                type="button"
-                onClick={() => setEditingLevel(null)}
-                className="px-3 py-1.5 rounded-xl bg-surface-2 text-text-muted min-h-[44px]"
-              >
-                لغو
-              </Button>
-              <Button
-                type="button"
-                onClick={handleSaveLevelFeatures}
-                className="px-4 py-1.5 rounded-xl btn-primary font-bold text-xs min-h-[44px]"
-              >
-                تأیید سطح {editingLevel}
-              </Button>
-            </div>
+            <StickyFooter>
+              <div className="flex gap-2">
+                <Button type="button" onClick={handleSaveLevelFeatures} className={`${primaryBtnCls} flex-1 sm:flex-none`}>
+                  تأیید سطح {editingLevel}
+                </Button>
+                <Button type="button" onClick={() => setEditingLevel(null)} className={secondaryBtnCls}>لغو</Button>
+              </div>
+            </StickyFooter>
           </div>
         </BottomSheet>
       )}
