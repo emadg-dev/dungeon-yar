@@ -12,6 +12,7 @@ interface SheetChangeRequestModalProps {
   characterName: string;
   campaignId: string;
   participationId: string;
+  initialField?: string;
   onSubmitRequest: (request: {
     field: string;
     proposedValue: any;
@@ -25,9 +26,10 @@ export const SheetChangeRequestModal: React.FC<SheetChangeRequestModalProps> = (
   characterName,
   campaignId,
   participationId,
+  initialField,
   onSubmitRequest
 }) => {
-  const [selectedField, setSelectedField] = useState('abilityScores');
+  const [selectedField, setSelectedField] = useState(initialField || 'abilityScores');
   const [proposedValue, setProposedValue] = useState('');
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);

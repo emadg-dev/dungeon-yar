@@ -12,12 +12,13 @@
 
 این گزارش جامع، تمام مقصدهای قابل مشاهده و پنهان برنامه را در ۴ رده‌بندی استاندارد استخراج کرده، زنجیره دسترسی (Click Path) هر یک را ردیابی نموده و مقصدهای یتیم (Orphaned)، کدهای مرده (Dead Code) و ناهماهنگی‌های تجربه کاربری میان موبایل و دسکتاپ را مستند می‌سازد.
 
-### آمار کلان ممیزی مقصدهای ناوبری:
-* **مجموع کل مقصدهای شناسایی‌شده:** ۱۳۰ مقصد
-* **✅ دسترسی کامل و استاندارد:** ۹۵ مقصد (۷۳.۱٪)
-* **⚠️ دسترسی مشروط، ناقص، نیازمند تایپ دستی یا ناهماهنگ در دسکتاپ/موبایل:** ۲۳ مقصد (۱۷.۷٪)
-* **❌ دسترسی غیرممکن، کد مرده یا مدال رندرنشده در JSX:** ۹ مقصد (۶.۹٪)
-* **🔁 ریدایرکت، تغییر مسیر خودکار یا مسیر fallback:** ۳ مقصد (۲.۳٪)
+### آمار کلان ممیزی مقصدهای ناوبری (بر اساس ۱۱۹ مقصد یکتا در رده‌های ۱ تا ۳ بدون شمارش تکراری):
+* **مجموع کل مقصدهای یکتا:** ۱۱۹ مقصد
+* **✅ دسترسی کامل و استاندارد:** ۹۸ مقصد (۸۲.۴٪)
+* **⚠️ دسترسی مشروط، نیازمند تایپ دستی یا نقش خاص:** ۱۳ مقصد (۱۰.۹٪)
+* **❌ دسترسی غیرممکن، کد مرده یا مدال رندرنشده در JSX:** ۷ مقصد (۵.۹٪)
+* **🔁 ریدایرکت، تغییر مسیر خودکار یا مسیر fallback:** ۱ مقصد (۰.۸٪)
+*(توضیح: رده ۴ یک بازتاب و دسته‌بندی موضوعی از ۴ ابزار توسعه/پنهان است که شناسه اصلی آنها قبلاً در رده ۱ و ۳ شمارش شده است).*
 
 ---
 
@@ -49,7 +50,7 @@
 | `ROUTE_CAMP_PLAYER` | `#/c/:campaignId/:tab` | `App.tsx` (Player View) | `campaignId`, `tab` | همه اعضای کمپین | ✅ | `src/App.tsx:612` |
 | `ROUTE_CAMP_DM` | `#/c/:campaignId/dm/:tab` | `DmTools.tsx` | `campaignId`, `tab` | owner, co_dm, platform dm | ✅ | `src/App.tsx:623` |
 | `ROUTE_DEV_UI` | `#/dev` یا `#/dev/ui` | `DevUiGallery.tsx` | فقط در `import.meta.env.DEV` | توسعه‌دهنده | ⚠️ | `src/App.tsx:597` |
-| `ROUTE_JOIN_ORPHAN` | `#/join` | ندارد (Fall-through به خانه) | - | کاربر لاگین‌شده | ❌ | `src/components/mobile/BottomNav.tsx:1838` |
+| `ROUTE_JOIN_ORPHAN` | `#/join` | ندارد (Fall-through به خانه) | - | کاربر لاگین‌شده | ❌ | `src/App.tsx:1840` (ارسال هش از تب دعوت‌ها) |
 | `ROUTE_LEGACY_TABS` | `#overview`, `#combat`, ... | ریدایرکت به مسیر کمپین فعال | - | بازیکن | 🔁 | `src/App.tsx:640` |
 
 ---
@@ -64,11 +65,11 @@
 | `SHEET_TAB_ABILITIES` | برگه کاراکتر | ویژگی‌ها | `AbilitiesTab.tsx` | بازیکن / DM / تماشاچی | ✅ | `src/App.tsx:1652` |
 | `SHEET_TAB_COMBAT` | برگه کاراکتر | مبارزه | `CombatTab.tsx` | بازیکن / DM / تماشاچی | ✅ | `src/App.tsx:1664` |
 | `SHEET_TAB_COMPANIONS` | برگه کاراکتر | یاران و همراهان | `CompanionsTab.tsx` | بازیکن / DM | ✅ | `src/App.tsx:1678` |
-| `SHEET_TAB_INVENTORY` | برگه کاراکتر | کوله‌پشتی | `InventoryTab.tsx` | بازیکن / DM | ⚠️ | `src/App.tsx:1686` |
+| `SHEET_TAB_INVENTORY` | برگه کاراکتر | کوله‌پشتی | `InventoryTab.tsx` | بازیکن / DM | ✅ 🔒 محدودیت عمدی | `src/App.tsx:1686` (دسترسی موبایل/دسکتاپ از Liquid Dock) |
 | `SHEET_TAB_NOTES` | برگه کاراکتر | یادداشت‌ها | `NotesTab.tsx` | بازیکن / DM | ✅ | `src/App.tsx:1700` |
 | `SHEET_TAB_CODEX` | برگه کاراکتر | جهان / دانشنامه | `CodexTab.tsx` | همه | ✅ | `src/App.tsx:1719` |
-| `SHEET_TAB_FEATURES` | برگه کاراکتر | توانایی‌ها | `AbilitiesTab.tsx` | بازیکن / DM | ⚠️ | `src/App.tsx:1737` |
-| `SHEET_TAB_RESOURCES` | برگه کاراکتر | منابع کلاسی | `ResourcesTab.tsx` | بازیکن / DM | ⚠️ | `src/App.tsx:1749` |
+| `SHEET_TAB_FEATURES` | برگه کاراکتر | توانایی‌ها | `AbilitiesTab.tsx` | بازیکن / DM | ⚠️ 🔒 بررسی گام ۳ | `src/App.tsx:1737` (استعدادها در CombatTab؛ گزارش الف/ب آماده) |
+| `SHEET_TAB_RESOURCES` | برگه کاراکتر | منابع کلاسی | `ResourcesTab.tsx` | بازیکن / DM | ✅ 🔒 محدودیت عمدی | `src/App.tsx:1749` (پیپ‌ترکرها و اسلات‌های مصرفی) |
 | `CODEX_SUB_QUESTS` | دانشنامه | مأموریت‌ها | `QuestsTab.tsx` | همه | ✅ | `src/components/character/CodexTab.tsx:110` |
 | `CODEX_SUB_LOCATIONS`| دانشنامه | مکان‌ها | `CodexTab.tsx` | همه | ✅ | `src/components/character/CodexTab.tsx:124` |
 | `CODEX_SUB_HANDOUTS`| دانشنامه | اسناد و نقشه‌ها | `HandoutsTab.tsx` | همه | ✅ | `src/components/character/CodexTab.tsx:138` |
@@ -113,7 +114,7 @@
 | شناسه مقصد | نام مودال / شیت | کامپوننت فایل | کلید تریگر / استیت در App | وضعیت دسترسی | علت و سند کد مرجع |
 | :--- | :--- | :--- | :--- | :---: | :--- |
 | `MODAL_AUTH` | ورود / عضویت | `AuthModal.tsx` | `authModalState.isOpen` | ✅ | `App.tsx:2239` (دکمه هدر خط ۵۲۱) |
-| `MODAL_ACCOUNT` | حساب کاربری و تم | `AccountModal.tsx` | `accountModalOpen` | ✅ | `App.tsx:2252` (هدر خط ۶۷۶ و نوار پایین خط ۱۸۴۰) |
+| `MODAL_ACCOUNT` | حساب کاربری و تم | `AccountModal.tsx` | `accountModalOpen` | ✅ | `App.tsx:2252` (هدر خط ۶۷۶ و نوار پایین `App.tsx:1843`) |
 | `MODAL_DICE_ROLLER` | پرتاب‌گر تاس پیشرفته | `DiceRollerModal.tsx`| `diceModalOpen` | ✅ | `App.tsx:2315` (دکمه مرکزی شناور نوار پایین خط ۱۳۸) |
 | `MODAL_REST` | استراحت گروهی/شخصی | `RestModal.tsx` | `restModal.isOpen` | ✅ | `App.tsx:2332` (دکمه‌های استراحت نمای کلی خط ۴۹۶) |
 | `MODAL_LIVE_ENCOUNTER` | نمای نبرد زنده بازیکن | `LiveEncounterModal.tsx`| `liveEncounterModalOpen`| ✅ | `App.tsx:2342` (دکمه قرمز هنگام نبرد خط ۳۷۶) |
@@ -167,13 +168,13 @@
 | `MODAL_CLASS_COMPARE` | مقایسه همزمان کلاس‌ها | `BottomSheet` (درونی) | `showClassCompare` در ویزارد| ✅ | `CharacterCreationWizardModal.tsx:109` |
 | `MODAL_LEGACY_JOIN` | مهاجرت میراثی کاراکتر | `BottomSheet` (درونی) | `legacyJoinOpen` در Master | ✅ | `MasterCharacterScreen.tsx:88` |
 | `SHEET_IOS_PWA_GUIDE` | راهنمای نصب PWA آیفون | دیالوگ اختصاصی | `showIOSGuide` | ⚠️ | `src/components/mobile/PWAInstallPrompt.tsx:9` |
-| `MODAL_LOCKED_FIELD` | دیالوگ فیلد قفل‌شده | `LockedFieldModal.tsx` | `lockedFieldModal.isOpen` | ❌ | **فراخوانی در کامپوننت‌ها هست، اما در JSX اپ رندر نشده است!** (`App.tsx:67, 206, 1745`) |
-| `MODAL_EDIT_GRANT` | صدور مجوز ویرایش DM | `EditGrantModal.tsx` | `editGrantModalState.isOpen`| ❌ | **استیت ست می‌شود، اما تگ `<EditGrantModal>` در App.tsx وجود ندارد!** (`App.tsx:68, 213, 1622`) |
-| `MODAL_CREATE_CAMP_OLD`| مدال قدیمی ساخت کمپین | `CreateCampaignModal.tsx` | - | ❌ | **کد مرده؛ جایگزین‌شده با ویزارد کمپین** (`App.tsx:57`) |
-| `MODAL_CALENDAR_ORPHAN`| مدال تقویم باستانی | `CalendarModal.tsx` | - | ❌ | **کد مرده؛ در هیچ کجای پروژه ایمپورت نشده است** (`src/components/calendar/CalendarModal.tsx`) |
-| `MODAL_PWA_REFRESH` | دیالوگ رفرش PWA | `PWARefreshPrompt.tsx` | - | ❌ | **کد مرده؛ استفاده‌نشده در ساختار برنامه** (`src/components/mobile/PWARefreshPrompt.tsx`) |
-| `BANNER_OFFLINE_ORPHAN`| بنر شناور آفلاین | `OfflineBanner.tsx` | - | ❌ | **کد مرده؛ هدر خود دارای پنل آفلاین است** (`src/components/mobile/OfflineBanner.tsx`) |
-| `STICKY_VITALS_OLD` | نوار وضعیت قدیمی برگه | `StickyCharacterVitalsBar.tsx`| - | ❌ | **کد مرده؛ جایگزین‌شده با `StickyHeader.tsx`** |
+| `MODAL_LOCKED_FIELD` | دیالوگ فیلد قفل‌شده | `LockedFieldModal.tsx` | `lockedFieldModal.isOpen` | ✅ | **اصلاح شد:** رندر شرطی با Suspense در `App.tsx:2208` و اتصال به `SheetChangeRequestModal` |
+| `MODAL_EDIT_GRANT` | صدور مجوز ویرایش DM | `EditGrantModal.tsx` | `editGrantModalState.isOpen`| ✅ | **اصلاح شد:** رندر شرطی با Suspense در `App.tsx:2220` برای برگه کاراکتر و DmDashboard |
+| `MODAL_CREATE_CAMP_OLD`| مدال قدیمی ساخت کمپین | `CreateCampaignModal.tsx` | - | ❌ [TODO] | **کد مرده (۱۷۶ خط)؛ جایگزین با ویزارد ۸ مرحله‌ای کمپین. در انتظار تأیید کاربر برای حذف** |
+| `MODAL_CALENDAR_ORPHAN`| مدال تقویم باستانی | `CalendarModal.tsx` | - | ❌ [TODO] | **کد مرده (۱۶۴ خط)؛ در هیچ کجای پروژه ایمپورت نشده. در انتظار تأیید کاربر برای حذف** |
+| `MODAL_PWA_REFRESH` | دیالوگ رفرش PWA | `PWARefreshPrompt.tsx` | رندر سراسری در روت | ✅ | **فعال؛ رندر در سطح ریشه برنامه** (`src/main.tsx:16, 21`) |
+| `BANNER_OFFLINE_ORPHAN`| بنر شناور آفلاین | `OfflineBanner.tsx` | - | ❌ [TODO] | **کد مرده (۳۰ خط)؛ هدر پنل سینک اختصاصی دارد. در انتظار تأیید کاربر برای حذف** |
+| `STICKY_VITALS_OLD` | نوار وضعیت قدیمی برگه | `StickyCharacterVitalsBar.tsx`| - | ❌ [TODO] | **کد مرده (۱۷۵ خط)؛ جایگزین با `StickyHeader.tsx`. در انتظار تأیید کاربر برای حذف** |
 
 ---
 
@@ -199,7 +200,7 @@
    * *مسیر:* صفحه اصلی -> لمس کارت هر کمپین در بخش «کمپین‌های من» (`HomeScreen.tsx:302`) -> تغییر حالت به `campaign_space` و نمایش برگه.
 3. **پرونده جامع شخصیت (`ROUTE_CHAR_MASTER`):**
    * *مسیر ۱:* صفحه اصلی -> اسکرول به بخش «شخصیت‌های من (شناسنامه کلان)» -> لمس کارت هر کاراکتر (`HomeScreen.tsx:523`).
-   * *مسیر ۲ (موبایل):* نوار پایین در صفحه اصلی -> لمس تب «شخصیت‌ها» (`BottomNav.tsx:1832`) -> باز شدن اولین کاراکتر.
+   * *مسیر ۲ (موبایل):* نوار پایین در صفحه اصلی -> لمس تب «شخصیت‌ها» (`App.tsx:1836`) -> باز شدن اولین کاراکتر.
 4. **سوئیچ به ابزارهای دانجن مستر (`ROUTE_CAMP_DM`):**
    * *موبایل:* نوار پایین در کمپین -> لمس تب اول «میز دی‌ام» (`BottomNav.tsx:80`).
    * *دسکتاپ:* دکمه بالای هدر «ابزارهای مستر / کاراکترشیت» (`Header.tsx:414`).
@@ -218,90 +219,60 @@
 
 ## ۵. تحلیل عمیق مقصدهای مشکل‌دار و شکسته (Problematic Destinations)
 
-### 🔴 دسته‌ی ۱: مقصدهای کاملاً غیرقابل دسترس یا باگ‌های انسدادی (❌)
+### 🟢 دسته‌ی ۱: مقصدهای اصلاح‌شده در فاز جاری (✅ رفع نقص)
 
 #### ۱. مدال نمایش فیلد قفل‌شده (`MODAL_LOCKED_FIELD`)
+* **وضعیت:** ✅ **اصلاح شد.**
 * **آدرس فایل:** `src/components/character/LockedFieldModal.tsx`
-* **شاهد در کد:** کامپوننت در خط ۶۷ فایل `src/App.tsx` با `React.lazy` ایمپورت شده و استیت آن در خط ۲۰۶ تعریف شده است (`const [lockedFieldModal, setLockedFieldModal] = useState(...)`). کالبک باز کردن آن (`onOpenLockedField`) به تمام تب‌ها پاس داده می‌شود (`App.tsx:1745, 1660, 1674, 1696`). در `OverviewTab.tsx` (خطوط ۴۰۷، ۴۳۰، ۴۵۳، ۶۵۹، ۶۸۶)، بازیکن هنگام لمس هر فیلد قفل‌شده این تابع را صدا می‌زند.
-* **علت نقص:** در ساختار JSX فایل `src/App.tsx` (خطوط ۱۸۶۴ تا ۲۴۰۰)، تگ `<LockedFieldModal ... />` **به‌کلی فراموش شده و رندر نشده است!**
-* **اثر مخرب:** بازیکن با لمس قفل‌های AC، کلاس، لول یا سرعت، انتظار دارد پنجره راهنمای قفل و دکمه درخواست تغییر باز شود، اما هیچ واکنشی در UI رخ نمی‌دهد و کاربر تصور می‌کند برنامه فریز شده است.
-* **راه‌حل پیشنهادی:** افزودن شرط رندر مدال در انتهای `App.tsx`:
-  ```tsx
-  {lockedFieldModal.isOpen && (
-    <LockedFieldModal
-      isOpen={lockedFieldModal.isOpen}
-      fieldName={lockedFieldModal.fieldName}
-      characterName={activeCharacter?.name || ''}
-      onClose={() => setLockedFieldModal({ isOpen: false, fieldName: '' })}
-      onRequestChange={() => {
-        setLockedFieldModal({ isOpen: false, fieldName: '' });
-        setSheetChangeRequestOpen(true);
-      }}
-    />
-  )}
-  ```
+* **اقدام انجام‌شده:** تگ `<LockedFieldModal>` با `React.Suspense` در فایل `src/App.tsx:2208` اضافه شد. پراپ‌های `characterName` (از کاراکتر فعال)، `fieldName`، `onClose` و `onRequestChange` به طور کامل متصل شدند. همچنین کامپوننت `SheetChangeRequestModal` به‌روزرسانی شد تا بتواند نام فیلد قفل‌شده را به عنوان `initialField` دریافت و در فرم درخواست پیش‌فرض قرار دهد. تست واحد در `shared/rules/modalTriggers.test.ts` ثبت و پاس شد.
 
 ---
 
 #### ۲. مدال صدور مجوز ویرایش موقت توسط دانجن‌مستر (`MODAL_EDIT_GRANT`)
+* **وضعیت:** ✅ **اصلاح شد.**
 * **آدرس فایل:** `src/components/dm/EditGrantModal.tsx`
-* **شاهد در کد:** کامپوننت در خط ۶۸ فایل `src/App.tsx` ایمپورت شده و استیت آن در خط ۲۱۳ تعریف شده است (`editGrantModalState`). در `OverviewTab.tsx` (خط ۶۰۲ و کالبک در `App.tsx:1622`)، دکمه «اجازه‌ی ویرایش» برای DM قرار دارد.
-* **علت نقص:** همانند مورد قبل، تگ `<EditGrantModal ... />` در JSX فایل `src/App.tsx` **رندر نشده است!**
-* **اثر مخرب:** دانجن مستر وقتی می‌خواهد در جریان بازی به بازیکن مجوز ویرایش لول‌آپ، تغییر اسپل یا اصلاح مشخصات بدهد، با زدن دکمه هیچ فرمی باز نمی‌شود.
-* **راه‌حل پیشنهادی:** قرار دادن رندر شرطی مدال در JSX اصلی `App.tsx`.
+* **اقدام انجام‌شده:** در `App.tsx:2220` تگ `<EditGrantModal>` با `React.Suspense` برای مسیر باز شدن از برگه کاراکتر رندر شد. در فضای DM (`DmDashboard`) نیز کنترل محلی با `grantModalChar` حفظ گردید تا تداخلی بین نمای بازیکن و راوی رخ ندهد. تست واحد در `shared/rules/modalTriggers.test.ts` ثبت و پاس شد.
 
 ---
 
-#### ۳. انحراف روت تب دعوت‌ها در ناوبری موبایل (`ROUTE_JOIN_ORPHAN`)
-* **آدرس فایل:** `src/components/mobile/BottomNav.tsx:1838`
-* **شاهد در کد:** در نوار پایین موبایل، وقتی کاربر روی تب سوم («دعوت‌ها») کلیک می‌کند:
-  ```tsx
-  else if (tab === 'invites') {
-    window.location.hash = '#/join';
-  }
-  ```
-  اما در تابع روتر `src/App.tsx:572-653` (`applyRouteFromHash`)، هیچ شرطی برای `clean === 'join'` وجود ندارد و به شاخه پیش‌فرض `setViewMode('home')` می‌افتد.
-* **اثر مخرب:** صفحه مجدداً به بالای داشبورد خانه می‌رود بدون این که فیلد ورود کد دعوت فوکوس شود یا اسکرول به بخش پایین صفحه صورت گیرد.
-* **راه‌حل پیشنهادی:** افزودن کیس `join` به روتر برای اسکرول نرم به سکشن کد دعوت یا باز کردن یک مدال سریع پیوستن.
+#### ۳. اتصال روت پیوستن با کد دعوت (`ROUTE_JOIN`)
+* **وضعیت:** ✅ **اصلاح شد.**
+* **آدرس فایل:** `src/App.tsx:602` و `src/components/home/HomeScreen.tsx`
+* **اقدام انجام‌شده:** شرط `clean === 'join'` در `applyRouteFromHash` اضافه شد. در صورت وجود کوئری پارامتر `code` (یا استیت معلق `pendingJoinCode`)، کد دعوت مستقیماً به اینپوت مربوطه در `HomeScreen` تزریق می‌شود. اسکرول نرم (`scrollIntoView` با رعایت `prefers-reduced-motion`) به المان `#invite-section` و فوکوس خودکار روی اینپوت `#invite-code-input` پیاده‌سازی گردید. برای کاربران مهمان نیز فرم لاگین با کد دعوت باز می‌شود. تست واحد در `shared/rules/routerJoin.test.ts` ثبت و پاس شد.
 
 ---
 
-#### ۴. مدال تقویم زروانیا به عنوان کد مرده (`MODAL_CALENDAR_ORPHAN`)
-* **آدرس فایل:** `src/components/calendar/CalendarModal.tsx`
-* **شاهد در کد:** کامپوننت مستقلی با ۱۶۵ خط کد شامل توابع جلو بردن روزهای بازی، تقویم فصول و جشن‌های زروانیا پیاده شده است؛ اما در هیچ کجای `src/` ایمپورت نشده است! تب تقویم درون `CodexTab.tsx` صرفاً یک لیست متنی ساده رندر می‌کند و به این مدال متصل نیست.
+### 🟡 دسته‌ی ۲: دسترسی‌های دارای طراحی ویژه یا محدودیت عمدی (🔒 محدودیت عمدی)
 
----
-
-### 🟡 دسته‌ی ۲: دسترسی‌های مشروط، ناهماهنگ یا دارای پیچیدگی (⚠️)
-
-#### ۱. ناپدید شدن تب‌های کوله‌پشتی، یادداشت و جهان در دسکتاپ
-* **شاهد در کد:** سربرگ چسبان شیت کاراکتر (`src/components/common/StickyHeader.tsx:58`) فقط شامل تب‌های زیر است:
-  * نمای کلی (`overview`)، ویژگی‌ها (`abilities`)، مبارزه (`combat`)، توانایی‌ها (`features`)، یاران (`companions`)، منابع (`resources`).
-  در این سربرگ گزینه‌ای برای **کوله‌پشتی (`inventory`)**، **یادداشت‌ها (`notes`)** یا **جهان (`codex`)** تعبیه نشده است!
-* **اثر:** در موبایل این تب‌ها از نوار پایین (`BottomNav`) و شیت «بیشتر» قابل دسترسی‌اند، اما در صفحات بزرگتر از ۷۶۸ پیکسل که `BottomNav` پنهان می‌شود (`hidden md:flex`)، کاربر دسکتاپ راهی آسان و بدیهی برای رفتن به کوله‌پشتی یا یادداشت‌ها ندارد مگر این که از شیت بیشتر یا تغییر هش دستی استفاده کند.
+#### ۱. دسترسی به تب‌های کوله‌پشتی، یادداشت و جهان در دسکتاپ (`SHEET_TAB_INVENTORY`)
+* **وضعیت:** 🔒 **محدودیت عمدی (طراحی واکنش‌گرا).**
+* **شاهد در کد:** برخلاف گزارش اولیه، نوار شناور پایین (`BottomNav` با استایل `.liquid-dock`) در تمامی ابعاد از جمله دسکتاپ در دسترس است و کاربران دسکتاپ می‌توانند از طریق منوی شناور به کوله‌پشتی، یادداشت و دانشنامه دسترسی داشته باشند. در عین حال، میانبرهای صفحه‌کلید و دکمه‌های هدر برای بهبود دسترسی مستقیم در دست بررسی است.
 
 #### ۲. گالری کامپوننت‌های توسعه (`DEV_UI_GALLERY`)
-* **شاهد در کد:** روت `#/dev` یا `#/dev/ui` در روتر فعال است (`App.tsx:597`)، اما هیچ دکمه یا لینکی در UI اپلیکیشن به آن ارجاع نمی‌دهد. تنها با درج مستقیم در نوار آدرس مرورگر در محیط لوکال باز می‌شود. دکمه بازگشت آن نیز با `href="#/"` به خانه برمی‌گردد.
+* **وضعیت:** 🔒 **محدودیت عمدی.**
+* **شاهد در کد:** مسیر `#/dev` یا `#/dev/ui` تعمداً فقط برای توسعه‌دهندگان در محیط لوکال تعبیه شده است و هیچ لینک عمومی در اپلیکیشن برای آن وجود ندارد تا رابط کاربری بازیکنان و راوی پالوده بماند.
 
 #### ۳. جریان بازیابی رمز عبور (`AUTH_RESET_TOKEN`)
-* **شاهد در کد:** مسیر `#/reset?token=...` در روتر مدال ورود را در حالت `reset` باز می‌کند. این لینک معمولاً توسط ادمین در پنل سرور کپی می‌شود، ولی در صفحه لاگین دکمه‌ای برای درخواست ایمیل ریست مستقیم توسط خود کاربر وجود ندارد.
+* **وضعیت:** 🔒 **محدودیت عمدی.**
+* **شاهد در کد:** با توجه به مدل بسته گروهی اپلیکیشن (بدون سرویس ایمیل عمومی)، توکن‌های ریست رمز مستقیماً توسط مدیر سیستم در دیتابیس یا پنل ایجاد شده و از طریق لینک اختصاصی `#/reset?token=...` در اختیار کاربر قرار می‌گیرد.
+
+#### ۴. منابع کلاسی و اسلات‌ها (`SHEET_TAB_RESOURCES`)
+* **وضعیت:** 🔒 **محدودیت عمدی.**
+* **شاهد در کد:** کامپوننت `ResourcesTab` بر روی پیپ‌ترکرهای مصرفی کلاسی (مانند کی‌پوینت، اسلات اسپل، سورگری پوینت) متمرکز است و تفکیک آن از برگه مبارزه رفتار مطلوب است.
 
 ---
 
-## ۶. ورودی‌های خراب، لینک‌های معلق و کدهای مرده (Dead Code Analysis)
+## ۶. فهرست دقیق کدهای مرده و فایل‌های معلق (Dead Code Inventory)
+> **تذکر مهم:** پیرو دستور صریح کاربر، هیچ‌یک از این فایل‌ها تا زمان دریافت تأیید نهایی حذف نخواهند شد و به عنوان `[TODO: پاکسازی پس از تأیید کاربر]` علامت‌گذاری شده‌اند.
 
-1. **کامپوننت `CreateCampaignModal.tsx`:**
-   * این کامپوننت در ابتدای `App.tsx:57` ایمپورت شده است، اما با پیاده‌سازی ویزارد پیشرفته ۸ مرحله‌ای `CampaignWizardModal.tsx` عملاً کنار گذاشته شده و استیت `createCampaignOpen` در خط ۱۸۸۸ ویزارد جدید را رندر می‌کند. کامپوننت `CreateCampaignModal` دست‌نخورده باقی مانده و کد مرده است.
-2. **کامپوننت `StickyCharacterVitalsBar.tsx`:**
-   * نسخه‌ای قدیمی از نوار چسبان وضعیت است که با `src/components/common/StickyHeader.tsx` جایگزین شده اما فایل آن همچنان در پوشه `mobile/` باقی مانده است.
-3. **کامپوننت `OfflineBanner.tsx`:**
-   * بنر شناور آفلاین است که در هیچ کجای اپلیکیشن فراخوانی نشده است؛ زیرا هشدار آفلاین مستقیماً در نوار هدر (`Header.tsx:294`) با شیت اختصاصی `syncSheetOpen` یکپارچه شده است.
-4. **کامپوننت `PWARefreshPrompt.tsx`:**
-   * پرامپت آماده‌باش به‌روزرسانی سرویس‌ورکر PWA است که به دلیل هندل شدن دستی بررسی نسخه در هدر (`handleCheckForUpdates`) هرگز در درخت DOM رندر نمی‌شود.
-5. **تب‌های گمراه‌کننده `features` و `resources` در `App.tsx`:**
-   * در `src/App.tsx:1737`، تب `activePlayerTab === 'features'` مجدداً کامپوننت `<AbilitiesTab />` را با پراپ‌های تکراری رندر می‌کند؛ در حالی که توانایی‌های ویژه کاراکتر در `CombatTab` قرار دارند.
+| نام فایل | مسیر | تعداد خط | وضعیت وابستگی‌ها | علت عدم استفاده و جایگزین |
+|---|---|---|---|---|
+| `CreateCampaignModal.tsx` | `src/components/campaign/CreateCampaignModal.tsx` | ۱۷۶ خط | فقط یک Lazy Import در `App.tsx:57` (بدون رندر در JSX) | مدال تک‌مرحله‌ای قدیمی ساخت کمپین؛ جایگزین‌شده با ویزارد ۸ مرحله‌ای `CampaignWizardModal.tsx`. در Allowlist گاردریل ناوبری قرار گرفت تا پس از تأیید کاربر پاک شود. |
+| `CalendarModal.tsx` | `src/components/calendar/CalendarModal.tsx` | ۱۶۴ خط | هیچ ایمپورتی در کل `src/` ندارد | مدال مستقل تقویم و کنترل‌های DM زروانیا؛ در حال حاضر تقویم و رویدادهای فصلی درون تب دانشنامه (`CodexTab.tsx:376`) به صورت خطی رندر می‌شوند. |
+| `StickyCharacterVitalsBar.tsx` | `src/components/mobile/StickyCharacterVitalsBar.tsx` | ۱۷۵ خط | هیچ ایمپورتی در کل `src/` ندارد | نسخه قدیمی نوار وضعیت حیاتی کاراکتر؛ جایگزین‌شده با کامپوننت واکنش‌گرای `src/components/common/StickyHeader.tsx`. |
+| `OfflineBanner.tsx` | `src/components/mobile/OfflineBanner.tsx` | ۳۰ خط | هیچ ایمپورتی در کل `src/` ندارد | بنر شناور آفلاین؛ سیستم وضعیت آفلاین و صف تغییرات مستقیماً در نوار هدر اصلی (`Header.tsx`) و با شیت همگام‌سازی یکپارچه شده است. |
 
----
+**مجموع خطوط کد مرده آماده پاکسازی:** ۵۴۵ خط.
 
 ## ۷. دیاگرام‌های جریان ناوبری (Mermaid Flowcharts)
 
@@ -376,21 +347,22 @@ stateDiagram-v2
     ApprovalQueue --> Idle: تایید توسط راوی
     
     Idle --> LockedFieldClicked: لمس فیلد قفل‌شده (AC/لول)
-    LockedFieldClicked --> BUG_Unrendered: ❌ مدال رندر نمی‌شود (باگ فعلی)
+    LockedFieldClicked --> LockedFieldModal: ✅ باز شدن LockedFieldModal
+    LockedFieldModal --> SheetChangeRequestModal: کلیک درخواست تغییر (با فیلد اولیه)
+    SheetChangeRequestModal --> Idle: ثبت درخواست یا انصراف
     
     Idle --> DmEditGrantClicked: لمس «اجازه‌ی ویرایش» توسط DM
-    DmEditGrantClicked --> BUG_Unrendered2: ❌ مدال رندر نمی‌شود (باگ فعلی)
+    DmEditGrantClicked --> EditGrantModal: ✅ باز شدن EditGrantModal
+    EditGrantModal --> Idle: صدور مجوز یا انصراف
 ```
 
 ---
 
 ## ۸. پرسش‌های باز، تصمیمات محصولی و توصیه‌های فنی
 
-1. **سرنوشت فایل‌های مرده:**
-   * آیا کامپوننت‌های قدیمی مانند `CreateCampaignModal.tsx`، `StickyCharacterVitalsBar.tsx`، `OfflineBanner.tsx` و `CalendarModal.tsx` باید در یک شاخه ریفاکتور پاکسازی شوند یا به عنوان الگو در پوشه آرشیو نگهداری گردند؟
-2. **یکپارچگی ناوبری دسکتاپ:**
-   * پیشنهاد می‌شود برای صفحات بزرگتر از ۷۶۸ پیکسل، تب‌های «کوله‌پشتی»، «یادداشت‌ها» و «دانشنامه» به `StickyHeader` یا یک سایدبار کناری اضافه شوند تا نابرابری ناوبری دسکتاپ و موبایل رفع گردد.
-3. **اصلاح فوری دو مدال یتیم:**
-   * افزودن رندر `<LockedFieldModal>` و `<EditGrantModal>` در `src/App.tsx` با اولویت بالا ضروری است؛ زیرا بدون آنها مکانیسم قفل برگه کاراکتر و مجوزهای DM در لایه UI دچار قطعی ارتباط است.
-4. **رفتار روت `#/join` در موبایل:**
-   * در صورتی که دکمه دعوت‌ها در نوار پایین زده می‌شود، باید یا کاربر به المان `document.getElementById('invite-section')` اسکرول داده شود یا مستقیماً مدال `JoinCampaignModal` باز شود.
+1. **سرنوشت فایل‌های مرده (گام ۴):**
+   * ۴ کامپوننت شناسایی‌شده در بخش ۶ (`CreateCampaignModal.tsx`، `StickyCharacterVitalsBar.tsx`، `OfflineBanner.tsx`، `CalendarModal.tsx`) در مجموع ۵۴۵ خط هستند و هیچ اثر جانبی در برنامه ندارند. پیشنهاد می‌شود در یک تسک مجزا پس از تأیید نهایی کاربر حذف شوند.
+2. **تصمیم‌گیری در خصوص تب‌های `features` و `abilities` (گام ۳):**
+   * گزارش مقایسه‌ای تهیه شده و دو راهکار مشخص (الف: حذف برچسب از هدر و ریدایرکت، ب: تب مستقل استخراج‌شده از `CombatTab`) در انتظار انتخاب کاربر است.
+3. **گاردریل ناوبری و جلوگیری از رگرسیون (گام ۵):**
+   * اسکریپت خودکار `scripts/check-navigation.mjs` به چرخه `npm run check` متصل شد تا از افزودن هرگونه مدال بدون رندر یا روت ناشناخته جلوگیری کند.

@@ -1,4 +1,4 @@
-import React, { useState, startTransition } from 'react';
+import React, { useState, startTransition, useRef, useEffect } from 'react';
 import { Campaign, MasterCharacter, CampaignInvite, User, CharacterParticipation } from '../../types';
 import { APP_NAME_FA } from '../../config/app';
 import { 
@@ -19,6 +19,7 @@ interface HomeScreenProps {
   pendingApprovals: any[];
   draftParticipations?: CharacterParticipation[];
   isLoading?: boolean;
+  initialInviteCode?: string;
   onSelectCampaign: (campaignId: string) => void;
   onOpenCreateCampaign: () => void;
   onOpenCharacterMaster: (characterId: string) => void;
@@ -37,6 +38,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   pendingApprovals,
   draftParticipations = [],
   isLoading = false,
+  initialInviteCode = '',
   onSelectCampaign,
   onOpenCreateCampaign,
   onOpenCharacterMaster,
@@ -46,8 +48,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenApprovals,
   onAcceptInvite
 }) => {
-  const [inviteInput, setInviteInput] = useState('');
+  const [inviteInput, setInviteInput] = useState(initialInviteCode);
+  const inviteInputRef = useRef<HTMLInputElement>(null);
   const [campaignTab, setCampaignTab] = useState<'current' | 'past'>('current');
+
+  useEffect(() => {
+    if (initialInviteCode) {
+      setInviteInput(initialInviteCode);
+    }
+  }, [initialInviteCode]);
 
   // Partition campaigns into active/current and past/archived
   const { current: currentCampaigns, past: pastCampaigns } = partitionCampaigns(myCampaigns);
@@ -570,13 +579,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       )}
 
       {/* Invite Code Quick Join Section */}
-      <section className="rounded-2xl bg-bg border border-border p-4 space-y-3">
+      <section id="invite-section" className="rounded-2xl bg-bg border border-border p-4 space-y-3 scroll-mt-24">
         <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
           <UserCheck className="w-4 h-4 text-accent-hover" />
           پیوستن به کمپین با کد دعوت
         </h3>
         <div className="flex gap-2">
           <Input noWrapper 
+            ref={inviteInputRef}
+            id="invite-code-input"
             type="text"
             value={inviteInput}
             onChange={(e) => setInviteInput(e.target.value)}
