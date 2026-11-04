@@ -184,6 +184,7 @@
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
   --radius-pill: 9999px;
+  --radius-card: 1rem;
 
   --shadow-glow-amber: 0 0 14px rgb(var(--color-primary-rgb) / 0.35);
   --shadow-glow-amber-lg: 0 0 24px rgb(var(--color-primary-hover-rgb) / 0.5);
@@ -431,14 +432,14 @@
    * ۶. گوشه‌ها و انحنا (Border Radii)
    * -------------------------------------------------------------------------- */
   --radius-xs: 0.25rem;    /* 4px */
-  --radius-sm: 0.5rem;     /* 8px */
+  --radius-sm: 0.75rem;    /* 12px */
   --radius-md: 0.625rem;   /* 10px */
   --radius-lg: 0.75rem;    /* 12px */
   --radius-xl: 1rem;       /* 16px */
   --radius-2xl: 1.25rem;   /* 20px */
   --radius-full: 9999px;   /* کاملاً گرد / قرصی */
   --radius-pill: 9999px;
-  --radius-card: 0.875rem; /* 14px کارت استاندارد */
+  --radius-card: 1rem;     /* 16px کارت استاندارد */
 
   /* --------------------------------------------------------------------------
    * ۷. سایه‌ها و درخشش‌ها (Shadows, Glows & Elevations)
@@ -501,6 +502,10 @@
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
   --sar: env(safe-area-inset-right, 0px);
+}
+
+body {
+  font-family: var(--font-body);
 }
 
 /* ============================================================================
@@ -801,6 +806,7 @@
 /* خط طلایی ظریف بالای کارت‌های برجسته */
 .card-gold-top {
   position: relative;
+  overflow: hidden;
 }
 .card-gold-top::before {
   content: '';

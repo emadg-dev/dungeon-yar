@@ -39,7 +39,7 @@ export const PWAInstallPrompt: React.FC = () => {
 
         {showIOSGuide && (
           <div
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in"
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-overlay/80 backdrop-blur-sm animate-in fade-in"
             onClick={(e) => {
               if (e.target === e.currentTarget) setShowIOSGuide(false);
             }}

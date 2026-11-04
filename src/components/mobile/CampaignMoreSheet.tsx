@@ -29,7 +29,7 @@ export const CampaignMoreSheet: React.FC<CampaignMoreSheetProps> = ({ isOpen, on
 
   return (
     <div dir="rtl" className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-overlay/60 backdrop-blur-sm" />
       <div
         className="relative w-full max-w-md bg-surface/95 border-t border-accent/20 rounded-t-3xl p-5 shadow-2xl"
         onClick={e => e.stopPropagation()}

@@ -62,7 +62,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
           <Button
             type="button"
             onClick={onOpenArchive}
-            className="text-xs text-text-muted hover:text-text-primary flex items-center gap-1 transition px-2 py-1 rounded-lg hover:bg-white/5 touch-target min-w-[44px]"
+            className="text-xs text-text-muted hover:text-text-primary flex items-center gap-1 transition px-2 py-1 rounded-lg hover:bg-surface-2 touch-target min-w-[44px]"
           >
             <Archive className="w-3.5 h-3.5" />
             <span>آرشیو</span>
@@ -139,7 +139,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
             <Button
               type="button"
               onClick={() => onEditRecap(recap)}
-              className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition touch-target min-w-[44px]"
+              className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-2 transition touch-target min-w-[44px]"
               title="ویرایش خلاصه"
             >
               <Edit3 className="w-3.5 h-3.5" />
@@ -148,7 +148,7 @@ export const PreviouslyOnCard: React.FC<PreviouslyOnCardProps> = ({
           <Button
             type="button"
             onClick={onOpenArchive}
-            className="py-1 px-2.5 rounded-[8px] bg-white/5 hover:bg-white/10 text-text-primary hover:text-text-primary text-xs font-semibold flex items-center gap-1 transition touch-target min-w-[44px]"
+            className="py-1 px-2.5 rounded-[8px] bg-surface-2 hover:bg-surface-3 text-text-primary hover:text-text-primary text-xs font-semibold flex items-center gap-1 transition touch-target min-w-[44px]"
           >
             <Archive className="w-3.5 h-3.5 text-accent" />
             <span>آرشیو</span>

@@ -152,7 +152,7 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
                 className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-wrap items-center justify-between gap-2 gap-3 min-h-[52px] ${
                   isAttended
                     ? 'bg-success/10 border-success/40 text-text-primary'
-                    : 'bg-surface border-white/5 text-text-muted opacity-70'
+                    : 'bg-surface border-border text-text-muted opacity-70'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -160,7 +160,7 @@ export const SessionAttendanceModal: React.FC<SessionAttendanceModalProps> = ({
                     className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${
                       isAttended
                         ? 'bg-success text-on-accent'
-                        : 'border border-white/20 text-transparent'
+                        : 'border border-border-strong text-transparent'
                     }`}
                   >
                     <Check className="w-4 h-4 stroke-[3]" />

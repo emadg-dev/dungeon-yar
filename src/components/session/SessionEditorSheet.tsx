@@ -216,7 +216,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
 
         {/* Mode Selector */}
         {!isEditing && (
-          <div className="grid grid-cols-2 gap-2 bg-bg p-1.5 rounded-2xl border border-white/10">
+          <div className="grid grid-cols-2 gap-2 bg-bg p-1.5 rounded-2xl border border-border">
             <Button
               type="button"
               onClick={() => {
@@ -259,7 +259,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
               min={1}
               value={number}
               onChange={(e) => setNumber(Math.max(1, parseInt(e.target.value, 10) || 1))}
-              className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2.5 text-xs text-text-primary font-bold text-center focus:outline-none focus:border-accent min-h-[44px]"
+              className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-xs text-text-primary font-bold text-center focus:outline-none focus:border-accent min-h-[44px]"
             />
           </div>
           <div className="col-span-3 space-y-1">
@@ -269,7 +269,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="مثال: گذر از دروازه ساعت‌ساز"
-              className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2.5 text-xs text-text-primary font-bold focus:outline-none focus:border-accent min-h-[44px]"
+              className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-xs text-text-primary font-bold focus:outline-none focus:border-accent min-h-[44px]"
               required
             />
           </div>
@@ -277,7 +277,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
 
         {/* Fixed Date Mode */}
         {mode === 'fixed' && (
-          <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-white/5">
+          <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
             <h4 className="text-xs font-bold text-accent-hover flex items-center gap-1.5">
               <CalendarIcon className="w-3.5 h-3.5" />
               <span>زمان‌بندی جلسه</span>
@@ -289,7 +289,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
                   type="date"
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
-                  className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
+                  className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
                 />
               </div>
               <div className="space-y-1">
@@ -298,7 +298,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
                   type="time"
                   value={scheduledTime}
                   onChange={(e) => setScheduledTime(e.target.value)}
-                  className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
+                  className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
                 />
               </div>
             </div>
@@ -311,7 +311,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
                 min={30}
                 value={durationMinutes}
                 onChange={(e) => setDurationMinutes(Math.max(30, parseInt(e.target.value, 10) || 240))}
-                className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
+                className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
               />
             </div>
           </div>
@@ -319,7 +319,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
 
         {/* Poll Mode (2 to 5 date options) */}
         {mode === 'poll' && (
-          <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-white/5">
+          <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 className="text-xs font-bold text-accent-hover flex items-center gap-1.5">
                 <Hourglass className="w-3.5 h-3.5" />
@@ -339,7 +339,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
 
             <div className="space-y-2.5">
               {pollOptions.map((opt, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-bg p-2 rounded-xl border border-white/5">
+                <div key={idx} className="flex items-center gap-2 bg-bg p-2 rounded-xl border border-border">
                   <span className="text-xs font-bold text-text-muted w-6 text-center">
                     {idx + 1}
                   </span>
@@ -351,7 +351,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
                       updated[idx].date = e.target.value;
                       setPollOptions(updated);
                     }}
-                    className="flex-1 bg-transparent border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
+                    className="flex-1 bg-transparent border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
                     required
                   />
                   <Input noWrapper
@@ -362,7 +362,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
                       updated[idx].time = e.target.value;
                       setPollOptions(updated);
                     }}
-                    className="w-24 bg-transparent border border-white/10 rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
+                    className="w-24 bg-transparent border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
                   />
                   {pollOptions.length > 2 && (
                     <Button
@@ -391,7 +391,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
             value={inWorldDate}
             onChange={(e) => setInWorldDate(e.target.value)}
             placeholder="مثال: ۱۲ سایه‌باد ۱۱۷۸"
-            className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
+            className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
           />
         </div>
 
@@ -407,7 +407,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
               value={placeText}
               onChange={(e) => setPlaceText(e.target.value)}
               placeholder="مثال: کافه ماجراجویان یا منزل سامان"
-              className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
+              className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
             />
           </div>
 
@@ -421,7 +421,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
               value={onlineUrl}
               onChange={(e) => setOnlineUrl(e.target.value)}
               placeholder="https://meet.google.com/..."
-              className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
+              className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
             />
           </div>
         </div>
@@ -433,7 +433,7 @@ export const SessionEditorSheet: React.FC<SessionEditorSheetProps> = ({
             <Select noWrapper
               value={status}
               onChange={(e) => setStatus(e.target.value as SessionStatus)}
-              className="w-full bg-bg border border-white/10 rounded-xl px-3 py-2.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
+              className="w-full bg-bg border border-border rounded-xl px-3 py-2.5 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
             >
               <option value="planned">برنامه‌ریزی اولیه</option>
               <option value="confirmed">تأیید شده و قطعی</option>

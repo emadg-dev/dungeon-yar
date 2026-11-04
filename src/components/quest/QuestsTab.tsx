@@ -176,7 +176,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
             }`}
           >
             <span className="whitespace-nowrap shrink-0">در جریان</span>
-            <span className="text-xs px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold shrink-0">
+            <span className="text-xs px-1.5 py-0.2 rounded-full bg-scrim font-mono font-bold shrink-0">
               {activeCount}
             </span>
           </Button>
@@ -192,7 +192,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
             }`}
           >
             <span className="whitespace-nowrap shrink-0">تکمیل شده</span>
-            <span className="text-xs px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold shrink-0">
+            <span className="text-xs px-1.5 py-0.2 rounded-full bg-scrim font-mono font-bold shrink-0">
               {completedCount}
             </span>
           </Button>
@@ -208,7 +208,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
             }`}
           >
             <span className="whitespace-nowrap shrink-0">شکست / رهاشده</span>
-            <span className="text-xs px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold shrink-0">
+            <span className="text-xs px-1.5 py-0.2 rounded-full bg-scrim font-mono font-bold shrink-0">
               {otherCount}
             </span>
           </Button>
@@ -226,7 +226,7 @@ export const QuestsTab: React.FC<QuestsTabProps> = ({
             >
               <EyeOff className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap shrink-0">پنهان</span>
-              <span className="text-xs px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold shrink-0">
+              <span className="text-xs px-1.5 py-0.2 rounded-full bg-scrim font-mono font-bold shrink-0">
                 {hiddenCount}
               </span>
             </Button>

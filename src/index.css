@@ -68,7 +68,6 @@
     overscroll-behavior-y: none !important;
     overscroll-behavior-x: none !important;
     position: relative;
-    font-family: var(--font-body);
     font-size: 0.9375rem; /* 15px body */
     line-height: 1.5;
     background: transparent; /* gradient lives on html; orbs below sit on top of it */
@@ -238,14 +237,6 @@
   box-shadow: 0 0 18px rgb(var(--color-danger-rgb) / 0.25);
 }
 
-/* Mobile Touch Target minimum guarantee (>= 44x44px) */
-.touch-target {
-  min-height: 44px;
-  min-width: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
 
 /* Reusable Button No-Wrap class */
 .btn-nowrap {
@@ -315,22 +306,6 @@
   background-color: transparent;
   background-image: radial-gradient(rgb(var(--color-primary-rgb) / 0.035) 1px, transparent 0), radial-gradient(rgb(var(--color-hairline-rgb) / 0.015) 1px, transparent 0);
   background-size: 20px 20px, 10px 10px;
-}
-
-/* Thin gold top line on important cards */
-.card-gold-top {
-  position: relative;
-  overflow: hidden;
-}
-.card-gold-top::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  inset-inline: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, var(--color-primary) 50%, transparent 100%);
-  pointer-events: none;
-  z-index: 2;
 }
 
 /* Soft amber glow on active/focused elements */
@@ -448,7 +423,9 @@ body.in-encounter .liquid-dock {
   pointer-events: none;
 }
 .liquid-dock__item {
-  width: 3.25rem;
+  min-width: 3.25rem;
+  max-width: 4.5rem;
+  flex: 1 1 0;
   height: 3.25rem;
   border-radius: 1rem;
   display: flex;

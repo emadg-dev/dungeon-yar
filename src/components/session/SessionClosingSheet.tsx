@@ -338,7 +338,7 @@ export const SessionClosingSheet: React.FC<SessionClosingSheetProps> = ({
                         key={amt}
                         type="button"
                         onClick={() => setXpAmount(amt)}
-                        className="px-2 py-1.5 rounded-[6px] bg-white/5 hover:bg-white/10 text-xs font-bold text-accent transition"
+                        className="px-2 py-1.5 rounded-[6px] bg-surface-2 hover:bg-surface-3 text-xs font-bold text-accent transition"
                       >
                         +{amt}
                       </Button>

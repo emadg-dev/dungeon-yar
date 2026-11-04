@@ -181,7 +181,7 @@ export const NotificationPreferencesModal: React.FC<NotificationPreferencesModal
               disabled={pushLoading || pushStatus === 'unsupported'}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 pushSubscribed
-                  ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-700/60 hover:bg-emerald-900/60'
+                  ? 'bg-success-bg text-success border border-success/40 hover:bg-success/20'
                   : 'bg-accent text-on-accent hover:bg-accent-hover font-bold shadow-md'
               } disabled:opacity-50`}
             >

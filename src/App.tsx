@@ -335,7 +335,10 @@ export default function App() {
       }
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', theme === 'light' ? '#F7F4EE' : '#0E0D0C');
+        const bg = getComputedStyle(document.documentElement).getPropertyValue('--color-bg').trim();
+        if (bg) {
+          metaThemeColor.setAttribute('content', bg);
+        }
       }
     }
     try {
