@@ -1,4 +1,10 @@
 import { MonthDef, OffDayDef, WorldCalendar } from '../types';
+import {
+  SHAHROOZAN_ZORVANIA_CALENDAR,
+  formatDate,
+  epochToDate,
+  dateToEpoch
+} from '../../shared/rules/calendar';
 
 export const CALENDAR_MONTHS: MonthDef[] = [
   // بهار
@@ -57,68 +63,53 @@ export const INITIAL_CALENDAR: WorldCalendar = {
   updatedAt: new Date().toISOString()
 };
 
+/**
+ * Formats WorldCalendar date via unified calendar engine.
+ * Retains exact string output for backward compatibility.
+ */
 export function formatWorldDate(cal: WorldCalendar): string {
-  if (cal.isOffDay && cal.offDayIndex) {
-    const offDay = CALENDAR_OFF_DAYS.find(o => o.id === cal.offDayIndex);
-    return `${offDay ? offDay.name : 'روز برون‌گاه'} (خارج از سال‌شمار) - سال ${cal.year} پ.ر.ن.`;
-  }
-  const month = CALENDAR_MONTHS.find(m => m.id === cal.month);
-  const monthName = month ? month.name : `${cal.month}`;
-  return `${cal.day} ${monthName}، سال ${cal.year} پ.ر.ن.`;
+  const epoch = dateToEpoch(SHAHROOZAN_ZORVANIA_CALENDAR, {
+    year: cal.year,
+    month: cal.month,
+    day: cal.day,
+    isOffDay: Boolean(cal.isOffDay || cal.month === 13),
+    offDayIndex: cal.offDayIndex
+  });
+  return formatDate(SHAHROOZAN_ZORVANIA_CALENDAR, epoch);
 }
 
+/**
+ * Advances WorldCalendar days via unified calendar epoch math.
+ * Completely maintains behavioral parity with the legacy step-by-step logic.
+ */
 export function advanceCalendarDays(current: WorldCalendar, days: number): WorldCalendar {
-  let { year, month, day, isOffDay, offDayIndex = 0 } = current;
+  const currentEpoch = dateToEpoch(SHAHROOZAN_ZORVANIA_CALENDAR, {
+    year: current.year,
+    month: current.month,
+    day: current.day,
+    isOffDay: Boolean(current.isOffDay || current.month === 13),
+    offDayIndex: current.offDayIndex
+  });
 
-  for (let i = 0; i < days; i++) {
-    if (!isOffDay) {
-      if (day < 30) {
-        day++;
-      } else {
-        // End of month
-        if (month < 12) {
-          month++;
-          day = 1;
-        } else {
-          // Month 12 day 30 passed -> Enter 5 Off-Days!
-          isOffDay = true;
-          offDayIndex = 1;
-          day = 1;
-          month = 13;
-        }
-      }
-    } else {
-      // In 5 off-days
-      if (offDayIndex < 5) {
-        offDayIndex++;
-        day = offDayIndex;
-      } else {
-        // 5 off-days passed -> New Year!
-        year++;
-        month = 1;
-        day = 1;
-        isOffDay = false;
-        offDayIndex = 0;
-      }
-    }
-  }
+  const nextEpoch = currentEpoch + days;
+  const date = epochToDate(SHAHROOZAN_ZORVANIA_CALENDAR, nextEpoch);
 
   let currentFestival: string | undefined = undefined;
-  if (isOffDay) {
-    const off = CALENDAR_OFF_DAYS.find(o => o.id === offDayIndex);
+  if (date.isOffDay) {
+    const off = CALENDAR_OFF_DAYS.find(o => o.id === date.offDayIndex);
     currentFestival = off ? off.name : undefined;
-  } else if (day === 1) {
-    const m = CALENDAR_MONTHS.find(mo => mo.id === month);
+  } else if (date.day === 1) {
+    const m = CALENDAR_MONTHS.find(mo => mo.id === (date.monthIndex + 1));
     currentFestival = m ? `جشن ${m.festival}` : undefined;
   }
 
   return {
     ...current,
-    year,
-    month,
-    day,
-    isOffDay,
-    offDayIndex,
+    year: date.year,
+    month: date.isOffDay ? 13 : date.monthIndex + 1,
+    day: date.day,
+    isOffDay: date.isOffDay,
+    offDayIndex: date.offDayIndex || 0,
     currentFestival,
     updatedAt: new Date().toISOString()
   };
