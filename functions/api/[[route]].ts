@@ -48,6 +48,27 @@ import {
   getFieldLabelFa
 } from '../../shared/rules/offlineEngine';
 import {
+  validateCalendar,
+  weekdayOf,
+  dateToEpoch,
+  epochToDate,
+  festivalsOn,
+  advanceTime,
+  formatCalendarDate,
+  daysInCalendarYear
+} from '../../shared/rules/calendar';
+import {
+  CALENDAR_TEMPLATES,
+  TEMPLATE_SHAHROOZAN_ZORVANIA,
+  TEMPLATE_GATHIC,
+  TEMPLATE_SIMPLE_STARTER
+} from '../../shared/rules/calendarTemplates';
+import type {
+  GenericCalendarData,
+  CalendarDate,
+  CampaignTimeState
+} from '../../src/types';
+import {
   can,
   getCampaignRole as fetchCampaignRole,
   requirePermission as verifyPermission,
@@ -5730,40 +5751,649 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   // ---------------------------------------------------------
-  // Calendar Routes
+  // Calendar & Campaign Time Engine Helper
+  // ---------------------------------------------------------
+  const loadCampaignCalendarAndData = async (campId: string) => {
+    let timeRow = await env.DB.prepare('SELECT * FROM campaign_time WHERE campaign_id = ?').bind(campId).first();
+    let calId = timeRow?.calendar_id;
+
+    if (!timeRow) {
+      let epochDay = 0;
+      // For legacy zorvania-c1 only, backfill from legacy campaign_calendar if present
+      if (campId === 'zorvania-c1') {
+        const legacyCal = await env.DB.prepare('SELECT * FROM campaign_calendar WHERE id = ?').bind('zorvania-calendar').first();
+        if (legacyCal) {
+          epochDay = Number(legacyCal.is_off_day) === 1
+            ? (Number(legacyCal.year) - 1500) * 365 + 360 + Math.max(0, Number(legacyCal.off_day_index || 1) - 1)
+            : (Number(legacyCal.year) - 1500) * 365 + (Number(legacyCal.month) - 1) * 30 + Math.max(0, Number(legacyCal.day) - 1);
+        }
+        calId = 'cal-zorvania';
+      } else {
+        // Check if campaign already has a campaign-scoped calendar
+        const existingCampCal = await env.DB.prepare('SELECT * FROM calendars WHERE scope_type = "campaign" AND scope_id = ?').bind(campId).first();
+        if (existingCampCal) {
+          calId = existingCampCal.id;
+        } else {
+          // Lazy init: create default campaign calendar for this campaign from template
+          const newCalId = `cal-${campId}-default`;
+          const template = TEMPLATE_SHAHROOZAN_ZORVANIA;
+          await env.DB.prepare(`
+            INSERT OR IGNORE INTO calendars (id, scope_type, scope_id, source_id, name, months, off_days, festivals, weekday_index, data, tags, era_label, start_year, weekdays, updated_at)
+            VALUES (?, 'campaign', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `).bind(
+            newCalId,
+            campId,
+            template.id,
+            template.name,
+            JSON.stringify(template.months || []),
+            JSON.stringify(template.offDays || []),
+            JSON.stringify(template.festivals || []),
+            template.anchor?.weekdayIndex ?? 0,
+            JSON.stringify(template),
+            JSON.stringify([]),
+            template.eraLabel || 'پ.ر.ن',
+            template.startYear || 1500,
+            JSON.stringify(template.weekdays || []),
+            now
+          ).run();
+          calId = newCalId;
+        }
+      }
+
+      timeRow = { campaign_id: campId, calendar_id: calId, epoch_day: epochDay, updated_at: now };
+      await env.DB.prepare(
+        'INSERT OR IGNORE INTO campaign_time (campaign_id, calendar_id, epoch_day, updated_at) VALUES (?, ?, ?, ?)'
+      ).bind(campId, calId, epochDay, now).run();
+    }
+
+    const calRow = await env.DB.prepare('SELECT * FROM calendars WHERE id = ?').bind(calId).first()
+      || await env.DB.prepare('SELECT * FROM calendars WHERE id = ?').bind('cal-zorvania').first();
+
+    const genericCal: GenericCalendarData = calRow ? {
+      id: calRow.id,
+      name: calRow.name,
+      eraLabel: calRow.era_label || 'پ.ر.ن',
+      startYear: Number(calRow.start_year || 1500),
+      months: parseBlob(calRow.months, []),
+      offDays: parseBlob(calRow.off_days, []),
+      festivals: parseBlob(calRow.festivals, []),
+      weekdays: parseBlob(calRow.weekdays, []),
+      anchor: { weekdayIndex: calRow.weekday_index !== null && calRow.weekday_index !== undefined ? Number(calRow.weekday_index) : 0 },
+      tags: parseBlob(calRow.tags, [])
+    } : {
+      id: 'cal-zorvania',
+      name: 'گاه‌شمار شاه‌روزان (زروانیا)',
+      eraLabel: 'پ.ر.ن',
+      startYear: 1500,
+      anchor: { weekdayIndex: 0 },
+      months: [
+        { name: 'فرورداد', days: 30, season: 'بهار' },
+        { name: 'اردی‌مهر', days: 30, season: 'بهار' },
+        { name: 'خورداد', days: 30, season: 'بهار' },
+        { name: 'تیرآذر', days: 30, season: 'تابستان' },
+        { name: 'امرداد', days: 30, season: 'تابستان' },
+        { name: 'شهریور', days: 30, season: 'تابستان' },
+        { name: 'مهرآیین', days: 30, season: 'پاییز' },
+        { name: 'آبان‌داد', days: 30, season: 'پاییز' },
+        { name: 'آذرپژواک', days: 30, season: 'پاییز' },
+        { name: 'دی‌مهر', days: 30, season: 'زمستان' },
+        { name: 'بهمن‌یار', days: 30, season: 'زمستان' },
+        { name: 'اسفندارمذ', days: 30, season: 'زمستان' }
+      ],
+      offDays: [
+        { id: 'off-1', name: 'گاه اول: اهنود', note: 'روز اول بیرون از تقویم - سکوت میان زمان‌ها' },
+        { id: 'off-2', name: 'گاه دوم: اشتود', note: 'روز دوم بیرون از تقویم - یادبود دیوان نیک‌نهاد' },
+        { id: 'off-3', name: 'گاه سوم: سپنتمد', note: 'روز سوم بیرون از تقویم - نذر آب و ریشه' },
+        { id: 'off-4', name: 'گاه چهارم: وهوخشتر', note: 'روز چهارم بیرون از تقویم - درخشش آسمان سرخ' },
+        { id: 'off-5', name: 'گاه پنجم: وهیشتوآیشت', note: 'روز پنجم بیرون از تقویم - باززایی زمان' }
+      ],
+      festivals: [
+        { name: 'جشن روز نخست (نوروز کهن)', monthIndex: 1, day: 1, note: 'آغاز تقویم و برافروختن اخگر' },
+        { name: 'مهرگان زروانیا', monthIndex: 7, day: 16, note: 'پیمان میان قبایل' },
+        { name: 'جشن آذرخش', monthIndex: 9, day: 9, note: 'پالایش آتشکده‌ها' }
+      ],
+      weekdays: ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه']
+    };
+
+    return { timeRow, genericCal };
+  };
+
+  const buildMultiCalendarTimeResponse = async (
+    campId: string,
+    epochDay: number,
+    primaryCalId: string,
+    primaryCal: GenericCalendarData,
+    advancedBy?: number
+  ) => {
+    const calRows = await env.DB.prepare(
+      `SELECT * FROM calendars WHERE (scope_type = 'campaign' AND scope_id = ?) OR id = ? OR id = 'cal-zorvania'`
+    ).bind(campId, primaryCalId).all();
+
+    const calendarsMap: Record<string, any> = {};
+
+    for (const r of (calRows.results || [])) {
+      const calData: GenericCalendarData = {
+        id: r.id,
+        name: r.name,
+        eraLabel: r.era_label || 'پ.ر.ن',
+        startYear: Number(r.start_year || 1500),
+        months: parseBlob(r.months, []),
+        offDays: parseBlob(r.off_days, []),
+        festivals: parseBlob(r.festivals, []),
+        weekdays: parseBlob(r.weekdays, []),
+        anchor: { weekdayIndex: r.weekday_index !== null && r.weekday_index !== undefined ? Number(r.weekday_index) : 0 },
+        tags: parseBlob(r.tags, [])
+      };
+      const cState = advanceTime(calData, epochDay, 0, campId);
+      calendarsMap[r.id] = {
+        calendarId: r.id,
+        calendarName: r.name,
+        date: cState.date,
+        weekday: cState.weekday,
+        weekdayIndex: cState.weekdayIndex,
+        activeFestivals: cState.activeFestivals,
+        formattedDate: cState.formattedDate
+      };
+    }
+
+    if (!calendarsMap[primaryCalId]) {
+      const cState = advanceTime(primaryCal, epochDay, 0, campId);
+      calendarsMap[primaryCalId] = {
+        calendarId: primaryCal.id || primaryCalId,
+        calendarName: primaryCal.name,
+        date: cState.date,
+        weekday: cState.weekday,
+        weekdayIndex: cState.weekdayIndex,
+        activeFestivals: cState.activeFestivals,
+        formattedDate: cState.formattedDate
+      };
+    }
+
+    const primaryState = calendarsMap[primaryCalId] || advanceTime(primaryCal, epochDay, 0, campId);
+
+    return {
+      campaignId: campId,
+      primaryCalendarId: primaryCalId,
+      calendarId: primaryCalId,
+      epochDay,
+      date: primaryState.date,
+      weekday: primaryState.weekday,
+      weekdayIndex: primaryState.weekdayIndex,
+      activeFestivals: primaryState.activeFestivals,
+      formattedDate: primaryState.formattedDate,
+      calendars: calendarsMap,
+      ...(advancedBy !== undefined ? { advancedBy } : {}),
+      updatedAt: now
+    };
+  };
+
+  // ---------------------------------------------------------
+  // /* LEGACY */ Calendar Routes (Full Compatibility Layer for Zorvania)
   // ---------------------------------------------------------
   if (path === '/calendar' && method === 'GET') {
-    const row = await env.DB.prepare('SELECT * FROM campaign_calendar WHERE id = ?').bind('zorvania-calendar').first();
-    if (!row) {
-      return json({
-        id: 'zorvania-calendar',
-        year: 1500,
-        month: 1,
-        day: 1,
-        isOffDay: false,
-        currentFestival: 'جشن فرهگان',
-        updatedAt: now
-      });
-    }
+    const { timeRow, genericCal } = await loadCampaignCalendarAndData('zorvania-c1');
+    const epochDay = Number(timeRow.epoch_day || 0);
+    const date = epochToDate(genericCal, epochDay);
+    const activeFestivals = festivalsOn(genericCal, epochDay);
     return json({
-      id: row.id,
-      year: row.year,
-      month: row.month,
-      day: row.day,
-      isOffDay: row.is_off_day === 1,
-      offDayIndex: row.off_day_index,
-      currentFestival: row.current_festival,
-      updatedAt: row.updated_at
+      id: 'zorvania-calendar',
+      year: date.year,
+      month: date.month,
+      day: date.day,
+      isOffDay: date.isOffDay,
+      offDayIndex: date.offDayIndex || 0,
+      currentFestival: activeFestivals[0]?.name || 'جشن فرهگان',
+      updatedAt: timeRow.updated_at || now
     });
   }
 
   if (path === '/calendar' && method === 'PUT') {
-    if (currentUser.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
     const data = await request.json() as any;
+    const { genericCal } = await loadCampaignCalendarAndData('zorvania-c1');
+    const epochDay = dateToEpoch(genericCal, {
+      year: Number(data.year || 1500),
+      month: Number(data.month || 1),
+      day: Number(data.day || 1),
+      isOffDay: Boolean(data.isOffDay),
+      offDayIndex: data.offDayIndex ? Number(data.offDayIndex) : undefined
+    });
+
+    // Sync only zorvania-c1 campaign_time (campaign_time is now sole source of truth)
     await env.DB.prepare(
-      'INSERT INTO campaign_calendar (id, year, month, day, is_off_day, off_day_index, current_festival, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET year = excluded.year, month = excluded.month, day = excluded.day, is_off_day = excluded.is_off_day, off_day_index = excluded.off_day_index, current_festival = excluded.current_festival, updated_at = excluded.updated_at'
-    ).bind('zorvania-calendar', data.year, data.month, data.day, data.isOffDay ? 1 : 0, data.offDayIndex || 0, data.currentFestival || '', now).run();
-    return json({ ...data, updatedAt: now });
+      'INSERT INTO campaign_time (campaign_id, calendar_id, epoch_day, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(campaign_id) DO UPDATE SET epoch_day = excluded.epoch_day, updated_at = excluded.updated_at'
+    ).bind('zorvania-c1', 'cal-zorvania', epochDay, now).run();
+
+    return json({ ...data, epochDay, updatedAt: now });
+  }
+
+  if (path === '/calendar/advance' && method === 'POST') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const body = await request.json() as any;
+    const days = Number(body.days || 1);
+    const { timeRow, genericCal } = await loadCampaignCalendarAndData('zorvania-c1');
+    const updatedState = advanceTime(genericCal, Number(timeRow.epoch_day || 0), days, 'zorvania-c1');
+
+    await env.DB.prepare(
+      'INSERT INTO campaign_time (campaign_id, calendar_id, epoch_day, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(campaign_id) DO UPDATE SET epoch_day = excluded.epoch_day, updated_at = excluded.updated_at'
+    ).bind('zorvania-c1', 'cal-zorvania', updatedState.epochDay, now).run();
+
+    return json({
+      id: 'zorvania-calendar',
+      year: updatedState.date.year,
+      month: updatedState.date.month,
+      day: updatedState.date.day,
+      isOffDay: updatedState.date.isOffDay,
+      offDayIndex: updatedState.date.offDayIndex || 0,
+      currentFestival: updatedState.activeFestivals[0]?.name || '',
+      epochDay: updatedState.epochDay,
+      formattedDate: updatedState.formattedDate,
+      updatedAt: now
+    });
+  }
+
+  // ---------------------------------------------------------
+  // Stage 2A: Campaign Calendars & Campaign Time Endpoints
+  // ---------------------------------------------------------
+
+  // GET /api/c/:campaignId/calendars — list calendars available for campaign
+  if (path.match(/^\/c\/[^/]+\/calendars$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm' && campId !== 'zorvania-c1') {
+      return error('کمپین مورد نظر یافت نشد.', 404);
+    }
+
+    const rows = await env.DB.prepare(
+      `SELECT * FROM calendars WHERE (scope_type = 'campaign' AND scope_id = ?) OR scope_type = 'pack' OR id = 'cal-zorvania' ORDER BY updated_at DESC`
+    ).bind(campId).all();
+
+    const list = (rows.results || []).map((r: any) => ({
+      id: r.id,
+      scopeType: r.scope_type,
+      scopeId: r.scope_id,
+      sourceId: r.source_id,
+      name: r.name,
+      eraLabel: r.era_label || 'پ.ر.ن',
+      startYear: Number(r.start_year || 1500),
+      months: parseBlob(r.months, []),
+      offDays: parseBlob(r.off_days, []),
+      festivals: parseBlob(r.festivals, []),
+      weekdays: parseBlob(r.weekdays, []),
+      anchor: { weekdayIndex: r.weekday_index !== null && r.weekday_index !== undefined ? Number(r.weekday_index) : 0 },
+      tags: parseBlob(r.tags, []),
+      updatedAt: r.updated_at
+    }));
+
+    return json(list);
+  }
+
+  // POST /api/c/:campaignId/calendars — create / save calendar for campaign (DM only)
+  if (path.match(/^\/c\/[^/]+\/calendars$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    if (!(await requireCampaignDm(campId))) {
+      return error('فقط دانجن مستر یا مالک کمپین مجاز است.', 403);
+    }
+
+    const body = await request.json() as any;
+    const v = validateCalendar(body);
+    if (!v.valid) {
+      return error(`خطای اعتبارسنجی تقویم: ${v.errors.join('، ')}`, 400);
+    }
+
+    const calId = body.id || `cal-${Date.now()}-${generateRandomToken(4)}`;
+    const weekdayIdx = body.anchor?.weekdayIndex ?? 0;
+    await env.DB.prepare(`
+      INSERT INTO calendars (id, scope_type, scope_id, source_id, name, months, off_days, festivals, weekday_index, data, tags, era_label, start_year, weekdays, updated_at)
+      VALUES (?, 'campaign', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        name = excluded.name,
+        months = excluded.months,
+        off_days = excluded.off_days,
+        festivals = excluded.festivals,
+        weekday_index = excluded.weekday_index,
+        data = excluded.data,
+        tags = excluded.tags,
+        era_label = excluded.era_label,
+        start_year = excluded.start_year,
+        weekdays = excluded.weekdays,
+        updated_at = excluded.updated_at
+    `).bind(
+      calId,
+      campId,
+      body.sourceId || null,
+      body.name,
+      JSON.stringify(body.months || []),
+      JSON.stringify(body.offDays || []),
+      JSON.stringify(body.festivals || []),
+      weekdayIdx,
+      JSON.stringify(body),
+      JSON.stringify(body.tags || []),
+      body.eraLabel || 'پ.ر.ن',
+      body.startYear || 1500,
+      JSON.stringify(body.weekdays || []),
+      now
+    ).run();
+
+    return json({
+      ...body,
+      id: calId,
+      scopeType: 'campaign',
+      scopeId: campId,
+      anchor: { weekdayIndex: weekdayIdx },
+      updatedAt: now
+    }, 201);
+  }
+
+  // PUT /api/c/:campaignId/calendars/:calendarId — edit calendar structure (DM only)
+  if (path.match(/^\/c\/[^/]+\/calendars\/[^/]+$/) && (method === 'PUT' || method === 'PATCH')) {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const calId = parts[4];
+    if (!(await requireCampaignDm(campId))) {
+      return error('فقط دانجن مستر یا مالک کمپین مجاز به ویرایش گاه‌شمار است.', 403);
+    }
+
+    const existing = await env.DB.prepare('SELECT * FROM calendars WHERE id = ?').bind(calId).first();
+    if (!existing) return error('گاه‌شمار مورد نظر یافت نشد.', 404);
+
+    const body = await request.json() as any;
+    const mergedMonths = body.months !== undefined ? body.months : parseBlob(existing.months, []);
+    const mergedOffDays = body.offDays !== undefined ? body.offDays : parseBlob(existing.off_days, []);
+    const mergedFestivals = body.festivals !== undefined ? body.festivals : parseBlob(existing.festivals, []);
+    const mergedWeekdays = body.weekdays !== undefined ? body.weekdays : parseBlob(existing.weekdays, []);
+    const mergedName = body.name !== undefined ? body.name : existing.name;
+    const mergedEraLabel = body.eraLabel !== undefined ? body.eraLabel : (existing.era_label || 'پ.ر.ن');
+    const mergedStartYear = body.startYear !== undefined ? Number(body.startYear) : Number(existing.start_year || 1500);
+    const mergedWeekdayIdx = body.anchor?.weekdayIndex !== undefined
+      ? Number(body.anchor.weekdayIndex)
+      : (existing.weekday_index !== null && existing.weekday_index !== undefined ? Number(existing.weekday_index) : 0);
+    const mergedTags = body.tags !== undefined ? body.tags : parseBlob(existing.tags, []);
+
+    const mergedForValidation = {
+      name: mergedName,
+      months: mergedMonths,
+      offDays: mergedOffDays,
+      festivals: mergedFestivals,
+      anchor: { weekdayIndex: mergedWeekdayIdx },
+      eraLabel: mergedEraLabel,
+      startYear: mergedStartYear,
+      weekdays: mergedWeekdays,
+      tags: mergedTags
+    };
+
+    const v = validateCalendar(mergedForValidation);
+    if (!v.valid) {
+      return error(`خطای اعتبارسنجی تقویم: ${v.errors.join('، ')}`, 400);
+    }
+
+    await env.DB.prepare(`
+      UPDATE calendars SET
+        name = ?,
+        months = ?,
+        off_days = ?,
+        festivals = ?,
+        weekday_index = ?,
+        data = ?,
+        tags = ?,
+        era_label = ?,
+        start_year = ?,
+        weekdays = ?,
+        updated_at = ?
+      WHERE id = ?
+    `).bind(
+      mergedName,
+      JSON.stringify(mergedMonths),
+      JSON.stringify(mergedOffDays),
+      JSON.stringify(mergedFestivals),
+      mergedWeekdayIdx,
+      JSON.stringify(mergedForValidation),
+      JSON.stringify(mergedTags),
+      mergedEraLabel,
+      mergedStartYear,
+      JSON.stringify(mergedWeekdays),
+      now,
+      calId
+    ).run();
+
+    // If this calendar is the primary calendar, epochDay in campaign_time stays constant
+    return json({
+      id: calId,
+      scopeType: existing.scope_type,
+      scopeId: existing.scope_id,
+      sourceId: existing.source_id,
+      name: mergedName,
+      eraLabel: mergedEraLabel,
+      startYear: mergedStartYear,
+      months: mergedMonths,
+      offDays: mergedOffDays,
+      festivals: mergedFestivals,
+      weekdays: mergedWeekdays,
+      anchor: { weekdayIndex: mergedWeekdayIdx },
+      tags: mergedTags,
+      updatedAt: now
+    });
+  }
+
+  // DELETE /api/c/:campaignId/calendars/:calendarId — delete calendar (DM only)
+  if (path.match(/^\/c\/[^/]+\/calendars\/[^/]+$/) && method === 'DELETE') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const calId = parts[4];
+    if (!(await requireCampaignDm(campId))) {
+      return error('فقط دانجن مستر یا مالک کمپین مجاز به حذف گاه‌شمار است.', 403);
+    }
+
+    // Check count of calendars for this campaign
+    const calsRes = await env.DB.prepare('SELECT id FROM calendars WHERE scope_type = "campaign" AND scope_id = ?').bind(campId).all();
+    const campaignCals = calsRes.results || [];
+    if (campaignCals.length <= 1) {
+      return error('امکان حذف آخرین گاه‌شمار کمپین وجود ندارد. کمپین باید حداقل دارای یک گاه‌شمار باشد.', 400);
+    }
+
+    // Check if calId is current primary in campaign_time
+    const timeRow = await env.DB.prepare('SELECT * FROM campaign_time WHERE campaign_id = ?').bind(campId).first();
+    let newPrimaryCalendarId: string | undefined = undefined;
+    if (timeRow && timeRow.calendar_id === calId) {
+      const remaining = campaignCals.filter((c: any) => c.id !== calId);
+      newPrimaryCalendarId = remaining[0]?.id || 'cal-zorvania';
+      await env.DB.prepare('UPDATE campaign_time SET calendar_id = ?, updated_at = ? WHERE campaign_id = ?').bind(newPrimaryCalendarId, now, campId).run();
+    }
+
+    await env.DB.prepare('DELETE FROM calendars WHERE id = ?').bind(calId).run();
+    return json({ success: true, deletedId: calId, newPrimaryCalendarId });
+  }
+
+  // GET /api/c/:campaignId/time — get current campaign time for all calendars
+  if (path.match(/^\/c\/[^/]+\/time$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole && actor.role !== 'dm' && campId !== 'zorvania-c1') {
+      return error('کمپین مورد نظر یافت نشد.', 404);
+    }
+
+    const { timeRow, genericCal } = await loadCampaignCalendarAndData(campId);
+    const epochDay = Number(timeRow.epoch_day || 0);
+    const primaryCalId = timeRow.calendar_id || genericCal.id || 'cal-zorvania';
+    const responseData = await buildMultiCalendarTimeResponse(campId, epochDay, primaryCalId, genericCal);
+    return json(responseData);
+  }
+
+  // PUT /api/c/:campaignId/time — set campaign time (DM only)
+  if (path.match(/^\/c\/[^/]+\/time$/) && method === 'PUT') {
+    const campId = path.split('/')[2];
+    if (!(await requireCampaignDm(campId))) {
+      return error('دسترسی مجاز نیست. فقط دانجن‌مستر مجاز به تغییر زمان است.', 403);
+    }
+
+    const body = await request.json() as any;
+    const { timeRow, genericCal } = await loadCampaignCalendarAndData(campId);
+
+    let targetCal = genericCal;
+    if (body.calendarId && body.calendarId !== genericCal.id) {
+      const specificRow = await env.DB.prepare('SELECT * FROM calendars WHERE id = ?').bind(body.calendarId).first();
+      if (specificRow) {
+        targetCal = {
+          id: specificRow.id,
+          name: specificRow.name,
+          eraLabel: specificRow.era_label || 'پ.ر.ن',
+          startYear: Number(specificRow.start_year || 1500),
+          months: parseBlob(specificRow.months, []),
+          offDays: parseBlob(specificRow.off_days, []),
+          festivals: parseBlob(specificRow.festivals, []),
+          weekdays: parseBlob(specificRow.weekdays, []),
+          anchor: { weekdayIndex: specificRow.weekday_index !== null && specificRow.weekday_index !== undefined ? Number(specificRow.weekday_index) : 0 },
+          tags: parseBlob(specificRow.tags, [])
+        };
+      }
+    }
+
+    let targetEpochDay: number;
+    if (body.epochDay !== undefined) {
+      if (typeof body.epochDay !== 'number' || !Number.isInteger(body.epochDay)) {
+        return error('مقدار epochDay باید عدد صحیح باشد.', 400);
+      }
+      targetEpochDay = body.epochDay;
+    } else if (body.year !== undefined && body.month !== undefined && body.day !== undefined) {
+      const parsedYear = Number(body.year);
+      const parsedMonth = Number(body.month);
+      const parsedDay = Number(body.day);
+      if (isNaN(parsedYear) || isNaN(parsedMonth) || isNaN(parsedDay)) {
+        return error('اجزای تاریخ باید مقادیر عددی معتبر باشند.', 400);
+      }
+      targetEpochDay = dateToEpoch(targetCal, {
+        year: parsedYear,
+        month: parsedMonth,
+        day: parsedDay,
+        isOffDay: Boolean(body.isOffDay),
+        offDayIndex: body.offDayIndex ? Number(body.offDayIndex) : undefined
+      });
+    } else {
+      return error('ارسال epochDay یا اجزای تاریخ (سال، ماه، روز) الزامی است.', 400);
+    }
+
+    const calIdToSave = targetCal.id || timeRow.calendar_id || 'cal-zorvania';
+    // Write ONLY to campaign_time
+    await env.DB.prepare(`
+      INSERT INTO campaign_time (campaign_id, calendar_id, epoch_day, updated_at)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(campaign_id) DO UPDATE SET
+        calendar_id = excluded.calendar_id,
+        epoch_day = excluded.epoch_day,
+        updated_at = excluded.updated_at
+    `).bind(campId, calIdToSave, targetEpochDay, now).run();
+
+    const responseData = await buildMultiCalendarTimeResponse(campId, targetEpochDay, calIdToSave, targetCal);
+    return json(responseData);
+  }
+
+  // POST /api/c/:campaignId/time/advance — advance campaign time (DM only)
+  if (path.match(/^\/c\/[^/]+\/time\/advance$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    if (!(await requireCampaignDm(campId))) {
+      return error('دسترسی مجاز نیست. فقط دانجن‌مستر مجاز به پیشروی زمان است.', 403);
+    }
+
+    const body = await request.json() as any;
+    const days = Number(body.days);
+    if (isNaN(days) || !Number.isInteger(days)) {
+      return error('مقدار days باید عددی صحیح باشد.', 400);
+    }
+
+    const { timeRow, genericCal } = await loadCampaignCalendarAndData(campId);
+    const currentEpoch = Number(timeRow.epoch_day || 0);
+    const newEpochDay = Math.floor(currentEpoch + days);
+    const calIdToSave = genericCal.id || timeRow.calendar_id || 'cal-zorvania';
+
+    // Write ONLY to campaign_time
+    await env.DB.prepare(`
+      INSERT INTO campaign_time (campaign_id, calendar_id, epoch_day, updated_at)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(campaign_id) DO UPDATE SET
+        calendar_id = excluded.calendar_id,
+        epoch_day = excluded.epoch_day,
+        updated_at = excluded.updated_at
+    `).bind(campId, calIdToSave, newEpochDay, now).run();
+
+    const responseData = await buildMultiCalendarTimeResponse(campId, newEpochDay, calIdToSave, genericCal, days);
+    return json(responseData);
+  }
+
+  // GET /api/calendar-templates — list template calendars
+  if (path === '/calendar-templates' && method === 'GET') {
+    const rows = await env.DB.prepare(
+      `SELECT * FROM calendars WHERE scope_type = 'pack' OR scope_type = 'template' OR id LIKE 'cal-template-%' OR tags LIKE '%قالب%' ORDER BY updated_at DESC`
+    ).all();
+
+    const list = (rows.results || []).map((r: any) => ({
+      id: r.id,
+      scopeType: r.scope_type,
+      scopeId: r.scope_id,
+      sourceId: r.source_id,
+      name: r.name,
+      eraLabel: r.era_label || 'پ.ر.ن',
+      startYear: Number(r.start_year || 1500),
+      months: parseBlob(r.months, []),
+      offDays: parseBlob(r.off_days, []),
+      festivals: parseBlob(r.festivals, []),
+      weekdays: parseBlob(r.weekdays, []),
+      anchor: { weekdayIndex: r.weekday_index !== null && r.weekday_index !== undefined ? Number(r.weekday_index) : 0 },
+      tags: parseBlob(r.tags, []),
+      updatedAt: r.updated_at
+    }));
+
+    const combined = [...list];
+    for (const std of CALENDAR_TEMPLATES) {
+      if (!combined.some(t => t.id === std.id || t.name === std.name)) {
+        combined.push(std);
+      }
+    }
+
+    return json(combined);
+  }
+
+  // POST /api/calendar-templates — create an independent copy with source_id
+  if (path === '/calendar-templates' && method === 'POST') {
+    const data = await request.json() as any;
+    const v = validateCalendar(data);
+    if (!v.valid) {
+      return error(`خطای اعتبارسنجی تقویم: ${v.errors.join('، ')}`, 400);
+    }
+
+    const tId = data.id || `cal-template-${Date.now()}-${generateRandomToken(4)}`;
+    const weekdayIdx = data.anchor?.weekdayIndex ?? 0;
+    const tags = Array.isArray(data.tags) ? data.tags : ['قالب'];
+    if (!tags.includes('قالب')) tags.push('قالب');
+
+    await env.DB.prepare(`
+      INSERT INTO calendars (id, scope_type, scope_id, source_id, name, months, off_days, festivals, weekday_index, data, tags, era_label, start_year, weekdays, updated_at)
+      VALUES (?, 'pack', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      tId,
+      data.scopeId || 'pack-templates',
+      data.sourceId || null,
+      data.name,
+      JSON.stringify(data.months || []),
+      JSON.stringify(data.offDays || []),
+      JSON.stringify(data.festivals || []),
+      weekdayIdx,
+      JSON.stringify(data),
+      JSON.stringify(tags),
+      data.eraLabel || 'پ.ر.ن',
+      data.startYear || 1500,
+      JSON.stringify(data.weekdays || []),
+      now
+    ).run();
+
+    return json({
+      ...data,
+      id: tId,
+      sourceId: data.sourceId || null,
+      scopeType: 'pack',
+      tags,
+      anchor: { weekdayIndex: weekdayIdx },
+      updatedAt: now
+    }, 201);
   }
 
   // ---------------------------------------------------------
@@ -6178,20 +6808,111 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         name: 'گاه‌شمار شاه‌روزان (زروانیا)',
         eraLabel: 'پ.ر.ن',
         startYear: 1500,
-        months: [],
-        festivals: [],
-        offDays: []
+        months: [
+          { name: 'فرورداد', days: 30, season: 'بهار' },
+          { name: 'اردی‌مهر', days: 30, season: 'بهار' },
+          { name: 'خورداد', days: 30, season: 'بهار' },
+          { name: 'تیرآذر', days: 30, season: 'تابستان' },
+          { name: 'امرداد', days: 30, season: 'تابستان' },
+          { name: 'شهریور', days: 30, season: 'تابستان' },
+          { name: 'مهرآیین', days: 30, season: 'پاییز' },
+          { name: 'آبان‌داد', days: 30, season: 'پاییز' },
+          { name: 'آذرپژواک', days: 30, season: 'پاییز' },
+          { name: 'دی‌مهر', days: 30, season: 'زمستان' },
+          { name: 'بهمن‌یار', days: 30, season: 'زمستان' },
+          { name: 'اسفندارمذ', days: 30, season: 'زمستان' }
+        ],
+        festivals: [
+          { name: 'جشن روز نخست (نوروز کهن)', monthIndex: 1, day: 1, note: 'آغاز تقویم و برافروختن اخگر' },
+          { name: 'مهرگان زروانیا', monthIndex: 7, day: 16, note: 'پیمان میان قبایل' },
+          { name: 'جشن آذرخش', monthIndex: 9, day: 9, note: 'پالایش آتشکده‌ها' }
+        ],
+        offDays: [
+          { name: 'گاه اول: اهنود', note: 'روز اول بیرون از تقویم - سکوت میان زمان‌ها' },
+          { name: 'گاه دوم: اشتود', note: 'روز دوم بیرون از تقویم - یادبود دیوان نیک‌نهاد' },
+          { name: 'گاه سوم: سپنتمد', note: 'روز سوم بیرون از تقویم - نذر آب و ریشه' },
+          { name: 'گاه چهارم: وهوخشتر', note: 'روز چهارم بیرون از تقویم - درخشش آسمان سرخ' },
+          { name: 'گاه پنجم: وهیشتوآیشت', note: 'روز پنجم بیرون از تقویم - باززایی زمان' }
+        ],
+        weekdays: ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'],
+        anchor: { weekdayIndex: 0 }
       });
     }
+
+    let parsedFestivals = [];
+    if (row.festivals) {
+      try { parsedFestivals = JSON.parse(row.festivals); } catch {}
+    }
+    if ((!parsedFestivals || parsedFestivals.length === 0) && row.data) {
+      try {
+        const d = JSON.parse(row.data);
+        if (Array.isArray(d.festivals)) parsedFestivals = d.festivals;
+      } catch {}
+    }
+
     return json({
       id: row.id,
       name: row.name,
-      eraLabel: row.era_label,
-      startYear: row.start_year,
-      months: JSON.parse(row.months || '[]'),
-      festivals: [],
-      offDays: JSON.parse(row.off_days || '[]'),
-      weekdays: JSON.parse(row.weekdays || '[]')
+      eraLabel: row.era_label || 'پ.ر.ن',
+      startYear: Number(row.start_year || 1500),
+      months: parseBlob(row.months, []),
+      festivals: parsedFestivals,
+      offDays: parseBlob(row.off_days, []),
+      weekdays: parseBlob(row.weekdays, ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه']),
+      anchor: { weekdayIndex: row.weekday_index !== null && row.weekday_index !== undefined ? Number(row.weekday_index) : 0 },
+      tags: parseBlob(row.tags, []),
+      updatedAt: row.updated_at
+    });
+  }
+
+  if (path === '/generic-calendar' && method === 'PUT') {
+    if (currentUser?.role !== 'dm') return error('فقط دانجن مستر مجاز است.', 403);
+    const data = await request.json() as any;
+    const v = validateCalendar(data);
+    if (!v.valid) {
+      return error(`خطای اعتبارسنجی تقویم: ${v.errors.join('، ')}`, 400);
+    }
+
+    const calId = data.id || 'cal-zorvania';
+    const weekdayIdx = data.anchor?.weekdayIndex ?? 0;
+    await env.DB.prepare(`
+      INSERT INTO calendars (id, scope_type, scope_id, source_id, name, months, off_days, festivals, weekday_index, data, tags, era_label, start_year, weekdays, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        name = excluded.name,
+        months = excluded.months,
+        off_days = excluded.off_days,
+        festivals = excluded.festivals,
+        weekday_index = excluded.weekday_index,
+        data = excluded.data,
+        tags = excluded.tags,
+        era_label = excluded.era_label,
+        start_year = excluded.start_year,
+        weekdays = excluded.weekdays,
+        updated_at = excluded.updated_at
+    `).bind(
+      calId,
+      data.scopeType || 'campaign',
+      data.scopeId || 'zorvania-c1',
+      data.sourceId || null,
+      data.name,
+      JSON.stringify(data.months || []),
+      JSON.stringify(data.offDays || []),
+      JSON.stringify(data.festivals || []),
+      weekdayIdx,
+      JSON.stringify(data),
+      JSON.stringify(data.tags || []),
+      data.eraLabel || 'پ.ر.ن',
+      data.startYear || 1500,
+      JSON.stringify(data.weekdays || []),
+      now
+    ).run();
+
+    return json({
+      ...data,
+      id: calId,
+      anchor: { weekdayIndex: weekdayIdx },
+      updatedAt: now
     });
   }
 

@@ -1072,3 +1072,28 @@ body {
 .bg-fantasy-surface-raised {
   background-color: var(--color-surface-raised);
 }
+
+/* کارت‌های گزینش چندسطحی و دکمه‌های با متن توضیحی (Option Cards) */
+.option-card,
+button.option-card,
+[role="button"].option-card,
+[role="radio"].option-card {
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+  min-width: 0;
+  text-align: start;
+  align-items: stretch;
+  justify-content: flex-start;
+  flex-direction: column;
+}
+
+.option-card *,
+button.option-card *,
+[role="button"].option-card *,
+[role="radio"].option-card * {
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+}
+

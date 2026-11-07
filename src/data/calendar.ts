@@ -99,14 +99,14 @@ export function advanceCalendarDays(current: WorldCalendar, days: number): World
     const off = CALENDAR_OFF_DAYS.find(o => o.id === date.offDayIndex);
     currentFestival = off ? off.name : undefined;
   } else if (date.day === 1) {
-    const m = CALENDAR_MONTHS.find(mo => mo.id === (date.monthIndex + 1));
+    const m = CALENDAR_MONTHS.find(mo => mo.id === date.month);
     currentFestival = m ? `جشن ${m.festival}` : undefined;
   }
 
   return {
     ...current,
     year: date.year,
-    month: date.isOffDay ? 13 : date.monthIndex + 1,
+    month: date.isOffDay ? 13 : date.month,
     day: date.day,
     isOffDay: date.isOffDay,
     offDayIndex: date.offDayIndex || 0,

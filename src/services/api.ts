@@ -48,6 +48,10 @@ import {
   Faction,
   CampaignDoc,
   GenericCalendarData,
+  CalendarProjection,
+  CampaignTimeResponse,
+  SetCampaignTimeInput,
+  AdvanceCampaignTimeInput,
   Favorite,
   CloneJob,
   CloneOptions,
@@ -209,6 +213,14 @@ import type {
   OfflineEditItem,
   ConflictDetails
 } from '../../shared/rules/offlineEngine';
+import {
+  validateCalendar,
+  dateToEpoch,
+  epochToDate,
+  festivalsOn,
+  advanceTime,
+  formatCalendarDate
+} from '../../shared/rules/calendar';
 import { APP_NAME_FA, APP_NAME_LATIN } from '../config/app';
 import {
   SEED_USERS,
@@ -249,6 +261,12 @@ import {
   generateId
 } from './cloneEngine';
 import { INITIAL_CALENDAR, advanceCalendarDays } from '../data/calendar';
+import {
+  CALENDAR_TEMPLATES,
+  TEMPLATE_SHAHROOZAN_ZORVANIA,
+  TEMPLATE_GATHIC,
+  TEMPLATE_SIMPLE_STARTER
+} from '../data/calendarTemplates';
 import { INITIAL_ENDING_STATE } from '../data/endings';
 import { SEED_SHANSHIN_ENCOUNTERS } from '../data/shanshin';
 
@@ -605,10 +623,21 @@ export interface ApiClient {
   // Recharges & Group Management
   resetGroupRecharges(type: 'session' | 'season'): Promise<Character[]>;
 
-  // Calendar (1500 P.R.N.)
+  // Calendar (1500 P.R.N. - Legacy Compatibility)
   getCalendar(): Promise<WorldCalendar>;
   updateCalendar(cal: Partial<WorldCalendar>): Promise<WorldCalendar>;
   advanceCalendar(days: number): Promise<WorldCalendar>;
+
+  // Multi-Calendar & Campaign Time (Stage 2)
+  getCampaignCalendars(campaignId: string): Promise<GenericCalendarData[]>;
+  createCampaignCalendar(campaignId: string, calendar: Omit<GenericCalendarData, 'id' | 'updatedAt'> & { id?: string }): Promise<GenericCalendarData>;
+  updateCampaignCalendar(campaignId: string, calendarId: string, patch: Partial<GenericCalendarData>): Promise<GenericCalendarData>;
+  deleteCampaignCalendar(campaignId: string, calendarId: string): Promise<{ success: boolean; deletedId?: string; newPrimaryCalendarId?: string }>;
+  getCampaignTime(campaignId: string): Promise<CampaignTimeResponse>;
+  setCampaignTime(campaignId: string, body: SetCampaignTimeInput): Promise<CampaignTimeResponse>;
+  advanceCampaignTime(campaignId: string, body: AdvanceCampaignTimeInput): Promise<CampaignTimeResponse>;
+  getCalendarTemplates(): Promise<GenericCalendarData[]>;
+  createCalendarTemplate(template: Omit<GenericCalendarData, 'id' | 'updatedAt'> & { id?: string }): Promise<GenericCalendarData>;
 
   // Ending Tracker
   getEndingState(): Promise<CampaignEndingState>;
@@ -918,6 +947,7 @@ export class LocalApi implements ApiClient {
 
   private getItem<T>(key: string, fallback: T): T {
     try {
+      if (typeof localStorage === 'undefined') return fallback;
       const data = localStorage.getItem(this.getKey(key));
       return data ? JSON.parse(data) : fallback;
     } catch {
@@ -927,6 +957,7 @@ export class LocalApi implements ApiClient {
 
   private setItem<T>(key: string, value: T): void {
     try {
+      if (typeof localStorage === 'undefined') return;
       localStorage.setItem(this.getKey(key), JSON.stringify(value));
     } catch (e) {
       console.error('LocalStorage write error:', e);
@@ -2141,29 +2172,377 @@ export class LocalApi implements ApiClient {
     return updated;
   }
 
-  // --- Calendar ---
+  // --- Stage 2: Calendar & Campaign Time (LocalApi) ---
+  private getLocalGenericCalendars(): GenericCalendarData[] {
+    const defaultCal: GenericCalendarData = {
+      ...SEED_GENERIC_CALENDAR,
+      anchor: SEED_GENERIC_CALENDAR.anchor || { weekdayIndex: 0 }
+    };
+    return this.getItem<GenericCalendarData[]>('calendars', [defaultCal]);
+  }
+
+  private getLocalCampaignTimeRecord(campaignId: string): { epochDay: number; calendarId: string } {
+    const times = this.getItem<Record<string, { epochDay: number; calendarId: string }>>('campaign_times', {});
+    if (times[campaignId]) {
+      return times[campaignId];
+    }
+
+    // Lazy init default calendar and campaign_times row for this campaign
+    const allCals = this.getLocalGenericCalendars();
+    let campCal = allCals.find(c => c.scopeType === 'campaign' && c.scopeId === campaignId);
+    if (!campCal && campaignId !== 'zorvania-c1') {
+      const template = TEMPLATE_SHAHROOZAN_ZORVANIA;
+      campCal = {
+        ...template,
+        id: `cal-${campaignId}-default`,
+        scopeType: 'campaign',
+        scopeId: campaignId,
+        sourceId: template.id,
+        tags: [],
+        updatedAt: Date.now()
+      };
+      allCals.push(campCal);
+      this.setItem('calendars', allCals);
+    }
+
+    const rec = { epochDay: 0, calendarId: campCal?.id || 'cal-zorvania' };
+    times[campaignId] = rec;
+    this.setItem('campaign_times', times);
+    return rec;
+  }
+
+  private buildLocalTimeResponse(
+    campaignId: string,
+    epochDay: number,
+    primaryCalId: string,
+    advancedBy?: number
+  ): CampaignTimeResponse {
+    const allCals = this.getLocalGenericCalendars();
+    const campaignCals = allCals.filter(
+      c => (c.scopeType === 'campaign' && c.scopeId === campaignId) || c.id === primaryCalId || c.id === 'cal-zorvania'
+    );
+    if (campaignCals.length === 0) {
+      campaignCals.push({
+        ...SEED_GENERIC_CALENDAR,
+        anchor: SEED_GENERIC_CALENDAR.anchor || { weekdayIndex: 0 }
+      });
+    }
+
+    const calendarsMap: Record<string, CalendarProjection> = {};
+    for (const c of campaignCals) {
+      const cId = c.id || 'cal-zorvania';
+      const cState = advanceTime(c, epochDay, 0, campaignId);
+      calendarsMap[cId] = {
+        calendarId: cId,
+        calendarName: c.name,
+        date: cState.date,
+        weekday: cState.weekday,
+        weekdayIndex: cState.weekdayIndex,
+        activeFestivals: cState.activeFestivals,
+        formattedDate: cState.formattedDate
+      };
+    }
+
+    const primaryCal = campaignCals.find(c => c.id === primaryCalId) || campaignCals[0];
+    const resolvedPrimaryId = primaryCal.id || 'cal-zorvania';
+    const primaryState = calendarsMap[resolvedPrimaryId] || advanceTime(primaryCal, epochDay, 0, campaignId);
+
+    return {
+      campaignId,
+      primaryCalendarId: resolvedPrimaryId,
+      calendarId: resolvedPrimaryId,
+      epochDay,
+      date: primaryState.date,
+      weekday: primaryState.weekday,
+      weekdayIndex: primaryState.weekdayIndex,
+      activeFestivals: primaryState.activeFestivals,
+      formattedDate: primaryState.formattedDate,
+      calendars: calendarsMap,
+      ...(advancedBy !== undefined ? { advancedBy } : {}),
+      updatedAt: Date.now()
+    };
+  }
+
   async getCalendar(): Promise<WorldCalendar> {
-    return this.getItem<WorldCalendar>('calendar', INITIAL_CALENDAR);
+    const campId = this.getActiveCampaignId() || 'zorvania-c1';
+    try {
+      const res = await this.getCampaignTime(campId);
+      return {
+        id: res.calendarId,
+        year: res.date.year,
+        month: res.date.month,
+        day: res.date.day,
+        isOffDay: res.date.isOffDay,
+        offDayIndex: res.date.offDayIndex || 0,
+        currentFestival: res.activeFestivals[0]?.name || '',
+        updatedAt: new Date(res.updatedAt).toISOString()
+      };
+    } catch {
+      return this.getItem<WorldCalendar>('calendar', INITIAL_CALENDAR);
+    }
   }
 
   async updateCalendar(cal: Partial<WorldCalendar>): Promise<WorldCalendar> {
-    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
+    const campId = this.getActiveCampaignId() || 'zorvania-c1';
+    const role = await this.getCampaignRole(campId);
+    if (role !== 'owner' && role !== 'co_dm' && this.currentUser?.role !== 'dm') {
+      throw new Error('فقط دانجن مستر مجاز است.');
+    }
     const current = await this.getCalendar();
+    const merged = { ...current, ...cal };
+    const res = await this.setCampaignTime(campId, {
+      year: merged.year,
+      month: merged.month,
+      day: merged.day,
+      isOffDay: merged.isOffDay,
+      offDayIndex: merged.offDayIndex
+    });
     const updated: WorldCalendar = {
-      ...current,
-      ...cal,
-      updatedAt: new Date().toISOString()
+      id: res.calendarId,
+      year: res.date.year,
+      month: res.date.month,
+      day: res.date.day,
+      isOffDay: res.date.isOffDay,
+      offDayIndex: res.date.offDayIndex || 0,
+      currentFestival: res.activeFestivals[0]?.name || '',
+      updatedAt: new Date(res.updatedAt).toISOString()
     };
     this.setItem('calendar', updated);
     return updated;
   }
 
   async advanceCalendar(days: number): Promise<WorldCalendar> {
-    if (this.currentUser?.role !== 'dm') throw new Error('فقط دانجن مستر مجاز است.');
-    const current = await this.getCalendar();
-    const next = advanceCalendarDays(current, days);
+    const campId = this.getActiveCampaignId() || 'zorvania-c1';
+    const res = await this.advanceCampaignTime(campId, { days });
+    const next: WorldCalendar = {
+      id: res.calendarId,
+      year: res.date.year,
+      month: res.date.month,
+      day: res.date.day,
+      isOffDay: res.date.isOffDay,
+      offDayIndex: res.date.offDayIndex || 0,
+      currentFestival: res.activeFestivals[0]?.name || '',
+      updatedAt: new Date(res.updatedAt).toISOString()
+    };
     this.setItem('calendar', next);
     return next;
+  }
+
+  async getCampaignCalendars(campaignId: string): Promise<GenericCalendarData[]> {
+    const role = await this.getCampaignRole(campaignId);
+    if (!role && this.currentUser?.role !== 'dm' && campaignId !== 'zorvania-c1') {
+      throw new Error('کمپین مورد نظر یافت نشد.');
+    }
+    const all = this.getLocalGenericCalendars();
+    let list = all.filter(c => (c.scopeType === 'campaign' && c.scopeId === campaignId) || (campaignId === 'zorvania-c1' && (c.id === 'cal-zorvania' || c.scopeId === 'zorvania-c1')));
+    if (list.length === 0) {
+      const template = TEMPLATE_SHAHROOZAN_ZORVANIA;
+      const defaultCal: GenericCalendarData = {
+        ...template,
+        id: campaignId === 'zorvania-c1' ? 'cal-zorvania' : `cal-${campaignId}-${Date.now().toString(36)}`,
+        name: campaignId === 'zorvania-c1' ? 'گاه‌شمار شاه‌روزان (زروانیا)' : `${template.name} (کمپین)`,
+        scopeType: 'campaign',
+        scopeId: campaignId,
+        sourceId: template.id,
+        anchor: { weekdayIndex: template.anchor?.weekdayIndex ?? 0 },
+        updatedAt: Date.now()
+      };
+      all.push(defaultCal);
+      this.setItem('calendars', all);
+      list = [defaultCal];
+    }
+    return list;
+  }
+
+  async createCampaignCalendar(
+    campaignId: string,
+    calendar: Omit<GenericCalendarData, 'id' | 'updatedAt'> & { id?: string }
+  ): Promise<GenericCalendarData> {
+    const role = await this.getCampaignRole(campaignId);
+    if (role !== 'owner' && role !== 'co_dm' && !(this.currentUser?.role === 'dm' && campaignId === 'zorvania-c1')) {
+      throw new Error('فقط دانجن مستر یا مالک کمپین مجاز است.');
+    }
+    const v = validateCalendar(calendar as GenericCalendarData);
+    if (!v.valid) {
+      throw new Error(`خطای اعتبارسنجی تقویم: ${v.errors.join('، ')}`);
+    }
+    const all = this.getLocalGenericCalendars();
+    const id = calendar.id || `cal-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const newCal: GenericCalendarData = {
+      ...calendar,
+      id,
+      scopeType: 'campaign',
+      scopeId: campaignId,
+      anchor: { weekdayIndex: calendar.anchor?.weekdayIndex ?? 0 },
+      updatedAt: Date.now()
+    };
+    all.push(newCal);
+    this.setItem('calendars', all);
+    return newCal;
+  }
+
+  async updateCampaignCalendar(
+    campaignId: string,
+    calendarId: string,
+    patch: Partial<GenericCalendarData>
+  ): Promise<GenericCalendarData> {
+    const role = await this.getCampaignRole(campaignId);
+    if (role !== 'owner' && role !== 'co_dm' && !(this.currentUser?.role === 'dm' && campaignId === 'zorvania-c1')) {
+      throw new Error('فقط دانجن مستر یا مالک کمپین مجاز به ویرایش گاه‌شمار است.');
+    }
+    const all = this.getLocalGenericCalendars();
+    const idx = all.findIndex(c => c.id === calendarId);
+    if (idx === -1) {
+      throw new Error('گاه‌شمار مورد نظر یافت نشد.');
+    }
+    const merged: GenericCalendarData = {
+      ...all[idx],
+      ...patch,
+      id: calendarId,
+      anchor: { weekdayIndex: patch.anchor?.weekdayIndex ?? all[idx].anchor?.weekdayIndex ?? 0 },
+      updatedAt: Date.now()
+    };
+    const v = validateCalendar(merged);
+    if (!v.valid) {
+      throw new Error(`خطای اعتبارسنجی تقویم: ${v.errors.join('، ')}`);
+    }
+    all[idx] = merged;
+    this.setItem('calendars', all);
+    return merged;
+  }
+
+  async deleteCampaignCalendar(
+    campaignId: string,
+    calendarId: string
+  ): Promise<{ success: boolean; deletedId?: string; newPrimaryCalendarId?: string }> {
+    const role = await this.getCampaignRole(campaignId);
+    if (role !== 'owner' && role !== 'co_dm' && !(this.currentUser?.role === 'dm' && campaignId === 'zorvania-c1')) {
+      throw new Error('فقط دانجن مستر یا مالک کمپین مجاز به حذف گاه‌شمار است.');
+    }
+    const all = this.getLocalGenericCalendars();
+    const campaignCals = all.filter(c => c.scopeType === 'campaign' && c.scopeId === campaignId);
+    if (campaignCals.length <= 1) {
+      throw new Error('امکان حذف آخرین گاه‌شمار کمپین وجود ندارد. کمپین باید حداقل دارای یک گاه‌شمار باشد.');
+    }
+    const times = this.getItem<Record<string, { epochDay: number; calendarId: string }>>('campaign_times', {});
+    const cTime = times[campaignId];
+    let newPrimaryCalendarId: string | undefined = undefined;
+    if (cTime && cTime.calendarId === calendarId) {
+      const remaining = campaignCals.filter(c => c.id !== calendarId);
+      newPrimaryCalendarId = remaining[0]?.id || 'cal-zorvania';
+      times[campaignId] = {
+        ...cTime,
+        calendarId: newPrimaryCalendarId
+      };
+      this.setItem('campaign_times', times);
+    }
+    const filtered = all.filter(c => c.id !== calendarId);
+    this.setItem('calendars', filtered);
+    return { success: true, deletedId: calendarId, newPrimaryCalendarId };
+  }
+
+  async getCampaignTime(campaignId: string): Promise<CampaignTimeResponse> {
+    const role = await this.getCampaignRole(campaignId);
+    if (!role && this.currentUser?.role !== 'dm' && campaignId !== 'zorvania-c1') {
+      throw new Error('کمپین مورد نظر یافت نشد.');
+    }
+    const { epochDay, calendarId } = this.getLocalCampaignTimeRecord(campaignId);
+    return this.buildLocalTimeResponse(campaignId, epochDay, calendarId);
+  }
+
+  async setCampaignTime(campaignId: string, body: SetCampaignTimeInput): Promise<CampaignTimeResponse> {
+    const role = await this.getCampaignRole(campaignId);
+    if (role !== 'owner' && role !== 'co_dm' && !(this.currentUser?.role === 'dm' && campaignId === 'zorvania-c1')) {
+      throw new Error('دسترسی مجاز نیست. فقط دانجن‌مستر مجاز به تغییر زمان است.');
+    }
+    const current = this.getLocalCampaignTimeRecord(campaignId);
+    const calId = body.calendarId || current.calendarId || 'cal-zorvania';
+    const allCals = this.getLocalGenericCalendars();
+    const targetCal = allCals.find(c => c.id === calId) || {
+      ...SEED_GENERIC_CALENDAR,
+      anchor: SEED_GENERIC_CALENDAR.anchor || { weekdayIndex: 0 }
+    };
+
+    let targetEpochDay: number;
+    if (body.epochDay !== undefined) {
+      if (typeof body.epochDay !== 'number' || !Number.isInteger(body.epochDay)) {
+        throw new Error('مقدار epochDay باید عدد صحیح باشد.');
+      }
+      targetEpochDay = body.epochDay;
+    } else if (body.year !== undefined && body.month !== undefined && body.day !== undefined) {
+      targetEpochDay = dateToEpoch(targetCal, {
+        year: Number(body.year),
+        month: Number(body.month),
+        day: Number(body.day),
+        isOffDay: Boolean(body.isOffDay),
+        offDayIndex: body.offDayIndex ? Number(body.offDayIndex) : undefined
+      });
+    } else {
+      throw new Error('ارسال epochDay یا اجزای تاریخ (سال، ماه، روز) الزامی است.');
+    }
+
+    const times = this.getItem<Record<string, { epochDay: number; calendarId: string }>>('campaign_times', {});
+    times[campaignId] = {
+      epochDay: targetEpochDay,
+      calendarId: calId
+    };
+    this.setItem('campaign_times', times);
+
+    return this.buildLocalTimeResponse(campaignId, targetEpochDay, calId);
+  }
+
+  async advanceCampaignTime(campaignId: string, body: AdvanceCampaignTimeInput): Promise<CampaignTimeResponse> {
+    const role = await this.getCampaignRole(campaignId);
+    if (role !== 'owner' && role !== 'co_dm' && !(this.currentUser?.role === 'dm' && campaignId === 'zorvania-c1')) {
+      throw new Error('دسترسی مجاز نیست. فقط دانجن‌مستر مجاز به پیشروی زمان است.');
+    }
+    const days = Number(body.days);
+    if (isNaN(days) || !Number.isInteger(days)) {
+      throw new Error('مقدار days باید عددی صحیح باشد.');
+    }
+    const current = this.getLocalCampaignTimeRecord(campaignId);
+    const newEpoch = current.epochDay + days;
+    const times = this.getItem<Record<string, { epochDay: number; calendarId: string }>>('campaign_times', {});
+    times[campaignId] = {
+      epochDay: newEpoch,
+      calendarId: current.calendarId
+    };
+    this.setItem('campaign_times', times);
+
+    return this.buildLocalTimeResponse(campaignId, newEpoch, current.calendarId, days);
+  }
+
+  async getCalendarTemplates(): Promise<GenericCalendarData[]> {
+    const all = this.getLocalGenericCalendars();
+    const templates = all.filter(c => c.scopeType === 'pack' || (c.scopeType as string) === 'template' || c.tags?.includes('قالب') || c.id?.startsWith('cal-template-'));
+    const combined = [...templates];
+    for (const std of CALENDAR_TEMPLATES) {
+      if (!combined.some(t => t.id === std.id || t.name === std.name)) {
+        combined.push(std);
+      }
+    }
+    return combined;
+  }
+
+  async createCalendarTemplate(template: Omit<GenericCalendarData, 'id' | 'updatedAt'> & { id?: string }): Promise<GenericCalendarData> {
+    const v = validateCalendar(template as GenericCalendarData);
+    if (!v.valid) {
+      throw new Error(`خطای اعتبارسنجی تقویم: ${v.errors.join('، ')}`);
+    }
+    const all = this.getLocalGenericCalendars();
+    const tags = Array.isArray(template.tags) ? [...template.tags] : ['قالب'];
+    if (!tags.includes('قالب')) tags.push('قالب');
+    const newT: GenericCalendarData = {
+      ...template,
+      id: template.id || `cal-template-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      scopeType: 'pack',
+      tags,
+      anchor: { weekdayIndex: template.anchor?.weekdayIndex ?? 0 },
+      updatedAt: Date.now()
+    };
+    all.push(newT);
+    this.setItem('calendars', all);
+    return newT;
   }
 
   // --- Ending Tracker (DM only) ---
@@ -5077,7 +5456,12 @@ export class LocalApi implements ApiClient {
     const encounters = (this.getItem<Encounter[]>('encounters', SEED_ENCOUNTERS)).filter(e => (e.scopeType || 'campaign') === scopeType && (e.scopeId || 'zorvania-c1') === scopeId);
     const factions = (this.getItem<Faction[]>('factions', SEED_FACTIONS)).filter(f => (f.scopeType || 'campaign') === scopeType && (f.scopeId || 'zorvania-c1') === scopeId);
     const docs = (this.getItem<CampaignDoc[]>('campaign_docs', SEED_CAMPAIGN_DOCS)).filter(d => scopeType === 'campaign' && d.campaignId === scopeId);
-    const calendars = (this.getItem<GenericCalendarData[]>('calendars', [SEED_GENERIC_CALENDAR]));
+    const allCals = this.getItem<GenericCalendarData[]>('calendars', [SEED_GENERIC_CALENDAR]);
+    const calendars = allCals.filter(c => (c.scopeType === scopeType && c.scopeId === scopeId) || c.scopeType === 'pack' || c.id === 'cal-zorvania');
+    const times = this.getItem<Record<string, { epochDay: number; calendarId: string }>>('campaign_times', {});
+    const campaignTime = scopeType === 'campaign' && times[scopeId]
+      ? { epochDay: times[scopeId].epochDay, primaryCalendarId: times[scopeId].calendarId }
+      : undefined;
     const ruleSets = (this.getItem<RuleSet[]>('rule_sets', SEED_RULE_SETS)).filter(r => r.scopeType === scopeType && r.scopeId === scopeId);
 
     return {
@@ -5094,6 +5478,7 @@ export class LocalApi implements ApiClient {
       factions,
       campaignDocs: docs,
       calendars,
+      campaignTime,
       ruleSets
     };
   }
@@ -5330,7 +5715,8 @@ export class LocalApi implements ApiClient {
       encounters: entities.encounters || [],
       factions: entities.factions || [],
       campaignDocs: entities.campaignDocs || [],
-      calendars: entities.calendars || [],
+      calendars: (entities.calendars && entities.calendars.length > 0) ? entities.calendars : [TEMPLATE_SHAHROOZAN_ZORVANIA],
+      campaignTime: entities.campaignTime,
       ruleSets: entities.ruleSets || []
     };
 
@@ -5362,7 +5748,8 @@ export class LocalApi implements ApiClient {
       encounters: entities.encounters || [],
       factions: entities.factions || [],
       campaignDocs: entities.campaignDocs || [],
-      calendars: entities.calendars || [],
+      calendars: (entities.calendars && entities.calendars.length > 0) ? entities.calendars : [TEMPLATE_SHAHROOZAN_ZORVANIA],
+      campaignTime: entities.campaignTime,
       ruleSets: entities.ruleSets || []
     };
 
@@ -5484,6 +5871,17 @@ export class LocalApi implements ApiClient {
     if (created.calendars.length > 0) {
       const existing = this.getItem<GenericCalendarData[]>('calendars', [SEED_GENERIC_CALENDAR]);
       this.setItem('calendars', [...existing, ...created.calendars]);
+    }
+    if (created.campaignTime && created.calendars.length > 0) {
+      const times = this.getItem<Record<string, { epochDay: number; calendarId: string }>>('campaign_times', {});
+      const targetCampId = created.calendars[0]?.scopeId;
+      if (targetCampId) {
+        times[targetCampId] = {
+          epochDay: created.campaignTime.epochDay || 0,
+          calendarId: created.campaignTime.primaryCalendarId || created.calendars[0].id || 'cal-zorvania'
+        };
+        this.setItem('campaign_times', times);
+      }
     }
     if (created.ruleSets.length > 0) {
       const existing = this.getItem<RuleSet[]>('rule_sets', SEED_RULE_SETS);
@@ -8465,9 +8863,86 @@ export class HttpApi implements ApiClient {
   }
 
   async advanceCalendar(days: number): Promise<WorldCalendar> {
-    return this.fetchJson<WorldCalendar>('/calendar/advance', {
+    const campId = this.getActiveCampaignId() || 'zorvania-c1';
+    const res = await this.advanceCampaignTime(campId, { days });
+    return {
+      id: res.calendarId,
+      year: res.date.year,
+      month: res.date.month,
+      day: res.date.day,
+      isOffDay: res.date.isOffDay,
+      offDayIndex: res.date.offDayIndex || 0,
+      currentFestival: res.activeFestivals[0]?.name || '',
+      updatedAt: new Date(res.updatedAt).toISOString()
+    };
+  }
+
+  // --- Stage 2: Multi-Calendar & Campaign Time (HttpApi) ---
+  async getCampaignCalendars(campaignId: string): Promise<GenericCalendarData[]> {
+    return this.fetchJson<GenericCalendarData[]>(`/c/${campaignId}/calendars`);
+  }
+
+  async createCampaignCalendar(
+    campaignId: string,
+    calendar: Omit<GenericCalendarData, 'id' | 'updatedAt'> & { id?: string }
+  ): Promise<GenericCalendarData> {
+    return this.fetchJson<GenericCalendarData>(`/c/${campaignId}/calendars`, {
       method: 'POST',
-      body: JSON.stringify({ days })
+      body: JSON.stringify(calendar)
+    });
+  }
+
+  async updateCampaignCalendar(
+    campaignId: string,
+    calendarId: string,
+    patch: Partial<GenericCalendarData>
+  ): Promise<GenericCalendarData> {
+    return this.fetchJson<GenericCalendarData>(`/c/${campaignId}/calendars/${calendarId}`, {
+      method: 'PUT',
+      body: JSON.stringify(patch)
+    });
+  }
+
+  async deleteCampaignCalendar(
+    campaignId: string,
+    calendarId: string
+  ): Promise<{ success: boolean; deletedId?: string; newPrimaryCalendarId?: string }> {
+    return this.fetchJson<{ success: boolean; deletedId?: string; newPrimaryCalendarId?: string }>(
+      `/c/${campaignId}/calendars/${calendarId}`,
+      {
+        method: 'DELETE'
+      }
+    );
+  }
+
+  async getCampaignTime(campaignId: string): Promise<CampaignTimeResponse> {
+    return this.fetchJson<CampaignTimeResponse>(`/c/${campaignId}/time`);
+  }
+
+  async setCampaignTime(campaignId: string, body: SetCampaignTimeInput): Promise<CampaignTimeResponse> {
+    return this.fetchJson<CampaignTimeResponse>(`/c/${campaignId}/time`, {
+      method: 'PUT',
+      body: JSON.stringify(body)
+    });
+  }
+
+  async advanceCampaignTime(campaignId: string, body: AdvanceCampaignTimeInput): Promise<CampaignTimeResponse> {
+    return this.fetchJson<CampaignTimeResponse>(`/c/${campaignId}/time/advance`, {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+  }
+
+  async getCalendarTemplates(): Promise<GenericCalendarData[]> {
+    return this.fetchJson<GenericCalendarData[]>('/calendar-templates');
+  }
+
+  async createCalendarTemplate(
+    template: Omit<GenericCalendarData, 'id' | 'updatedAt'> & { id?: string }
+  ): Promise<GenericCalendarData> {
+    return this.fetchJson<GenericCalendarData>('/calendar-templates', {
+      method: 'POST',
+      body: JSON.stringify(template)
     });
   }
 

@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
-import { WorldCalendar } from '../../types';
+import { WorldCalendar, CampaignTimeResponse, GenericCalendarData } from '../../types';
 import { CALENDAR_MONTHS, CALENDAR_OFF_DAYS, formatWorldDate } from '../../data/calendar';
 import { BottomSheet } from '../mobile/BottomSheet';
-import { Calendar as CalendarIcon, Sparkles, ChevronRight, FastForward, Clock, BookOpen, AlertCircle } from 'lucide-react';
+import { Sparkles, FastForward, Clock, BookOpen, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { CalendarStructureModal } from './CalendarStructureModal';
 
 interface CalendarModalProps {
   isOpen: boolean;
   onClose: () => void;
-  calendar: WorldCalendar;
+  calendar?: WorldCalendar;
   isDm: boolean;
-  onAdvanceDays: (days: number) => Promise<void>;
-  onUpdateCalendar: (updated: Partial<WorldCalendar>) => Promise<void>;
+  onAdvanceDays?: (days: number) => Promise<void>;
+  onUpdateCalendar?: (updated: Partial<WorldCalendar>) => Promise<void>;
+  timeResponse?: CampaignTimeResponse;
+  activeCalendar?: GenericCalendarData;
+  onAdvanceCampaignTime?: (days: number) => Promise<void>;
+  campaignId?: string;
+  onOpenStructureEditor?: () => void;
 }
 
 export const CalendarModal: React.FC<CalendarModalProps> = ({
@@ -21,30 +27,75 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
   isDm,
   onAdvanceDays,
   onUpdateCalendar,
+  timeResponse,
+  activeCalendar,
+  onAdvanceCampaignTime,
+  campaignId,
+  onOpenStructureEditor
 }) => {
-  const [selectedMonth, setSelectedMonth] = useState<number>(calendar.month);
+  const [internalStructureOpen, setInternalStructureOpen] = useState(false);
+  const currentYear = timeResponse?.date?.year ?? calendar?.year ?? 1500;
+  const currentMonth = timeResponse?.date?.month ?? calendar?.month ?? 1;
+  const isOffDay = timeResponse?.date?.isOffDay ?? calendar?.isOffDay ?? false;
+  const offDayIndex = timeResponse?.date?.offDayIndex ?? calendar?.offDayIndex ?? 0;
+  const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth);
   const [advancing, setAdvancing] = useState(false);
 
-  const currentMonthDef = CALENDAR_MONTHS.find(m => m.id === calendar.month);
-  const currentOffDayDef = calendar.isOffDay && calendar.offDayIndex 
-    ? CALENDAR_OFF_DAYS.find(o => o.id === calendar.offDayIndex)
+  const handleOpenStructure = () => {
+    if (onOpenStructureEditor) {
+      onOpenStructureEditor();
+    } else {
+      setInternalStructureOpen(true);
+    }
+  };
+
+  const title = activeCalendar?.name || "تقویم باستانی زروانیا";
+  const eraLabel = activeCalendar?.eraLabel || "پ.ر.ن. (پیش از روشنایی نو)";
+  const subtitle = `سال ${currentYear} ${eraLabel}`;
+  const formattedDate = timeResponse?.formattedDate ?? (calendar ? formatWorldDate(calendar) : '');
+  const activeFestival = timeResponse?.activeFestivals?.[0]?.name || calendar?.currentFestival;
+
+  const currentOffDayDef = isOffDay && offDayIndex 
+    ? (activeCalendar?.offDays?.find((_, idx) => (idx + 1) === offDayIndex) || CALENDAR_OFF_DAYS.find(o => o.id === offDayIndex))
     : null;
 
   const handleAdvance = async (days: number) => {
     setAdvancing(true);
     try {
-      await onAdvanceDays(days);
+      if (onAdvanceCampaignTime) {
+        await onAdvanceCampaignTime(days);
+      } else if (onAdvanceDays) {
+        await onAdvanceDays(days);
+      }
     } finally {
       setAdvancing(false);
     }
   };
 
+  const displayMonths = activeCalendar?.months?.length
+    ? activeCalendar.months.map((m, idx) => ({
+        id: idx + 1,
+        name: m.name,
+        season: m.season || 'فصل',
+        festival: activeCalendar.festivals?.find(f => f.monthIndex === (idx + 1) && (f.day === 1 || !f.day))?.name || 'جشن آغاز ماه'
+      }))
+    : CALENDAR_MONTHS;
+
+  const displayOffDays = activeCalendar?.offDays?.length
+    ? activeCalendar.offDays.map((o, idx) => ({
+        id: idx + 1,
+        name: o.name,
+        folkBelief: o.folkBelief || o.note || 'روز ویژه بیرون از گاه‌شمار'
+      }))
+    : CALENDAR_OFF_DAYS;
+
   return (
-    <BottomSheet
-      isOpen={isOpen}
-      onClose={onClose}
-      title="تقویم باستانی زروانیا"
-      subtitle={`سال ${calendar.year} پ.ر.ن. (پیش از روشنایی نو)`}
+    <>
+      <BottomSheet
+        isOpen={isOpen}
+        onClose={onClose}
+      title={title}
+      subtitle={subtitle}
     >
       <div className="space-y-4 text-text-primary">
         {/* Current Date Banner */}
@@ -53,13 +104,25 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
             <Clock className="w-4 h-4 text-accent-hover shrink-0" />
             <span>زمان جاری در جهان زروانیا</span>
           </div>
-          <div className="text-lg font-black text-accent-hover">
-            {formatWorldDate(calendar)}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-lg font-black text-accent-hover">
+              {formattedDate}
+            </div>
+            {isDm && (onOpenStructureEditor || campaignId) && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleOpenStructure}
+                className="bg-accent/20 hover:bg-accent/30 text-accent-hover border border-accent/40 text-xs font-bold flex items-center gap-1.5"
+              >
+                <span>ویرایش تقویم‌ها</span>
+              </Button>
+            )}
           </div>
-          {calendar.currentFestival && (
+          {activeFestival && (
             <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-accent/20 border border-accent/50 text-accent-hover text-xs font-bold animate-pulse">
               <Sparkles className="w-3.5 h-3.5 text-accent-hover shrink-0" />
-              <span>{calendar.currentFestival}</span>
+              <span>{activeFestival}</span>
             </div>
           )}
         </div>
@@ -116,8 +179,8 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
             <span>ماه‌های 12گانه و جشن‌های آغاز ماه (30 روزه)</span>
           </h4>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-56 overflow-y-auto p-1 scrollbar-none">
-            {CALENDAR_MONTHS.map(m => {
-              const isCurrent = !calendar.isOffDay && calendar.month === m.id;
+            {displayMonths.map(m => {
+              const isCurrent = !isOffDay && currentMonth === m.id;
               return (
                 <div
                   key={m.id}
@@ -147,7 +210,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
             <span>5 روز برون‌گاه پس از 30 واپسان (خارج از سال‌شمار)</span>
           </h4>
           <div className="space-y-1.5 max-h-48 overflow-y-auto p-1">
-            {CALENDAR_OFF_DAYS.map(off => (
+            {displayOffDays.map(off => (
               <div
                 key={off.id}
                 className="p-2.5 rounded-xl bg-info border border-role-codm/20 text-xs space-y-1"
@@ -160,5 +223,18 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
         </div>
       </div>
     </BottomSheet>
+
+    {internalStructureOpen && campaignId && (
+      <CalendarStructureModal
+        isOpen={internalStructureOpen}
+        onClose={() => setInternalStructureOpen(false)}
+        campaignId={campaignId}
+        userRole="owner"
+        onSaved={() => {
+          // If onUpdateCalendar was provided, caller can reload
+        }}
+      />
+    )}
+  </>
   );
 };

@@ -1580,7 +1580,10 @@ export interface WizardAnswers {
 
   // Step 3: World
   calendarId?: string;
-  calendarSource?: 'library' | 'scratch' | 'campaign';
+  calendarSource?: 'library' | 'scratch' | 'campaign' | 'zorvania' | 'gathic';
+  calendarName?: string;
+  calendarYear?: number;
+  calendarEra?: string;
   calendarData?: any;
   locationIds?: string[];
   factionIds?: string[];
@@ -1658,15 +1661,37 @@ export interface CalendarMonth {
 }
 
 export interface CalendarFestival {
-  monthIndex: number;
-  day: number;
+  id?: string;
+  monthIndex?: number;
+  day?: number;
+  offDayId?: string | number;
+  durationDays?: number;
   name: string;
   note?: string;
 }
 
 export interface CalendarOffDay {
+  id?: string | number;
   name: string;
   note?: string;
+  folkBelief?: string;
+  afterMonthIndex?: number;
+}
+
+export interface CalendarAnchor {
+  epochDay?: number;
+  year?: number;
+  month?: number;
+  day?: number;
+  weekdayIndex?: number;
+}
+
+export interface CalendarDate {
+  year: number;
+  month: number;
+  day: number;
+  isOffDay: boolean;
+  offDayIndex?: number;
 }
 
 export interface GenericCalendarData {
@@ -1678,7 +1703,12 @@ export interface GenericCalendarData {
   festivals: CalendarFestival[];
   offDays: CalendarOffDay[];
   weekdays?: string[];
+  anchor?: CalendarAnchor;
   tags?: string[];
+  sourceId?: string | null;
+  scopeType?: EntityScopeType;
+  scopeId?: string;
+  updatedAt?: number;
 }
 
 export interface CalendarState {
@@ -1691,6 +1721,57 @@ export interface CalendarState {
   offDayIndex?: number;
   currentFestival?: string;
   updatedAt: number;
+}
+
+export interface CampaignTimeState {
+  campaignId: string;
+  calendarId: string;
+  epochDay: number;
+  date: CalendarDate;
+  weekday: string;
+  weekdayIndex: number;
+  activeFestivals: CalendarFestival[];
+  formattedDate: string;
+  updatedAt: number;
+}
+
+export interface CalendarProjection {
+  calendarId: string;
+  calendarName: string;
+  date: CalendarDate;
+  weekday: string;
+  weekdayIndex: number;
+  activeFestivals: CalendarFestival[];
+  formattedDate: string;
+}
+
+export interface CampaignTimeResponse {
+  campaignId: string;
+  primaryCalendarId: string;
+  calendarId: string;
+  epochDay: number;
+  date: CalendarDate;
+  weekday: string;
+  weekdayIndex: number;
+  activeFestivals: CalendarFestival[];
+  formattedDate: string;
+  calendars?: Record<string, CalendarProjection>;
+  advancedBy?: number;
+  updatedAt: number;
+}
+
+export interface SetCampaignTimeInput {
+  calendarId?: string;
+  epochDay?: number;
+  year?: number;
+  month?: number;
+  day?: number;
+  isOffDay?: boolean;
+  offDayIndex?: number;
+}
+
+export interface AdvanceCampaignTimeInput {
+  days: number;
 }
 
 export interface Favorite {

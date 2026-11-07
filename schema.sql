@@ -531,6 +531,8 @@ CREATE TABLE IF NOT EXISTS calendars (
   name TEXT NOT NULL,
   months TEXT NOT NULL,
   off_days TEXT NOT NULL,
+  festivals TEXT DEFAULT '[]',
+  weekday_index INTEGER DEFAULT 0,
   data TEXT NOT NULL,
   tags TEXT DEFAULT '[]',
   copied_at INTEGER,
@@ -540,6 +542,7 @@ CREATE TABLE IF NOT EXISTS calendars (
   updated_at INTEGER NOT NULL
 );
 
+-- /* LEGACY — Deprecated multi-column calendar state. New code uses campaign_time. */
 CREATE TABLE IF NOT EXISTS calendar_states (
   campaign_id TEXT PRIMARY KEY,
   calendar_id TEXT NOT NULL,
@@ -549,6 +552,14 @@ CREATE TABLE IF NOT EXISTS calendar_states (
   is_off_day INTEGER NOT NULL DEFAULT 0,
   off_day_index INTEGER DEFAULT 0,
   current_festival TEXT,
+  updated_at INTEGER NOT NULL,
+  FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS campaign_time (
+  campaign_id TEXT PRIMARY KEY,
+  calendar_id TEXT NOT NULL,
+  epoch_day INTEGER NOT NULL DEFAULT 0,
   updated_at INTEGER NOT NULL,
   FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
 );
@@ -799,7 +810,7 @@ CREATE TABLE IF NOT EXISTS password_resets (
   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- 40. Campaign calendar (single-row legacy calendar)
+-- 40. /* LEGACY — Single-row legacy Zorvania calendar. Replaced by campaign_time. */
 CREATE TABLE IF NOT EXISTS campaign_calendar (
   id TEXT PRIMARY KEY DEFAULT 'zorvania-calendar',
   year INTEGER NOT NULL DEFAULT 1500,
@@ -840,6 +851,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   online_url TEXT,
   status TEXT CHECK (status IN ('planned', 'confirmed', 'done', 'cancelled')) DEFAULT 'planned',
   in_world_date TEXT,
+  in_game_epoch_day INTEGER,
   dm_notes TEXT,
   created_by TEXT NOT NULL,
   created_at INTEGER NOT NULL,

@@ -147,6 +147,26 @@
     word-break: normal !important;
   }
 
+  /* Option card / multi-line card buttons exception */
+  button.option-card,
+  [role="button"].option-card,
+  .option-card,
+  [role="radio"].option-card {
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    word-break: normal !important;
+    flex-shrink: 1;
+  }
+
+  button.option-card *,
+  [role="button"].option-card *,
+  .option-card *,
+  [role="radio"].option-card * {
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    word-break: normal !important;
+  }
+
   /* Touch controls & responsiveness */
   button, [role="button"], a, input, select, textarea {
     touch-action: manipulation;
