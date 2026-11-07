@@ -379,14 +379,30 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
   };
 
   const handleNextStep = async () => {
-    if (step === 3 && activeCampaign) {
-      setIsSavingDraft(true);
-      try {
-        await createOrUpdateWizardCalendar(activeCampaign.id);
-      } catch (err: any) {
-        setStatusMessage(err?.message || 'خطا در ثبت و اعتبارسنجی تقویم کمپین');
-        setIsSavingDraft(false);
-        return; // Halt/rollback! Do not advance past Step 3 if calendar creation fails
+    if (step === 3) {
+      const chosenName = calendarName.trim() || calendarDraft.name || 'گاه‌شمار کمپین';
+      const chosenYear = Number(calendarYear) || calendarDraft.startYear || 1500;
+      const chosenEra = calendarEra.trim() || calendarDraft.eraLabel || 'پ.ر.ن';
+      const fullCalendarToValidate: GenericCalendarData = {
+        ...calendarDraft,
+        name: chosenName,
+        startYear: chosenYear,
+        eraLabel: chosenEra,
+      };
+      const validation = validateCalendar(fullCalendarToValidate);
+      if (!validation.valid) {
+        setStatusMessage(`خطا در اعتبارسنجی ساختار گاه‌شمار: ${validation.errors.join('، ')}`);
+        return;
+      }
+      if (activeCampaign) {
+        setIsSavingDraft(true);
+        try {
+          await createOrUpdateWizardCalendar(activeCampaign.id);
+        } catch (err: any) {
+          setStatusMessage(err?.message || 'خطا در ثبت و اعتبارسنجی تقویم کمپین');
+          setIsSavingDraft(false);
+          return; // Halt/rollback! Do not advance past Step 3 if calendar creation fails
+        }
       }
     }
     await saveCurrentDraft(step + 1);

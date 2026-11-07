@@ -15,6 +15,9 @@ import { CalendarModal } from '../calendar/CalendarModal';
 import { CalendarStructureModal } from '../calendar/CalendarStructureModal';
 
 interface CodexTabProps {
+  initialSubTab?: 'quests' | 'locations' | 'handouts' | 'items' | 'creatures' | 'rules' | 'calendar' | 'factions';
+  initialCalendars?: GenericCalendarData[];
+  initialTime?: CampaignTimeResponse | null;
   revealedNpcs: NPC[];
   revealedItems: ItemLibraryEntry[];
   revealedLocations?: LocationEntry[];
@@ -31,6 +34,9 @@ interface CodexTabProps {
 }
 
 export const CodexTab: React.FC<CodexTabProps> = ({ 
+  initialSubTab,
+  initialCalendars,
+  initialTime,
   revealedNpcs, 
   revealedItems, 
   revealedLocations = [],
@@ -45,15 +51,20 @@ export const CodexTab: React.FC<CodexTabProps> = ({
   onDeleteQuest,
   onCompleteQuest,
 }) => {
-  const [subTab, setSubTab] = useState<'quests' | 'locations' | 'handouts' | 'items' | 'creatures' | 'rules' | 'calendar' | 'factions'>('quests');
+  const [subTab, setSubTab] = useState<'quests' | 'locations' | 'handouts' | 'items' | 'creatures' | 'rules' | 'calendar' | 'factions'>(initialSubTab || 'quests');
   const [searchQuery, setSearchQuery] = useState('');
   const [calendarModalOpen, setCalendarModalOpen] = useState(false);
   const [structureEditorOpen, setStructureEditorOpen] = useState(false);
 
   // Live Campaign Calendars & Time
-  const [calendars, setCalendars] = useState<GenericCalendarData[]>([]);
-  const [selectedCalId, setSelectedCalId] = useState<string>('');
-  const [campaignTime, setCampaignTime] = useState<CampaignTimeResponse | null>(null);
+  const [calendars, setCalendars] = useState<GenericCalendarData[]>(initialCalendars || []);
+  const [selectedCalId, setSelectedCalId] = useState<string>(() => {
+    if (initialCalendars && initialCalendars.length > 0) {
+      return (initialTime?.primaryCalendarId && initialCalendars.find(c => c.id === initialTime.primaryCalendarId)?.id) || initialCalendars[0].id || '';
+    }
+    return '';
+  });
+  const [campaignTime, setCampaignTime] = useState<CampaignTimeResponse | null>(initialTime || null);
   const [loadingCalendar, setLoadingCalendar] = useState(false);
 
   const loadCalendarData = async () => {

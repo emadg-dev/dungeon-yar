@@ -149,7 +149,7 @@ export const CalendarStructureForm: React.FC<CalendarStructureFormProps> = ({
       {/* Section 1: Basic Info (Optional) */}
       {!hideBasicInfo && (
         <div className="p-3.5 rounded-xl bg-surface-2 border border-border space-y-3">
-          <h4 className="text-xs font-bold text-text-primary">مشخصات هویتی و پایه‌ای گاه‌شمار</h4>
+          <h4 className="text-xs font-bold text-text-primary">مشخصات هویتی گاه‌شمار</h4>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             <div>
@@ -377,6 +377,9 @@ export const CalendarStructureForm: React.FC<CalendarStructureFormProps> = ({
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {(!state.calendar.weekdays || state.calendar.weekdays.length === 0) && (
+            <p className="text-xs text-text-muted italic col-span-full">این گاه‌شمار فاقد روز هفته است.</p>
+          )}
           {(state.calendar.weekdays || []).map((w, idx) => (
             <div key={idx} className="p-2 rounded-xl bg-bg border border-border flex items-center justify-between gap-2">
               <Input
@@ -422,8 +425,11 @@ export const CalendarStructureForm: React.FC<CalendarStructureFormProps> = ({
           )}
         </div>
 
-        <div className="space-y-2 max-h-72 overflow-y-auto p-1 scrollbar-none">
-          {state.calendar.months.map((m, idx) => (
+        {state.calendar.months.length === 0 ? (
+          <p className="text-xs text-text-muted italic">هیچ ماهی تعریف نشده است. از دکمه «افزودن ماه» استفاده کنید.</p>
+        ) : (
+          <div className="space-y-2 max-h-72 overflow-y-auto p-1 scrollbar-none">
+            {state.calendar.months.map((m, idx) => (
             <div key={idx} className="p-2.5 rounded-xl bg-bg border border-border flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 flex-1 min-w-[200px]">
                 <span className="text-xs font-bold text-text-muted w-5 shrink-0">{idx + 1}</span>
@@ -491,7 +497,8 @@ export const CalendarStructureForm: React.FC<CalendarStructureFormProps> = ({
             </div>
           ))}
         </div>
-      </div>
+      )}
+    </div>
 
       {/* Section 4: Off-Days */}
       <div className="p-3.5 rounded-xl bg-surface-2 border border-border space-y-3">
