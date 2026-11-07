@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { DiceRollResult } from '../../types';
 import { formatModifier } from '../../utils/dice';
 import { Dices, X } from 'lucide-react';
@@ -18,33 +18,35 @@ export const DiceToast: React.FC<DiceToastProps> = ({
   onClose,
   onOpenRollerModal
 }) => {
+  // A parent that passes an inline onClose used to restart the 6s timer on every render
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
+  // Hovering or focusing the toast pauses auto-dismiss (WCAG 2.2.1: users need time to read / reach the buttons)
+  const [paused, setPaused] = useState(false);
+
+  // Haptics: once per roll only
   useEffect(() => {
     if (!latestRoll) return;
-
-    // Feature-detect haptic feedback via navigator.vibrate
     if (typeof window !== 'undefined' && 'vibrate' in navigator) {
       try {
-        if (latestRoll.isCritical) {
-          navigator.vibrate([40, 60, 40, 60, 80]); // Special nat 20 vibration pattern
-        } else if (latestRoll.isFumble) {
-          navigator.vibrate([100, 50, 100]); // Nat 1 rumble
-        } else {
-          navigator.vibrate(20); // Quick tap
-        }
+        if (latestRoll.isCritical) navigator.vibrate([40, 60, 40, 60, 80]);
+        else if (latestRoll.isFumble) navigator.vibrate([100, 50, 100]);
+        else navigator.vibrate(20);
       } catch {}
     }
+  }, [latestRoll]);
 
-    // Auto-dismiss toast after 6 seconds
-    const timer = setTimeout(() => {
-      onClose();
-    }, 6000);
-
+  useEffect(() => {
+    if (!latestRoll || paused) return;
+    const timer = setTimeout(() => onCloseRef.current(), 6000);
     return () => clearTimeout(timer);
-  }, [latestRoll, onClose]);
+  }, [latestRoll, paused]);
 
   if (!latestRoll) return null;
 
-  // Only the two moments that matter change the look; a normal roll stays quiet.
   const tone = latestRoll.isCritical
     ? 'border-accent shadow-glow-amber'
     : latestRoll.isFumble
@@ -58,11 +60,14 @@ export const DiceToast: React.FC<DiceToastProps> = ({
     <div
       role="status"
       aria-live="polite"
-      className="fixed inset-x-3 z-50 max-w-sm mx-auto animate-in slide-in-from-top-4 duration-200 top-[calc(var(--app-header-h,3.5rem)+0.5rem)]"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+      className="fixed inset-x-3 z-50 max-w-sm mx-auto motion-safe:animate-in motion-safe:slide-in-from-top-4 duration-200 top-[calc(var(--app-header-h,3.5rem)+0.5rem)]"
       dir="rtl"
     >
       <div className={`p-3 rounded-xl border bg-surface shadow-2xl flex items-center gap-3 ${tone}`}>
-        {/* The total is the answer, so it is the biggest thing */}
         <div className="flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-bg border border-border shrink-0">
           <span className="text-2xl font-bold text-text-primary font-mono dice-ltr">{latestRoll.total}</span>
           <span className="text-xs text-text-muted font-mono dice-ltr">
@@ -75,7 +80,7 @@ export const DiceToast: React.FC<DiceToastProps> = ({
             <h4 className="text-sm font-bold text-text-primary truncate">{latestRoll.label}</h4>
             {outcome && <span className={`text-xs font-bold shrink-0 ${outcomeTone}`}>{outcome}</span>}
           </div>
-          <p className="text-xs text-text-muted">
+          <p className="text-sm text-text-muted">
             <span className="font-mono dice-ltr text-text-primary">[{latestRoll.rolls.join(', ')}]</span>
             {latestRoll.modifier !== 0 && (
               <span className="ms-2">

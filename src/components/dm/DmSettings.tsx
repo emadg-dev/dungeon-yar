@@ -2,162 +2,165 @@ import { Button } from '../ui/Button';
 import { Select } from '../ui/Select';
 import React, { useState } from 'react';
 import { User } from '../../types';
-import { Database, Users, Shield, RefreshCw, CheckCircle2, Server, Key } from 'lucide-react';
+import { Database, Users, RefreshCw, CheckCircle2, AlertCircle, Server } from 'lucide-react';
 import { ConfirmSheet } from '../mobile/ConfirmSheet';
+import { Section, SectionStack, Badge, inputCls, secondaryBtnCls } from '../ui/FormLayout';
 
 interface DmSettingsProps {
   users: User[];
   onUpdateUserRole: (userId: string, role: 'dm' | 'player') => void;
   onImportSeedIntoDb: () => Promise<void>;
   isHttpMode: boolean;
+  /** Optional: pass the real campaign invite code instead of a hard-coded one. */
+  campaignInviteCode?: string;
 }
+
+const initialOf = (name: string) => (name || '?').trim().charAt(0);
 
 export const DmSettings: React.FC<DmSettingsProps> = ({
   users,
   onUpdateUserRole,
   onImportSeedIntoDb,
-  isHttpMode
+  isHttpMode,
+  campaignInviteCode
 }) => {
   const [importLoading, setImportLoading] = useState(false);
-  const [importMessage, setImportMessage] = useState('');
+  // Result carries its type: the old code showed errors with success styling.
+  const [importResult, setImportResult] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showConfirmSheet, setShowConfirmSheet] = useState(false);
 
   const handleExecuteImport = async () => {
     setShowConfirmSheet(false);
     setImportLoading(true);
-    setImportMessage('');
+    setImportResult(null);
     try {
       await onImportSeedIntoDb();
-      setImportMessage('داده‌های زروانیا با موفقیت در پایگاه داده بازنویسی و همگام شدند!');
+      setImportResult({ type: 'success', text: 'داده‌های پیش‌فرض با موفقیت بارگذاری و همگام شدند.' });
     } catch (err: any) {
-      setImportMessage(err.message || 'خطا در بارگذاری داده‌ها');
+      setImportResult({ type: 'error', text: err.message || 'خطا در بارگذاری داده‌ها' });
     } finally {
       setImportLoading(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Seed Database Card */}
-      <div className="bg-surface border border-accent/25 rounded-2xl p-5 shadow-xl">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2.5 rounded-xl bg-accent/10 text-accent-hover border border-accent/30">
-            <Database className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-accent-hover">درون‌ریزی داده‌های پیش‌فرض زروانیا (Seed Data)</h3>
-            <p className="text-xs text-text-muted">
-              بارگذاری یا بازنشانی 6 ماجراجوی اصلی (سامان، پردیس، شیده، مانا، هامون، سیاوش)، هیولاها، سلاح‌ها و قوانین
-            </p>
-          </div>
-        </div>
-
-        <p className="text-xs text-text-primary leading-relaxed bg-surface-2 p-3 rounded-xl border border-border mb-4">
-          این عملیات در حالت محلی حافظه مرورگر را به روز می‌کند و در صورت اتصال به بک‌اند Cloudflare D1، اطلاعات را مستقیماً وارد سرور می‌نماید (Idempotent).
-        </p>
-
-        {importMessage && (
-          <div className="p-3 mb-4 rounded-xl bg-success/15 border border-success/50 text-success text-xs font-bold flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" />
-            {importMessage}
-          </div>
-        )}
-
-        <Button
-          onClick={() => setShowConfirmSheet(true)}
-          disabled={importLoading}
-          className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-warning to-accent hover:from-accent hover:to-accent-hover text-on-accent font-bold text-xs shadow-lg transition flex items-center gap-2 cursor-pointer disabled:opacity-50 touch-target min-w-[44px]"
+    <div dir="rtl">
+      <SectionStack>
+        {/* Users first: it is the most frequently used part of this screen */}
+        <Section
+          title={`کاربران و سطح دسترسی (${users.length})`}
+          icon={Users}
         >
-          {importLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
-          درون‌ریزی و همگام‌سازی اطلاعات پیش‌فرض
-        </Button>
-      </div>
-
-      {/* Backend & Environment Status */}
-      <div className="bg-surface border border-border rounded-2xl p-5 shadow-xl">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2.5 rounded-xl bg-surface-2 text-text-primary">
-            <Server className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-text-primary">وضعیت لایه ارتباطی دیتا (Api Adapter)</h3>
-            <p className="text-xs text-text-muted">محیط اجرایی فعال فعلی اپلیکیشن</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <div className="p-3 rounded-xl bg-surface-2 border border-border">
-            <span className="text-text-muted block mb-1">حالت جاری فعال:</span>
-            <span className="font-bold text-accent-hover text-sm">
-              {isHttpMode ? 'متصل به سرور ابری (Cloudflare Pages HttpApi)' : 'پیش‌نمایش محلی مرورگر (LocalApi)'}
-            </span>
-          </div>
-
-          <div className="p-3 rounded-xl bg-surface-2 border border-border">
-            <span className="text-text-muted block mb-1">کد دعوت ثبت‌نام کمپین:</span>
-            <span className="font-mono font-bold text-text-primary text-sm">
-              ZORVANIA-1405
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* User Management */}
-      <div className="bg-surface border border-border rounded-2xl p-5 shadow-xl">
-        <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border">
-          <Users className="w-5 h-5 text-accent-hover" />
-          <h3 className="text-sm font-bold text-accent-hover">مدیریت کاربران و سطوح دسترسی ({users.length})</h3>
-        </div>
-
-        <div className="divide-y divide-border">
-          {users.map(u => (
-            <div key={u.id} className="py-3 flex flex-wrap items-center justify-between gap-2 gap-3">
-              <div className="flex items-center gap-3">
-                <img
-                  src={u.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80'}
-                  alt={u.name}
-                  loading="lazy"
-                  decoding="async"
-                  width={40}
-                  height={40}
-                  className="w-10 h-10 rounded-xl object-cover border border-accent/30"
-                />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-xs text-text-primary">{u.name}</span>
-                    {u.role === 'dm' && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-accent/15 text-accent-hover font-bold border border-accent/30">
-                        دانجن مستر
-                      </span>
-                    )}
+          <ul className="rounded-xl border border-border bg-surface divide-y divide-border">
+            {users.map(u => (
+              <li key={u.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  {u.avatarUrl ? (
+                    <img
+                      src={u.avatarUrl}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 rounded-lg object-cover border border-border shrink-0"
+                    />
+                  ) : (
+                    // No third-party stock photo as fallback (extra request, breaks offline PWA mode)
+                    <span
+                      aria-hidden
+                      className="w-10 h-10 rounded-lg bg-surface-2 border border-border text-text-primary font-bold flex items-center justify-center shrink-0"
+                    >
+                      {initialOf(u.name)}
+                    </span>
+                  )}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-bold text-text-primary truncate">{u.name}</span>
+                      {u.role === 'dm' && <Badge tone="accent">دانجن مستر</Badge>}
+                    </div>
+                    <span dir="ltr" className="block text-xs text-text-muted font-mono truncate text-start">{u.email}</span>
                   </div>
-                  <span className="text-xs text-text-muted font-mono">{u.email}</span>
                 </div>
-              </div>
 
-              {/* Role Toggle */}
-              <div className="flex items-center gap-2">
                 <Select noWrapper
                   value={u.role}
-                  onChange={(e) => onUpdateUserRole(u.id, e.target.value as 'dm' | 'player')}
-                  className="bg-surface-2 border border-border-strong text-xs text-text-primary py-1.5 px-2.5 rounded-xl focus:outline-none focus:border-accent"
+                  onChange={e => onUpdateUserRole(u.id, e.target.value as 'dm' | 'player')}
+                  aria-label={`نقش ${u.name}`}
+                  className={`${inputCls} sm:w-44`}
                 >
-                  <option value="player">نقش: بازیکن (Player)</option>
-                  <option value="dm">نقش: دانجن مستر (DM)</option>
+                  <option value="player">بازیکن</option>
+                  <option value="dm">دانجن مستر</option>
                 </Select>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+              </li>
+            ))}
+          </ul>
+        </Section>
 
-      {/* Database Reset Confirm Sheet */}
+        <Section title="وضعیت اتصال" icon={Server}>
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="rounded-lg bg-surface-2 p-3">
+              <dt className="text-xs text-text-muted">محیط فعال</dt>
+              <dd className="mt-1 text-sm font-medium text-text-primary">
+                {isHttpMode ? 'سرور ابری (Cloudflare)' : 'پیش‌نمایش محلی مرورگر'}
+              </dd>
+            </div>
+            {campaignInviteCode && (
+              <div className="rounded-lg bg-surface-2 p-3">
+                <dt className="text-xs text-text-muted">کد دعوت کمپین</dt>
+                <dd dir="ltr" className="mt-1 text-sm font-mono font-bold text-text-primary text-start select-all">
+                  {campaignInviteCode}
+                </dd>
+              </div>
+            )}
+          </dl>
+        </Section>
+
+        {/* Destructive/maintenance action lives last and looks like a secondary action, not the page's hero */}
+        <Section
+          title="داده‌های پیش‌فرض"
+          icon={Database}
+          description="شش ماجراجوی اصلی، هیولاها، سلاح‌ها و قوانین کمپین را بارگذاری یا بازنشانی می‌کند."
+        >
+          <p className="text-sm text-text-muted leading-relaxed">
+            در حالت محلی، حافظه مرورگر به‌روز می‌شود؛ با اتصال به سرور، داده‌ها مستقیماً در پایگاه داده ثبت می‌شوند.
+            اجرای دوباره مشکلی ایجاد نمی‌کند، ولی تغییرات دستی روی همین داده‌ها ممکن است بازنویسی شود.
+          </p>
+
+          {importResult && (
+            <div
+              role={importResult.type === 'error' ? 'alert' : 'status'}
+              className={`p-3 rounded-lg border text-sm flex items-start gap-2 ${
+                importResult.type === 'success'
+                  ? 'bg-success/15 border-success/30 text-success'
+                  : 'bg-danger/15 border-danger/30 text-danger'
+              }`}
+            >
+              {importResult.type === 'success'
+                ? <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" aria-hidden />
+                : <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden />}
+              <span>{importResult.text}</span>
+            </div>
+          )}
+
+          <Button
+            type="button"
+            onClick={() => setShowConfirmSheet(true)}
+            disabled={importLoading}
+            className={`${secondaryBtnCls} w-full sm:w-auto disabled:opacity-50`}
+          >
+            {importLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+            <span>{importLoading ? 'در حال همگام‌سازی...' : 'بارگذاری داده‌های پیش‌فرض'}</span>
+          </Button>
+        </Section>
+      </SectionStack>
+
       <ConfirmSheet
         isOpen={showConfirmSheet}
         onClose={() => setShowConfirmSheet(false)}
         onConfirm={handleExecuteImport}
-        title="درون‌ریزی و بازنشانی اطلاعات زروانیا"
-        message="آیا از بارگذاری مجدد داده‌های پیش‌فرض کمپین زروانیا اطمینان دارید؟ داده‌های اولیه 6 ماجراجوی اصلی، هیولاها و قوانین بارگذاری مجدد خواهند شد."
+        title="بارگذاری داده‌های پیش‌فرض"
+        message="داده‌های پیش‌فرض ماجراجویان، هیولاها و قوانین دوباره بارگذاری می‌شوند و ممکن است تغییرات دستی روی آن‌ها بازنویسی شود. ادامه می‌دهید؟"
         confirmLabel="تأیید و همگام‌سازی"
       />
     </div>

@@ -6,7 +6,6 @@ import {
   Users, KeyRound, ShieldAlert, Sparkles, BookOpen, Compass, Award, Database, MapPin, Map as MapIcon, Flag, Coins, Settings as SettingsIcon 
 } from 'lucide-react';
 import { Quest } from '../../types';
-import { ScrollableRow } from '../ui/ScrollableRow';
 
 // Lazy-loaded DM Sub-Views for optimal code-splitting
 const DmDashboard = React.lazy(() => import('./DmDashboard').then(m => ({ default: m.DmDashboard })));
@@ -35,6 +34,74 @@ const DmToolSkeleton: React.FC = () => (
     </div>
   </div>
 );
+
+// ---------------------------------------------------------
+// Navigation building blocks
+// ---------------------------------------------------------
+
+type DmTab = 'dashboard' | 'encounters' | 'library' | 'narrative' | 'more';
+type LibrarySubTab = 'library_hub' | 'npcs' | 'items' | 'locations' | 'handouts' | 'quests' | 'reputation' | 'treasury';
+type NarrativeSubTab = 'notes' | 'endings';
+type MoreSubTab = 'users' | 'invites' | 'audit' | 'settings';
+
+interface SubTabItem<T extends string> {
+  id: T;
+  label: string;
+  icon: typeof Library;
+  count?: number;
+}
+
+/**
+ * Second-level navigation. Items wrap instead of scrolling sideways,
+ * so every option is visible without discovering a hidden scroller.
+ */
+function SubTabBar<T extends string>({
+  items,
+  active,
+  onChange,
+  label
+}: {
+  items: SubTabItem<T>[];
+  active: T;
+  onChange: (id: T) => void;
+  label: string;
+}) {
+  return (
+    <div role="tablist" aria-label={label} className="flex flex-wrap gap-1.5">
+      {items.map(item => {
+        const Icon = item.icon;
+        const isActive = active === item.id;
+        return (
+          <Button
+            type="button"
+            key={item.id}
+            role="tab"
+            aria-selected={isActive}
+            onClick={() => onChange(item.id)}
+            className={`flex-1 min-h-[44px] px-3 rounded-[10px] text-sm transition flex items-center justify-center gap-1.5 whitespace-nowrap ${
+              isActive
+                ? 'bg-surface-3 text-text-primary font-extrabold border border-accent/50'
+                : 'bg-surface-2 text-text-muted font-bold border border-border hover:text-text-primary'
+            }`}
+          >
+            <Icon className="w-4 h-4 shrink-0" />
+            <span>{item.label}</span>
+            {item.count !== undefined && (
+              <span className="text-xs tabular-nums opacity-75">{item.count}</span>
+            )}
+          </Button>
+        );
+      })}
+    </div>
+  );
+}
+
+// The library area used to be eight tabs in one sideways scroller. Grouped by purpose instead.
+const LIBRARY_GROUPS: { id: string; label: string; tabs: LibrarySubTab[] }[] = [
+  { id: 'content', label: 'محتوا', tabs: ['library_hub', 'npcs', 'items'] },
+  { id: 'world', label: 'دنیا', tabs: ['locations', 'handouts'] },
+  { id: 'campaign', label: 'پیگیری کمپین', tabs: ['quests', 'reputation', 'treasury'] }
+];
 
 interface DmToolsProps {
   characters: Character[];
@@ -176,14 +243,16 @@ export const DmTools: React.FC<DmToolsProps> = ({
   onDeleteQuest,
   onCompleteQuest,
 }) => {
-  const [internalDmTab, setInternalDmTab] = useState<'dashboard' | 'encounters' | 'library' | 'narrative' | 'more'>('dashboard');
-  const [librarySubTab, setLibrarySubTab] = useState<'library_hub' | 'npcs' | 'items' | 'locations' | 'handouts' | 'quests' | 'reputation' | 'treasury'>('library_hub');
-  const [narrativeSubTab, setNarrativeSubTab] = useState<'notes' | 'endings'>('notes');
-  const [moreSubTab, setMoreSubTab] = useState<'users' | 'invites' | 'audit' | 'settings'>('users');
+  const [internalDmTab, setInternalDmTab] = useState<DmTab>('dashboard');
+  const [librarySubTab, setLibrarySubTab] = useState<LibrarySubTab>('library_hub');
+  const [narrativeSubTab, setNarrativeSubTab] = useState<NarrativeSubTab>('notes');
+  const [moreSubTab, setMoreSubTab] = useState<MoreSubTab>('users');
+
+  const campaignId = activeCampaign?.id || 'zorvania-c1';
 
   const rawTab = controlledDmTab || internalDmTab;
   // Normalize backwards compatibility
-  const activeTab: 'dashboard' | 'encounters' | 'library' | 'narrative' | 'more' =
+  const activeTab: DmTab =
     rawTab === 'npcs' || rawTab === 'items'
       ? 'library'
       : rawTab === 'notes'
@@ -197,21 +266,48 @@ export const DmTools: React.FC<DmToolsProps> = ({
     setInternalDmTab(tab);
   };
 
+  // Primary navigation: five items always fit as icon-over-label, so nothing scrolls sideways.
+  // The last tab was "کاربران و تنظیمات" (too long for a tab); it holds users, invites, log and settings.
   const navItems = [
     { id: 'dashboard', label: 'داشبورد', icon: LayoutDashboard },
     { id: 'encounters', label: 'مواجهه', icon: Swords },
     { id: 'library', label: 'کتابخانه', icon: Library },
     { id: 'narrative', label: 'روایت', icon: Scroll },
-    { id: 'more', label: 'کاربران و تنظیمات', icon: MoreHorizontal },
+    { id: 'more', label: 'مدیریت', icon: SettingsIcon },
   ] as const;
+
+  const libraryTabs: Record<LibrarySubTab, SubTabItem<LibrarySubTab>> = {
+    library_hub: { id: 'library_hub', label: 'قالب‌ها و بسته‌ها', icon: Library },
+    npcs: { id: 'npcs', label: 'موجودات', icon: Users, count: npcs.length },
+    items: { id: 'items', label: 'اشیاء', icon: Sparkles, count: items.length },
+    locations: { id: 'locations', label: 'مکان‌ها', icon: MapPin, count: locations.length },
+    handouts: { id: 'handouts', label: 'اسناد و نقشه‌ها', icon: MapIcon },
+    quests: { id: 'quests', label: 'مأموریت‌ها', icon: Scroll, count: quests.length },
+    reputation: { id: 'reputation', label: 'شهرت جناح‌ها', icon: Flag },
+    treasury: { id: 'treasury', label: 'خزانه گروه', icon: Coins }
+  };
+  const activeLibraryGroup =
+    LIBRARY_GROUPS.find(g => g.tabs.includes(librarySubTab)) || LIBRARY_GROUPS[0];
+
+  const narrativeTabs: SubTabItem<NarrativeSubTab>[] = [
+    { id: 'notes', label: 'یادداشت‌های کمپین', icon: BookOpen, count: campaignNotes.length },
+    { id: 'endings', label: 'پایان‌بندی‌ها و سرنوشت', icon: Compass }
+  ];
+
+  const moreTabs: SubTabItem<MoreSubTab>[] = [
+    { id: 'users', label: 'کاربران', icon: Users },
+    { id: 'invites', label: 'کدهای دعوت', icon: KeyRound },
+    { id: 'audit', label: 'گزارش وقایع', icon: Scroll },
+    { id: 'settings', label: 'تنظیمات', icon: SettingsIcon }
+  ];
 
   return (
     <div className="space-y-4" dir="rtl">
-      {/* DM Navigation Tab Bar */}
-      <ScrollableRow
-        activeKey={activeTab}
-        wrapperClassName="surface-card rounded-[14px] p-1.5 border border-border"
-        className="gap-1.5"
+      {/* Primary navigation */}
+      <nav
+        role="tablist"
+        aria-label="بخش‌های ابزار مستر"
+        className="surface-card rounded-[14px] p-1.5 border border-border grid grid-cols-5 gap-1"
       >
         {navItems.map(item => {
           const Icon = item.icon;
@@ -220,423 +316,277 @@ export const DmTools: React.FC<DmToolsProps> = ({
             <Button
               type="button"
               key={item.id}
-              data-key={item.id}
+              role="tab"
+              aria-selected={isActive}
               onClick={() => setActiveDmTab(item.id)}
-              className={`py-2 px-3.5 rounded-[10px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
+              className={`min-h-[56px] rounded-[10px] transition flex flex-col items-center justify-center gap-1 ${
                 isActive
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
+                  ? 'bg-accent text-on-accent shadow-sm'
                   : 'text-text-muted hover:text-text-primary'
               }`}
             >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">{item.label}</span>
+              <Icon className="w-5 h-5 shrink-0" />
+              <span className={`text-xs leading-none whitespace-nowrap ${isActive ? 'font-extrabold' : 'font-bold'}`}>
+                {item.label}
+              </span>
             </Button>
           );
         })}
-      </ScrollableRow>
+      </nav>
 
-      {/* 1. Dashboard */}
-      {activeTab === 'dashboard' && (
-        <DmDashboard
-          characters={characters}
-          participations={participations}
-          activeCampaign={activeCampaign}
-          onOpenSetupChecklist={onOpenSetupChecklist}
-          onUpdateCharacter={onUpdateCharacter}
-          onApplyGroupRest={onApplyGroupRest}
-          onUpdateGroupResources={onUpdateGroupResources}
-          onInspectCharacter={onInspectCharacter}
-          onRollDice={onRollDice}
-          onCreateForPlayer={onCreateCharacterForPlayer}
-          onAwardXp={onAwardXp}
-          onToggleMilestoneLevelUp={onToggleMilestoneLevelUp}
-          onUndoLevelUp={onUndoLevelUp}
-          onToggleRespecWindow={onToggleRespecWindow}
-          onDmOverride={onDmOverride}
-          onRefreshCampaign={onRefreshCharacters}
-          sessions={sessions}
-          currentUser={currentUser}
-          onRsvpSession={onRsvpSession}
-          onVoteSessionPoll={onVoteSessionPoll}
-          onConfirmPollOption={onConfirmPollOption}
-          onOpenSessionList={onOpenSessionList}
-          onOpenCreateSession={onOpenCreateSession}
-          onOpenAttendance={onOpenAttendance}
-          onEditSession={onEditSession}
-          onOpenClosingSheet={onOpenClosingSheet}
-          latestRecap={latestRecap}
-          onOpenRecapArchive={onOpenRecapArchive}
-          onOpenCreateRecap={onOpenCreateRecap}
-          onEditRecap={onEditRecap}
-          npcs={npcs}
-          locations={locations}
-          campaignNotes={campaignNotes}
-        />
-      )}
+      {/* The sub-views are lazy; without Suspense they would have nothing to show while loading */}
+      <Suspense fallback={<DmToolSkeleton />}>
+        {/* 1. Dashboard */}
+        {activeTab === 'dashboard' && (
+          <DmDashboard
+            characters={characters}
+            participations={participations}
+            activeCampaign={activeCampaign}
+            onOpenSetupChecklist={onOpenSetupChecklist}
+            onUpdateCharacter={onUpdateCharacter}
+            onApplyGroupRest={onApplyGroupRest}
+            onUpdateGroupResources={onUpdateGroupResources}
+            onInspectCharacter={onInspectCharacter}
+            onRollDice={onRollDice}
+            onCreateForPlayer={onCreateCharacterForPlayer}
+            onAwardXp={onAwardXp}
+            onToggleMilestoneLevelUp={onToggleMilestoneLevelUp}
+            onUndoLevelUp={onUndoLevelUp}
+            onToggleRespecWindow={onToggleRespecWindow}
+            onDmOverride={onDmOverride}
+            onRefreshCampaign={onRefreshCharacters}
+            sessions={sessions}
+            currentUser={currentUser}
+            onRsvpSession={onRsvpSession}
+            onVoteSessionPoll={onVoteSessionPoll}
+            onConfirmPollOption={onConfirmPollOption}
+            onOpenSessionList={onOpenSessionList}
+            onOpenCreateSession={onOpenCreateSession}
+            onOpenAttendance={onOpenAttendance}
+            onEditSession={onEditSession}
+            onOpenClosingSheet={onOpenClosingSheet}
+            latestRecap={latestRecap}
+            onOpenRecapArchive={onOpenRecapArchive}
+            onOpenCreateRecap={onOpenCreateRecap}
+            onEditRecap={onEditRecap}
+            npcs={npcs}
+            locations={locations}
+            campaignNotes={campaignNotes}
+          />
+        )}
 
-      {/* 2. Encounters */}
-      {activeTab === 'encounters' && (
-        <DmEncounterRunner
-          characters={characters}
-          npcs={npcs}
-          locations={locations}
-          savedEncounters={savedEncounters}
-          onSaveEncounter={onSaveEncounter}
-          onRollDice={onRollDice}
-          onCreateLocation={onCreateLocation}
-        />
-      )}
+        {/* 2. Encounters */}
+        {activeTab === 'encounters' && (
+          <DmEncounterRunner
+            characters={characters}
+            npcs={npcs}
+            locations={locations}
+            savedEncounters={savedEncounters}
+            onSaveEncounter={onSaveEncounter}
+            onRollDice={onRollDice}
+            onCreateLocation={onCreateLocation}
+          />
+        )}
 
-      {/* 3. Library (DM Library Hub & Entity Managers) */}
-      {activeTab === 'library' && (
-        <div className="space-y-4">
-          <ScrollableRow
-            activeKey={librarySubTab}
-            wrapperClassName="surface-card rounded-[12px] p-1 border border-border"
-            className="gap-1"
-          >
-            <Button
-              type="button"
-              data-key="library_hub"
-              onClick={() => setLibrarySubTab('library_hub')}
-              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
-                librarySubTab === 'library_hub'
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <Library className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">مخزن کلان کتابخانه</span>
-            </Button>
-            <Button
-              type="button"
-              data-key="npcs"
-              onClick={() => setLibrarySubTab('npcs')}
-              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
-                librarySubTab === 'npcs'
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <Users className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">موجودات ({npcs.length})</span>
-            </Button>
-            <Button
-              type="button"
-              data-key="items"
-              onClick={() => setLibrarySubTab('items')}
-              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
-                librarySubTab === 'items'
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">اشیاء ({items.length})</span>
-            </Button>
-            <Button
-              type="button"
-              data-key="locations"
-              onClick={() => setLibrarySubTab('locations')}
-              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
-                librarySubTab === 'locations'
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <MapPin className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">مکان‌ها ({locations.length})</span>
-            </Button>
-            <Button
-              type="button"
-              data-key="handouts"
-              onClick={() => setLibrarySubTab('handouts')}
-              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
-                librarySubTab === 'handouts'
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <MapIcon className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">اسناد و نقشه‌ها</span>
-            </Button>
-            <Button
-              type="button"
-              data-key="quests"
-              onClick={() => setLibrarySubTab('quests')}
-              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
-                librarySubTab === 'quests'
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <Scroll className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">مأموریت‌ها ({quests.length})</span>
-            </Button>
-            <Button
-              type="button"
-              data-key="reputation"
-              onClick={() => setLibrarySubTab('reputation')}
-              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
-                librarySubTab === 'reputation'
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <Flag className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">شهرت جناح‌ها</span>
-            </Button>
-            <Button
-              type="button"
-              data-key="treasury"
-              onClick={() => setLibrarySubTab('treasury')}
-              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start ${
-                librarySubTab === 'treasury'
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <Coins className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">خزانه گروه</span>
-            </Button>
-          </ScrollableRow>
+        {/* 3. Library: grouped navigation + entity managers */}
+        {activeTab === 'library' && (
+          <div className="space-y-4">
+            <div className="surface-card rounded-[14px] p-2 border border-border space-y-2">
+              <div
+                role="tablist"
+                aria-label="گروه‌های کتابخانه"
+                className="grid grid-cols-3 gap-1 p-1 rounded-[10px] bg-surface-2"
+              >
+                {LIBRARY_GROUPS.map(group => {
+                  const isActive = activeLibraryGroup.id === group.id;
+                  return (
+                    <Button
+                      type="button"
+                      key={group.id}
+                      role="tab"
+                      aria-selected={isActive}
+                      onClick={() => {
+                        if (!isActive) setLibrarySubTab(group.tabs[0]);
+                      }}
+                      className={`h-10 rounded-[8px] text-sm transition ${
+                        isActive
+                          ? 'bg-accent/15 text-accent-hover font-extrabold border border-accent/50'
+                          : 'text-text-muted font-bold hover:text-text-primary border border-transparent'
+                      }`}
+                    >
+                      {group.label}
+                    </Button>
+                  );
+                })}
+              </div>
 
-          {librarySubTab === 'library_hub' && (
-            <DmLibrary
-              currentCampaignId={activeCampaign?.id || 'zorvania-c1'}
-              currentUser={currentUser || null}
-              myCampaigns={myCampaigns}
-              onRollDice={onRollDice}
-              onRefreshCampaignData={onRefreshCharacters}
+              <SubTabBar
+                label={activeLibraryGroup.label}
+                items={activeLibraryGroup.tabs.map(t => libraryTabs[t])}
+                active={librarySubTab}
+                onChange={setLibrarySubTab}
+              />
+            </div>
+
+            {librarySubTab === 'library_hub' && (
+              <DmLibrary
+                currentCampaignId={campaignId}
+                currentUser={currentUser || null}
+                myCampaigns={myCampaigns}
+                onRollDice={onRollDice}
+                onRefreshCampaignData={onRefreshCharacters}
+              />
+            )}
+
+            {librarySubTab === 'npcs' && (
+              <DmNpcManager
+                npcs={npcs}
+                onCreateNpc={onCreateNpc}
+                onUpdateNpc={onUpdateNpc}
+                onDeleteNpc={onDeleteNpc}
+                onRollDice={onRollDice}
+              />
+            )}
+
+            {librarySubTab === 'items' && (
+              <DmItemVault
+                items={items}
+                characters={characters}
+                weaponTemplates={weaponTemplates}
+                onCreateItem={onCreateItem}
+                onUpdateItem={onUpdateItem}
+                onDeleteItem={onDeleteItem}
+                onGiveItem={onGiveItemToPlayer}
+              />
+            )}
+
+            {librarySubTab === 'locations' && (
+              <DmLocationManager
+                locations={locations}
+                onCreateLocation={async (loc) => { if (onCreateLocation) await onCreateLocation(loc); }}
+                onUpdateLocation={async (loc) => { if (onUpdateLocation) await onUpdateLocation(loc); }}
+                onDeleteLocation={async (id) => { if (onDeleteLocation) await onDeleteLocation(id); }}
+              />
+            )}
+
+            {librarySubTab === 'handouts' && (
+              <DmHandoutManager
+                campaignId={campaignId}
+                campaignCharacters={characters.map(c => ({ id: c.id, name: c.name }))}
+              />
+            )}
+
+            {librarySubTab === 'quests' && (
+              <DmQuestManager
+                campaignId={campaignId}
+                quests={quests}
+                npcs={npcs}
+                locations={locations}
+                partyCharacters={characters.map(c => ({ id: c.id, name: c.name }))}
+                onToggleObjective={async (qId, objId, done) => {
+                  if (onToggleQuestObjective) {
+                    await onToggleQuestObjective(qId, objId, done);
+                  }
+                }}
+                onCreateQuest={async (data) => {
+                  if (onCreateQuest) {
+                    await onCreateQuest(data);
+                  }
+                }}
+                onUpdateQuest={async (qId, data) => {
+                  if (onUpdateQuest) {
+                    await onUpdateQuest(qId, data);
+                  }
+                }}
+                onDeleteQuest={async (qId) => {
+                  if (onDeleteQuest) {
+                    await onDeleteQuest(qId);
+                  }
+                }}
+                onCompleteQuest={async (qId, opts) => {
+                  if (onCompleteQuest) {
+                    await onCompleteQuest(qId, opts);
+                  }
+                }}
+              />
+            )}
+
+            {librarySubTab === 'reputation' && (
+              <FactionReputationManager
+                campaignId={campaignId}
+                userRole="owner"
+                participations={participations}
+              />
+            )}
+
+            {librarySubTab === 'treasury' && (
+              <PartyTreasuryManager
+                campaignId={campaignId}
+                userRole="owner"
+                campaignSettings={activeCampaign?.settings}
+              />
+            )}
+          </div>
+        )}
+
+        {/* 4. Narrative (Notes & Endings) */}
+        {activeTab === 'narrative' && (
+          <div className="space-y-4">
+            <SubTabBar
+              label="بخش‌های روایت"
+              items={narrativeTabs}
+              active={narrativeSubTab}
+              onChange={setNarrativeSubTab}
             />
-          )}
 
-          {librarySubTab === 'npcs' && (
-            <DmNpcManager
-              npcs={npcs}
-              onCreateNpc={onCreateNpc}
-              onUpdateNpc={onUpdateNpc}
-              onDeleteNpc={onDeleteNpc}
-              onRollDice={onRollDice}
+            {narrativeSubTab === 'notes' && (
+              <DmCampaignNotes
+                campaignNotes={campaignNotes}
+                onCreateNote={onCreateCampaignNote}
+                onUpdateNote={onUpdateCampaignNote}
+                onDeleteNote={onDeleteCampaignNote}
+              />
+            )}
+
+            {narrativeSubTab === 'endings' && (
+              <DmEndingTracker />
+            )}
+          </div>
+        )}
+
+        {/* 5. Management: Users, Invites, Audit Log, Settings & Seed */}
+        {activeTab === 'more' && (
+          <div className="space-y-4">
+            <SubTabBar
+              label="بخش‌های مدیریت"
+              items={moreTabs}
+              active={moreSubTab}
+              onChange={setMoreSubTab}
             />
-          )}
 
-          {librarySubTab === 'items' && (
-            <DmItemVault
-              items={items}
-              characters={characters}
-              weaponTemplates={weaponTemplates}
-              onCreateItem={onCreateItem}
-              onUpdateItem={onUpdateItem}
-              onDeleteItem={onDeleteItem}
-              onGiveItem={onGiveItemToPlayer}
-            />
-          )}
+            {moreSubTab === 'users' && (
+              <DmUsers characters={characters} onRefreshCharacters={onRefreshCharacters} />
+            )}
 
-          {librarySubTab === 'locations' && (
-            <DmLocationManager
-              locations={locations}
-              onCreateLocation={async (loc) => { if (onCreateLocation) await onCreateLocation(loc); }}
-              onUpdateLocation={async (loc) => { if (onUpdateLocation) await onUpdateLocation(loc); }}
-              onDeleteLocation={async (id) => { if (onDeleteLocation) await onDeleteLocation(id); }}
-            />
-          )}
+            {moreSubTab === 'invites' && (
+              <DmInvites characters={characters} />
+            )}
 
-          {librarySubTab === 'handouts' && (
-            <DmHandoutManager
-              campaignId={activeCampaign?.id || 'zorvania-c1'}
-              campaignCharacters={characters.map(c => ({ id: c.id, name: c.name }))}
-            />
-          )}
+            {moreSubTab === 'audit' && (
+              <DmAuditLog campaignId={activeCampaign?.id} />
+            )}
 
-          {librarySubTab === 'quests' && (
-            <DmQuestManager
-              campaignId={activeCampaign?.id || 'zorvania-c1'}
-              quests={quests}
-              npcs={npcs}
-              locations={locations}
-              partyCharacters={characters.map(c => ({ id: c.id, name: c.name }))}
-              onToggleObjective={async (qId, objId, done) => {
-                if (onToggleQuestObjective) {
-                  await onToggleQuestObjective(qId, objId, done);
-                }
-              }}
-              onCreateQuest={async (data) => {
-                if (onCreateQuest) {
-                  await onCreateQuest(data);
-                }
-              }}
-              onUpdateQuest={async (qId, data) => {
-                if (onUpdateQuest) {
-                  await onUpdateQuest(qId, data);
-                }
-              }}
-              onDeleteQuest={async (qId) => {
-                if (onDeleteQuest) {
-                  await onDeleteQuest(qId);
-                }
-              }}
-              onCompleteQuest={async (qId, opts) => {
-                if (onCompleteQuest) {
-                  await onCompleteQuest(qId, opts);
-                }
-              }}
-            />
-          )}
-
-          {librarySubTab === 'reputation' && (
-            <FactionReputationManager
-              campaignId={activeCampaign?.id || 'zorvania-c1'}
-              userRole="owner"
-              participations={participations}
-            />
-          )}
-
-          {librarySubTab === 'treasury' && (
-            <PartyTreasuryManager
-              campaignId={activeCampaign?.id || 'zorvania-c1'}
-              userRole="owner"
-              campaignSettings={activeCampaign?.settings}
-            />
-          )}
-        </div>
-      )}
-
-      {/* 4. Narrative (Notes & Endings) */}
-      {activeTab === 'narrative' && (
-        <div className="space-y-4">
-          <ScrollableRow
-            activeKey={narrativeSubTab}
-            wrapperClassName="surface-card rounded-[12px] p-1 border border-border"
-            className="gap-1"
-          >
-            <Button
-              type="button"
-              data-key="notes"
-              onClick={() => setNarrativeSubTab('notes')}
-              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
-                narrativeSubTab === 'notes'
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <BookOpen className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">یادداشت‌های کمپین ({campaignNotes.length})</span>
-            </Button>
-            <Button
-              type="button"
-              data-key="endings"
-              onClick={() => setNarrativeSubTab('endings')}
-              className={`py-1.5 px-3 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
-                narrativeSubTab === 'endings'
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <Compass className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">پایان‌بندی‌ها و سرنوشت</span>
-            </Button>
-          </ScrollableRow>
-
-          {narrativeSubTab === 'notes' && (
-            <DmCampaignNotes
-              campaignNotes={campaignNotes}
-              onCreateNote={onCreateCampaignNote}
-              onUpdateNote={onUpdateCampaignNote}
-              onDeleteNote={onDeleteCampaignNote}
-            />
-          )}
-
-          {narrativeSubTab === 'endings' && (
-            <DmEndingTracker />
-          )}
-        </div>
-      )}
-
-      {/* 5. More: Users, Invites, Audit Log, Settings & Seed */}
-      {activeTab === 'more' && (
-        <div className="space-y-4">
-          <ScrollableRow
-            activeKey={moreSubTab}
-            wrapperClassName="surface-card rounded-[12px] p-1 border border-border"
-            className="gap-1"
-          >
-            <Button
-              type="button"
-              data-key="users"
-              onClick={() => setMoreSubTab('users')}
-              className={`py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
-                moreSubTab === 'users'
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <Users className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">کاربران</span>
-            </Button>
-            <Button
-              type="button"
-              data-key="invites"
-              onClick={() => setMoreSubTab('invites')}
-              className={`py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
-                moreSubTab === 'invites'
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <KeyRound className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">کدهای دعوت</span>
-            </Button>
-            <Button
-              type="button"
-              data-key="audit"
-              onClick={() => setMoreSubTab('audit')}
-              className={`py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
-                moreSubTab === 'audit'
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <Scroll className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">گزارش وقایع</span>
-            </Button>
-            <Button
-              type="button"
-              data-key="settings"
-              onClick={() => setMoreSubTab('settings')}
-              className={`py-1.5 px-2.5 rounded-[8px] text-xs font-bold transition flex items-center justify-center gap-1.5 touch-target min-w-[44px] whitespace-nowrap shrink-0 snap-start sm:flex-1 ${
-                moreSubTab === 'settings'
-                  ? 'bg-accent text-on-accent font-extrabold shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              <SettingsIcon className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">تنظیمات</span>
-            </Button>
-          </ScrollableRow>
-
-          {moreSubTab === 'users' && (
-            <DmUsers characters={characters} onRefreshCharacters={onRefreshCharacters} />
-          )}
-
-          {moreSubTab === 'invites' && (
-            <DmInvites characters={characters} />
-          )}
-
-          {moreSubTab === 'audit' && (
-            <DmAuditLog campaignId={activeCampaign?.id} />
-          )}
-
-          {moreSubTab === 'settings' && (
-            <DmSettings
-              users={users}
-              onUpdateUserRole={onUpdateUserRole}
-              onImportSeedIntoDb={onImportSeedIntoDb}
-              isHttpMode={isHttpMode}
-            />
-          )}
-        </div>
-      )}
+            {moreSubTab === 'settings' && (
+              <DmSettings
+                users={users}
+                onUpdateUserRole={onUpdateUserRole}
+                onImportSeedIntoDb={onImportSeedIntoDb}
+                isHttpMode={isHttpMode}
+              />
+            )}
+          </div>
+        )}
+      </Suspense>
     </div>
   );
 };

@@ -4,48 +4,71 @@ import { Select } from '../ui/Select';
 import React, { useState, useEffect } from 'react';
 import { User, Character } from '../../types';
 import { api } from '../../services/api';
-import { 
-  Users, Search, Shield, UserCheck, UserX, KeyRound, Copy, Check, 
-  Trash2, RefreshCw, MoreVertical, Link as LinkIcon, AlertTriangle, X, ShieldAlert 
+import {
+  Users, Search, Shield, UserCheck, UserX, KeyRound, Copy, Check,
+  Trash2, RefreshCw, MoreVertical, X
 } from 'lucide-react';
 import { ActionMenu, ActionMenuItem } from '../common/ActionMenu';
 import { ConfirmSheet } from '../mobile/ConfirmSheet';
 import { BottomSheet } from '../mobile/BottomSheet';
+import { Badge, IconButton, inputCls, primaryBtnCls } from '../ui/FormLayout';
 
 interface DmUsersProps {
   characters: Character[];
   onRefreshCharacters?: () => void;
 }
 
+/** One pending risky action, confirmed through the shared ConfirmSheet. */
+interface PendingAction {
+  title: string;
+  description: string;
+  confirmText: string;
+  destructive: boolean;
+  run: () => Promise<void>;
+}
+
+const nameOf = (u: User) => u.displayName || u.name;
+
 export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacters }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Selected user for action menu / sheets
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
 
-  // Sheets state
   const [assignCharSheetOpen, setAssignCharSheetOpen] = useState(false);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [pending, setPending] = useState<PendingAction | null>(null);
   const [resetLinkData, setResetLinkData] = useState<{ resetLink: string; resetToken: string } | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
+  // Typing no longer fires a request per keystroke
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
   useEffect(() => {
     loadUsers();
-  }, [search, roleFilter, statusFilter]);
+  }, [debouncedSearch, roleFilter, statusFilter]);
+
+  // Auto-dismiss success message (cleaned up on unmount / replacement)
+  useEffect(() => {
+    if (!successMsg) return;
+    const t = setTimeout(() => setSuccessMsg(''), 3500);
+    return () => clearTimeout(t);
+  }, [successMsg]);
 
   const loadUsers = async () => {
     setLoading(true);
     setErrorMsg('');
     try {
-      const list = await api.listUsers({ search, role: roleFilter, status: statusFilter });
-      setUsers(list);
+      setUsers(await api.listUsers({ search: debouncedSearch, role: roleFilter, status: statusFilter }));
     } catch (err: any) {
       setErrorMsg(err.message || 'خطا در بارگذاری فهرست کاربران');
     } finally {
@@ -53,16 +76,11 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
     }
   };
 
-  const showSuccess = (msg: string) => {
-    setSuccessMsg(msg);
-    setTimeout(() => setSuccessMsg(null as any), 3500);
-  };
-
   const handleToggleRole = async (user: User) => {
     const nextRole = user.role === 'dm' ? 'player' : 'dm';
     try {
       await api.updateUser(user.id, { role: nextRole });
-      showSuccess(`نقش ${user.displayName || user.name} به ${nextRole === 'dm' ? 'دانجن مستر' : 'بازیکن'} تغییر یافت.`);
+      setSuccessMsg(`نقش ${nameOf(user)} به ${nextRole === 'dm' ? 'دانجن مستر' : 'بازیکن'} تغییر کرد.`);
       loadUsers();
     } catch (err: any) {
       setErrorMsg(err.message || 'خطا در تغییر نقش کاربر.');
@@ -73,7 +91,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
     const nextStatus = user.status === 'disabled' ? 'active' : 'disabled';
     try {
       await api.updateUser(user.id, { status: nextStatus });
-      showSuccess(`وضعیت حساب کاربری به ${nextStatus === 'active' ? 'فعال' : 'غیرفعال'} تغییر یافت.`);
+      setSuccessMsg(`حساب ${nameOf(user)} ${nextStatus === 'active' ? 'فعال' : 'مسدود'} شد.`);
       loadUsers();
     } catch (err: any) {
       setErrorMsg(err.message || 'خطا در تغییر وضعیت کاربر.');
@@ -83,7 +101,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
   const handleRevokeSessions = async (user: User) => {
     try {
       await api.revokeUserSessions(user.id);
-      showSuccess(`نشست‌های فعال ${user.displayName || user.name} خاتمه یافتند.`);
+      setSuccessMsg(`نشست‌های فعال ${nameOf(user)} خاتمه یافت.`);
       loadUsers();
     } catch (err: any) {
       setErrorMsg(err.message || 'خطا در لغو نشست‌ها.');
@@ -92,8 +110,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
 
   const handleGenerateResetLink = async (user: User) => {
     try {
-      const res = await api.generateResetToken(user.id);
-      setResetLinkData(res);
+      setResetLinkData(await api.generateResetToken(user.id));
       setCopiedLink(false);
     } catch (err: any) {
       setErrorMsg(err.message || 'خطا در ساخت لینک بازنشانی.');
@@ -105,7 +122,7 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
     try {
       await api.assignCharacterToUser(selectedUser.id, charId);
       setAssignCharSheetOpen(false);
-      showSuccess('کاراکتر با موفقیت به کاربر اختصاص داده شد.');
+      setSuccessMsg('کاراکتر به کاربر واگذار شد.');
       loadUsers();
       onRefreshCharacters?.();
     } catch (err: any) {
@@ -113,13 +130,11 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
     }
   };
 
-  const handleDeleteUser = async () => {
-    if (!selectedUser) return;
+  const handleDeleteUser = async (user: User) => {
     try {
-      await api.deleteUser(selectedUser.id);
-      setDeleteConfirmOpen(false);
+      await api.deleteUser(user.id);
       setSelectedUser(null);
-      showSuccess('حساب کاربر غیرفعال و کاراکترهای او آزاد شدند.');
+      setSuccessMsg('حساب کاربر غیرفعال و کاراکترهای او آزاد شدند.');
       loadUsers();
       onRefreshCharacters?.();
     } catch (err: any) {
@@ -127,285 +142,258 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 3000);
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 3000);
+    } catch {
+      setErrorMsg('کپی انجام نشد؛ متن را دستی انتخاب کنید.');
+    }
   };
 
   const getActionMenuItems = (): ActionMenuItem[] => {
     if (!selectedUser) return [];
-    const isDm = selectedUser.role === 'dm';
-    const isDisabled = selectedUser.status === 'disabled';
+    const u = selectedUser;
+    const isDm = u.role === 'dm';
+    const isDisabled = u.status === 'disabled';
 
     return [
       {
         id: 'role',
-        label: isDm ? 'تنزل به بازیکن' : 'ارتقا به دانجن مستر',
+        label: isDm ? 'تبدیل به بازیکن' : 'ارتقا به دانجن مستر',
         icon: Shield,
-        onClick: () => handleToggleRole(selectedUser)
+        onClick: () =>
+          isDm
+            ? setPending({
+                title: 'کاهش سطح دسترسی',
+                description: `${nameOf(u)} دیگر به ابزارهای دانجن مستر دسترسی نخواهد داشت. ادامه می‌دهید؟`,
+                confirmText: 'تبدیل به بازیکن',
+                destructive: false,
+                run: () => handleToggleRole(u)
+              })
+            : handleToggleRole(u)
       },
       {
         id: 'status',
-        label: isDisabled ? 'فعال‌سازی مجدد حساب' : 'غیرفعال‌سازی دسترسی (مسدود کردن)',
+        label: isDisabled ? 'فعال‌سازی مجدد حساب' : 'مسدود کردن حساب',
         icon: isDisabled ? UserCheck : UserX,
-        onClick: () => handleToggleStatus(selectedUser)
+        onClick: () =>
+          isDisabled
+            ? handleToggleStatus(u)
+            : setPending({
+                title: 'مسدود کردن حساب',
+                description: `${nameOf(u)} دیگر نمی‌تواند وارد شود تا زمانی که حساب را دوباره فعال کنید.`,
+                confirmText: 'مسدود کردن',
+                destructive: true,
+                run: () => handleToggleStatus(u)
+              })
       },
-      {
-        id: 'assign',
-        label: 'اختصاص دادن کاراکتر به این کاربر',
-        icon: Users,
-        onClick: () => setAssignCharSheetOpen(true)
-      },
-      {
-        id: 'reset',
-        label: 'تولید پیوند یک‌بار مصرف تغییر رمز',
-        icon: KeyRound,
-        onClick: () => handleGenerateResetLink(selectedUser)
-      },
+      { id: 'assign', label: 'واگذاری کاراکتر', icon: Users, onClick: () => setAssignCharSheetOpen(true) },
+      { id: 'reset', label: 'ساخت پیوند تغییر رمز', icon: KeyRound, onClick: () => handleGenerateResetLink(u) },
       {
         id: 'revoke',
-        label: 'خاتمه دادن به تمام نشست‌های فعال',
+        label: 'خروج از همه دستگاه‌ها',
         icon: RefreshCw,
-        onClick: () => handleRevokeSessions(selectedUser)
+        onClick: () =>
+          setPending({
+            title: 'خاتمه نشست‌ها',
+            description: `${nameOf(u)} از همه دستگاه‌ها خارج می‌شود و باید دوباره وارد شود.`,
+            confirmText: 'خاتمه نشست‌ها',
+            destructive: false,
+            run: () => handleRevokeSessions(u)
+          })
       },
       {
         id: 'delete',
-        label: 'حذف کاربر (Soft Delete)',
+        label: 'حذف کاربر',
         icon: Trash2,
         isDestructive: true,
         destructive: true,
-        onClick: () => setDeleteConfirmOpen(true)
+        onClick: () =>
+          setPending({
+            title: 'حذف حساب کاربر',
+            description: `حساب ${nameOf(u)} غیرفعال می‌شود، نشست‌هایش باطل و کاراکترهایش آزاد می‌شوند. ادامه می‌دهید؟`,
+            confirmText: 'حذف کاربر',
+            destructive: true,
+            run: () => handleDeleteUser(u)
+          })
       }
     ];
   };
 
+  const confirmPending = async () => {
+    const action = pending;
+    setPending(null);
+    if (action) await action.run();
+  };
+
   return (
-    <div className="space-y-4" dir="rtl">
-      {/* Header & Filter Controls */}
-      <div className="surface-card rounded-[14px] p-4 border border-border space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-accent" />
-            <div>
-              <h3 className="text-sm font-extrabold text-text-primary">مدیریت کاربران و ماجراجویان</h3>
-              <p className="text-xs text-text-muted">کنترل نقش‌ها، کاراکترهای واگذارشده و پیوندهای ورود</p>
-            </div>
-          </div>
-          <Button
-            type="button"
-            onClick={loadUsers}
-            className="py-1.5 px-3 rounded-[8px] bg-surface-2 border border-border text-xs font-bold text-text-muted hover:text-text-primary touch-target min-w-[44px] flex items-center gap-1 self-start sm:self-auto"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>تازه‌سازی</span>
-          </Button>
+    <div className="space-y-5" dir="rtl">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="text-base font-bold text-text-primary flex items-center gap-2">
+            <Users className="w-4 h-4 text-accent" aria-hidden />
+            <span>کاربران</span>
+          </h3>
+          <p className="mt-1 text-xs text-text-muted leading-relaxed">
+            نقش‌ها، کاراکترهای واگذارشده و پیوندهای ورود را مدیریت کنید.
+          </p>
         </div>
+        <IconButton label="تازه‌سازی" onClick={loadUsers}>
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+        </IconButton>
+      </div>
 
-        {/* Search & Filter inputs */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-          <div className="relative">
-            <Input noWrapper
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="جستجوی نام یا ایمیل..."
-              className="w-full py-2 ps-8 pe-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
-            />
-            <Search className="w-4 h-4 text-text-muted absolute top-3.5 start-2.5 pointer-events-none" />
-          </div>
-
-          <Select noWrapper
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
-          >
-            <option value="">همه نقش‌ها</option>
-            <option value="player">فقط بازیکنان</option>
-            <option value="dm">فقط دانجن مسترها</option>
-          </Select>
-
-          <Select noWrapper
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full py-2 px-3 rounded-[10px] bg-surface-2 border border-border text-xs text-text-primary focus:border-accent outline-none min-h-[44px]"
-          >
-            <option value="">همه وضعیت‌ها</option>
-            <option value="active">فعال</option>
-            <option value="disabled">غیرفعال (مسدود)</option>
-          </Select>
+      {/* Filters: search full width, selects share a row on mobile */}
+      <div className="grid grid-cols-2 sm:grid-cols-[1fr_auto_auto] gap-3">
+        <div className="relative col-span-2 sm:col-span-1">
+          <Search className="w-4 h-4 text-text-muted absolute start-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden />
+          <Input noWrapper
+            type="search"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="جستجوی نام یا ایمیل"
+            aria-label="جستجوی کاربر"
+            className={`${inputCls} ps-10`}
+          />
         </div>
+        <Select noWrapper value={roleFilter} onChange={e => setRoleFilter(e.target.value)} aria-label="فیلتر نقش" className={`${inputCls} sm:w-40`}>
+          <option value="">همه نقش‌ها</option>
+          <option value="player">بازیکنان</option>
+          <option value="dm">دانجن مسترها</option>
+        </Select>
+        <Select noWrapper value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="فیلتر وضعیت" className={`${inputCls} sm:w-40`}>
+          <option value="">همه وضعیت‌ها</option>
+          <option value="active">فعال</option>
+          <option value="disabled">مسدود</option>
+        </Select>
       </div>
 
       {/* Messages */}
       {errorMsg && (
-        <div className="p-3 rounded-[10px] bg-danger/15 border border-danger/40 text-text-primary text-xs flex flex-wrap items-center justify-between gap-2">
-          <span>{errorMsg}</span>
-          <Button type="button" onClick={() => setErrorMsg('')} className="p-1 touch-target min-w-[44px]">
-            <X className="w-3.5 h-3.5" />
-          </Button>
+        <div role="alert" className="ps-3 pe-1 rounded-lg bg-danger/15 border border-danger/30 text-danger text-sm flex items-center justify-between gap-2">
+          <span className="py-2.5">{errorMsg}</span>
+          <IconButton label="بستن پیام" onClick={() => setErrorMsg('')}><X className="w-4 h-4" /></IconButton>
         </div>
       )}
       {successMsg && (
-        <div className="p-3 rounded-[10px] bg-success/15 border border-success/40 text-success text-xs flex flex-wrap items-center justify-between gap-2 font-bold">
-          <span>{successMsg}</span>
-          <Button type="button" onClick={() => setSuccessMsg('')} className="p-1 touch-target min-w-[44px]">
-            <X className="w-3.5 h-3.5" />
-          </Button>
+        <div role="status" className="ps-3 pe-1 rounded-lg bg-success/15 border border-success/30 text-success text-sm flex items-center justify-between gap-2">
+          <span className="py-2.5">{successMsg}</span>
+          <IconButton label="بستن پیام" onClick={() => setSuccessMsg('')}><X className="w-4 h-4" /></IconButton>
         </div>
       )}
 
-      {/* Reset Link Modal / Card */}
+      {/* Reset link (shown once; contains a secret token) */}
       {resetLinkData && (
-        <div className="p-4 rounded-[12px] bg-accent/15 border border-accent/40 space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-black text-accent flex items-center gap-1.5">
-              <KeyRound className="w-4 h-4" />
-              لینک یک‌بار مصرف تغییر رمز تولید شد
-            </span>
-            <Button
-              type="button"
-              onClick={() => setResetLinkData(null)}
-              className="p-1 text-text-muted hover:text-text-primary touch-target min-w-[44px]"
-            >
-              <X className="w-4 h-4" />
-            </Button>
+        <section className="rounded-xl border border-accent/40 bg-accent/10 p-4 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <h4 className="text-sm font-bold text-accent-hover flex items-center gap-2">
+              <KeyRound className="w-4 h-4" aria-hidden />
+              پیوند تغییر رمز ساخته شد
+            </h4>
+            <IconButton label="بستن" onClick={() => setResetLinkData(null)}><X className="w-4 h-4" /></IconButton>
           </div>
-          <p className="text-xs text-text-primary/90 leading-relaxed">
-            هشدار امنیتی: این پیوند تنها یک‌بار مصرف است و 24 ساعت اعتبار دارد. آن را کپی کرده و برای بازیکن ارسال فرمایید:
+          <p className="text-sm text-text-primary leading-relaxed">
+            این پیوند یک‌بار مصرف است و ۲۴ ساعت اعتبار دارد. آن را فقط برای خود بازیکن بفرستید.
           </p>
-          <div className="flex items-center gap-2">
-            <Input noWrapper
-              type="text"
-              readOnly
-              value={resetLinkData.resetLink}
-              dir="ltr"
-              className="flex-1 py-2 px-3 rounded-[8px] bg-surface border border-border text-xs text-text-primary font-mono select-all min-h-[44px]"
-            />
-            <Button
-              type="button"
-              onClick={() => copyToClipboard(resetLinkData.resetLink)}
-              className="py-2 px-3.5 rounded-[8px] btn-primary text-xs font-bold touch-target min-w-[44px] flex items-center gap-1 shrink-0 min-h-[44px]"
-            >
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Input noWrapper type="text" readOnly dir="ltr" value={resetLinkData.resetLink} aria-label="پیوند تغییر رمز"
+              className={`${inputCls} flex-1 font-mono select-all`} />
+            <Button type="button" onClick={() => copyToClipboard(resetLinkData.resetLink)} className={primaryBtnCls}>
               {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              <span>{copiedLink ? 'کپی شد' : 'کپی لینک'}</span>
+              <span>{copiedLink ? 'کپی شد' : 'کپی پیوند'}</span>
             </Button>
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Users List */}
-      <div className="space-y-2">
-        {users.length === 0 ? (
-          <div className="surface-card rounded-[14px] p-8 text-center text-xs text-text-muted">
-            {loading ? 'در حال بارگذاری اطلاعات...' : 'کاربری با این مشخصات یافت نشد.'}
-          </div>
-        ) : (
-          users.map((u) => (
-            <div
-              key={u.id}
-              className={`surface-card rounded-[12px] p-3.5 border transition-all flex flex-wrap items-center justify-between gap-2 gap-3 ${
-                u.status === 'disabled'
-                  ? 'opacity-60 border-danger/40 bg-surface'
-                  : 'border-border hover:border-accent/30'
-              }`}
-            >
-              <div className="min-w-0 flex-1 space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-extrabold text-xs text-text-primary truncate">
-                    {u.displayName || u.name}
-                  </span>
+      {/* List */}
+      {users.length === 0 ? (
+        <div className="py-12 text-center text-sm text-text-muted">
+          {loading ? 'در حال بارگذاری...' : 'کاربری با این مشخصات پیدا نشد.'}
+        </div>
+      ) : (
+        <ul className="rounded-xl border border-border bg-surface divide-y divide-border">
+          {users.map(u => {
+            const disabled = u.status === 'disabled';
+            return (
+              <li key={u.id} className="p-3 sm:p-4 flex items-center gap-3">
+                <span
+                  aria-hidden
+                  className={`w-10 h-10 rounded-lg border flex items-center justify-center font-bold shrink-0 ${
+                    disabled ? 'bg-surface-2 text-text-muted border-border' : 'bg-accent/10 text-accent-hover border-accent/30'
+                  }`}
+                >
+                  {nameOf(u).trim().charAt(0)}
+                </span>
 
-                  {/* Role badge */}
-                  <span
-                    className={`text-xs px-1.5 py-0.2 rounded-[6px] font-bold border ${
-                      u.role === 'dm'
-                        ? 'bg-accent/20 text-accent border-accent/40'
-                        : 'bg-success/15 text-success border-success/30'
-                    }`}
-                  >
-                    {u.role === 'dm' ? 'دانجن مستر' : 'بازیکن'}
-                  </span>
-
-                  {/* Status badge */}
-                  {u.status === 'disabled' && (
-                    <span className="text-xs px-1.5 py-0.2 rounded-[6px] bg-danger/20 text-danger border border-danger/40 font-bold">
-                      مسدود / غیرفعال
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {/* Disabled is conveyed by a badge, not by fading the whole row (faded text fails contrast) */}
+                    <span className="text-sm font-bold text-text-primary truncate">{nameOf(u)}</span>
+                    <Badge tone={u.role === 'dm' ? 'accent' : 'neutral'}>{u.role === 'dm' ? 'دانجن مستر' : 'بازیکن'}</Badge>
+                    {disabled && <Badge tone="danger">مسدود</Badge>}
+                  </div>
+                  <p dir="ltr" className="text-xs text-text-muted truncate text-start">{u.email}</p>
+                  <p className="text-xs text-text-muted flex flex-wrap gap-x-3 gap-y-0.5">
+                    <span>
+                      {u.characterNames && u.characterNames.length > 0
+                        ? `کاراکتر: ${u.characterNames.join('، ')}`
+                        : 'بدون کاراکتر'}
                     </span>
-                  )}
+                    <span>آخرین ورود: {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString('fa-IR-u-nu-latn') : 'هرگز'}</span>
+                    <span>نشست فعال: {u.activeSessionCount || 0}</span>
+                  </p>
                 </div>
 
-                <div className="text-xs text-text-muted truncate flex items-center gap-2">
-                  <span dir="ltr">{u.email}</span>
-                  <span>•</span>
-                  <span>
-                    {u.characterNames && u.characterNames.length > 0
-                      ? `کاراکترها: ${u.characterNames.join('، ')}`
-                      : 'فاقد کاراکتر اختصاصی'}
-                  </span>
-                </div>
+                <IconButton
+                  label={`عملیات ${nameOf(u)}`}
+                  onClick={() => {
+                    setSelectedUser(u);
+                    setActionMenuOpen(true);
+                  }}
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </IconButton>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
-                <div className="text-xs text-text-muted/80 flex items-center gap-2 pt-0.5">
-                  <span>
-                    آخرین ورود: {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString('fa-IR-u-nu-latn') : 'هرگز'}
-                  </span>
-                  <span>•</span>
-                  <span>نشست‌های فعال: {u.activeSessionCount || 0}</span>
-                </div>
-              </div>
-
-              {/* Action Menu Trigger */}
-              <Button
-                type="button"
-                onClick={() => {
-                  setSelectedUser(u);
-                  setActionMenuOpen(true);
-                }}
-                className="p-2 rounded-[8px] bg-surface-2 border border-border text-text-muted hover:text-text-primary touch-target min-w-[44px]"
-                title="عملیات کاربر"
-              >
-                <MoreVertical className="w-4 h-4" />
-              </Button>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Action Menu Bottom Sheet */}
       <ActionMenu
         isOpen={actionMenuOpen}
         onClose={() => setActionMenuOpen(false)}
-        title={selectedUser?.displayName || selectedUser?.name || 'عملیات کاربر'}
+        title={selectedUser ? nameOf(selectedUser) : 'عملیات کاربر'}
         subtitle={selectedUser?.email}
         items={getActionMenuItems()}
       />
 
-      {/* Assign Character Bottom Sheet */}
       {assignCharSheetOpen && selectedUser && (
         <BottomSheet
           isOpen={assignCharSheetOpen}
           onClose={() => setAssignCharSheetOpen(false)}
-          title="واگذاری کاراکتر به کاربر"
-          subtitle={`انتخاب کاراکتر برای ${selectedUser.displayName || selectedUser.name}`}
+          title="واگذاری کاراکتر"
+          subtitle={`انتخاب کاراکتر برای ${nameOf(selectedUser)}`}
         >
-          <div className="space-y-2 py-2" dir="rtl">
+          <div className="space-y-2" dir="rtl">
             {characters.length === 0 ? (
-              <p className="text-xs text-text-muted text-center py-4">هیچ شخصیتی در کمپین ثبت نشده است.</p>
+              <p className="text-sm text-text-muted text-center py-6">هنوز شخصیتی در کمپین ثبت نشده است.</p>
             ) : (
-              characters.map((c) => (
+              characters.map(c => (
                 <Button
                   key={c.id}
                   type="button"
                   onClick={() => handleAssignCharacter(c.id)}
-                  className="w-full text-start p-3 rounded-[10px] bg-surface-2 hover:bg-surface-2 border border-border flex flex-wrap items-center justify-between gap-2 touch-target min-w-[44px]"
+                  className="w-full min-h-[56px] px-4 rounded-lg bg-surface-2 border border-border hover:border-accent text-start flex items-center justify-between gap-3 transition"
                 >
-                  <div>
-                    <span className="font-extrabold text-xs text-text-primary block">{c.name}</span>
-                    <span className="text-xs text-text-muted">{c.className} • سطح {c.level}</span>
-                  </div>
-                  <span className="text-xs px-2 py-1 rounded-[6px] bg-accent/15 text-accent font-bold">
-                    واگذاری
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold text-text-primary truncate">{c.name}</span>
+                    <span className="block text-xs text-text-muted">{c.className}، سطح {c.level}</span>
                   </span>
+                  <span className="text-sm font-medium text-accent-hover shrink-0">واگذاری</span>
                 </Button>
               ))
             )}
@@ -413,16 +401,16 @@ export const DmUsers: React.FC<DmUsersProps> = ({ characters, onRefreshCharacter
         </BottomSheet>
       )}
 
-      {/* Delete Confirmation Sheet */}
+      {/* ConfirmSheet is reused for every risky action; props follow the call this file already made */}
       <ConfirmSheet
-        isOpen={deleteConfirmOpen}
-        onClose={() => setDeleteConfirmOpen(false)}
-        onConfirm={handleDeleteUser}
-        title="حذف حساب کاربر"
-        description={`آیا از حذف حساب کاربری ${selectedUser?.displayName || selectedUser?.name} اطمینان دارید؟ با این کار حساب غیرفعال شده، تمام نشست‌های آن باطل و کاراکترهای تحت مالکیت وی آزاد می‌شوند.`}
-        confirmText="حذف کاربر"
+        isOpen={!!pending}
+        onClose={() => setPending(null)}
+        onConfirm={confirmPending}
+        title={pending?.title ?? ''}
+        description={pending?.description ?? ''}
+        confirmText={pending?.confirmText ?? 'تأیید'}
         cancelText="انصراف"
-        destructive={true}
+        destructive={pending?.destructive ?? false}
       />
     </div>
   );

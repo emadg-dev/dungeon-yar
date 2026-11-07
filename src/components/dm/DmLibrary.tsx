@@ -21,7 +21,7 @@ import {
   Trash2, ExternalLink, RefreshCw, Eye, EyeOff, Sparkles, FolderPlus, 
   Upload, Download, ArrowRight, ArrowLeft, Star, ChevronRight, ChevronDown, 
   Folder, MapPin, Swords, Shield, Scroll, Calendar, Check, AlertTriangle, 
-  Layers, Settings, Sliders, Edit, X, Save
+  Layers, Settings, Sliders, Edit, X, Save, MoreHorizontal
 } from 'lucide-react';
 
 interface DmLibraryProps {
@@ -33,6 +33,53 @@ interface DmLibraryProps {
 }
 
 type EntityTypeFilter = 'all' | 'location' | 'npc' | 'item' | 'encounter' | 'class_template' | 'lineage_template' | 'background_template' | 'faction' | 'calendar' | 'rule_set' | 'campaign_doc';
+
+// One label set shared by filter chips, card badges and the import summary
+// (previously the same type was called "تقویم" in one place and "گاه‌شمار" in another).
+const TYPE_LABEL: Record<string, string> = {
+  location: 'مکان',
+  npc: 'NPC و هیولا',
+  item: 'آیتم',
+  encounter: 'مواجهه',
+  class_template: 'کلاس',
+  lineage_template: 'نژاد و تبار',
+  background_template: 'پیشینه',
+  faction: 'جناح',
+  calendar: 'تقویم',
+  rule_set: 'قوانین',
+  campaign_doc: 'سند'
+};
+
+const TYPE_CHIPS: { id: EntityTypeFilter; label: string }[] = [
+  { id: 'all', label: 'همه' },
+  ...(Object.keys(TYPE_LABEL).map(id => ({ id: id as EntityTypeFilter, label: TYPE_LABEL[id] })))
+];
+
+const EDIT_LABEL: Record<string, string> = {
+  class_template: 'ویرایش کلاس',
+  lineage_template: 'ویرایش نژاد',
+  background_template: 'ویرایش پیشینه'
+};
+
+/** Full-width, thumb-sized action row used inside bottom sheets. */
+const LibrarySheetAction: React.FC<{
+  icon: React.ReactNode;
+  label: string;
+  hint?: string;
+  onClick: () => void;
+}> = ({ icon, label, hint, onClick }) => (
+  <Button
+    type="button"
+    onClick={onClick}
+    className="w-full min-h-[56px] px-3 py-2 rounded-xl border border-border bg-surface hover:bg-surface-2 flex items-center gap-3 text-start transition"
+  >
+    <span className="shrink-0 text-accent-hover">{icon}</span>
+    <span className="min-w-0">
+      <span className="block text-sm font-bold text-text-primary">{label}</span>
+      {hint && <span className="block text-xs text-text-muted font-normal mt-0.5">{hint}</span>}
+    </span>
+  </Button>
+);
 
 export const DmLibrary: React.FC<DmLibraryProps> = ({
   currentCampaignId,
@@ -62,6 +109,10 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
   // Detail Sheet state
   const [detailItem, setDetailItem] = useState<any | null>(null);
+
+  // Header sheets
+  const [createSheetOpen, setCreateSheetOpen] = useState(false);
+  const [toolsSheetOpen, setToolsSheetOpen] = useState(false);
 
   // Import / Clone Sheet state (3 steps)
   const [importSheet, setImportSheet] = useState<{
@@ -492,246 +543,254 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
     }
   };
 
-  // Render Entity Type Badges
+  // Type badge: neutral on purpose. Eleven colours carried no meaning the type filter doesn't already give;
+  // colour is now reserved for state (selected, update available, danger).
   const renderTypeBadge = (type: string) => {
-    switch (type) {
-      case 'location':
-        return <span className="px-2 py-0.5 rounded-full text-xs bg-success/20 text-success border border-success/30">مکان</span>;
-      case 'npc':
-        return <span className="px-2 py-0.5 rounded-full text-xs bg-role-codm/20 text-role-codm border border-role-codm/30">NPC / هیولا</span>;
-      case 'item':
-        return <span className="px-2 py-0.5 rounded-full text-xs bg-accent/20 text-accent-hover border border-accent/30">آیتم / سلاح</span>;
-      case 'encounter':
-        return <span className="px-2 py-0.5 rounded-full text-xs bg-danger/20 text-danger border border-danger/30">مواجهه</span>;
-      case 'class_template':
-        return <span className="px-2 py-0.5 rounded-full text-xs bg-info/20 text-info border border-info/30">کلاس</span>;
-      case 'lineage_template':
-        return <span className="px-2 py-0.5 rounded-full text-xs bg-warning/20 text-warning border border-warning/30">نژاد و تبار</span>;
-      case 'background_template':
-        return <span className="px-2 py-0.5 rounded-full text-xs bg-success/20 text-success border border-success/30">پیشینه</span>;
-      case 'faction':
-        return <span className="px-2 py-0.5 rounded-full text-xs bg-accent/20 text-accent-hover border border-accent/30">جناح</span>;
-      case 'calendar':
-        return <span className="px-2 py-0.5 rounded-full text-xs bg-info/20 text-info border border-info/30">گاه‌شمار</span>;
-      case 'rule_set':
-        return <span className="px-2 py-0.5 rounded-full text-xs bg-surface-3/20 text-text-primary border border-border/30">قوانین</span>;
-      case 'campaign_doc':
-        return <span className="px-2 py-0.5 rounded-full text-xs bg-role-codm/20 text-role-codm border border-role-codm/30">سند</span>;
-      default:
-        return null;
-    }
+    const label = TYPE_LABEL[type];
+    if (!label) return null;
+    return (
+      <span className="px-2 py-0.5 rounded-full text-xs bg-surface-2 text-text-muted border border-border whitespace-nowrap">
+        {label}
+      </span>
+    );
   };
 
-  // Render Link Badge (Part B)
+  // Link badge (linked copy / update available)
   const renderLinkBadge = (item: any) => {
     if (item.sourceMode === 'linked' && item.sourceId) {
       const isUpdated = item.copiedAt && item.updatedAt && item.updatedAt > item.copiedAt;
       return (
-        <span 
+        <Button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             handleOpenLinkedDiff(item);
           }}
-          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold cursor-pointer transition ${
-            isUpdated 
-              ? 'bg-accent text-on-accent animate-pulse hover:bg-accent-hover' 
-              : 'bg-surface-3 text-text-primary hover:bg-surface-3'
+          className={`inline-flex items-center gap-1 px-2 h-7 rounded-full text-xs font-bold transition whitespace-nowrap ${
+            isUpdated
+              ? 'bg-accent text-on-accent hover:bg-accent-hover'
+              : 'bg-surface-3 text-text-primary hover:brightness-110'
           }`}
         >
           <Sparkles className="w-3 h-3" />
           {isUpdated ? 'به‌روزرسانی موجود است' : 'کپی پیونددار'}
-        </span>
+        </Button>
       );
     }
     return null;
   };
 
+  // ---- Derived UI state ----
+  const isPackSource = source !== 'current_campaign' && source !== 'my_library';
+  const packChoices = [
+    { id: 'pack-zorvania', name: 'بسته زروانیا' },
+    { id: 'pack-srd-5e', name: 'پایه 5e (SRD)' },
+    ...packs
+      .filter(p => !p.isDefaultLibrary && p.id !== 'pack-zorvania' && p.id !== 'pack-srd-5e')
+      .map(p => ({ id: p.id, name: p.name }))
+  ];
+  const hasActiveFilters = typeFilter !== 'all' || Boolean(searchQuery) || Boolean(regionFilter) || Boolean(tagFilter);
+  const clearFilters = () => {
+    setTypeFilter('all');
+    setSearchQuery('');
+    setRegionFilter('');
+    setTagFilter('');
+  };
+  const allVisibleSelected =
+    items.length > 0 && items.every(i => isRefSelected({ type: i.itemType, id: i.id }));
+  const toggleSelectAllVisible = () => {
+    setSelectedRefs(allVisibleSelected ? [] : items.map(i => ({ type: i.itemType, id: i.id })));
+  };
+
+  const handleEditDetail = () => {
+    if (!detailItem) return;
+    const it = detailItem;
+    setDetailItem(null);
+    if (it.itemType === 'class_template') setClassEditor({ isOpen: true, item: it });
+    else if (it.itemType === 'lineage_template') setLineageEditor({ isOpen: true, item: it });
+    else if (it.itemType === 'background_template') setBackgroundEditor({ isOpen: true, item: it });
+  };
+
+  // One card, used by both the virtual list and the grid (it was duplicated before).
+  // Fixed height so the virtual list's row height is always correct.
+  const renderItemCard = (item: any) => {
+    const ref = { type: item.itemType, id: item.id };
+    const isSelected = isRefSelected(ref);
+    const activate = () => {
+      if (multiSelectMode) toggleSelectRef(ref);
+      else setDetailItem(item);
+    };
+
+    return (
+      <div
+        role="button"
+        tabIndex={0}
+        aria-pressed={multiSelectMode ? isSelected : undefined}
+        onClick={activate}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            activate();
+          }
+        }}
+        className={`h-[144px] overflow-hidden rounded-2xl p-3.5 border transition-colors cursor-pointer flex flex-col gap-2 content-visibility-card focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+          isSelected
+            ? 'bg-accent/10 border-accent'
+            : 'bg-surface border-border hover:border-accent/40'
+        }`}
+      >
+        {/* Title + favourite */}
+        <div className="flex items-start gap-2">
+          {multiSelectMode && (
+            isSelected
+              ? <CheckSquare className="w-5 h-5 text-accent-hover shrink-0 mt-1" />
+              : <Square className="w-5 h-5 text-text-muted shrink-0 mt-1" />
+          )}
+          <h4 className="flex-1 min-w-0 text-base font-bold text-text-primary line-clamp-1 leading-7">
+            {item.name || item.title}
+          </h4>
+          <Button
+            type="button"
+            onClick={(e) => handleToggleFavorite(e, item)}
+            aria-label={item.isFavorite ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'}
+            aria-pressed={Boolean(item.isFavorite)}
+            className={`w-10 h-10 -my-1.5 -me-2 rounded-xl flex items-center justify-center shrink-0 transition ${
+              item.isFavorite ? 'text-accent-hover' : 'text-text-muted hover:text-text-primary'
+            }`}
+          >
+            <Star className={`w-5 h-5 ${item.isFavorite ? 'fill-accent-hover' : ''}`} />
+          </Button>
+        </div>
+
+        {/* Description */}
+        <p className="text-sm text-text-muted line-clamp-2 leading-snug">
+          {item.description || item.body || item.mechanicalEffect || 'بدون توضیحات تکمیلی.'}
+        </p>
+
+        {/* Meta */}
+        <div className="mt-auto flex items-center gap-2 overflow-hidden">
+          {renderTypeBadge(item.itemType)}
+          {item.region && <span className="text-xs text-text-muted truncate">{item.region}</span>}
+          {renderLinkBadge(item)}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="space-y-4 pb-20 text-start" dir="rtl">
+    <div className={`space-y-4 text-start ${multiSelectMode ? 'pb-44' : 'pb-20'}`} dir="rtl">
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-accent text-on-accent px-4 py-2 rounded-xl text-xs font-bold shadow-2xl flex items-center gap-2">
-          <Check className="w-4 h-4" />
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-accent text-on-accent px-4 py-2.5 rounded-xl text-sm font-bold shadow-2xl flex items-center gap-2 max-w-[90vw]"
+        >
+          <Check className="w-4 h-4 shrink-0" />
           <span>{toast}</span>
         </div>
       )}
 
-      {/* Top Bar: Source Switcher & Global Actions */}
-      <div className="surface-card rounded-2xl p-4 border border-border space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Library className="w-5 h-5 text-accent-hover" />
-            <h2 className="text-base font-bold text-text-primary">کتابخانه و مخزن محتوا (DM Library)</h2>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-surface-3 text-text-primary">
-              {totalCount} مورد
-            </span>
-          </div>
+      {/* Page header: a title, one primary action, one overflow */}
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg font-extrabold text-text-primary flex items-center gap-2 min-w-0">
+          <Library className="w-5 h-5 text-accent-hover shrink-0" />
+          <span className="truncate">کتابخانه محتوا</span>
+        </h2>
 
-          {/* Action shortcuts */}
-          <ScrollableRow className="items-center gap-2">
-            <Button
-              type="button"
-              onClick={() => setMultiSelectMode(!multiSelectMode)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
-                multiSelectMode 
-                  ? 'bg-accent text-on-accent shadow-md' 
-                  : 'bg-surface-3 hover:bg-surface-3 text-text-primary'
-              }`}
-            >
-              <CheckSquare className="w-4 h-4 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">{multiSelectMode ? 'خروج از انتخاب' : 'انتخاب دسته‌ای'}</span>
-            </Button>
-
-            <Button
-              type="button"
-              onClick={() => setPackExportImportOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary text-xs font-bold transition inline-flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
-              title="صدور یا درون‌ریزی بسته"
-            >
-              <Upload className="w-4 h-4 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">بسته‌ها</span>
-            </Button>
-
-            <Button
-              type="button"
-              onClick={() => setSaveTemplateModalOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-accent/15 border border-accent/30 text-accent-hover hover:bg-accent/25 text-xs font-bold transition inline-flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
-            >
-              <Bookmark className="w-4 h-4 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">ذخیره به عنوان قالب</span>
-            </Button>
-
-            <Button
-              type="button"
-              onClick={() => setClassEditor({ isOpen: true, item: null })}
-              className="px-3 py-1.5 rounded-xl bg-info/20 border border-info/40 text-info hover:bg-info/30 text-xs font-bold transition inline-flex items-center gap-1 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
-            >
-              <Plus className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">کلاس جدید</span>
-            </Button>
-
-            <Button
-              type="button"
-              onClick={() => setLineageEditor({ isOpen: true, item: null })}
-              className="px-3 py-1.5 rounded-xl bg-warning/20 border border-warning/40 text-warning hover:bg-warning/30 text-xs font-bold transition inline-flex items-center gap-1 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
-            >
-              <Plus className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">نژاد جدید</span>
-            </Button>
-
-            <Button
-              type="button"
-              onClick={() => setBackgroundEditor({ isOpen: true, item: null })}
-              className="px-3 py-1.5 rounded-xl bg-success/20 border border-success/40 text-success hover:bg-success/30 text-xs font-bold transition inline-flex items-center gap-1 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
-            >
-              <Plus className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap shrink-0">پیشینه جدید</span>
-            </Button>
-          </ScrollableRow>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            type="button"
+            onClick={() => setCreateSheetOpen(true)}
+            className="h-11 px-4 rounded-xl btn-primary text-sm font-extrabold inline-flex items-center gap-1.5 shadow-md"
+          >
+            <Plus className="w-4 h-4" />
+            <span>ساخت جدید</span>
+          </Button>
+          <Button
+            type="button"
+            onClick={() => setToolsSheetOpen(true)}
+            aria-label="ابزارهای بیشتر"
+            title="ابزارهای بیشتر"
+            className="w-11 h-11 rounded-xl bg-surface-3 text-text-primary hover:brightness-110 flex items-center justify-center"
+          >
+            <MoreHorizontal className="w-5 h-5" />
+          </Button>
         </div>
-
-        {/* Source Switcher Buttons */}
-        <ScrollableRow activeKey={source} className="items-center gap-1.5 pt-2 border-t border-border">
-          <span className="text-xs text-text-muted ms-1 whitespace-nowrap shrink-0">منبع:</span>
-          <Button
-            type="button"
-            data-scroll-key="current_campaign"
-            onClick={() => setSource('current_campaign')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
-              source === 'current_campaign'
-                ? 'bg-accent text-on-accent font-extrabold'
-                : 'bg-surface-3/80 hover:bg-surface-3 text-text-primary'
-            }`}
-          >
-            این کمپین
-          </Button>
-          <Button
-            type="button"
-            data-scroll-key="my_library"
-            onClick={() => setSource('my_library')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
-              source === 'my_library'
-                ? 'bg-accent text-on-accent font-extrabold'
-                : 'bg-surface-3/80 hover:bg-surface-3 text-text-primary'
-            }`}
-          >
-            کتابخانه‌ی من
-          </Button>
-          <Button
-            type="button"
-            data-scroll-key="pack-zorvania"
-            onClick={() => setSource('pack-zorvania')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
-              source === 'pack-zorvania'
-                ? 'bg-accent text-on-accent font-extrabold'
-                : 'bg-surface-3/80 hover:bg-surface-3 text-text-primary'
-            }`}
-          >
-            بسته زروانیا
-          </Button>
-          <Button
-            type="button"
-            data-scroll-key="pack-srd-5e"
-            onClick={() => setSource('pack-srd-5e')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
-              source === 'pack-srd-5e'
-                ? 'bg-accent text-on-accent font-extrabold'
-                : 'bg-surface-3/80 hover:bg-surface-3 text-text-primary'
-            }`}
-          >
-            پایه 5e (SRD)
-          </Button>
-
-          {/* Dynamic User Packs */}
-          {packs.filter(p => !p.isDefaultLibrary && p.id !== 'pack-zorvania' && p.id !== 'pack-srd-5e').map(p => (
-            <Button
-              key={p.id}
-              type="button"
-              data-scroll-key={p.id}
-              onClick={() => setSource(p.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap shrink-0 snap-start min-h-[44px] ${
-                source === p.id
-                  ? 'bg-accent text-on-accent font-extrabold'
-                  : 'bg-surface-3/80 hover:bg-surface-3 text-text-primary'
-              }`}
-            >
-              {p.name}
-            </Button>
-          ))}
-        </ScrollableRow>
       </div>
 
-      {/* Filter Chips Bar */}
+      {/* Find: where to look, what to look for */}
       <div className="surface-card rounded-2xl p-3 border border-border space-y-3">
-        {/* Entity Type Chips */}
-        <ScrollableRow activeKey={typeFilter} className="items-center gap-1.5 pb-1">
-          {[
-            { id: 'all', label: 'همه' },
-            { id: 'location', label: 'مکان' },
-            { id: 'npc', label: 'NPC و هیولا' },
-            { id: 'item', label: 'آیتم' },
-            { id: 'encounter', label: 'مواجهه' },
-            { id: 'class_template', label: 'کلاس' },
-            { id: 'lineage_template', label: 'نژاد و تبار' },
-            { id: 'background_template', label: 'پیشینه' },
-            { id: 'faction', label: 'جناح' },
-            { id: 'calendar', label: 'تقویم' },
-            { id: 'rule_set', label: 'قوانین' },
-            { id: 'campaign_doc', label: 'اسناد' }
-          ].map(chip => (
+        {/* Source */}
+        <div role="tablist" aria-label="منبع محتوا" className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-surface-2 border border-border">
+          {([
+            { id: 'current_campaign', label: 'این کمپین', active: source === 'current_campaign' },
+            { id: 'my_library', label: 'کتابخانه‌ی من', active: source === 'my_library' },
+            { id: 'packs', label: 'بسته‌های محتوا', active: isPackSource }
+          ]).map(seg => (
+            <Button
+              type="button"
+              key={seg.id}
+              role="tab"
+              aria-selected={seg.active}
+              onClick={() => {
+                if (seg.id === 'packs') {
+                  if (!isPackSource) setSource(packChoices[0].id);
+                } else {
+                  setSource(seg.id);
+                }
+              }}
+              className={`h-10 rounded-lg text-sm font-bold transition ${
+                seg.active ? 'bg-accent text-on-accent' : 'text-text-muted hover:text-text-primary'
+              }`}
+            >
+              {seg.label}
+            </Button>
+          ))}
+        </div>
+
+        {isPackSource && (
+          <Select noWrapper
+            aria-label="انتخاب بسته"
+            value={source}
+            onChange={e => setSource(e.target.value)}
+            className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
+          >
+            {packChoices.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </Select>
+        )}
+
+        {/* Search */}
+        <div className="relative">
+          <Search className="w-4 h-4 text-text-muted absolute start-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Input noWrapper
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="جستجو بر اساس نام، برچسب یا توضیح..."
+            className="w-full bg-surface-2 border border-border rounded-xl ps-9 pe-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
+          />
+        </div>
+
+        {/* Type chips: the only horizontal scroller left on this screen */}
+        <ScrollableRow activeKey={typeFilter} className="items-center gap-1.5">
+          {TYPE_CHIPS.map(chip => (
             <Button
               key={chip.id}
               type="button"
               data-scroll-key={chip.id}
+              aria-pressed={typeFilter === chip.id}
               onClick={() => {
                 startTransition(() => {
-                  setTypeFilter(chip.id as EntityTypeFilter);
+                  setTypeFilter(chip.id);
                 });
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 snap-start transition min-h-[44px] ${
+              className={`px-3.5 h-10 rounded-full text-sm font-bold whitespace-nowrap shrink-0 snap-start transition ${
                 typeFilter === chip.id
-                  ? 'bg-accent text-on-accent font-black shadow-sm'
-                  : 'bg-surface-2 border border-border text-text-primary hover:border-border-strong'
+                  ? 'bg-accent text-on-accent'
+                  : 'bg-surface-2 border border-border text-text-primary hover:border-accent/40'
               }`}
             >
               {chip.label}
@@ -739,239 +798,148 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
           ))}
         </ScrollableRow>
 
-        {/* Search, Region & Sort row */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-          {/* Search Input */}
-          <div className="sm:col-span-2 relative">
-            <Search className="w-4 h-4 text-text-muted absolute right-3 top-3 pointer-events-none" />
-            <Input noWrapper
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="جستجو بر اساس نام، برچسب یا توصیف..."
-              className="w-full bg-surface-2 border border-border rounded-xl pe-9 ps-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
-            />
-          </div>
+        {/* Region & sort side by side (they used to stack as two full-width rows on phones) */}
+        <div className="grid grid-cols-2 gap-2">
+          <Select noWrapper
+            aria-label="اقلیم"
+            value={regionFilter}
+            onChange={e => setRegionFilter(e.target.value)}
+            className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
+          >
+            <option value="">همه اقلیم‌ها</option>
+            <option value="ورنا">ورنا</option>
+            <option value="کویر خاموش">کویر خاموش</option>
+            <option value="سپیدارون">سپیدارون</option>
+            <option value="مهستان">مهستان</option>
+            <option value="شانشین">شانشین</option>
+            <option value="مشترک">مشترک</option>
+          </Select>
 
-          {/* Region Filter */}
-          <div>
-            <Select noWrapper
-              value={regionFilter}
-              onChange={e => setRegionFilter(e.target.value)}
-              className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
-            >
-              <option value="">همه اقلیم‌ها</option>
-              <option value="ورنا">ورنا</option>
-              <option value="کویر خاموش">کویر خاموش</option>
-              <option value="سپیدارون">سپیدارون</option>
-              <option value="مهستان">مهستان</option>
-              <option value="شانشین">شانشین</option>
-              <option value="مشترک">مشترک</option>
-            </Select>
-          </div>
-
-          {/* Sort dropdown */}
-          <div>
-            <Select noWrapper
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value as any)}
-              className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
-            >
-              <option value="newest">جدیدترین</option>
-              <option value="name">بر اساس نام الفبایی</option>
-              <option value="favorite">علاقه‌مندی‌ها در بالا</option>
-            </Select>
-          </div>
+          <Select noWrapper
+            aria-label="مرتب‌سازی"
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value as any)}
+            className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
+          >
+            <option value="newest">جدیدترین</option>
+            <option value="name">الفبایی</option>
+            <option value="favorite">علاقه‌مندی‌ها اول</option>
+          </Select>
         </div>
       </div>
 
-      {/* Main Entities List / Grid */}
-      {loading ? (
-        <div className="p-8 text-center text-text-muted text-xs">در حال بارگذاری محتوا...</div>
+      {/* Results bar: count on one side, selection tools on the other */}
+      <div className="flex items-center justify-between gap-2 px-1">
+        <p className="text-sm text-text-muted flex items-center gap-3 min-w-0">
+          <span><b className="text-text-primary tabular-nums">{totalCount}</b> مورد</span>
+          {hasActiveFilters && (
+            <Button type="button" onClick={clearFilters} className="h-9 text-sm font-bold text-accent-hover">
+              پاک کردن فیلترها
+            </Button>
+          )}
+        </p>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {multiSelectMode && items.length > 0 && (
+            <Button type="button" onClick={toggleSelectAllVisible} className="h-10 px-2 text-sm font-bold text-accent-hover">
+              {allVisibleSelected ? 'لغو انتخاب همه' : 'انتخاب همه'}
+            </Button>
+          )}
+          <Button
+            type="button"
+            onClick={() => {
+              setMultiSelectMode(!multiSelectMode);
+              if (multiSelectMode) setSelectedRefs([]);
+            }}
+            aria-pressed={multiSelectMode}
+            className={`h-10 px-3 rounded-xl text-sm font-bold transition inline-flex items-center gap-1.5 ${
+              multiSelectMode
+                ? 'bg-accent text-on-accent'
+                : 'bg-surface-3 text-text-primary hover:brightness-110'
+            }`}
+          >
+            <CheckSquare className="w-4 h-4 shrink-0" />
+            <span>{multiSelectMode ? 'پایان انتخاب' : 'انتخاب'}</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Results */}
+      {loading && items.length === 0 ? (
+        <div role="status" className="p-8 text-center text-text-muted text-sm">در حال بارگذاری محتوا...</div>
       ) : items.length === 0 ? (
         <div className="surface-card rounded-2xl p-8 text-center space-y-3 border border-border">
           <div className="w-12 h-12 rounded-full bg-accent/10 text-accent-hover flex items-center justify-center mx-auto">
             <Library className="w-6 h-6" />
           </div>
-          <h3 className="text-sm font-bold text-text-primary">موردی یافت نشد</h3>
-          <p className="text-xs text-text-muted max-w-sm mx-auto">
-            هیچ موجودیتی با فیلترهای مشخص‌شده در این منبع پیدا نشد. منبع یا عبارت جستجو را تغییر دهید.
+          <h3 className="text-base font-bold text-text-primary">موردی یافت نشد</h3>
+          <p className="text-sm text-text-muted max-w-sm mx-auto">
+            با فیلترهای فعلی در این منبع چیزی پیدا نشد.
           </p>
+          {hasActiveFilters && (
+            <Button
+              type="button"
+              onClick={clearFilters}
+              className="h-11 px-4 rounded-xl bg-surface-3 text-text-primary text-sm font-bold hover:brightness-110"
+            >
+              پاک کردن فیلترها
+            </Button>
+          )}
         </div>
-      ) : items.length > 50 ? (
-        <VirtualList
-          items={items}
-          itemHeight={140}
-          height={600}
-          keyExtractor={(item) => `${item.itemType}-${item.id}`}
-          renderItem={(item) => {
-            const isSelected = isRefSelected({ type: item.itemType, id: item.id });
-            return (
-              <div className="pb-3">
-                <div
-                  onClick={() => {
-                    if (multiSelectMode) {
-                      toggleSelectRef({ type: item.itemType, id: item.id });
-                    } else {
-                      setDetailItem(item);
-                    }
-                  }}
-                  className={`relative rounded-2xl p-4 border transition-all cursor-pointer shadow-md flex flex-col justify-between content-visibility-card ${
-                    isSelected
-                      ? 'bg-accent/10 border-accent ring-1 ring-accent'
-                      : 'bg-surface border-border hover:border-accent/40'
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        {multiSelectMode && (
-                          <div className="text-accent-hover">
-                            {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-text-muted" />}
-                          </div>
-                        )}
-                        <h4 className="text-sm font-bold text-text-primary hover:text-accent-hover transition-colors line-clamp-1">
-                          {item.name || item.title}
-                        </h4>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {renderTypeBadge(item.itemType)}
-                        <Button
-                          type="button"
-                          onClick={(e) => handleToggleFavorite(e, item)}
-                          className={`p-1 rounded-lg transition ${
-                            item.isFavorite ? 'text-accent-hover' : 'text-text-muted hover:text-text-muted'
-                          }`}
-                          title="علاقه‌مندی"
-                        >
-                          <Star className={`w-4 h-4 ${item.isFavorite ? 'fill-accent-hover' : ''}`} />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-text-muted mt-2 line-clamp-2 leading-relaxed">
-                      {item.description || item.body || item.mechanicalEffect || 'بدون توضیحات تکمیلی.'}
-                    </p>
-                  </div>
-
-                  <div className="mt-3 pt-2.5 border-t border-border/60 flex flex-wrap items-center justify-between gap-2 text-xs text-text-muted">
-                    <div className="flex items-center gap-2">
-                      {item.region && (
-                        <span className="px-2 py-0.5 rounded-md bg-surface-3 text-text-primary">
-                          {item.region}
-                        </span>
-                      )}
-                      {renderLinkBadge(item)}
-                    </div>
-
-                    <div className="flex items-center gap-1 text-accent-hover text-xs font-semibold">
-                      <span>مشاهده جزئیات</span>
-                      <ChevronLeftIcon className="w-3.5 h-3.5" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          }}
-        />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {items.map(item => {
-            const isSelected = isRefSelected({ type: item.itemType, id: item.id });
-            return (
-              <div
-                key={`${item.itemType}-${item.id}`}
-                onClick={() => {
-                  if (multiSelectMode) {
-                    toggleSelectRef({ type: item.itemType, id: item.id });
-                  } else {
-                    setDetailItem(item);
-                  }
-                }}
-                className={`relative rounded-2xl p-4 border transition-all cursor-pointer shadow-md flex flex-col justify-between content-visibility-card ${
-                  isSelected
-                    ? 'bg-accent/10 border-accent ring-1 ring-accent'
-                    : 'bg-surface border-border hover:border-accent/40'
-                }`}
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      {multiSelectMode && (
-                        <div className="text-accent-hover">
-                          {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4 text-text-muted" />}
-                        </div>
-                      )}
-                      <h4 className="text-sm font-bold text-text-primary hover:text-accent-hover transition-colors line-clamp-1">
-                        {item.name || item.title}
-                      </h4>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {renderTypeBadge(item.itemType)}
-                      <Button
-                        type="button"
-                        onClick={(e) => handleToggleFavorite(e, item)}
-                        className={`p-1 rounded-lg transition ${
-                          item.isFavorite ? 'text-accent-hover' : 'text-text-muted hover:text-text-muted'
-                        }`}
-                        title="علاقه‌مندی"
-                      >
-                        <Star className={`w-4 h-4 ${item.isFavorite ? 'fill-accent-hover' : ''}`} />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-text-muted mt-2 line-clamp-2 leading-relaxed">
-                    {item.description || item.body || item.mechanicalEffect || 'بدون توضیحات تکمیلی.'}
-                  </p>
-                </div>
-
-                <div className="mt-3 pt-2.5 border-t border-border/60 flex flex-wrap items-center justify-between gap-2 text-xs text-text-muted">
-                  <div className="flex items-center gap-2">
-                    {item.region && (
-                      <span className="px-2 py-0.5 rounded-md bg-surface-3 text-text-primary">
-                        {item.region}
-                      </span>
-                    )}
-                    {renderLinkBadge(item)}
-                  </div>
-
-                  <div className="flex items-center gap-1 text-accent-hover text-xs font-semibold">
-                    <span>مشاهده جزئیات</span>
-                    <ChevronLeftIcon className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div aria-busy={loading} className={`transition-opacity ${loading ? 'opacity-60' : ''}`}>
+          {items.length > 50 ? (
+            <VirtualList
+              items={items}
+              itemHeight={156}
+              height={600}
+              keyExtractor={(item) => `${item.itemType}-${item.id}`}
+              renderItem={(item) => <div className="pb-3">{renderItemCard(item)}</div>}
+            />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {items.map(item => (
+                <div key={`${item.itemType}-${item.id}`}>{renderItemCard(item)}</div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Sticky Action Bar in Multi-Select Mode */}
-      {multiSelectMode && selectedRefs.length > 0 && (
-        <div className="fixed bottom-16 sm:bottom-6 left-3 right-3 sm:left-auto sm:right-1/2 sm:translate-x-1/2 z-40 bg-surface border border-accent/50 rounded-2xl p-3 shadow-2xl flex flex-wrap items-center justify-between gap-2 gap-3 max-w-xl">
-          <div className="text-xs font-bold text-accent-hover">
-            {selectedRefs.length} مورد انتخاب شده
+      {/* Selection action bar: visible for the whole selection mode, so the mode gives feedback */}
+      {multiSelectMode && (
+        <div className="fixed bottom-16 sm:bottom-6 inset-x-3 mx-auto max-w-xl z-40 bg-surface border border-accent/50 rounded-2xl p-3 shadow-2xl space-y-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-bold text-accent-hover">
+              {selectedRefs.length > 0
+                ? `${selectedRefs.length} مورد انتخاب شده`
+                : 'کارت‌ها را برای انتخاب لمس کنید'}
+            </span>
+            {selectedRefs.length > 0 && (
+              <Button type="button" onClick={() => setSelectedRefs([])} className="h-9 px-2 text-sm text-text-muted hover:text-text-primary">
+                پاک کردن
+              </Button>
+            )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <Button
               type="button"
+              disabled={selectedRefs.length === 0}
               onClick={handleBatchCopyToCurrentCampaign}
-              className="px-3 py-1.5 rounded-xl btn-primary text-xs font-bold shadow-md flex items-center gap-1 min-h-[44px]"
+              className="h-11 px-2 rounded-xl btn-primary text-sm font-bold shadow-md flex items-center justify-center gap-1.5 disabled:opacity-40"
             >
-              <Copy className="w-3.5 h-3.5" />
+              <Copy className="w-4 h-4 shrink-0" />
               <span>کپی به این کمپین</span>
             </Button>
 
             <Button
               type="button"
+              disabled={selectedRefs.length === 0}
               onClick={handleBatchSaveToMyLibrary}
-              className="px-3 py-1.5 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary text-xs font-bold flex items-center gap-1 min-h-[44px]"
+              className="h-11 px-2 rounded-xl bg-surface-3 text-text-primary hover:brightness-110 text-sm font-bold flex items-center justify-center gap-1.5 disabled:opacity-40"
             >
-              <Bookmark className="w-3.5 h-3.5" />
+              <Bookmark className="w-4 h-4 shrink-0" />
               <span>ذخیره در کتابخانه‌ام</span>
             </Button>
           </div>
@@ -983,29 +951,27 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
         <BottomSheet
           isOpen={Boolean(detailItem)}
           onClose={() => setDetailItem(null)}
-          title={detailItem.name || detailItem.title || 'جزئیات موجودیت'}
+          title={detailItem.name || detailItem.title || 'جزئیات'}
         >
           <div className="space-y-4 py-2 text-start" dir="rtl">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 {renderTypeBadge(detailItem.itemType)}
                 {detailItem.region && (
-                  <span className="px-2 py-0.5 rounded-md bg-surface-3 text-text-primary text-xs">
-                    اقلیم: {detailItem.region}
-                  </span>
+                  <span className="text-xs text-text-muted">اقلیم: {detailItem.region}</span>
                 )}
               </div>
               {renderLinkBadge(detailItem)}
             </div>
 
-            <div className="p-3 rounded-xl bg-surface-2/60 border border-border text-xs text-text-primary leading-relaxed whitespace-pre-wrap">
+            <div className="p-3 rounded-xl bg-surface-2/60 border border-border text-sm text-text-primary leading-relaxed whitespace-pre-wrap">
               {detailItem.description || detailItem.body || detailItem.mechanicalEffect || 'توضیحاتی ثبت نشده است.'}
             </div>
 
             {/* DM Secret Notes if present */}
             {(detailItem.dmNotes || detailItem.secretNotes) && (
-              <div className="p-3 rounded-xl bg-accent/10 border border-accent/30 text-xs text-accent-hover">
-                <span className="font-bold block mb-1">یادداشت‌های محرمانه دانجن مستر:</span>
+              <div className="p-3 rounded-xl bg-accent/10 border border-accent/30 text-sm">
+                <span className="font-bold block mb-1 text-accent-hover">یادداشت‌های محرمانه مستر</span>
                 <p className="text-text-primary">{detailItem.dmNotes || detailItem.secretNotes}</p>
               </div>
             )}
@@ -1022,8 +988,8 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               </div>
             )}
 
-            {/* Actions Footer */}
-            <div className="pt-3 border-t border-border flex flex-wrap items-center gap-2">
+            {/* Actions: one primary, a secondary pair, destructive kept apart */}
+            <div className="pt-3 border-t border-border space-y-2">
               <Button
                 type="button"
                 onClick={() => {
@@ -1031,81 +997,50 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   setDetailItem(null);
                   openImportSheet([ref], { scopeType: 'campaign', scopeId: currentCampaignId });
                 }}
-                className="flex-1 py-2.5 px-3 rounded-xl btn-primary font-extrabold text-xs shadow-md flex items-center justify-center gap-1.5 min-h-[44px]"
+                className="w-full h-12 px-3 rounded-xl btn-primary font-extrabold text-sm shadow-md flex items-center justify-center gap-1.5"
               >
                 <Copy className="w-4 h-4" />
                 <span>کپی به این کمپین</span>
               </Button>
 
-              <Button
-                type="button"
-                onClick={async () => {
-                  try {
-                    await api.saveToLibrary({ entityRefs: [{ type: detailItem.itemType, id: detailItem.id }] });
-                    showFeedback('در کتابخانه‌ی شما ذخیره شد.');
-                    setDetailItem(null);
-                    loadItems();
-                  } catch (e: any) {
-                    showFeedback(e.message || 'خطا در ذخیره');
-                  }
-                }}
-                className="flex-1 py-2.5 px-3 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary font-bold text-xs flex items-center justify-center gap-1.5 min-h-[44px]"
-              >
-                <Bookmark className="w-4 h-4" />
-                <span>ذخیره در کتابخانه‌ام</span>
-              </Button>
-
-              {/* Edit Template buttons */}
-              {detailItem.itemType === 'class_template' && (
+              <div className={`grid gap-2 ${EDIT_LABEL[detailItem.itemType] ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 <Button
                   type="button"
-                  onClick={() => {
-                    setClassEditor({ isOpen: true, item: detailItem });
-                    setDetailItem(null);
+                  onClick={async () => {
+                    try {
+                      await api.saveToLibrary({ entityRefs: [{ type: detailItem.itemType, id: detailItem.id }] });
+                      showFeedback('در کتابخانه‌ی شما ذخیره شد.');
+                      setDetailItem(null);
+                      loadItems();
+                    } catch (e: any) {
+                      showFeedback(e.message || 'خطا در ذخیره');
+                    }
                   }}
-                  className="py-2.5 px-3 rounded-xl bg-info/20 border border-info/40 text-info hover:bg-info/30 font-bold text-xs flex items-center justify-center gap-1.5 min-h-[44px]"
+                  className="h-11 px-2 rounded-xl bg-surface-3 text-text-primary hover:brightness-110 font-bold text-sm flex items-center justify-center gap-1.5"
                 >
-                  <Edit className="w-4 h-4" />
-                  <span>ویرایش کلاس</span>
+                  <Bookmark className="w-4 h-4" />
+                  <span>ذخیره در کتابخانه‌ام</span>
                 </Button>
-              )}
 
-              {detailItem.itemType === 'lineage_template' && (
-                <Button
-                  type="button"
-                  onClick={() => {
-                    setLineageEditor({ isOpen: true, item: detailItem });
-                    setDetailItem(null);
-                  }}
-                  className="py-2.5 px-3 rounded-xl bg-warning/20 border border-warning/40 text-warning hover:bg-warning/30 font-bold text-xs flex items-center justify-center gap-1.5 min-h-[44px]"
-                >
-                  <Edit className="w-4 h-4" />
-                  <span>ویرایش نژاد</span>
-                </Button>
-              )}
+                {EDIT_LABEL[detailItem.itemType] && (
+                  <Button
+                    type="button"
+                    onClick={handleEditDetail}
+                    className="h-11 px-2 rounded-xl bg-surface-3 text-text-primary hover:brightness-110 font-bold text-sm flex items-center justify-center gap-1.5"
+                  >
+                    <Edit className="w-4 h-4" />
+                    <span>{EDIT_LABEL[detailItem.itemType]}</span>
+                  </Button>
+                )}
+              </div>
 
-              {detailItem.itemType === 'background_template' && (
-                <Button
-                  type="button"
-                  onClick={() => {
-                    setBackgroundEditor({ isOpen: true, item: detailItem });
-                    setDetailItem(null);
-                  }}
-                  className="py-2.5 px-3 rounded-xl bg-success/20 border border-success/40 text-success hover:bg-success/30 font-bold text-xs flex items-center justify-center gap-1.5 min-h-[44px]"
-                >
-                  <Edit className="w-4 h-4" />
-                  <span>ویرایش پیشینه</span>
-                </Button>
-              )}
-
-              {/* Detach Link button if linked copy */}
               {detailItem.sourceMode === 'linked' && detailItem.sourceId && (
                 <Button
                   type="button"
                   onClick={() => handleDetachLink(detailItem)}
-                  className="py-2.5 px-3 rounded-xl bg-danger/15 border border-danger/30 text-danger hover:bg-danger/25 font-bold text-xs min-h-[44px]"
+                  className="w-full h-11 rounded-xl text-danger hover:bg-danger/10 font-bold text-sm"
                 >
-                  قطع پیوند
+                  قطع پیوند با منبع
                 </Button>
               )}
             </div>
@@ -1113,23 +1048,67 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
         </BottomSheet>
       )}
 
+      {/* CREATE SHEET: replaces three differently-coloured buttons in the header */}
+      {createSheetOpen && (
+      <BottomSheet isOpen={createSheetOpen} onClose={() => setCreateSheetOpen(false)} title="ساخت جدید">
+        <div className="space-y-2 pb-2" dir="rtl">
+          <LibrarySheetAction
+            icon={<Plus className="w-5 h-5" />}
+            label="کلاس جدید"
+            onClick={() => { setCreateSheetOpen(false); setClassEditor({ isOpen: true, item: null }); }}
+          />
+          <LibrarySheetAction
+            icon={<Plus className="w-5 h-5" />}
+            label="نژاد جدید"
+            onClick={() => { setCreateSheetOpen(false); setLineageEditor({ isOpen: true, item: null }); }}
+          />
+          <LibrarySheetAction
+            icon={<Plus className="w-5 h-5" />}
+            label="پیشینه جدید"
+            onClick={() => { setCreateSheetOpen(false); setBackgroundEditor({ isOpen: true, item: null }); }}
+          />
+        </div>
+      </BottomSheet>
+      )}
+
+      {/* TOOLS SHEET */}
+      {toolsSheetOpen && (
+      <BottomSheet isOpen={toolsSheetOpen} onClose={() => setToolsSheetOpen(false)} title="ابزارهای کتابخانه">
+        <div className="space-y-2 pb-2" dir="rtl">
+          <LibrarySheetAction
+            icon={<Upload className="w-5 h-5" />}
+            label="صدور و درون‌ریزی بسته‌ها"
+            hint="خروجی یا ورودی فایل JSON بسته‌ی محتوا"
+            onClick={() => { setToolsSheetOpen(false); setPackExportImportOpen(true); }}
+          />
+          <LibrarySheetAction
+            icon={<Bookmark className="w-5 h-5" />}
+            label="ذخیره کمپین به عنوان قالب"
+            hint="ساختار دنیا، قوانین و تقویم به شکل قالب ذخیره می‌شود"
+            onClick={() => { setToolsSheetOpen(false); setSaveTemplateModalOpen(true); }}
+          />
+        </div>
+      </BottomSheet>
+      )}
+
       {/* 3-STEP IMPORT / CLONE BOTTOM SHEET */}
       {importSheet.isOpen && (
         <BottomSheet
           isOpen={importSheet.isOpen}
           onClose={() => setImportSheet(prev => ({ ...prev, isOpen: false }))}
-          title={
-            importSheet.step === 1 ? 'مرحله 1: انتخاب و وابستگی‌ها' :
-            importSheet.step === 2 ? 'مرحله 2: گزینه‌های سفارشی‌سازی' :
-            'مرحله 3: پیش‌نمایش و تأیید نهایی'
-          }
+          title="انتقال محتوا"
         >
           <div className="space-y-4 py-2 text-start" dir="rtl">
-            {/* Step Indicators */}
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-text-muted border-b border-border pb-2">
-              <span className={importSheet.step === 1 ? 'text-accent-hover font-black' : ''}>1. انتخاب</span>
-              <span className={importSheet.step === 2 ? 'text-accent-hover font-black' : ''}>2. تنظیمات تبدیل</span>
-              <span className={importSheet.step === 3 ? 'text-accent-hover font-black' : ''}>3. پیش‌نمایش</span>
+            {/* Step indicator */}
+            <div className="flex items-start gap-2" aria-label={`مرحله ${importSheet.step} از 3`}>
+              {['انتخاب', 'تنظیمات', 'پیش‌نمایش'].map((label, i) => (
+                <div key={label} className="flex-1 space-y-1.5">
+                  <div className={`h-1 rounded-full ${importSheet.step >= i + 1 ? 'bg-accent' : 'bg-surface-3'}`} />
+                  <span className={`block text-xs ${importSheet.step === i + 1 ? 'text-accent-hover font-bold' : 'text-text-muted'}`}>
+                    {label}
+                  </span>
+                </div>
+              ))}
             </div>
 
             {/* STEP 1: Selection & Dependencies */}
@@ -1140,15 +1119,15 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 </p>
 
                 <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-3 cursor-pointer min-h-[44px]">
                     <Input noWrapper
                       type="checkbox"
                       checked={importSheet.includeDependencies}
                       onChange={e => setImportSheet(prev => ({ ...prev, includeDependencies: e.target.checked }))}
-                      className="w-4 h-4 accent-accent rounded"
+                      className="w-5 h-5 accent-accent rounded shrink-0"
                     />
                     <span className="text-xs font-bold text-text-primary">
-                      شامل تمام وابستگی‌ها (Dependency Resolution)
+                      شامل وابستگی‌ها
                     </span>
                   </label>
                   <p className="text-xs text-text-muted pe-6">
@@ -1160,10 +1139,10 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                       type="checkbox"
                       checked={importSheet.includeChildren}
                       onChange={e => setImportSheet(prev => ({ ...prev, includeChildren: e.target.checked }))}
-                      className="w-4 h-4 accent-accent rounded"
+                      className="w-5 h-5 accent-accent rounded shrink-0"
                     />
                     <span className="text-xs font-bold text-text-primary">
-                      شامل زیرمجموعه‌ها و فرزندان مکان‌ها (Children)
+                      شامل زیرمجموعه‌های مکان‌ها
                     </span>
                   </label>
                 </div>
@@ -1182,52 +1161,52 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             {importSheet.step === 2 && (
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-text-primary">وضعیت پدیداری (Visibility)</label>
+                  <label className="block text-xs font-bold text-text-primary">نمایش برای بازیکنان</label>
                   <Select noWrapper
                     value={importSheet.options.visibility}
                     onChange={e => setImportSheet(prev => ({
                       ...prev,
                       options: { ...prev.options, visibility: e.target.value as any }
                     }))}
-                    className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
+                    className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
                   >
-                    <option value="hidden">مخفی (فقط در دید دانجن مستر - پیش‌فرض)</option>
-                    <option value="keep">حفظ وضعیت قبلی پدیداری</option>
+                    <option value="hidden">مخفی، فقط برای مستر (پیش‌فرض)</option>
+                    <option value="keep">حفظ وضعیت قبلی</option>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-text-primary">مدیریت تداخل نام (Name Conflicts)</label>
+                  <label className="block text-xs font-bold text-text-primary">اگر نام تکراری بود</label>
                   <Select noWrapper
                     value={importSheet.options.nameConflict}
                     onChange={e => setImportSheet(prev => ({
                       ...prev,
                       options: { ...prev.options, nameConflict: e.target.value as any }
                     }))}
-                    className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
+                    className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
                   >
-                    <option value="rename">تغییر نام با پسوند (کپی) - پیش‌فرض</option>
-                    <option value="skip">صرف‌نظر از کپی موجودیت تکراری (Skip)</option>
+                    <option value="rename">تغییر نام با پسوند «کپی» (پیش‌فرض)</option>
+                    <option value="skip">کپی نشود</option>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold text-text-primary">نوع کپی و اتصال (Link Mode - Part B)</label>
+                  <label className="block text-xs font-bold text-text-primary">نوع کپی</label>
                   <Select noWrapper
                     value={importSheet.options.keepLink}
                     onChange={e => setImportSheet(prev => ({
                       ...prev,
                       options: { ...prev.options, keepLink: e.target.value as any }
                     }))}
-                    className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
+                    className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
                   >
-                    <option value="copy">کپی کاملاً مستقل (Copy - پیش‌فرض)</option>
-                    <option value="linked">کپی پیونددار با اعلام تغییرات منبع (Linked Copy)</option>
+                    <option value="copy">کپی مستقل (پیش‌فرض)</option>
+                    <option value="linked">کپی پیونددار (تغییرات منبع اعلام می‌شود)</option>
                   </Select>
                 </div>
 
                 <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-3 cursor-pointer min-h-[44px]">
                     <Input noWrapper
                       type="checkbox"
                       checked={importSheet.options.stripDmSecrets}
@@ -1235,12 +1214,12 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                         ...prev,
                         options: { ...prev.options, stripDmSecrets: e.target.checked }
                       }))}
-                      className="w-4 h-4 accent-accent rounded"
+                      className="w-5 h-5 accent-accent rounded shrink-0"
                     />
-                    <span className="text-xs font-bold text-text-primary">حذف یادداشت‌های محرمانه مستر (Strip Secrets)</span>
+                    <span className="text-xs font-bold text-text-primary">حذف یادداشت‌های محرمانه مستر</span>
                   </label>
 
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-3 cursor-pointer min-h-[44px]">
                     <Input noWrapper
                       type="checkbox"
                       checked={importSheet.options.resetState}
@@ -1248,9 +1227,9 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                         ...prev,
                         options: { ...prev.options, resetState: e.target.checked }
                       }))}
-                      className="w-4 h-4 accent-accent rounded"
+                      className="w-5 h-5 accent-accent rounded shrink-0"
                     />
-                    <span className="text-xs font-bold text-text-primary">بازنشانی HP و تبدیل مواجهه‌ها به پیش‌نویس (Reset State)</span>
+                    <span className="text-xs font-bold text-text-primary">بازنشانی HP و تبدیل مواجهه‌ها به پیش‌نویس</span>
                   </label>
                 </div>
 
@@ -1258,7 +1237,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   <Button
                     type="button"
                     onClick={() => setImportSheet(prev => ({ ...prev, step: 1 }))}
-                    className="py-3 px-4 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary font-bold text-xs min-h-[48px]"
+                    className="py-3 px-4 rounded-xl bg-surface-3 hover:brightness-110 text-text-primary font-bold text-xs min-h-[48px]"
                   >
                     بازگشت
                   </Button>
@@ -1267,7 +1246,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                     onClick={handleImportGoToStep3}
                     className="flex-1 py-3 rounded-xl btn-primary font-extrabold text-xs shadow-md min-h-[48px]"
                   >
-                    محاسبه پیش‌نمایش (Preview Dry-Run)
+                    مشاهده پیش‌نمایش
                   </Button>
                 </div>
               </div>
@@ -1293,7 +1272,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                         onClick={() => handleUndoClone(importSheet.resultJob!.id)}
                         className="py-2.5 px-4 rounded-xl bg-danger/15 border border-danger/30 text-danger text-xs font-bold hover:bg-danger/25 min-h-[44px]"
                       >
-                        لغو عملیات (Undo)
+                        بازگردانی
                       </Button>
                       <Button
                         type="button"
@@ -1316,7 +1295,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                       <div className="grid grid-cols-2 gap-1 text-xs text-text-muted pt-2 border-t border-border">
                         {Object.entries(importSheet.manifest?.countsByType || {}).map(([type, count]) => (
                           <div key={type} className="flex justify-between">
-                            <span>{type}:</span>
+                            <span>{TYPE_LABEL[type] ?? type}</span>
                             <span className="text-text-primary font-semibold">{count}</span>
                           </div>
                         ))}
@@ -1342,7 +1321,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                       <Button
                         type="button"
                         onClick={() => setImportSheet(prev => ({ ...prev, step: 2 }))}
-                        className="py-3 px-4 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary font-bold text-xs min-h-[48px]"
+                        className="py-3 px-4 rounded-xl bg-surface-3 hover:brightness-110 text-text-primary font-bold text-xs min-h-[48px]"
                       >
                         بازگشت
                       </Button>
@@ -1352,7 +1331,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                         onClick={handleExecuteImport}
                         className="flex-1 py-3 rounded-xl btn-primary font-extrabold text-xs shadow-md min-h-[48px]"
                       >
-                        {importSheet.isExecuting ? 'در حال کلون...' : 'تأیید و اجرای کلون (Run)'}
+                        {importSheet.isExecuting ? 'در حال کپی...' : 'تأیید و کپی'}
                       </Button>
                     </div>
                   </>
@@ -1457,7 +1436,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                     key={p.id}
                     type="button"
                     onClick={() => handleExportPack(p.id)}
-                    className="px-3 py-1.5 rounded-lg bg-surface-3 hover:bg-surface-3 text-accent-hover text-xs font-bold flex items-center gap-1 min-h-[44px]"
+                    className="px-3 py-1.5 rounded-lg bg-surface-3 hover:brightness-110 text-accent-hover text-xs font-bold flex items-center gap-1 min-h-[44px]"
                   >
                     <span>{p.name}</span>
                     <Download className="w-3.5 h-3.5" />
@@ -1470,7 +1449,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
             <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
               <h4 className="text-xs font-bold text-text-primary flex items-center gap-1.5">
                 <Upload className="w-4 h-4 text-accent-hover" />
-                <span>درون‌ریزی فایل بسته (Import JSON)</span>
+                <span>درون‌ریزی بسته</span>
               </h4>
               <p className="text-xs text-text-muted">
                 محتوای فایل JSON با فرمت zorvania-pack/1 را در کادر زیر جای‌گذاری کنید:
@@ -1507,9 +1486,9 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                   type="button"
                   disabled={!importJsonText.trim()}
                   onClick={handlePreviewImportPack}
-                  className="w-full py-2.5 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary text-xs font-bold min-h-[44px]"
+                  className="w-full py-2.5 rounded-xl bg-surface-3 hover:brightness-110 text-text-primary text-xs font-bold min-h-[44px]"
                 >
-                  بررسی و اعتبارسنجی فایل (Preview)
+                  بررسی فایل
                 </Button>
               )}
             </div>
@@ -1536,7 +1515,7 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 value={templateName}
                 onChange={e => setTemplateName(e.target.value)}
                 placeholder="مثلاً: قالب کمپین ماجراجویی کویر خاموش"
-                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[40px]"
+                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
               />
             </div>
 
@@ -1556,10 +1535,10 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
                 type="checkbox"
                 checked={templateStripSecrets}
                 onChange={e => setTemplateStripSecrets(e.target.checked)}
-                className="w-4 h-4 accent-accent rounded"
+                className="w-5 h-5 accent-accent rounded shrink-0"
               />
               <span className="text-xs font-bold text-text-primary">
-                حذف اطلاعات محرمانه دانجن مستر از قالب (Strip Secrets)
+                حذف اطلاعات محرمانه مستر از قالب
               </span>
             </label>
 

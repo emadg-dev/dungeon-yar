@@ -305,7 +305,7 @@ export const Header: React.FC<HeaderProps> = ({
               title={APP_NAME_FA}
               className={`flex items-center justify-center w-11 h-11 rounded-lg bg-gradient-to-br from-accent to-danger ${focusRing}`}
             >
-              <span className="text-lg font-black text-on-accent leading-none">ز</span>
+              <span className="text-lg font-black color-primary leading-none">د</span>
             </Button>
 
             {inCampaign ? (
@@ -471,14 +471,10 @@ export const Header: React.FC<HeaderProps> = ({
               aria-label={menuOpen ? 'بستن منو' : 'باز کردن منو'}
               aria-expanded={menuOpen}
               aria-controls="header-menu"
-              title={displayName || 'منو'}
+              title={ 'منو'}
               className={ghostIconBtn}
             >
-              {currentUser ? (
-                <span className="w-8 h-8 rounded-full bg-surface-2 border border-border text-sm font-bold text-accent flex items-center justify-center">
-                  {displayName?.[0] || 'ز'}
-                </span>
-              ) : (
+              {(
                 <Menu className="w-5 h-5" />
               )}
               {menuNeedsAttention && (

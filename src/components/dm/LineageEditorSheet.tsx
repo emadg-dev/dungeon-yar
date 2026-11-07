@@ -5,7 +5,11 @@ import { Textarea } from '../ui/Textarea';
 import React, { useState } from 'react';
 import { LineageTemplate, AbilityName, LineageTrait, SublineageDef } from '../../types';
 import { BottomSheet } from '../mobile/BottomSheet';
-import { Plus, Trash2, Save, X, Sparkles, Shield, Eye, BookOpen, User } from 'lucide-react';
+import { Plus, Trash2, Save, Sparkles, Shield, Eye, BookOpen, User, ChevronDown } from 'lucide-react';
+import {
+  Field, Section, SectionStack, StickyFooter, ToggleChip, AddButton, IconButton,
+  inputCls, textareaCls, primaryBtnCls, secondaryBtnCls, cardCls
+} from '../ui/FormLayout';
 
 interface LineageEditorSheetProps {
   isOpen: boolean;
@@ -25,6 +29,28 @@ const ABILITY_LABELS: { key: AbilityName; label: string }[] = [
   { key: 'cha', label: 'فرهمندی (CHA)' },
 ];
 
+const splitList = (s: string) => s.split(/[,،\n]/).map(x => x.trim()).filter(Boolean);
+const splitLines = (s: string) => s.split('\n').map(x => x.trim()).filter(Boolean);
+
+/** Optional, long content stays collapsed so the form starts short. */
+const Disclosure: React.FC<{ title: string; icon: React.ComponentType<{ className?: string }>; meta?: string; children: React.ReactNode }> = ({
+  title, icon: Icon, meta, children
+}) => (
+  <section className="py-5 last:pb-0">
+    <details className="group">
+      <summary className="min-h-[44px] flex items-center justify-between gap-3 cursor-pointer list-none">
+        <span className="text-base font-bold text-text-primary flex items-center gap-2">
+          <Icon className="w-4 h-4 text-accent" />
+          {title}
+          {meta && <span className="text-xs font-normal text-text-muted">{meta}</span>}
+        </span>
+        <ChevronDown className="w-4 h-4 text-text-muted transition group-open:rotate-180" aria-hidden />
+      </summary>
+      <div className="mt-3 space-y-4">{children}</div>
+    </details>
+  </section>
+);
+
 export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
   isOpen,
   onClose,
@@ -38,7 +64,6 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
   const [size, setSize] = useState(lineage?.size || 'متوسط (Medium)');
   const [speed, setSpeed] = useState<number>(lineage?.speed ?? 30);
 
-  // Ability bonuses
   const [bonusMode, setBonusMode] = useState<'fixed' | 'choose'>(lineage?.abilityBonuses?.mode || 'fixed');
   const [fixedBonuses, setFixedBonuses] = useState<Partial<Record<AbilityName, number>>>(
     lineage?.abilityBonuses?.fixed || { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }
@@ -46,57 +71,29 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
   const [chooseCount, setChooseCount] = useState<number>(lineage?.abilityBonuses?.chooseCount || 2);
   const [chooseValue, setChooseValue] = useState<number>(lineage?.abilityBonuses?.chooseValue || 1);
 
-  // Traits
   const [traits, setTraits] = useState<LineageTrait[]>(
     lineage?.traits?.length ? lineage.traits : [{ name: '', description: '', usage: 'همیشگی (Passive)' }]
   );
 
-  // Languages & Senses
-  const [languagesText, setLanguagesText] = useState(
-    (lineage?.languages || ['مشترک']).join('، ')
-  );
+  const [languagesText, setLanguagesText] = useState((lineage?.languages || ['مشترک']).join('، '));
   const [darkvision, setDarkvision] = useState<number>(lineage?.senses?.darkvision ?? 0);
-  const [resistancesText, setResistancesText] = useState(
-    (lineage?.resistances || []).join('، ')
-  );
+  const [resistancesText, setResistancesText] = useState((lineage?.resistances || []).join('، '));
+  const [skillsText, setSkillsText] = useState((lineage?.proficiencies?.skills || []).join('، '));
+  const [weaponsText, setWeaponsText] = useState((lineage?.proficiencies?.weapons || []).join('، '));
 
-  // Proficiencies
-  const [skillsText, setSkillsText] = useState(
-    (lineage?.proficiencies?.skills || []).join('، ')
-  );
-  const [weaponsText, setWeaponsText] = useState(
-    (lineage?.proficiencies?.weapons || []).join('، ')
-  );
-
-  // Sublineages
   const [sublineages, setSublineages] = useState<SublineageDef[]>(lineage?.sublineages || []);
 
-  // Names & Backstory
-  const [nameSuggestionsText, setNameSuggestionsText] = useState(
-    (lineage?.nameSuggestions || []).join('\n')
-  );
-  const [backstoryPromptsText, setBackstoryPromptsText] = useState(
-    (lineage?.backstoryPrompts || []).join('\n')
-  );
+  const [nameSuggestionsText, setNameSuggestionsText] = useState((lineage?.nameSuggestions || []).join('\n'));
+  const [backstoryPromptsText, setBackstoryPromptsText] = useState((lineage?.backstoryPrompts || []).join('\n'));
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleAddTrait = () => {
-    setTraits([...traits, { name: '', description: '', usage: 'همیشگی (Passive)' }]);
-  };
-
-  const handleRemoveTrait = (idx: number) => {
-    setTraits(traits.filter((_, i) => i !== idx));
-  };
-
-  const handleAddSublineage = () => {
-    setSublineages([...sublineages, { name: '', description: '', traits: [] }]);
-  };
-
-  const handleRemoveSublineage = (idx: number) => {
-    setSublineages(sublineages.filter((_, i) => i !== idx));
-  };
+  // Immutable updates (the old code mutated the objects inside state)
+  const patchTrait = (idx: number, patch: Partial<LineageTrait>) =>
+    setTraits(prev => prev.map((t, i) => (i === idx ? { ...t, ...patch } : t)));
+  const patchSublineage = (idx: number, patch: Partial<SublineageDef>) =>
+    setSublineages(prev => prev.map((s, i) => (i === idx ? { ...s, ...patch } : s)));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,12 +105,7 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
     setSaving(true);
 
     try {
-      const parsedLanguages = languagesText.split(/[,،\n]/).map(s => s.trim()).filter(Boolean);
-      const parsedResistances = resistancesText.split(/[,،\n]/).map(s => s.trim()).filter(Boolean);
-      const parsedSkills = skillsText.split(/[,،\n]/).map(s => s.trim()).filter(Boolean);
-      const parsedWeapons = weaponsText.split(/[,،\n]/).map(s => s.trim()).filter(Boolean);
-      const parsedNames = nameSuggestionsText.split('\n').map(s => s.trim()).filter(Boolean);
-      const parsedPrompts = backstoryPromptsText.split('\n').map(s => s.trim()).filter(Boolean);
+      const parsedLanguages = splitList(languagesText);
 
       const templateToSave: LineageTemplate = {
         id: lineage?.id || `lin-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -126,24 +118,22 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
         abilityBonuses: {
           mode: bonusMode,
           fixed: fixedBonuses,
-          chooseCount: Number(chooseCount) || 0,
+          chooseCount: Number(chooseCount) || 1,
           chooseValue: Number(chooseValue) || 1
         },
         traits: traits.filter(t => t.name.trim()),
         languages: parsedLanguages.length ? parsedLanguages : ['مشترک'],
         proficiencies: {
-          skills: parsedSkills,
-          weapons: parsedWeapons,
+          skills: splitList(skillsText),
+          weapons: splitList(weaponsText),
           armor: lineage?.proficiencies?.armor || [],
           tools: lineage?.proficiencies?.tools || []
         },
-        resistances: parsedResistances,
-        senses: {
-          darkvision: Number(darkvision) || 0
-        },
+        resistances: splitList(resistancesText),
+        senses: { darkvision: Number(darkvision) || 0 },
         sublineages: sublineages.filter(s => s.name.trim()),
-        nameSuggestions: parsedNames,
-        backstoryPrompts: parsedPrompts,
+        nameSuggestions: splitLines(nameSuggestionsText),
+        backstoryPrompts: splitLines(backstoryPromptsText),
         tags: lineage?.tags || ['نژاد'],
         createdAt: lineage?.createdAt || Date.now(),
         updatedAt: Date.now()
@@ -158,351 +148,182 @@ export const LineageEditorSheet: React.FC<LineageEditorSheetProps> = ({
     }
   };
 
+  const hasUnnamedContent = traits.some(t => !t.name.trim() && t.description.trim());
+
   return (
-    <BottomSheet
-      isOpen={isOpen}
-      onClose={onClose}
-      title={lineage ? `ویرایش نژاد: ${lineage.name}` : 'افزودن نژاد جدید'}
-    >
-      <form onSubmit={handleSubmit} className="space-y-4 py-2 text-start" dir="rtl">
-        {error && (
-          <div className="p-3 rounded-xl bg-danger/15 border border-danger/30 text-danger text-xs font-bold">
-            {error}
-          </div>
-        )}
-
-        {/* Basic Fields */}
-        <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
-          <h4 className="text-xs font-extrabold text-accent-hover flex items-center gap-1.5">
-            <User className="w-4 h-4" />
-            <span>مشخصات پایه نژاد / تبار</span>
-          </h4>
-
-          <div>
-            <label className="block text-xs font-bold text-text-primary mb-1">نام نژاد *</label>
-            <Input noWrapper
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="مثال: دیوان‌تبار، پری‌زاد، آدمی..."
-              required
-              className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-text-primary mb-1">توصیف و زمینه تاریخی</label>
-            <Textarea noWrapper
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              rows={3}
-              placeholder="ویژگی‌های ظاهری، خاستگاه و فرهنگ نژاد..."
-              className="w-full bg-surface-2 border border-border rounded-xl p-3 text-xs text-text-primary focus:outline-none focus:border-accent resize-y"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-xs font-bold text-text-primary mb-1">اندازه و جثه (Size)</label>
-              <Select noWrapper
-                value={size}
-                onChange={e => setSize(e.target.value)}
-                className="w-full bg-surface-2 border border-border rounded-xl px-2.5 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
-              >
-                <option value="متوسط (Medium)">متوسط (Medium)</option>
-                <option value="کوچک (Small)">کوچک (Small)</option>
-                <option value="بزرگ (Large)">بزرگ (Large)</option>
-              </Select>
+    <BottomSheet isOpen={isOpen} onClose={onClose} title={lineage ? `ویرایش نژاد: ${lineage.name}` : 'نژاد جدید'}>
+      <form onSubmit={handleSubmit} dir="rtl" className="text-start">
+        <SectionStack>
+          <Section title="مشخصات" icon={User}>
+            <Field label="نام نژاد" required>
+              <Input noWrapper type="text" value={name} onChange={e => setName(e.target.value)} required
+                placeholder="مثال: دیوان‌تبار، پری‌زاد، آدمی" className={inputCls} />
+            </Field>
+            <Field label="توصیف و زمینه تاریخی">
+              <Textarea noWrapper value={description} onChange={e => setDescription(e.target.value)} rows={3}
+                placeholder="ظاهر، خاستگاه و فرهنگ نژاد" className={textareaCls} />
+            </Field>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="اندازه">
+                <Select noWrapper value={size} onChange={e => setSize(e.target.value)} className={inputCls}>
+                  <option value="متوسط (Medium)">متوسط (Medium)</option>
+                  <option value="کوچک (Small)">کوچک (Small)</option>
+                  <option value="بزرگ (Large)">بزرگ (Large)</option>
+                </Select>
+              </Field>
+              <Field label="سرعت پایه (فوت)">
+                <Input noWrapper type="number" inputMode="numeric" value={speed || ''}
+                  onChange={e => setSpeed(Number(e.target.value))} min={10} max={60} step={5} className={inputCls} />
+              </Field>
             </div>
+          </Section>
 
-            <div>
-              <label className="block text-xs font-bold text-text-primary mb-1">سرعت پایه (فوت)</label>
-              <Input noWrapper
-                type="number"
-                value={speed}
-                onChange={e => setSpeed(parseInt(e.target.value, 10) || 30)}
-                min={10}
-                max={60}
-                step={5}
-                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-accent min-h-[44px]"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Ability Score Bonuses */}
-        <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h4 className="text-xs font-extrabold text-accent-hover flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4" />
-              <span>پاداش ویژگی‌ها (Ability Score Bonuses)</span>
-            </h4>
-            <div className="flex items-center gap-1 bg-surface-2 p-1 rounded-xl border border-border">
-              <Button
-                type="button"
-                onClick={() => setBonusMode('fixed')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
-                  bonusMode === 'fixed' ? 'bg-accent text-on-accent' : 'text-text-muted'
-                }`}
-              >
-                مقادیر ثابت
-              </Button>
-              <Button
-                type="button"
-                onClick={() => setBonusMode('choose')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
-                  bonusMode === 'choose' ? 'bg-accent text-on-accent' : 'text-text-muted'
-                }`}
-              >
-                انتخاب بازیکن
-              </Button>
-            </div>
-          </div>
-
-          {bonusMode === 'fixed' ? (
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-              {ABILITY_LABELS.map(ab => (
-                <div key={ab.key} className="bg-surface-2 p-2 rounded-xl border border-border text-center">
-                  <span className="text-xs text-text-muted block mb-1">{ab.key.toUpperCase()}</span>
-                  <Input noWrapper
-                    type="number"
-                    value={fixedBonuses[ab.key] ?? 0}
-                    onChange={e => setFixedBonuses({
-                      ...fixedBonuses,
-                      [ab.key]: parseInt(e.target.value, 10) || 0
-                    })}
-                    min={-2}
-                    max={4}
-                    className="w-full text-center bg-surface border border-border rounded-lg py-1 text-xs text-accent-hover font-bold"
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <label className="block text-text-muted text-xs mb-1">تعداد ویژگی‌های انتخابی</label>
-                <Input noWrapper
-                  type="number"
-                  value={chooseCount}
-                  onChange={e => setChooseCount(parseInt(e.target.value, 10) || 1)}
-                  min={1}
-                  max={6}
-                  className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
-                />
+          <Section title="پاداش ویژگی‌ها" icon={Sparkles}>
+            <Field label="روش" group>
+              <div className="grid grid-cols-2 gap-2">
+                <ToggleChip active={bonusMode === 'fixed'} onClick={() => setBonusMode('fixed')}>مقادیر ثابت</ToggleChip>
+                <ToggleChip active={bonusMode === 'choose'} onClick={() => setBonusMode('choose')}>انتخاب بازیکن</ToggleChip>
               </div>
-              <div>
-                <label className="block text-text-muted text-xs mb-1">مقدار افزایش هر ویژگی</label>
-                <Input noWrapper
-                  type="number"
-                  value={chooseValue}
-                  onChange={e => setChooseValue(parseInt(e.target.value, 10) || 1)}
-                  min={1}
-                  max={3}
-                  className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
-                />
+            </Field>
+
+            {bonusMode === 'fixed' ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {ABILITY_LABELS.map(ab => (
+                  <Field key={ab.key} label={ab.label}>
+                    <Input noWrapper type="number" inputMode="numeric" value={fixedBonuses[ab.key] ?? 0}
+                      onChange={e => setFixedBonuses(prev => ({ ...prev, [ab.key]: parseInt(e.target.value, 10) || 0 }))}
+                      min={-2} max={4} className={`${inputCls} text-center font-bold tabular-nums`} />
+                  </Field>
+                ))}
               </div>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="تعداد ویژگی‌های قابل انتخاب">
+                  <Input noWrapper type="number" inputMode="numeric" value={chooseCount || ''}
+                    onChange={e => setChooseCount(Number(e.target.value))} min={1} max={6} className={inputCls} />
+                </Field>
+                <Field label="مقدار افزایش هر ویژگی">
+                  <Input noWrapper type="number" inputMode="numeric" value={chooseValue || ''}
+                    onChange={e => setChooseValue(Number(e.target.value))} min={1} max={3} className={inputCls} />
+                </Field>
+              </div>
+            )}
+          </Section>
 
-        {/* Traits */}
-        <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h4 className="text-xs font-extrabold text-accent-hover flex items-center gap-1.5">
-              <Shield className="w-4 h-4" />
-              <span>قابلیت‌ها و خصلت‌های نژادی (Traits)</span>
-            </h4>
-            <Button
-              type="button"
-              onClick={handleAddTrait}
-              className="px-2.5 py-1 rounded-xl bg-surface-3 hover:bg-surface-3 text-accent-hover text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>افزودن خصلت</span>
-            </Button>
-          </div>
-
-          <div className="space-y-2">
+          <Section
+            title="خصلت‌های نژادی"
+            icon={Shield}
+            action={
+              <AddButton onClick={() => setTraits(prev => [...prev, { name: '', description: '', usage: 'همیشگی (Passive)' }])}>
+                <Plus className="w-4 h-4" aria-hidden />
+                <span>خصلت</span>
+              </AddButton>
+            }
+          >
             {traits.map((tr, idx) => (
-              <div key={idx} className="p-2.5 rounded-xl bg-surface-2 border border-border space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
-                  <Input noWrapper
-                    type="text"
-                    value={tr.name}
-                    onChange={e => {
-                      const updated = [...traits];
-                      updated[idx].name = e.target.value;
-                      setTraits(updated);
-                    }}
-                    placeholder="نام خصلت (مثال: دید در تاریکی، سرسختی کویر)"
-                    className="flex-1 bg-surface border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => handleRemoveTrait(idx)}
-                    className="p-1.5 rounded-lg text-danger hover:bg-danger/10"
-                    title="حذف"
-                  >
+              <div key={idx} className={cardCls}>
+                <div className="flex items-center gap-2">
+                  <Input noWrapper type="text" value={tr.name} aria-label="نام خصلت"
+                    onChange={e => patchTrait(idx, { name: e.target.value })}
+                    placeholder="نام خصلت (مثال: دید در تاریکی)" className={`${inputCls} flex-1 font-bold`} />
+                  <IconButton label="حذف خصلت" danger onClick={() => setTraits(prev => prev.filter((_, i) => i !== idx))}>
                     <Trash2 className="w-4 h-4" />
-                  </Button>
+                  </IconButton>
                 </div>
-                <Textarea noWrapper
-                  value={tr.description}
-                  onChange={e => {
-                    const updated = [...traits];
-                    updated[idx].description = e.target.value;
-                    setTraits(updated);
-                  }}
-                  rows={2}
-                  placeholder="شرح مکانیکی یا روایی خصلت..."
-                  className="w-full bg-surface border border-border rounded-lg p-2 text-xs text-text-primary resize-y"
-                />
+                <Textarea noWrapper value={tr.description} rows={3} aria-label="شرح خصلت"
+                  onChange={e => patchTrait(idx, { description: e.target.value })}
+                  placeholder="شرح مکانیکی یا روایی" className={textareaCls} />
               </div>
             ))}
-          </div>
-        </div>
+            {hasUnnamedContent && (
+              <p className="text-xs text-warning">خصلت‌های بدون نام هنگام ذخیره حذف می‌شوند.</p>
+            )}
+          </Section>
 
-        {/* Senses, Languages, Resistances */}
-        <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
-          <h4 className="text-xs font-extrabold text-accent-hover flex items-center gap-1.5">
-            <Eye className="w-4 h-4" />
-            <span>حواس، زبان‌ها و مقاومت‌ها</span>
-          </h4>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-xs font-bold text-text-primary mb-1">دید در تاریکی (Darkvision)</label>
-              <Input noWrapper
-                type="number"
-                value={darkvision}
-                onChange={e => setDarkvision(parseInt(e.target.value, 10) || 0)}
-                min={0}
-                max={120}
-                step={30}
-                placeholder="0 یا 60 فوت"
-                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary min-h-[44px]"
-              />
+          <Section title="حواس، زبان‌ها و مهارت‌ها" icon={Eye}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="دید در تاریکی (فوت)" hint="۰ یعنی ندارد؛ معمولاً ۶۰.">
+                <Input noWrapper type="number" inputMode="numeric" value={darkvision}
+                  onChange={e => setDarkvision(Number(e.target.value) || 0)} min={0} max={120} step={30} className={inputCls} />
+              </Field>
+              <Field label="مقاومت به آسیب" hint="با ویرگول جدا کنید.">
+                <Input noWrapper type="text" value={resistancesText} onChange={e => setResistancesText(e.target.value)}
+                  placeholder="آتشین، سم، سرمایی" className={inputCls} />
+              </Field>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-text-primary mb-1">مقاومت به آسیب (Resistances)</label>
-              <Input noWrapper
-                type="text"
-                value={resistancesText}
-                onChange={e => setResistancesText(e.target.value)}
-                placeholder="آتشین، سم، سرمایی (جداشده با کاما)"
-                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary min-h-[44px]"
-              />
+            <Field label="زبان‌ها">
+              <Input noWrapper type="text" value={languagesText} onChange={e => setLanguagesText(e.target.value)}
+                placeholder="مشترک، ورنایی، دیوانی" className={inputCls} />
+            </Field>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="مهارت‌های نژادی">
+                <Input noWrapper type="text" value={skillsText} onChange={e => setSkillsText(e.target.value)}
+                  placeholder="ادراک، پنهان‌کاری" className={inputCls} />
+              </Field>
+              <Field label="سلاح‌های مجاز نژادی">
+                <Input noWrapper type="text" value={weaponsText} onChange={e => setWeaponsText(e.target.value)}
+                  placeholder="کمان کوتاه، شمشیر بلند" className={inputCls} />
+              </Field>
             </div>
-          </div>
+          </Section>
 
-          <div>
-            <label className="block text-xs font-bold text-text-primary mb-1">زبان‌ها</label>
-            <Input noWrapper
-              type="text"
-              value={languagesText}
-              onChange={e => setLanguagesText(e.target.value)}
-              placeholder="مشترک، ورنایی، دیوانی..."
-              className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary min-h-[44px]"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-xs font-bold text-text-primary mb-1">مهارت‌های اولیه نژادی</label>
-              <Input noWrapper
-                type="text"
-                value={skillsText}
-                onChange={e => setSkillsText(e.target.value)}
-                placeholder="ادراک، پنهان‌کاری..."
-                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary min-h-[44px]"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-text-primary mb-1">سلاح‌های مجاز نژادی</label>
-              <Input noWrapper
-                type="text"
-                value={weaponsText}
-                onChange={e => setWeaponsText(e.target.value)}
-                placeholder="کمان کوتاه، شمشیر بلند..."
-                className="w-full bg-surface-2 border border-border rounded-xl px-3 py-2 text-xs text-text-primary min-h-[44px]"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Sublineages */}
-        <div className="space-y-3 p-3.5 rounded-2xl bg-surface border border-border">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h4 className="text-xs font-extrabold text-accent-hover flex items-center gap-1.5">
-              <BookOpen className="w-4 h-4" />
-              <span>زیرنژادها / تیره‌ها (Sublineages)</span>
-            </h4>
-            <Button
-              type="button"
-              onClick={handleAddSublineage}
-              className="px-2.5 py-1 rounded-xl bg-surface-3 hover:bg-surface-3 text-accent-hover text-xs font-bold transition flex items-center gap-1 min-h-[44px]"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>افزودن تیره</span>
-            </Button>
-          </div>
-
-          {sublineages.map((sub, idx) => (
-            <div key={idx} className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-2 gap-2">
-                <Input noWrapper
-                  type="text"
-                  value={sub.name}
-                  onChange={e => {
-                    const updated = [...sublineages];
-                    updated[idx].name = e.target.value;
-                    setSublineages(updated);
-                  }}
-                  placeholder="نام تیره (مثال: دیوانزاد خاکی، پری کویر)"
-                  className="flex-1 bg-surface border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary"
-                />
-                <Button
-                  type="button"
-                  onClick={() => handleRemoveSublineage(idx)}
-                  className="p-1.5 rounded-lg text-danger hover:bg-danger/10"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+          <Section
+            title="زیرنژادها"
+            icon={BookOpen}
+            action={
+              <AddButton onClick={() => setSublineages(prev => [...prev, { name: '', description: '', traits: [] }])}>
+                <Plus className="w-4 h-4" aria-hidden />
+                <span>تیره</span>
+              </AddButton>
+            }
+          >
+            {sublineages.length === 0 && <p className="text-sm text-text-muted">زیرنژادی تعریف نشده است.</p>}
+            {sublineages.map((sub, idx) => (
+              <div key={idx} className={cardCls}>
+                <div className="flex items-center gap-2">
+                  <Input noWrapper type="text" value={sub.name} aria-label="نام تیره"
+                    onChange={e => patchSublineage(idx, { name: e.target.value })}
+                    placeholder="نام تیره (مثال: دیوانزاد خاکی)" className={`${inputCls} flex-1 font-bold`} />
+                  <IconButton label="حذف تیره" danger onClick={() => setSublineages(prev => prev.filter((_, i) => i !== idx))}>
+                    <Trash2 className="w-4 h-4" />
+                  </IconButton>
+                </div>
+                <Textarea noWrapper value={sub.description} rows={3} aria-label="توصیف تیره"
+                  onChange={e => patchSublineage(idx, { description: e.target.value })}
+                  placeholder="توصیف تیره و خصلت‌های اختصاصی" className={textareaCls} />
               </div>
-              <Textarea noWrapper
-                value={sub.description}
-                onChange={e => {
-                  const updated = [...sublineages];
-                  updated[idx].description = e.target.value;
-                  setSublineages(updated);
-                }}
-                rows={2}
-                placeholder="توصیف تیره و خصلت‌های اختصاصی..."
-                className="w-full bg-surface border border-border rounded-lg p-2 text-xs text-text-primary"
-              />
-            </div>
-          ))}
-        </div>
+            ))}
+          </Section>
 
-        {/* Submit Actions */}
-        <div className="pt-2 flex items-center gap-2">
-          <Button
-            type="submit"
-            disabled={saving}
-            className="flex-1 py-3 px-4 rounded-xl btn-primary font-extrabold text-xs shadow-md flex items-center justify-center gap-2 min-h-[44px]"
+          {/* These two lists were already saved by the old code but had no inputs, so they could never be edited */}
+          <Disclosure
+            title="پیشنهاد نام و ایده پیشینه"
+            icon={BookOpen}
+            meta={splitLines(nameSuggestionsText).length + splitLines(backstoryPromptsText).length > 0 ? undefined : 'اختیاری'}
           >
-            <Save className="w-4 h-4" />
-            <span>{saving ? 'در حال ذخیره‌سازی...' : 'ذخیره نژاد در کتابخانه'}</span>
-          </Button>
-          <Button
-            type="button"
-            onClick={onClose}
-            className="py-3 px-4 rounded-xl bg-surface-3 hover:bg-surface-3 text-text-primary font-bold text-xs min-h-[44px]"
-          >
-            انصراف
-          </Button>
-        </div>
+            <Field label="نام‌های پیشنهادی" hint="هر خط یک نام.">
+              <Textarea noWrapper value={nameSuggestionsText} onChange={e => setNameSuggestionsText(e.target.value)}
+                rows={4} className={textareaCls} />
+            </Field>
+            <Field label="ایده‌های پیشینه" hint="هر خط یک ایده.">
+              <Textarea noWrapper value={backstoryPromptsText} onChange={e => setBackstoryPromptsText(e.target.value)}
+                rows={4} className={textareaCls} />
+            </Field>
+          </Disclosure>
+        </SectionStack>
+
+        <StickyFooter>
+          {error && (
+            <div role="alert" className="p-3 rounded-lg bg-danger/15 border border-danger/30 text-danger text-sm font-medium">{error}</div>
+          )}
+          <div className="flex gap-2">
+            <Button type="submit" disabled={saving} className={`${primaryBtnCls} flex-1`}>
+              <Save className="w-4 h-4" />
+              <span>{saving ? 'در حال ذخیره...' : 'ذخیره نژاد'}</span>
+            </Button>
+            <Button type="button" onClick={onClose} className={secondaryBtnCls}>انصراف</Button>
+          </div>
+        </StickyFooter>
       </form>
     </BottomSheet>
   );
