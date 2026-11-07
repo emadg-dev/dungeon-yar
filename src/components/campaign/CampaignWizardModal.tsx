@@ -11,6 +11,12 @@ import {
 } from '../../types';
 import { api } from '../../services/api';
 import { 
+  TEMPLATE_SHAHROOZAN_ZORVANIA, 
+  TEMPLATE_GATHIC, 
+  TEMPLATE_SIMPLE_STARTER, 
+  createCampaignCalendarFromTemplate 
+} from '../../shared/rules/calendarTemplates';
+import { 
   Compass, Sparkles, BookOpen, Layers, ArrowRight, ArrowLeft, 
   Check, Save, AlertTriangle, Users, Shield, Calendar, MapPin, 
   Swords, Scroll, Mail, CheckCircle2, ChevronRight, X, Plus, Trash2, 
@@ -81,8 +87,9 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
   const [houseRulesText, setHouseRulesText] = useState('قوانین رسمی 5e به همراه قوانین خانه.');
 
   // Step 3: دنیا (World)
-  const [calendarSource, setCalendarSource] = useState<'zorvania' | 'scratch'>('zorvania');
-  const [calendarYear, setCalendarYear] = useState(1500);
+  const [calendarSource, setCalendarSource] = useState<'zorvania' | 'gathic' | 'scratch'>('zorvania');
+  const [calendarName, setCalendarName] = useState('گاه‌شمار شاه‌روزان (زروانیا)');
+  const [calendarYear, setCalendarYear] = useState<number>(1500);
   const [calendarEra, setCalendarEra] = useState('پ.ر.ن');
   const [factionsList, setFactionsList] = useState<{ name: string; description: string; attitude: string; region: string }[]>([
     { name: 'موبدان آذرین', description: 'پاسداران آتش ابدی کویر', attitude: 'متحد', region: 'کویر خاموش' },
@@ -153,6 +160,10 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
         if (ans.units) setUnits(ans.units);
         if (ans.startingLevel) setStartingLevel(ans.startingLevel);
         if (ans.maxEntryLevel) setMaxEntryLevel(ans.maxEntryLevel);
+        if (ans.calendarSource) setCalendarSource(ans.calendarSource);
+        if (ans.calendarName) setCalendarName(ans.calendarName);
+        if (ans.calendarYear) setCalendarYear(ans.calendarYear);
+        if (ans.calendarEra) setCalendarEra(ans.calendarEra);
         if (ans.sessionZeroDoc) {
           setSessionZeroTitle(ans.sessionZeroDoc.title || sessionZeroTitle);
           setSessionZeroExpectations(ans.sessionZeroDoc.expectations || sessionZeroExpectations);
@@ -243,6 +254,38 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
     }
   };
 
+  // Create or sync real campaign calendar for Step 3
+  const createOrUpdateWizardCalendar = async (campaignId: string) => {
+    const existingCals = await api.getCampaignCalendars(campaignId).catch(() => []);
+    let cal = existingCals.find(c => c.scopeId === campaignId || c.scopeType === 'campaign');
+    const template = calendarSource === 'gathic'
+      ? TEMPLATE_GATHIC
+      : calendarSource === 'scratch'
+        ? TEMPLATE_SIMPLE_STARTER
+        : TEMPLATE_SHAHROOZAN_ZORVANIA;
+
+    const chosenName = calendarName.trim() || template.name;
+    const chosenYear = Number(calendarYear) || template.startYear;
+    const chosenEra = calendarEra.trim() || template.eraLabel;
+
+    if (!cal) {
+      const calData = createCampaignCalendarFromTemplate(campaignId, template, {
+        name: chosenName,
+        startYear: chosenYear,
+        eraLabel: chosenEra
+      });
+      cal = await api.createCampaignCalendar(campaignId, calData);
+      await api.setCampaignTime(campaignId, { epochDay: 0, calendarId: cal.id });
+    } else {
+      await api.updateCampaignCalendar(campaignId, cal.id, {
+        name: chosenName,
+        startYear: chosenYear,
+        eraLabel: chosenEra
+      });
+    }
+    return cal;
+  };
+
   // Autosave Draft
   const saveCurrentDraft = async (targetStep = step) => {
     if (!activeCampaign) return;
@@ -268,6 +311,10 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
       backstoryVisibility,
       diceVisibility,
       houseRules: houseRulesText,
+      calendarSource,
+      calendarName,
+      calendarYear,
+      calendarEra,
       factions: factionsList,
       castNpcs,
       lootItems,
@@ -298,6 +345,16 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
   };
 
   const handleNextStep = async () => {
+    if (step === 3 && activeCampaign) {
+      setIsSavingDraft(true);
+      try {
+        await createOrUpdateWizardCalendar(activeCampaign.id);
+      } catch (err: any) {
+        setStatusMessage(err?.message || 'خطا در ثبت و اعتبارسنجی تقویم کمپین');
+        setIsSavingDraft(false);
+        return; // Halt/rollback! Do not advance past Step 3 if calendar creation fails
+      }
+    }
     await saveCurrentDraft(step + 1);
     setStep(prev => Math.min(prev + 1, 8));
   };
@@ -312,6 +369,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
     if (!activeCampaign) return;
     setIsLaunching(true);
     try {
+      await createOrUpdateWizardCalendar(activeCampaign.id);
       await saveCurrentDraft(8);
       const launched = await api.launchCampaign(activeCampaign.id);
 
@@ -534,37 +592,98 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
           <div className="space-y-4">
             <h3 className="text-sm font-black text-accent-hover">گام 3: دنیا، گاه‌شمار و جناح‌ها</h3>
 
-            <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-2">
+            <div className="p-3 rounded-xl bg-surface-2 border border-border space-y-3">
               <span className="text-xs font-bold text-text-primary block flex items-center gap-1.5">
                 <Calendar className="w-4 h-4 text-accent-hover" />
                 <span>گاه‌شمار کمپین</span>
               </span>
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                 <Button
                   type="button"
-                  onClick={() => setCalendarSource('zorvania')}
+                  onClick={() => {
+                    setCalendarSource('zorvania');
+                    setCalendarName('گاه‌شمار شاه‌روزان (زروانیا)');
+                    setCalendarYear(1500);
+                    setCalendarEra('پ.ر.ن');
+                  }}
                   className={`p-2.5 rounded-xl border text-start transition ${
                     calendarSource === 'zorvania'
                       ? 'border-accent bg-accent/10 text-accent-hover font-bold'
                       : 'border-border bg-bg text-text-muted'
                   }`}
                 >
-                  <div className="font-bold">گاه‌شمار شاه‌روزان زروانیا</div>
-                  <div className="text-xs text-text-muted mt-0.5">12 ماه 30 روزه + 5 روز برون‌گاه اساطیری</div>
+                  <div className="font-bold">شاه‌روزان زروانیا</div>
+                  <div className="text-xs text-text-muted mt-0.5">۱۲ ماه ۳۰ روزه + ۵ روز برون‌گاه اساطیری</div>
                 </Button>
 
                 <Button
                   type="button"
-                  onClick={() => setCalendarSource('scratch')}
+                  onClick={() => {
+                    setCalendarSource('gathic');
+                    setCalendarName('گاه‌شمار گاتایی (اوستایی کهن)');
+                    setCalendarYear(1000);
+                    setCalendarEra('گ.و');
+                  }}
+                  className={`p-2.5 rounded-xl border text-start transition ${
+                    calendarSource === 'gathic'
+                      ? 'border-accent bg-accent/10 text-accent-hover font-bold'
+                      : 'border-border bg-bg text-text-muted'
+                  }`}
+                >
+                  <div className="font-bold">گاه‌شمار گاتایی</div>
+                  <div className="text-xs text-text-muted mt-0.5">۱۲ ماه ۳۰ روزه + ۵ گاه گاسان اوستایی</div>
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setCalendarSource('scratch');
+                    setCalendarName('گاه‌شمار کمپین');
+                    setCalendarYear(1);
+                    setCalendarEra('س.ت');
+                  }}
                   className={`p-2.5 rounded-xl border text-start transition ${
                     calendarSource === 'scratch'
                       ? 'border-accent bg-accent/10 text-accent-hover font-bold'
                       : 'border-border bg-bg text-text-muted'
                   }`}
                 >
-                  <div className="font-bold">گاه‌شمار اختصاصی از صفر</div>
-                  <div className="text-xs text-text-muted mt-0.5">تعریف ماه‌ها و جشن‌های دلخواه</div>
+                  <div className="font-bold">گاه‌شمار از صفر</div>
+                  <div className="text-xs text-text-muted mt-0.5">استارتر پایه‌ای ۱۲ ماهه آماده شخصی‌سازی</div>
                 </Button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-border">
+                <div>
+                  <label className="block text-xs font-bold text-text-primary mb-1">نام گاه‌شمار</label>
+                  <Input noWrapper
+                    type="text"
+                    value={calendarName}
+                    onChange={e => setCalendarName(e.target.value)}
+                    placeholder="نام گاه‌شمار..."
+                    className="w-full bg-bg border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-text-primary mb-1">سال اولیه</label>
+                  <Input noWrapper
+                    type="number"
+                    value={calendarYear}
+                    onChange={e => setCalendarYear(Number(e.target.value) || 0)}
+                    placeholder="1500"
+                    className="w-full bg-bg border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-text-primary mb-1">برچسب دوران (Era)</label>
+                  <Input noWrapper
+                    type="text"
+                    value={calendarEra}
+                    onChange={e => setCalendarEra(e.target.value)}
+                    placeholder="پ.ر.ن"
+                    className="w-full bg-bg border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent"
+                  />
+                </div>
               </div>
             </div>
 

@@ -44,6 +44,7 @@ export interface CloneEntityBundle {
   campaignDocs: CampaignDoc[];
   calendars: GenericCalendarData[];
   genericCalendars?: GenericCalendarData[];
+  campaignTime?: { epochDay: number; calendarId?: string; primaryCalendarId?: string };
   ruleSets: RuleSet[];
 }
 
@@ -796,7 +797,10 @@ export function executeClone(
         if (!orig) break;
         const copy: GenericCalendarData = {
           ...orig,
-          id: newId
+          id: newId,
+          scopeType: request.target.scopeType,
+          scopeId: request.target.scopeId,
+          sourceId: orig.sourceId || orig.id
         };
         created.calendars.push(copy);
         break;
@@ -815,6 +819,17 @@ export function executeClone(
         break;
       }
     }
+  }
+
+  // Preserve campaign time and remapped primary calendar
+  if (sourceBundle.campaignTime && request.target.scopeType === 'campaign') {
+    const origCalId = sourceBundle.campaignTime.primaryCalendarId || sourceBundle.campaignTime.calendarId;
+    const remappedCalId = (origCalId && idMap[origCalId]) ? idMap[origCalId] : (created.calendars[0]?.id || origCalId);
+    created.campaignTime = {
+      epochDay: sourceBundle.campaignTime.epochDay || 0,
+      primaryCalendarId: remappedCalId,
+      calendarId: remappedCalId
+    };
   }
 
   manifest.idMap = idMap;

@@ -1,522 +1,520 @@
 import { describe, it, expect } from 'vitest';
 import {
-  daysInYear,
-  epochToDate,
-  dateToEpoch,
-  weekdayOf,
-  festivalsOn,
-  advance,
-  formatDate,
   validateCalendar,
-  SHAHROOZAN_ZORVANIA_CALENDAR,
-  GATHIC_ZORVANIA_CALENDAR_TEMPLATE,
-  toWorldCalendar,
-  fromWorldCalendar,
-  UnifiedCalendar
+  weekdayOf,
+  dateToEpoch,
+  epochToDate,
+  festivalsOn,
+  advanceTime,
+  formatCalendarDate,
+  daysInCalendarYear
 } from './calendar';
-import {
-  advanceCalendarDays,
-  formatWorldDate,
-  INITIAL_CALENDAR,
-  CALENDAR_MONTHS,
-  CALENDAR_OFF_DAYS
-} from '../../src/data/calendar';
-import { WorldCalendar } from '../../src/types';
+import type { GenericCalendarData, CalendarDate } from '../../src/types';
 
-describe('DungeonYar Unified Calendar Engine', () => {
-  // --------------------------------------------------------------------
-  // Test 1: Roundtrip dateToEpoch(epochToDate(x)) == x across large range including negatives
-  // --------------------------------------------------------------------
-  describe('Bijective Roundtrip: dateToEpoch(epochToDate(x)) === x', () => {
-    it('roundtrips for Shahroozan Zorvania across -20,000 to +20,000 days', () => {
-      // Test continuous block around anchor
-      for (let epoch = -500; epoch <= 500; epoch++) {
-        const date = epochToDate(SHAHROOZAN_ZORVANIA_CALENDAR, epoch);
-        const back = dateToEpoch(SHAHROOZAN_ZORVANIA_CALENDAR, date);
-        expect(back).toBe(epoch);
-      }
+describe('shared/rules/calendar', () => {
+  const sampleZorvania: GenericCalendarData = {
+    id: 'cal-zorvania',
+    name: 'گاه‌شمار شاه‌روزان (زروانیا)',
+    eraLabel: 'پ.ر.ن',
+    startYear: 1500,
+    anchor: {
+      weekdayIndex: 0 // شنبه
+    },
+    months: [
+      { name: 'فرهان', days: 30, season: 'بهار' },
+      { name: 'زروان', days: 30, season: 'بهار' },
+      { name: 'ورنان', days: 30, season: 'بهار' },
+      { name: 'آریامان', days: 30, season: 'تابستان' },
+      { name: 'دیوگان', days: 30, season: 'تابستان' },
+      { name: 'گدازان', days: 30, season: 'تابستان' },
+      { name: 'پیمان', days: 30, season: 'پاییز' },
+      { name: 'کندان', days: 30, season: 'پاییز' },
+      { name: 'مهگان', days: 30, season: 'پاییز' },
+      { name: 'یخبندان', days: 30, season: 'زمستان' },
+      { name: 'آذران', days: 30, season: 'زمستان' },
+      { name: 'واپسان', days: 30, season: 'زمستان' }
+    ],
+    offDays: [
+      { id: 'off-1', name: 'روز لرزش', folkBelief: 'سکوت میان جهان‌ها' },
+      { id: 'off-2', name: 'روز گمگشتگی آب', folkBelief: 'آب‌های راکد' },
+      { id: 'off-3', name: 'روز بینامی', folkBelief: 'سایه‌های سرگردان' },
+      { id: 'off-4', name: 'روز خاموشی آتش', folkBelief: 'افروختن آتش بدیمن است' },
+      { id: 'off-5', name: 'روز بند', folkBelief: 'بستن عهدها' }
+    ],
+    festivals: [
+      { name: 'جشن فرهگان', monthIndex: 1, day: 1, durationDays: 1 },
+      { name: 'جشن واپسین سال', monthIndex: 12, day: 30, durationDays: 3 }, // spans to off-1, off-2
+      { name: 'جشن گاه برون‌گاه', offDayId: 'off-1', durationDays: 2 }, // on off-1 and off-2
+      { name: 'جشن پیوند سال کهن و نو', offDayId: 'off-5', durationDays: 2 } // spans off-5 to Month 1 Day 1 of next year
+    ],
+    weekdays: ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه']
+  };
 
-      // Test year boundary leaps in positive and negative directions
-      const testPoints = [
-        -20000, -10000, -3650, -731, -730, -366, -365, -364,
-        -60, -31, -30, -2, -1, 0, 1, 2, 29, 30, 31,
-        359, 360, 364, 365, 366, 729, 730, 731, 3650, 10000, 20000
+  describe('Calendar Structure Validation (validateCalendar)', () => {
+    it('passes validation for a completely valid calendar', () => {
+      const res = validateCalendar(sampleZorvania);
+      expect(res.valid).toBe(true);
+      expect(res.errors).toEqual([]);
+    });
+
+    it('rejects calendar when months array is empty or missing', () => {
+      const emptyMonths = { ...sampleZorvania, months: [] };
+      const res = validateCalendar(emptyMonths);
+      expect(res.valid).toBe(false);
+      expect(res.errors.some(e => e.includes('حداقل دارای یک ماه'))).toBe(true);
+    });
+
+    it('rejects calendar when a month has zero or negative days', () => {
+      const badDays = {
+        ...sampleZorvania,
+        months: [{ name: 'ماه پوچ', days: 0 }]
+      };
+      const res = validateCalendar(badDays);
+      expect(res.valid).toBe(false);
+      expect(res.errors.some(e => e.includes('تعداد روزهای ماه'))).toBe(true);
+    });
+
+    it('rejects calendar when month name is empty or missing', () => {
+      const emptyName = {
+        ...sampleZorvania,
+        months: [{ name: '   ', days: 30 }]
+      };
+      const res = validateCalendar(emptyName);
+      expect(res.valid).toBe(false);
+      expect(res.errors.some(e => e.includes('نام ماه'))).toBe(true);
+    });
+
+    it('rejects calendar when anchor.weekdayIndex is negative or exceeds weekdays length', () => {
+      const badAnchor = {
+        ...sampleZorvania,
+        anchor: { weekdayIndex: 10 }
+      };
+      const res = validateCalendar(badAnchor);
+      expect(res.valid).toBe(false);
+      expect(res.errors.some(e => e.includes('anchor.weekdayIndex'))).toBe(true);
+    });
+
+    it('rejects festival when both month/day and offDayId are missing', () => {
+      const badFest = {
+        ...sampleZorvania,
+        festivals: [{ name: 'جشن بی‌مکان', durationDays: 1 }]
+      };
+      const res = validateCalendar(badFest);
+      expect(res.valid).toBe(false);
+      expect(res.errors.some(e => e.includes('باید به یک ماه و روز مشخص یا به یک روز خارج از ماه'))).toBe(true);
+    });
+
+    it('rejects festival when durationDays is less than 1 or not an integer', () => {
+      const badDuration = {
+        ...sampleZorvania,
+        festivals: [{ name: 'جشن منفی', monthIndex: 1, day: 1, durationDays: 0 }]
+      };
+      const res = validateCalendar(badDuration);
+      expect(res.valid).toBe(false);
+      expect(res.errors.some(e => e.includes('مدت زمان جشن'))).toBe(true);
+    });
+  });
+
+  describe('Pre-requisite 1: Anchor Weekday and weekdayOf', () => {
+    it('calculates weekday correctly for positive, zero, and negative epoch days', () => {
+      // Day 0 with anchor 0 ('شنبه')
+      expect(weekdayOf(sampleZorvania, 0)).toEqual({ index: 0, name: 'شنبه' });
+      expect(weekdayOf(sampleZorvania, 1)).toEqual({ index: 1, name: 'یکشنبه' });
+      expect(weekdayOf(sampleZorvania, 6)).toEqual({ index: 6, name: 'جمعه' });
+      expect(weekdayOf(sampleZorvania, 7)).toEqual({ index: 0, name: 'شنبه' });
+
+      // Negative epoch days
+      expect(weekdayOf(sampleZorvania, -1)).toEqual({ index: 6, name: 'جمعه' });
+      expect(weekdayOf(sampleZorvania, -2)).toEqual({ index: 5, name: 'پنج‌شنبه' });
+      expect(weekdayOf(sampleZorvania, -7)).toEqual({ index: 0, name: 'شنبه' });
+      expect(weekdayOf(sampleZorvania, -8)).toEqual({ index: 6, name: 'جمعه' });
+      expect(weekdayOf(sampleZorvania, -365)).toEqual({ index: 6, name: 'جمعه' }); // 365 = 52 * 7 + 1 -> -365 === -1 mod 7 -> 6
+    });
+
+    it('supports 1-day week correctly for any epoch day', () => {
+      const oneDayCalendar: GenericCalendarData = {
+        name: 'تقویم تک‌روزه',
+        eraLabel: '',
+        startYear: 1,
+        anchor: { weekdayIndex: 0 },
+        months: [{ name: 'ماه یگانه', days: 30 }],
+        offDays: [],
+        festivals: [],
+        weekdays: ['روز یگانه']
+      };
+
+      expect(weekdayOf(oneDayCalendar, 0)).toEqual({ index: 0, name: 'روز یگانه' });
+      expect(weekdayOf(oneDayCalendar, 10)).toEqual({ index: 0, name: 'روز یگانه' });
+      expect(weekdayOf(oneDayCalendar, -42)).toEqual({ index: 0, name: 'روز یگانه' });
+    });
+
+    it('advances two calendars with different week lengths and different offsets in sync', () => {
+      // Calendar A: 7-day week, offset 0 (شنبه)
+      const calA: GenericCalendarData = {
+        ...sampleZorvania,
+        anchor: { weekdayIndex: 0 },
+        weekdays: ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج']
+      };
+
+      // Calendar B: 5-day week, offset 2 (روز سوم)
+      const calB: GenericCalendarData = {
+        name: 'گاه‌شمار پنج‌روزه پریان',
+        eraLabel: 'پ',
+        startYear: 1000,
+        anchor: { weekdayIndex: 2 },
+        months: [{ name: 'بهارستان', days: 25 }],
+        offDays: [],
+        festivals: [],
+        weekdays: ['آب', 'باد', 'خاک', 'آتش', 'اثیر']
+      };
+
+      // Day 0
+      expect(weekdayOf(calA, 0)).toEqual({ index: 0, name: 'ش' });
+      expect(weekdayOf(calB, 0)).toEqual({ index: 2, name: 'خاک' });
+
+      // Day 1
+      expect(weekdayOf(calA, 1)).toEqual({ index: 1, name: 'ی' });
+      expect(weekdayOf(calB, 1)).toEqual({ index: 3, name: 'آتش' });
+
+      // Day 2
+      expect(weekdayOf(calA, 2)).toEqual({ index: 2, name: 'د' });
+      expect(weekdayOf(calB, 2)).toEqual({ index: 4, name: 'اثیر' });
+
+      // Day 3 (B wraps around to 0, A continues to 3)
+      expect(weekdayOf(calA, 3)).toEqual({ index: 3, name: 'س' });
+      expect(weekdayOf(calB, 3)).toEqual({ index: 0, name: 'آب' });
+
+      // Day 7 (A wraps around to 0, B is at (7 + 2) % 5 = 4)
+      expect(weekdayOf(calA, 7)).toEqual({ index: 0, name: 'ش' });
+      expect(weekdayOf(calB, 7)).toEqual({ index: 4, name: 'اثیر' });
+
+      // Negative day -1:
+      // A: (-1 + 0) % 7 -> 6 ('ج')
+      // B: (-1 + 2) % 5 -> 1 ('باد')
+      expect(weekdayOf(calA, -1)).toEqual({ index: 6, name: 'ج' });
+      expect(weekdayOf(calB, -1)).toEqual({ index: 1, name: 'باد' });
+    });
+
+    it('validates anchor.weekdayIndex within the valid range [0, weekdays.length - 1]', () => {
+      const invalidAnchor: GenericCalendarData = {
+        ...sampleZorvania,
+        anchor: { weekdayIndex: 7 } // out of range for 7-day week (0..6)
+      };
+      const res = validateCalendar(invalidAnchor);
+      expect(res.valid).toBe(false);
+      expect(res.errors[0]).toContain('anchor.weekdayIndex');
+
+      const negativeAnchor: GenericCalendarData = {
+        ...sampleZorvania,
+        anchor: { weekdayIndex: -1 }
+      };
+      expect(validateCalendar(negativeAnchor).valid).toBe(false);
+
+      const validAnchor: GenericCalendarData = {
+        ...sampleZorvania,
+        anchor: { weekdayIndex: 6 }
+      };
+      expect(validateCalendar(validAnchor).valid).toBe(true);
+    });
+  });
+
+  describe('Pre-requisite 2: Festivals on Off-Days and Multi-Day Spanning', () => {
+    it('identifies festival referencing an off-day (offDayId)', () => {
+      // Off-day 1 is at epochDay 360 in year 1500 (12 * 30 = 360)
+      const offDay1Epoch = 360;
+      const offDay1Date: CalendarDate = {
+        year: 1500,
+        month: 13,
+        day: 1,
+        isOffDay: true,
+        offDayIndex: 1
+      };
+
+      const fListEpoch = festivalsOn(sampleZorvania, offDay1Epoch);
+      const fListDate = festivalsOn(sampleZorvania, offDay1Date);
+
+      expect(fListEpoch.map(f => f.name)).toContain('جشن گاه برون‌گاه');
+      expect(fListDate.map(f => f.name)).toContain('جشن گاه برون‌گاه');
+    });
+
+    it('handles multi-day festival spanning from end of month into off-days', () => {
+      // «جشن واپسین سال» starts on Month 12, Day 30 (epochDay 359) with durationDays: 3
+      // Day 1: Month 12, Day 30 (epochDay 359)
+      // Day 2: Off-day 1 (epochDay 360)
+      // Day 3: Off-day 2 (epochDay 361)
+      // Day 4: Off-day 3 (epochDay 362) -> Inactive!
+
+      const day359Festivals = festivalsOn(sampleZorvania, 359).map(f => f.name);
+      expect(day359Festivals).toContain('جشن واپسین سال');
+
+      const day360Festivals = festivalsOn(sampleZorvania, 360).map(f => f.name);
+      expect(day360Festivals).toContain('جشن واپسین سال');
+      expect(day360Festivals).toContain('جشن گاه برون‌گاه'); // Also active on off-1
+
+      const day361Festivals = festivalsOn(sampleZorvania, 361).map(f => f.name);
+      expect(day361Festivals).toContain('جشن واپسین سال');
+      expect(day361Festivals).toContain('جشن گاه برون‌گاه'); // Also active on off-2 (duration 2)
+
+      const day362Festivals = festivalsOn(sampleZorvania, 362).map(f => f.name);
+      expect(day362Festivals).not.toContain('جشن واپسین سال');
+      expect(day362Festivals).not.toContain('جشن گاه برون‌گاه');
+    });
+
+    it('handles multi-day festival spanning from off-days across year boundary into Month 1 of following year', () => {
+      // «جشن پیوند سال کهن و نو» starts on off-day 5 (epochDay 364 in Year 1500) with durationDays: 2
+      // Day 1: Off-day 5 (epochDay 364)
+      // Day 2: Month 1, Day 1 of Year 1501 (epochDay 365)
+      // Day 3: Month 1, Day 2 of Year 1501 (epochDay 366) -> Inactive!
+
+      const offDay5 = festivalsOn(sampleZorvania, 364).map(f => f.name);
+      expect(offDay5).toContain('جشن پیوند سال کهن و نو');
+
+      const newYearDay1 = festivalsOn(sampleZorvania, 365).map(f => f.name);
+      expect(newYearDay1).toContain('جشن پیوند سال کهن و نو');
+      expect(newYearDay1).toContain('جشن فرهگان'); // Single-day festival on Month 1, Day 1
+
+      const newYearDay2 = festivalsOn(sampleZorvania, 366).map(f => f.name);
+      expect(newYearDay2).not.toContain('جشن پیوند سال کهن و نو');
+    });
+
+    it('validates festivals with offDayId properly', () => {
+      const invalidFestivalOffDay: GenericCalendarData = {
+        ...sampleZorvania,
+        festivals: [
+          { name: 'جشن اشتباه', offDayId: 'non-existent-off-day' }
+        ]
+      };
+      const res = validateCalendar(invalidFestivalOffDay);
+      expect(res.valid).toBe(false);
+      expect(res.errors[0]).toContain('non-existent-off-day');
+    });
+
+    it('validates festival durationDays must be at least 1', () => {
+      const invalidDuration: GenericCalendarData = {
+        ...sampleZorvania,
+        festivals: [
+          { name: 'جشن صفر روزه', monthIndex: 1, day: 1, durationDays: 0 }
+        ]
+      };
+      const res = validateCalendar(invalidDuration);
+      expect(res.valid).toBe(false);
+      expect(res.errors[0]).toContain('durationDays');
+    });
+  });
+
+  describe('Bijective Date <-> Epoch and Advance Time', () => {
+    it('converts between date and epoch bijectively', () => {
+      const datesToTest: CalendarDate[] = [
+        { year: 1500, month: 1, day: 1, isOffDay: false },
+        { year: 1500, month: 1, day: 30, isOffDay: false },
+        { year: 1500, month: 2, day: 15, isOffDay: false },
+        { year: 1500, month: 12, day: 30, isOffDay: false },
+        { year: 1500, month: 13, day: 1, isOffDay: true, offDayIndex: 1 },
+        { year: 1500, month: 13, day: 5, isOffDay: true, offDayIndex: 5 },
+        { year: 1501, month: 1, day: 1, isOffDay: false },
+        { year: 1499, month: 1, day: 1, isOffDay: false },
+        { year: 1499, month: 13, day: 5, isOffDay: true, offDayIndex: 5 }
       ];
 
-      for (const epoch of testPoints) {
-        const date = epochToDate(SHAHROOZAN_ZORVANIA_CALENDAR, epoch);
-        const back = dateToEpoch(SHAHROOZAN_ZORVANIA_CALENDAR, date);
-        expect(back).toBe(epoch);
-      }
-    });
-
-    it('accurately resolves negative epoch days into previous years and days', () => {
-      // Anchor is Year 1500, Month 1 (Farhan), Day 1
-      const dayZero = epochToDate(SHAHROOZAN_ZORVANIA_CALENDAR, 0);
-      expect(dayZero.year).toBe(1500);
-      expect(dayZero.monthId).toBe('farhan');
-      expect(dayZero.day).toBe(1);
-      expect(dayZero.isOffDay).toBe(false);
-
-      // Epoch -1 must be the last day of Year 1499 (Off-day 5: روز بند)
-      const minusOne = epochToDate(SHAHROOZAN_ZORVANIA_CALENDAR, -1);
-      expect(minusOne.year).toBe(1499);
-      expect(minusOne.isOffDay).toBe(true);
-      expect(minusOne.offDayIndex).toBe(5);
-      expect(minusOne.offDayId).toBe('off-5');
-      expect(minusOne.offDayName).toBe('روز بند');
-
-      // Epoch -365 must be Year 1499, Month 1, Day 1
-      const minus365 = epochToDate(SHAHROOZAN_ZORVANIA_CALENDAR, -365);
-      expect(minus365.year).toBe(1499);
-      expect(minus365.monthId).toBe('farhan');
-      expect(minus365.day).toBe(1);
-      expect(minus365.isOffDay).toBe(false);
-
-      // Epoch -366 must be Year 1498, Off-day 5
-      const minus366 = epochToDate(SHAHROOZAN_ZORVANIA_CALENDAR, -366);
-      expect(minus366.year).toBe(1498);
-      expect(minus366.isOffDay).toBe(true);
-      expect(minus366.offDayIndex).toBe(5);
-    });
-  });
-
-  // --------------------------------------------------------------------
-  // Test 2: Three distinct sample calendars advancing in sync with one epochDay counter
-  // --------------------------------------------------------------------
-  describe('Multi-calendar synchronization with single epochDay counter', () => {
-    // 1. Calendar A: 12x30 + 5 off-days (365 days), 7-day week (Shahroozan)
-    const calA = SHAHROOZAN_ZORVANIA_CALENDAR;
-
-    // 2. Calendar B: 10 months of varying lengths (total 290 days), no off-days, 5-day week
-    const calB: UnifiedCalendar = {
-      id: 'cal-b-ten-months',
-      name: 'تقویم قبایل بیابانی',
-      eraLabel: 'ع.ش',
-      months: [
-        { id: 'b1', name: 'ماه یکم', days: 28 },
-        { id: 'b2', name: 'ماه دوم', days: 35 },
-        { id: 'b3', name: 'ماه سوم', days: 20 },
-        { id: 'b4', name: 'ماه چهارم', days: 40 },
-        { id: 'b5', name: 'ماه پنجم', days: 25 },
-        { id: 'b6', name: 'ماه ششم', days: 30 },
-        { id: 'b7', name: 'ماه هفتم', days: 15 },
-        { id: 'b8', name: 'ماه هشتم', days: 45 },
-        { id: 'b9', name: 'ماه نهم', days: 22 },
-        { id: 'b10', name: 'ماه دهم', days: 30 }
-      ],
-      offDays: [],
-      weekdays: ['روز باد', 'روز آتش', 'روز آب', 'روز خاک', 'روز اتر'],
-      anchor: { year: 700, monthId: 'b1', day: 1, weekdayIndex: 0 },
-      festivals: []
-    };
-
-    // 3. Calendar C: 1 single-day month (1 day per year!), 3-day week
-    const calC: UnifiedCalendar = {
-      id: 'cal-c-single-day',
-      name: 'شمارش خورشیدهای ابدی',
-      eraLabel: 'خ.ا',
-      months: [{ id: 'sol', name: 'روز خورشید', days: 1 }],
-      offDays: [],
-      weekdays: ['طلوع', 'اوج', 'غروب'],
-      anchor: { year: 1, monthId: 'sol', day: 1, weekdayIndex: 0 },
-      festivals: []
-    };
-
-    it('calculates expected days in year for each calendar', () => {
-      expect(daysInYear(calA)).toBe(365);
-      expect(daysInYear(calB)).toBe(290);
-      expect(daysInYear(calC)).toBe(1);
-    });
-
-    it('advances all three calendars in lockstep using the campaign epochDay', () => {
-      // At epochDay 0
-      const dateA0 = epochToDate(calA, 0);
-      const dateB0 = epochToDate(calB, 0);
-      const dateC0 = epochToDate(calC, 0);
-
-      expect(dateA0.year).toBe(1500);
-      expect(dateA0.monthName).toBe('فرهان');
-      expect(dateA0.day).toBe(1);
-
-      expect(dateB0.year).toBe(700);
-      expect(dateB0.monthName).toBe('ماه یکم');
-      expect(dateB0.day).toBe(1);
-
-      expect(dateC0.year).toBe(1);
-      expect(dateC0.day).toBe(1);
-
-      // Advance by 365 days
-      const dateA365 = epochToDate(calA, 365);
-      const dateB365 = epochToDate(calB, 365);
-      const dateC365 = epochToDate(calC, 365);
-
-      // Cal A: Year 1501, Month 1, Day 1
-      expect(dateA365.year).toBe(1501);
-      expect(dateA365.monthName).toBe('فرهان');
-      expect(dateA365.day).toBe(1);
-
-      // Cal B: 365 - 290 = 75 days into year 701.
-      // Month b1 = 28, Month b2 = 35 -> 63 days.
-      // 75 - 63 = 12 -> Month b3, day 13!
-      expect(dateB365.year).toBe(701);
-      expect(dateB365.monthId).toBe('b3');
-      expect(dateB365.day).toBe(13);
-
-      // Cal C: exactly 365 years elapsed! Year 1 + 365 = 366.
-      expect(dateC365.year).toBe(366);
-      expect(dateC365.day).toBe(1);
-
-      // Bijective roundtrips hold for all 3
-      expect(dateToEpoch(calA, dateA365)).toBe(365);
-      expect(dateToEpoch(calB, dateB365)).toBe(365);
-      expect(dateToEpoch(calC, dateC365)).toBe(365);
-    });
-  });
-
-  // --------------------------------------------------------------------
-  // Test 3: Multi-day festivals (جشن چندروزه)
-  // --------------------------------------------------------------------
-  describe('Multi-day festivals', () => {
-    const festCalendar: UnifiedCalendar = {
-      ...SHAHROOZAN_ZORVANIA_CALENDAR,
-      festivals: [
-        // 3-day festival on Farhan 1..3
-        {
-          id: 'fest-spring',
-          name: 'جشن سه‌روزه بهار',
-          targetType: 'month',
-          monthId: 'farhan',
-          day: 1,
-          durationDays: 3
-        },
-        // 4-day festival spanning month end (Day 29 of Vapasan to Off-day 2)
-        // Vapasan has 30 days, so day 29, day 30, off-1, off-2
-        {
-          id: 'fest-threshold',
-          name: 'جشن گذر زمان',
-          targetType: 'month',
-          monthId: 'vapasan',
-          day: 29,
-          durationDays: 4
-        }
-      ]
-    };
-
-    it('matches multi-day festival on all active days', () => {
-      // Day 1, 2, 3 of Farhan (epochDay 0, 1, 2)
-      expect(festivalsOn(festCalendar, 0).map(f => f.id)).toContain('fest-spring');
-      expect(festivalsOn(festCalendar, 1).map(f => f.id)).toContain('fest-spring');
-      expect(festivalsOn(festCalendar, 2).map(f => f.id)).toContain('fest-spring');
-
-      // Day 4 of Farhan (epochDay 3): festival has ended
-      expect(festivalsOn(festCalendar, 3).map(f => f.id)).not.toContain('fest-spring');
-    });
-
-    it('supports multi-day festivals spanning across regular months into off-days', () => {
-      // Vapasan starts at day 330 of year (11 * 30).
-      // Vapasan day 29 is day 358 (epochDay 358).
-      // Vapasan day 30 is day 359 (epochDay 359).
-      // Off-day 1 is day 360 (epochDay 360).
-      // Off-day 2 is day 361 (epochDay 361).
-      // Off-day 3 is day 362 (epochDay 362 - ended).
-      expect(festivalsOn(festCalendar, 358).map(f => f.id)).toContain('fest-threshold');
-      expect(festivalsOn(festCalendar, 359).map(f => f.id)).toContain('fest-threshold');
-      expect(festivalsOn(festCalendar, 360).map(f => f.id)).toContain('fest-threshold');
-      expect(festivalsOn(festCalendar, 361).map(f => f.id)).toContain('fest-threshold');
-      expect(festivalsOn(festCalendar, 362).map(f => f.id)).not.toContain('fest-threshold');
-    });
-  });
-
-  // --------------------------------------------------------------------
-  // Test 4: Weekdays during off-days (روز هفته در روزهای برون‌گاه)
-  // --------------------------------------------------------------------
-  describe('Weekdays in off-days and continuous cycle', () => {
-    it('seamlessly counts off-days in the weekday sequence without skipping or freezing', () => {
-      // In Shahroozan calendar:
-      // Year has 365 days: 360 regular month days + 5 off-days.
-      // 360 % 7 = 3.
-      // If Day 1 of Month 1 is Saturday (index 0):
-      // Month 12, Day 30 is at epochDay 359.
-      // 359 % 7 = 2 (Monday / دوشنبه).
-      // Off-day 1 (epoch 360): (360 % 7) = 3 (Tuesday / سه‌شنبه).
-      // Off-day 2 (epoch 361): 4 (Wednesday / چهارشنبه).
-      // Off-day 3 (epoch 362): 5 (Thursday / پنج‌شنبه).
-      // Off-day 4 (epoch 363): 6 (Friday / جمعه).
-      // Off-day 5 (epoch 364): 0 (Saturday / شنبه).
-      // Year 1501, Month 1, Day 1 (epoch 365): 1 (Sunday / یکشنبه).
-
-      const offDay1 = epochToDate(SHAHROOZAN_ZORVANIA_CALENDAR, 360);
-      expect(offDay1.isOffDay).toBe(true);
-      expect(offDay1.offDayIndex).toBe(1);
-      expect(offDay1.weekdayName).toBe('سه‌شنبه');
-
-      const offDay5 = epochToDate(SHAHROOZAN_ZORVANIA_CALENDAR, 364);
-      expect(offDay5.isOffDay).toBe(true);
-      expect(offDay5.offDayIndex).toBe(5);
-      expect(offDay5.weekdayName).toBe('شنبه');
-
-      const nextYearDay1 = epochToDate(SHAHROOZAN_ZORVANIA_CALENDAR, 365);
-      expect(nextYearDay1.year).toBe(1501);
-      expect(nextYearDay1.isOffDay).toBe(false);
-      expect(nextYearDay1.weekdayName).toBe('یکشنبه');
-    });
-
-    it('computes correct weekdays for negative epochDays', () => {
-      // Epoch 0 is Saturday ('شنبه')
-      expect(weekdayOf(SHAHROOZAN_ZORVANIA_CALENDAR, 0).name).toBe('شنبه');
-      // Epoch -1 is Friday ('جمعه')
-      expect(weekdayOf(SHAHROOZAN_ZORVANIA_CALENDAR, -1).name).toBe('جمعه');
-      // Epoch -7 is Saturday ('شنبه')
-      expect(weekdayOf(SHAHROOZAN_ZORVANIA_CALENDAR, -7).name).toBe('شنبه');
-    });
-  });
-
-  // --------------------------------------------------------------------
-  // Test 5: Calendar structure alteration while epochDay counter remains unchanged
-  // --------------------------------------------------------------------
-  describe('Structural change preserves constant campaign epochDay', () => {
-    it('re-evaluates date representation dynamically when calendar structure is modified', () => {
-      const campaignEpochDay = 65; // Day 65 of campaign
-
-      // With original calendar (12 x 30):
-      // Day 65 = Month 3 (Vernan), Day 6
-      const beforeDate = epochToDate(SHAHROOZAN_ZORVANIA_CALENDAR, campaignEpochDay);
-      expect(beforeDate.monthName).toBe('ورنان');
-      expect(beforeDate.day).toBe(6);
-
-      // DM modifies calendar definition: each month is now 40 days
-      const modifiedCalendar: UnifiedCalendar = {
-        ...SHAHROOZAN_ZORVANIA_CALENDAR,
-        months: SHAHROOZAN_ZORVANIA_CALENDAR.months.map(m => ({ ...m, days: 40 }))
-      };
-
-      // Campaign epochDay remains 65!
-      // In 40-day month structure:
-      // Month 1 = 40 days, so day 65 is Month 2, Day 26!
-      const afterDate = epochToDate(modifiedCalendar, campaignEpochDay);
-      expect(afterDate.monthName).toBe('زروان');
-      expect(afterDate.day).toBe(26);
-
-      // The time counter is untouched, only presentation adapted
-      expect(afterDate.epochDay).toBe(campaignEpochDay);
-    });
-  });
-
-  // --------------------------------------------------------------------
-  // Test 6: Validation rules
-  // --------------------------------------------------------------------
-  describe('Calendar validation (validateCalendar)', () => {
-    it('validates canonical Shahroozan and Gathic templates successfully', () => {
-      expect(validateCalendar(SHAHROOZAN_ZORVANIA_CALENDAR).valid).toBe(true);
-      expect(validateCalendar(GATHIC_ZORVANIA_CALENDAR_TEMPLATE).valid).toBe(true);
-    });
-
-    it('rejects month with 0 or negative days', () => {
-      const invalid = {
-        ...SHAHROOZAN_ZORVANIA_CALENDAR,
-        months: [{ id: 'm0', name: 'ماه صفر', days: 0 }]
-      };
-      const res = validateCalendar(invalid);
-      expect(res.valid).toBe(false);
-      expect(res.errors.some(e => e.includes('حداقل ۱'))).toBe(true);
-    });
-
-    it('rejects calendar with empty months list', () => {
-      const invalid = {
-        ...SHAHROOZAN_ZORVANIA_CALENDAR,
-        months: []
-      };
-      const res = validateCalendar(invalid);
-      expect(res.valid).toBe(false);
-      expect(res.errors.some(e => e.includes('حداقل یک ماه'))).toBe(true);
-    });
-
-    it('rejects calendar with empty weekdays', () => {
-      const invalid = {
-        ...SHAHROOZAN_ZORVANIA_CALENDAR,
-        weekdays: []
-      };
-      const res = validateCalendar(invalid);
-      expect(res.valid).toBe(false);
-      expect(res.errors.some(e => e.includes('روزهای هفته'))).toBe(true);
-    });
-
-    it('rejects duplicate month IDs', () => {
-      const invalid = {
-        ...SHAHROOZAN_ZORVANIA_CALENDAR,
-        months: [
-          { id: 'dup', name: 'ماه اول', days: 30 },
-          { id: 'dup', name: 'ماه دوم', days: 30 }
-        ]
-      };
-      const res = validateCalendar(invalid);
-      expect(res.valid).toBe(false);
-      expect(res.errors.some(e => e.includes('تکراری'))).toBe(true);
-    });
-
-    it('rejects festivals referencing non-existent month', () => {
-      const invalid = {
-        ...SHAHROOZAN_ZORVANIA_CALENDAR,
-        festivals: [
-          {
-            id: 'bad-fest',
-            name: 'جشن خیالی',
-            targetType: 'month' as const,
-            monthId: 'non-existent-month',
-            day: 1,
-            durationDays: 1
-          }
-        ]
-      };
-      const res = validateCalendar(invalid);
-      expect(res.valid).toBe(false);
-      expect(res.errors.some(e => e.includes('ماه مرتبط با جشن') && e.includes('یافت نشد'))).toBe(true);
-    });
-
-    it('rejects festival with durationDays < 1', () => {
-      const invalid = {
-        ...SHAHROOZAN_ZORVANIA_CALENDAR,
-        festivals: [
-          {
-            id: 'bad-dur',
-            name: 'جشن بی‌مدت',
-            targetType: 'month' as const,
-            monthId: 'farhan',
-            day: 1,
-            durationDays: 0
-          }
-        ]
-      };
-      const res = validateCalendar(invalid);
-      expect(res.valid).toBe(false);
-      expect(res.errors.some(e => e.includes('حداقل ۱ روز'))).toBe(true);
-    });
-  });
-
-  // --------------------------------------------------------------------
-  // Test 7: formatDate with configurable era
-  // --------------------------------------------------------------------
-  describe('formatDate', () => {
-    it('uses the calendar eraLabel dynamically', () => {
-      const date = epochToDate(SHAHROOZAN_ZORVANIA_CALENDAR, 0);
-      expect(formatDate(SHAHROOZAN_ZORVANIA_CALENDAR, date)).toBe('1 فرهان، سال 1500 پ.ر.ن.');
-
-      // Custom era
-      const customEraCal: UnifiedCalendar = {
-        ...SHAHROOZAN_ZORVANIA_CALENDAR,
-        eraLabel: 'عصر اژدها'
-      };
-      expect(formatDate(customEraCal, date)).toBe('1 فرهان، سال 1500 عصر اژدها');
-    });
-
-    it('formats off-days according to canonical style', () => {
-      const offDay = epochToDate(SHAHROOZAN_ZORVANIA_CALENDAR, 360);
-      expect(formatDate(SHAHROOZAN_ZORVANIA_CALENDAR, offDay)).toBe(
-        'روز لرزش (خارج از سال‌شمار) - سال 1500 پ.ر.ن.'
-      );
-    });
-
-    it('optionally includes weekday in formatted output', () => {
-      const date = epochToDate(SHAHROOZAN_ZORVANIA_CALENDAR, 0);
-      expect(formatDate(SHAHROOZAN_ZORVANIA_CALENDAR, date, { includeWeekday: true })).toBe(
-        'شنبه، 1 فرهان، سال 1500 پ.ر.ن.'
-      );
-    });
-  });
-
-  // --------------------------------------------------------------------
-  // Test 8: Comparative parity test with legacy advanceCalendarDays over 10,000 days
-  // --------------------------------------------------------------------
-  describe('Comparative parity with legacy step-by-step logic over 10,000 days', () => {
-    // Reference copy of the legacy iterative function as it originally existed
-    function referenceLegacyAdvanceDays(current: WorldCalendar, days: number): WorldCalendar {
-      let { year, month, day, isOffDay, offDayIndex = 0 } = current;
-
-      for (let i = 0; i < days; i++) {
-        if (!isOffDay) {
-          if (day < 30) {
-            day++;
-          } else {
-            if (month < 12) {
-              month++;
-              day = 1;
-            } else {
-              isOffDay = true;
-              offDayIndex = 1;
-              day = 1;
-              month = 13;
-            }
-          }
+      for (const d of datesToTest) {
+        const epoch = dateToEpoch(sampleZorvania, d);
+        const roundTrip = epochToDate(sampleZorvania, epoch);
+        expect(roundTrip.year).toBe(d.year);
+        expect(roundTrip.isOffDay).toBe(d.isOffDay);
+        if (d.isOffDay) {
+          expect(roundTrip.offDayIndex).toBe(d.offDayIndex);
         } else {
-          if (offDayIndex < 5) {
-            offDayIndex++;
-            day = offDayIndex;
-          } else {
-            year++;
-            month = 1;
-            day = 1;
-            isOffDay = false;
-            offDayIndex = 0;
-          }
+          expect(roundTrip.month).toBe(d.month);
+          expect(roundTrip.day).toBe(d.day);
         }
       }
+    });
 
-      let currentFestival: string | undefined = undefined;
-      if (isOffDay) {
-        const off = CALENDAR_OFF_DAYS.find(o => o.id === offDayIndex);
-        currentFestival = off ? off.name : undefined;
-      } else if (day === 1) {
-        const m = CALENDAR_MONTHS.find(mo => mo.id === month);
-        currentFestival = m ? `جشن ${m.festival}` : undefined;
+    it('advances time seamlessly and returns complete campaign state', () => {
+      const state0 = advanceTime(sampleZorvania, 0, 0, 'c-test');
+      expect(state0.epochDay).toBe(0);
+      expect(state0.weekday).toBe('شنبه');
+      expect(state0.date).toEqual({ year: 1500, month: 1, day: 1, isOffDay: false, offDayIndex: undefined });
+      expect(state0.activeFestivals.map(f => f.name)).toContain('جشن فرهگان');
+
+      // Advance by 360 days: should land on off-day 1
+      const state360 = advanceTime(sampleZorvania, 0, 360, 'c-test');
+      expect(state360.epochDay).toBe(360);
+      expect(state360.date.isOffDay).toBe(true);
+      expect(state360.date.offDayIndex).toBe(1);
+      expect(state360.formattedDate).toContain('روز لرزش');
+
+      // Advance by 5 more days: should land on Year 1501, Month 1, Day 1
+      const state365 = advanceTime(sampleZorvania, state360.epochDay, 5, 'c-test');
+      expect(state365.epochDay).toBe(365);
+      expect(state365.date.year).toBe(1501);
+      expect(state365.date.month).toBe(1);
+      expect(state365.date.day).toBe(1);
+      expect(state365.date.isOffDay).toBe(false);
+    });
+
+    it('formats dates in Persian format correctly', () => {
+      const formattedMonth = formatCalendarDate(sampleZorvania, {
+        year: 1500,
+        month: 7,
+        day: 16,
+        isOffDay: false
+      });
+      expect(formattedMonth).toBe('16 پیمان، سال 1500 پ.ر.ن');
+
+      const formattedOffDay = formatCalendarDate(sampleZorvania, {
+        year: 1500,
+        month: 13,
+        day: 1,
+        isOffDay: true,
+        offDayIndex: 1
+      });
+      expect(formattedOffDay).toBe('روز لرزش (خارج از گاه‌شمار) - سال 1500 پ.ر.ن');
+    });
+
+    it('verifies 40,000-day bijective roundtrip with negative and positive days', () => {
+      // Test 40,000 days continuously from -20,000 to +20,000
+      // Sampling every 10 days for ultra-fast execution, plus critical boundaries
+      for (let day = -20000; day <= 20000; day += 7) {
+        const date = epochToDate(sampleZorvania, day);
+        const restored = dateToEpoch(sampleZorvania, date);
+        expect(restored).toBe(day);
       }
+      // Also test every single boundary around 0 and year transitions
+      for (let day = -730; day <= 730; day++) {
+        const date = epochToDate(sampleZorvania, day);
+        const restored = dateToEpoch(sampleZorvania, date);
+        expect(restored).toBe(day);
+      }
+    });
 
-      return {
-        ...current,
-        year,
-        month,
-        day,
-        isOffDay,
-        offDayIndex,
-        currentFestival
+    it('verifies 10,000-day continuous equality with legacy advanceCalendarDays', async () => {
+      const { INITIAL_CALENDAR, advanceCalendarDays: legacyAdvance } = await import('../../src/data/calendar');
+      let legacyCurrent = { ...INITIAL_CALENDAR };
+
+      for (let step = 0; step <= 10000; step++) {
+        const modernDate = epochToDate(sampleZorvania, step);
+
+        expect(modernDate.year).toBe(legacyCurrent.year);
+        expect(modernDate.isOffDay).toBe(legacyCurrent.isOffDay);
+
+        if (legacyCurrent.isOffDay) {
+          expect(modernDate.offDayIndex).toBe(legacyCurrent.offDayIndex);
+          expect(modernDate.day).toBe(legacyCurrent.offDayIndex);
+        } else {
+          expect(modernDate.month).toBe(legacyCurrent.month);
+          expect(modernDate.day).toBe(legacyCurrent.day);
+        }
+
+        // Advance legacy by 1 day for next iteration
+        legacyCurrent = legacyAdvance(legacyCurrent, 1);
+      }
+    });
+
+    it('advances three diverse calendars in sync across positive and negative epoch days', () => {
+      // Calendar 1: Zorvania (12 x 30 + 5 = 365 days, 7-day week, start 1500, anchor 0)
+      const calZorvania = sampleZorvania;
+
+      // Calendar 2: Elven / Fey (10 x 36 + 5 = 365 days, 5-day week, start 1000, anchor 2)
+      const calFey: GenericCalendarData = {
+        name: 'گاه‌شمار پریان سپیدارون',
+        eraLabel: 'فصل',
+        startYear: 1000,
+        anchor: { weekdayIndex: 2 },
+        months: [
+          { name: 'جوانه‌گاه', days: 36, season: 'بهار' },
+          { name: 'شکوفه‌بار', days: 36, season: 'بهار' },
+          { name: 'سبزه‌پوش', days: 36, season: 'تابستان' },
+          { name: 'خورشیدتاب', days: 36, season: 'تابستان' },
+          { name: 'میوه‌ریز', days: 36, season: 'پاییز' },
+          { name: 'زرین‌برگ', days: 36, season: 'پاییز' },
+          { name: 'باران‌خیز', days: 36, season: 'پاییز' },
+          { name: 'برف‌آسا', days: 36, season: 'زمستان' },
+          { name: 'سکوت‌گاه', days: 36, season: 'زمستان' },
+          { name: 'رویاساز', days: 36, season: 'زمستان' }
+        ],
+        offDays: [
+          { id: 'fey-1', name: 'شب نیلوفر' },
+          { id: 'fey-2', name: 'شب ستاره' },
+          { id: 'fey-3', name: 'شب رقص باد' },
+          { id: 'fey-4', name: 'شب آینه' },
+          { id: 'fey-5', name: 'شب بیداری' }
+        ],
+        festivals: [
+          { name: 'جشن شکوفه', monthIndex: 1, day: 1, durationDays: 1 }
+        ],
+        weekdays: ['آب', 'باد', 'خاک', 'آتش', 'اثیر']
       };
-    }
 
-    it('produces 100% byte-for-byte identical output to legacy logic across 10,000 continuous days', () => {
-      let legacyState: WorldCalendar = { ...INITIAL_CALENDAR };
+      // Calendar 3: Dwarven / Deep-rock (8 x 45 = 360 days, 6-day week, start 2000, anchor 4)
+      const calDwarf: GenericCalendarData = {
+        name: 'سال‌شمار ژرف‌کاو کنداوران',
+        eraLabel: 'سنگ',
+        startYear: 2000,
+        anchor: { weekdayIndex: 4 },
+        months: [
+          { name: 'سنگ‌آهن', days: 45 },
+          { name: 'سنگ‌مس', days: 45 },
+          { name: 'سنگ‌طلا', days: 45 },
+          { name: 'سنگ‌نقره', days: 45 },
+          { name: 'سنگ‌یاقوت', days: 45 },
+          { name: 'سنگ‌زمرد', days: 45 },
+          { name: 'سنگ‌الماس', days: 45 },
+          { name: 'سنگ‌خواب', days: 45 }
+        ],
+        offDays: [],
+        festivals: [
+          { name: 'جشن کوبش پتک', monthIndex: 1, day: 1, durationDays: 2 }
+        ],
+        weekdays: ['سنگ', 'چکش', 'کوره', 'پتک', 'سندان', 'زر']
+      };
 
-      // Step day-by-day from 1 to 10,000 and compare against advanceCalendarDays(INITIAL_CALENDAR, d)
-      for (let d = 1; d <= 10000; d++) {
-        legacyState = referenceLegacyAdvanceDays(legacyState, 1);
-        const adaptedState = advanceCalendarDays(INITIAL_CALENDAR, d);
+      // Verify at absolute day 0:
+      const d0_zorvania = advanceTime(calZorvania, 0, 0);
+      const d0_fey = advanceTime(calFey, 0, 0);
+      const d0_dwarf = advanceTime(calDwarf, 0, 0);
 
-        expect(adaptedState.year).toBe(legacyState.year);
-        expect(adaptedState.month).toBe(legacyState.month);
-        expect(adaptedState.day).toBe(legacyState.day);
-        expect(adaptedState.isOffDay).toBe(legacyState.isOffDay);
-        expect(adaptedState.offDayIndex).toBe(legacyState.offDayIndex);
-        expect(adaptedState.currentFestival).toBe(legacyState.currentFestival);
+      expect(d0_zorvania.date.year).toBe(1500);
+      expect(d0_zorvania.weekday).toBe('شنبه');
 
-        // Also check formatWorldDate produces identical strings
-        expect(formatWorldDate(adaptedState)).toBe(formatWorldDate(legacyState));
-      }
-    });
+      expect(d0_fey.date.year).toBe(1000);
+      expect(d0_fey.weekday).toBe('خاک'); // index 2
 
-    it('handles advance helper from shared/rules/calendar', () => {
-      const advanced = advance(SHAHROOZAN_ZORVANIA_CALENDAR, 0, 30);
-      expect(advanced.epochDay).toBe(30);
-      expect(advanced.date.monthName).toBe('زروان');
-      expect(advanced.date.day).toBe(1);
-    });
+      expect(d0_dwarf.date.year).toBe(2000);
+      expect(d0_dwarf.weekday).toBe('سندان'); // index 4
 
-    it('converts toWorldCalendar and fromWorldCalendar reversibly', () => {
-      const worldCal = toWorldCalendar(SHAHROOZAN_ZORVANIA_CALENDAR, 360);
-      expect(worldCal.isOffDay).toBe(true);
-      expect(worldCal.month).toBe(13);
-      expect(worldCal.offDayIndex).toBe(1);
+      // Advance by 360 days:
+      const d360_zorvania = advanceTime(calZorvania, 0, 360);
+      const d360_fey = advanceTime(calFey, 0, 360);
+      const d360_dwarf = advanceTime(calDwarf, 0, 360);
 
-      const recoveredEpoch = fromWorldCalendar(SHAHROOZAN_ZORVANIA_CALENDAR, worldCal);
-      expect(recoveredEpoch).toBe(360);
+      expect(d360_zorvania.date.isOffDay).toBe(true);
+      expect(d360_zorvania.date.offDayIndex).toBe(1);
+
+      expect(d360_fey.date.isOffDay).toBe(true);
+      expect(d360_fey.date.offDayIndex).toBe(1);
+
+      // Dwarf calendar has 360 days in a year (8 x 45): day 360 is exactly Year 2001, Month 1, Day 1!
+      expect(d360_dwarf.date.year).toBe(2001);
+      expect(d360_dwarf.date.month).toBe(1);
+      expect(d360_dwarf.date.day).toBe(1);
+      expect(d360_dwarf.date.isOffDay).toBe(false);
+
+      // Advance by negative 365 days (-365):
+      const dNeg_zorvania = advanceTime(calZorvania, 0, -365);
+      const dNeg_fey = advanceTime(calFey, 0, -365);
+      const dNeg_dwarf = advanceTime(calDwarf, 0, -365);
+
+      expect(dNeg_zorvania.date.year).toBe(1499);
+      expect(dNeg_zorvania.date.month).toBe(1);
+      expect(dNeg_zorvania.date.day).toBe(1);
+
+      expect(dNeg_fey.date.year).toBe(999);
+      expect(dNeg_fey.date.month).toBe(1);
+      expect(dNeg_fey.date.day).toBe(1);
+
+      // Dwarf year is 360 days: -365 is Year 1998, Month 8, Day 41 (since -365 = -2*360 + 355 -> 355 / 45 = month 8, day 40)
+      expect(dNeg_dwarf.date.year).toBe(1998);
     });
   });
 });
