@@ -1,5 +1,5 @@
 import { Button } from '../ui/Button';
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate, LocationEntry, Campaign, CharacterParticipation, Session, SessionRsvpChoice, SessionRecap } from '../../types';
 import { 
   LayoutDashboard, Swords, Library, Scroll, MoreHorizontal, 
@@ -26,7 +26,7 @@ const FactionReputationManager = React.lazy(() => import('../campaign/FactionRep
 const PartyTreasuryManager = React.lazy(() => import('../campaign/PartyTreasuryManager').then(m => ({ default: m.PartyTreasuryManager })));
 
 const DmToolSkeleton: React.FC = () => (
-  <div className="space-y-4 p-4 animate-pulse" dir="rtl">
+  <div className="space-y-4 p-4 motion-safe:animate-pulse" dir="rtl">
     <div className="h-24 bg-surface rounded-xl border border-border" />
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div className="h-32 bg-surface rounded-xl border border-border" />
@@ -78,10 +78,10 @@ function SubTabBar<T extends string>({
             role="tab"
             aria-selected={isActive}
             onClick={() => onChange(item.id)}
-            className={`flex-1 min-h-[44px] px-3 rounded-[10px] text-sm transition flex items-center justify-center gap-1.5 whitespace-nowrap ${
+            className={`flex-1 min-h-[44px] px-3 rounded-lg text-sm transition flex items-center justify-center gap-1.5 whitespace-nowrap ${
               isActive
-                ? 'bg-surface-3 text-text-primary font-extrabold border border-accent/50'
-                : 'bg-surface-2 text-text-muted font-bold border border-border hover:text-text-primary'
+                ? 'bg-accent/15 text-accent-hover font-bold border border-accent'
+                : 'bg-surface-2 text-text-muted font-medium border border-border hover:text-text-primary'
             }`}
           >
             <Icon className="w-4 h-4 shrink-0" />
@@ -266,6 +266,14 @@ export const DmTools: React.FC<DmToolsProps> = ({
     setInternalDmTab(tab);
   };
 
+  // Legacy ids used to land on the right top-level tab but always on that tab's default sub-tab
+  // (e.g. 'npcs' opened the library hub, not the NPC list). Select the matching sub-tab too.
+  useEffect(() => {
+    if (rawTab === 'npcs' || rawTab === 'items') setLibrarySubTab(rawTab);
+    else if (rawTab === 'notes') setNarrativeSubTab('notes');
+    else if (rawTab === 'settings') setMoreSubTab('settings');
+  }, [rawTab]);
+
   // Primary navigation: five items always fit as icon-over-label, so nothing scrolls sideways.
   // The last tab was "کاربران و تنظیمات" (too long for a tab); it holds users, invites, log and settings.
   const navItems = [
@@ -307,7 +315,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
       <nav
         role="tablist"
         aria-label="بخش‌های ابزار مستر"
-        className="surface-card rounded-[14px] p-1.5 border border-border grid grid-cols-5 gap-1"
+        className="surface-card rounded-xl p-1.5 border border-border grid grid-cols-5 gap-1"
       >
         {navItems.map(item => {
           const Icon = item.icon;
@@ -319,7 +327,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
               role="tab"
               aria-selected={isActive}
               onClick={() => setActiveDmTab(item.id)}
-              className={`min-h-[56px] rounded-[10px] transition flex flex-col items-center justify-center gap-1 ${
+              className={`min-h-[56px] rounded-lg transition flex flex-col items-center justify-center gap-1 ${
                 isActive
                   ? 'bg-accent text-on-accent shadow-sm'
                   : 'text-text-muted hover:text-text-primary'
@@ -391,11 +399,11 @@ export const DmTools: React.FC<DmToolsProps> = ({
         {/* 3. Library: grouped navigation + entity managers */}
         {activeTab === 'library' && (
           <div className="space-y-4">
-            <div className="surface-card rounded-[14px] p-2 border border-border space-y-2">
+            <div className="surface-card rounded-xl p-2 border border-border space-y-2">
               <div
                 role="tablist"
                 aria-label="گروه‌های کتابخانه"
-                className="grid grid-cols-3 gap-1 p-1 rounded-[10px] bg-surface-2"
+                className="grid grid-cols-3 gap-1 p-1 rounded-lg bg-surface-2"
               >
                 {LIBRARY_GROUPS.map(group => {
                   const isActive = activeLibraryGroup.id === group.id;
@@ -408,10 +416,10 @@ export const DmTools: React.FC<DmToolsProps> = ({
                       onClick={() => {
                         if (!isActive) setLibrarySubTab(group.tabs[0]);
                       }}
-                      className={`h-10 rounded-[8px] text-sm transition ${
+                      className={`min-h-[44px] rounded-lg text-sm transition ${
                         isActive
-                          ? 'bg-accent/15 text-accent-hover font-extrabold border border-accent/50'
-                          : 'text-text-muted font-bold hover:text-text-primary border border-transparent'
+                          ? 'bg-accent/15 text-accent-hover font-bold border border-accent'
+                          : 'text-text-muted font-medium hover:text-text-primary border border-transparent'
                       }`}
                     >
                       {group.label}
@@ -452,11 +460,14 @@ export const DmTools: React.FC<DmToolsProps> = ({
               <DmItemVault
                 items={items}
                 characters={characters}
+                rewards={rewards}
                 weaponTemplates={weaponTemplates}
                 onCreateItem={onCreateItem}
                 onUpdateItem={onUpdateItem}
                 onDeleteItem={onDeleteItem}
                 onGiveItem={onGiveItemToPlayer}
+                onDistributeReward={onDistributeReward}
+                onCreateReward={onCreateReward}
               />
             )}
 
@@ -582,6 +593,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
                 onUpdateUserRole={onUpdateUserRole}
                 onImportSeedIntoDb={onImportSeedIntoDb}
                 isHttpMode={isHttpMode}
+                campaignId={campaignId}
               />
             )}
           </div>
