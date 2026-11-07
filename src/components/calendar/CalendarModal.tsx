@@ -4,6 +4,7 @@ import { CALENDAR_MONTHS, CALENDAR_OFF_DAYS, formatWorldDate } from '../../data/
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Sparkles, FastForward, Clock, BookOpen, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { CalendarStructureModal } from './CalendarStructureModal';
 
 interface CalendarModalProps {
   isOpen: boolean;
@@ -32,12 +33,21 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
   campaignId,
   onOpenStructureEditor
 }) => {
+  const [internalStructureOpen, setInternalStructureOpen] = useState(false);
   const currentYear = timeResponse?.date?.year ?? calendar?.year ?? 1500;
   const currentMonth = timeResponse?.date?.month ?? calendar?.month ?? 1;
   const isOffDay = timeResponse?.date?.isOffDay ?? calendar?.isOffDay ?? false;
   const offDayIndex = timeResponse?.date?.offDayIndex ?? calendar?.offDayIndex ?? 0;
   const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth);
   const [advancing, setAdvancing] = useState(false);
+
+  const handleOpenStructure = () => {
+    if (onOpenStructureEditor) {
+      onOpenStructureEditor();
+    } else {
+      setInternalStructureOpen(true);
+    }
+  };
 
   const title = activeCalendar?.name || "تقویم باستانی زروانیا";
   const eraLabel = activeCalendar?.eraLabel || "پ.ر.ن. (پیش از روشنایی نو)";
@@ -80,9 +90,10 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
     : CALENDAR_OFF_DAYS;
 
   return (
-    <BottomSheet
-      isOpen={isOpen}
-      onClose={onClose}
+    <>
+      <BottomSheet
+        isOpen={isOpen}
+        onClose={onClose}
       title={title}
       subtitle={subtitle}
     >
@@ -97,11 +108,11 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
             <div className="text-lg font-black text-accent-hover">
               {formattedDate}
             </div>
-            {isDm && onOpenStructureEditor && (
+            {isDm && (onOpenStructureEditor || campaignId) && (
               <Button
                 type="button"
                 size="sm"
-                onClick={onOpenStructureEditor}
+                onClick={handleOpenStructure}
                 className="bg-accent/20 hover:bg-accent/30 text-accent-hover border border-accent/40 text-xs font-bold flex items-center gap-1.5"
               >
                 <span>ویرایش تقویم‌ها</span>
@@ -212,5 +223,18 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
         </div>
       </div>
     </BottomSheet>
+
+    {internalStructureOpen && campaignId && (
+      <CalendarStructureModal
+        isOpen={internalStructureOpen}
+        onClose={() => setInternalStructureOpen(false)}
+        campaignId={campaignId}
+        userRole="owner"
+        onSaved={() => {
+          // If onUpdateCalendar was provided, caller can reload
+        }}
+      />
+    )}
+  </>
   );
 };

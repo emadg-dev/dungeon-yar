@@ -190,4 +190,43 @@ describe('Stage 2 Phase 2: calendarStructureReducer Pure Unit Tests', () => {
     const weekdayAt0 = weekdayOf(state.calendar, 0);
     expect(weekdayAt0.name).toBe('شنبه');
   });
+
+  it('8. Supports PRESERVE_TODAY_DATE_ACROSS_STRUCTURE_CHANGE when year length changes', () => {
+    let state = initCalendarStructureState(TEMPLATE_SHAHROOZAN_ZORVANIA);
+    const epoch = 250;
+    const initialDate = epochToDate(state.calendar, epoch);
+    const initialWeekday = weekdayOf(state.calendar, epoch);
+
+    // DM alters calendar: adds a month (changing year length from 365 to 395)
+    state = calendarStructureReducer(state, {
+      type: 'ADD_MONTH',
+      month: { name: 'ماه افزوده', days: 30 }
+    });
+    expect(state.totalDaysInYear).toBe(395);
+
+    // Under the new structure without compensation, the date might shift.
+    // DM chooses: Preserve today's date!
+    state = calendarStructureReducer(state, {
+      type: 'PRESERVE_TODAY_DATE_ACROSS_STRUCTURE_CHANGE',
+      previousEpochDay: epoch,
+      previousDate: {
+        year: initialDate.year,
+        month: initialDate.month,
+        day: initialDate.day,
+        isOffDay: initialDate.isOffDay,
+        offDayIndex: initialDate.offDayIndex,
+        weekdayIndex: initialWeekday.index
+      }
+    });
+
+    // Verify today's date in this calendar still projects to the exact same date!
+    const newDate = epochToDate(state.calendar, epoch);
+    expect(newDate.year).toBe(initialDate.year);
+    expect(newDate.month).toBe(initialDate.month);
+    expect(newDate.day).toBe(initialDate.day);
+    expect(newDate.isOffDay).toBe(initialDate.isOffDay);
+
+    const newWeekday = weekdayOf(state.calendar, epoch);
+    expect(newWeekday.index).toBe(initialWeekday.index);
+  });
 });

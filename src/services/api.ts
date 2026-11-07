@@ -2334,9 +2334,22 @@ export class LocalApi implements ApiClient {
       throw new Error('کمپین مورد نظر یافت نشد.');
     }
     const all = this.getLocalGenericCalendars();
-    const list = all.filter(c => (c.scopeType === 'campaign' && c.scopeId === campaignId) || c.scopeType === 'pack' || (c.scopeType as string) === 'template' || c.id === 'cal-zorvania');
+    let list = all.filter(c => (c.scopeType === 'campaign' && c.scopeId === campaignId) || (campaignId === 'zorvania-c1' && (c.id === 'cal-zorvania' || c.scopeId === 'zorvania-c1')));
     if (list.length === 0) {
-      return [{ ...SEED_GENERIC_CALENDAR, anchor: SEED_GENERIC_CALENDAR.anchor || { weekdayIndex: 0 } }];
+      const template = TEMPLATE_SHAHROOZAN_ZORVANIA;
+      const defaultCal: GenericCalendarData = {
+        ...template,
+        id: campaignId === 'zorvania-c1' ? 'cal-zorvania' : `cal-${campaignId}-${Date.now().toString(36)}`,
+        name: campaignId === 'zorvania-c1' ? 'گاه‌شمار شاه‌روزان (زروانیا)' : `${template.name} (کمپین)`,
+        scopeType: 'campaign',
+        scopeId: campaignId,
+        sourceId: template.id,
+        anchor: { weekdayIndex: template.anchor?.weekdayIndex ?? 0 },
+        updatedAt: Date.now()
+      };
+      all.push(defaultCal);
+      this.setItem('calendars', all);
+      list = [defaultCal];
     }
     return list;
   }

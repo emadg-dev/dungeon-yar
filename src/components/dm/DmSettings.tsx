@@ -2,25 +2,29 @@ import { Button } from '../ui/Button';
 import { Select } from '../ui/Select';
 import React, { useState } from 'react';
 import { User } from '../../types';
-import { Database, Users, Shield, RefreshCw, CheckCircle2, Server, Key } from 'lucide-react';
+import { Database, Users, Shield, RefreshCw, CheckCircle2, Server, Key, Calendar as CalendarIcon, Edit } from 'lucide-react';
 import { ConfirmSheet } from '../mobile/ConfirmSheet';
+import { CalendarStructureModal } from '../calendar/CalendarStructureModal';
 
 interface DmSettingsProps {
   users: User[];
   onUpdateUserRole: (userId: string, role: 'dm' | 'player') => void;
   onImportSeedIntoDb: () => Promise<void>;
   isHttpMode: boolean;
+  campaignId?: string;
 }
 
 export const DmSettings: React.FC<DmSettingsProps> = ({
   users,
   onUpdateUserRole,
   onImportSeedIntoDb,
-  isHttpMode
+  isHttpMode,
+  campaignId = 'zorvania-c1'
 }) => {
   const [importLoading, setImportLoading] = useState(false);
   const [importMessage, setImportMessage] = useState('');
   const [showConfirmSheet, setShowConfirmSheet] = useState(false);
+  const [calendarModalOpen, setCalendarModalOpen] = useState(false);
 
   const handleExecuteImport = async () => {
     setShowConfirmSheet(false);
@@ -102,6 +106,32 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
         </div>
       </div>
 
+      {/* تقویم‌های دنیا (World Calendars) */}
+      <div className="bg-surface border border-accent/25 rounded-2xl p-5 shadow-xl space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-accent/10 text-accent-hover border border-accent/30">
+              <CalendarIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-accent-hover">تقویم‌های دنیا و گاه‌شمار کمپین</h3>
+              <p className="text-xs text-text-muted">
+                مدیریت ماه‌ها، روزهای هفته، روزهای برون‌گاه و همگام‌سازی زمان جهان زروانیا
+              </p>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            onClick={() => setCalendarModalOpen(true)}
+            className="bg-accent text-on-accent text-xs font-bold px-4 py-2 rounded-xl shadow-md min-h-[44px] flex items-center gap-1.5"
+          >
+            <Edit className="w-4 h-4 shrink-0" />
+            <span>ویرایش تقویم‌های دنیا</span>
+          </Button>
+        </div>
+      </div>
+
       {/* User Management */}
       <div className="bg-surface border border-border rounded-2xl p-5 shadow-xl">
         <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border">
@@ -160,6 +190,16 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
         message="آیا از بارگذاری مجدد داده‌های پیش‌فرض کمپین زروانیا اطمینان دارید؟ داده‌های اولیه 6 ماجراجوی اصلی، هیولاها و قوانین بارگذاری مجدد خواهند شد."
         confirmLabel="تأیید و همگام‌سازی"
       />
+
+      {/* World Calendar Structure Modal */}
+      {calendarModalOpen && (
+        <CalendarStructureModal
+          isOpen={calendarModalOpen}
+          onClose={() => setCalendarModalOpen(false)}
+          campaignId={campaignId}
+          userRole="owner"
+        />
+      )}
     </div>
   );
 };

@@ -18,6 +18,7 @@ import {
   createCampaignCalendarFromTemplate
 } from '../../../shared/rules/calendarTemplates';
 import { epochToDate, weekdayOf } from '../../../shared/rules/calendar';
+import { CalendarStructureForm } from './CalendarStructureForm';
 import {
   Calendar as CalendarIcon,
   Plus,
@@ -80,6 +81,18 @@ export const CalendarStructureModal: React.FC<CalendarStructureModalProps> = ({
   const [alignOffDayIndex, setAlignOffDayIndex] = useState<number>(1);
   const [alignWeekdayIdx, setAlignWeekdayIdx] = useState<number>(0);
 
+  // Initial projected date for Before/After preview on structure change
+  const [initialProjectedDate, setInitialProjectedDate] = useState<{
+    year: number;
+    month: number;
+    monthName: string;
+    day: number;
+    isOffDay: boolean;
+    offDayIndex?: number;
+    weekdayIndex: number;
+    weekdayName: string;
+  } | null>(null);
+
   // Load all campaign calendars and epoch time
   const loadData = async () => {
     if (!campaignId) return;
@@ -97,7 +110,7 @@ export const CalendarStructureModal: React.FC<CalendarStructureModalProps> = ({
       setSelectedCalId(target.id || '');
       dispatch({ type: 'SET_CALENDAR', calendar: target });
 
-      // Initialize alignment inputs to current projected date in target calendar
+      // Initialize alignment inputs and record initial projection for before/after comparison
       const currentProj = epochToDate(target, time.epochDay || 0);
       setAlignYear(currentProj.year);
       setAlignMonth(currentProj.month);
@@ -106,6 +119,21 @@ export const CalendarStructureModal: React.FC<CalendarStructureModalProps> = ({
       setAlignOffDayIndex(currentProj.offDayIndex || 1);
       const w = weekdayOf(target, time.epochDay || 0);
       setAlignWeekdayIdx(w.index);
+
+      const mName = currentProj.isOffDay
+        ? (target.offDays?.[(currentProj.offDayIndex || 1) - 1]?.name || 'روز برون‌گاه')
+        : (target.months?.[currentProj.month - 1]?.name || `ماه ${currentProj.month}`);
+
+      setInitialProjectedDate({
+        year: currentProj.year,
+        month: currentProj.month,
+        monthName: mName,
+        day: currentProj.day,
+        isOffDay: currentProj.isOffDay,
+        offDayIndex: currentProj.offDayIndex,
+        weekdayIndex: w.index,
+        weekdayName: w.name
+      });
     } catch (err: any) {
       setStatusMessage({ type: 'error', text: err.message || 'خطا در بارگذاری گاه‌شمارها' });
     } finally {
@@ -139,10 +167,25 @@ export const CalendarStructureModal: React.FC<CalendarStructureModalProps> = ({
       setAlignOffDayIndex(currentProj.offDayIndex || 1);
       const w = weekdayOf(target, currentEpochDay);
       setAlignWeekdayIdx(w.index);
+
+      const mName = currentProj.isOffDay
+        ? (target.offDays?.[(currentProj.offDayIndex || 1) - 1]?.name || 'روز برون‌گاه')
+        : (target.months?.[currentProj.month - 1]?.name || `ماه ${currentProj.month}`);
+
+      setInitialProjectedDate({
+        year: currentProj.year,
+        month: currentProj.month,
+        monthName: mName,
+        day: currentProj.day,
+        isOffDay: currentProj.isOffDay,
+        offDayIndex: currentProj.offDayIndex,
+        weekdayIndex: w.index,
+        weekdayName: w.name
+      });
     }
   };
 
-  // Add Calendar
+  // Add Calendar from Template
   const handleAddCalendar = async (sourceTemplate: GenericCalendarData) => {
     try {
       const newCalData = createCampaignCalendarFromTemplate(campaignId, sourceTemplate, {
@@ -156,6 +199,25 @@ export const CalendarStructureModal: React.FC<CalendarStructureModalProps> = ({
       setStatusMessage({ type: 'success', text: `گاه‌شمار «${created.name}» افزوده شد.` });
     } catch (err: any) {
       setStatusMessage({ type: 'error', text: err.message || 'خطا در افزودن گاه‌شمار' });
+    }
+  };
+
+  // Duplicate Current Calendar
+  const handleDuplicateCurrentCalendar = async () => {
+    try {
+      const copyData: GenericCalendarData = {
+        ...JSON.parse(JSON.stringify(state.calendar)),
+        id: undefined,
+        name: `${state.calendar.name} (کپی)`
+      };
+      const created = await api.createCampaignCalendar(campaignId, copyData);
+      setCalendars(prev => [...prev, created]);
+      setSelectedCalId(created.id || '');
+      dispatch({ type: 'SET_CALENDAR', calendar: created });
+      setShowAddMenu(false);
+      setStatusMessage({ type: 'success', text: `نسخه کپی با نام «${created.name}» ایجاد شد.` });
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err.message || 'خطا در کپی گاه‌شمار' });
     }
   };
 
@@ -174,6 +236,18 @@ export const CalendarStructureModal: React.FC<CalendarStructureModalProps> = ({
       setSelectedCalId(nextTarget.id || '');
       dispatch({ type: 'SET_CALENDAR', calendar: nextTarget });
       setDeleteConfirmOpen(false);
+
+      // If the deleted calendar was primary, promote nextTarget to primary
+      if (selectedCalId === primaryCalId && nextTarget.id) {
+        setPrimaryCalId(nextTarget.id);
+        try {
+          await api.setCampaignTime(campaignId, {
+            epochDay: currentEpochDay,
+            calendarId: nextTarget.id
+          });
+        } catch {}
+      }
+
       setStatusMessage({ type: 'success', text: 'گاه‌شمار با موفقیت حذف شد.' });
       onSaved?.();
     } catch (err: any) {
@@ -239,6 +313,9 @@ export const CalendarStructureModal: React.FC<CalendarStructureModalProps> = ({
 
   const currentProj = epochToDate(state.calendar, currentEpochDay);
   const currentWeekday = weekdayOf(state.calendar, currentEpochDay);
+  const currentMonthName = currentProj.isOffDay
+    ? (state.calendar.offDays?.[(currentProj.offDayIndex || 1) - 1]?.name || 'روز برون‌گاه')
+    : (state.calendar.months?.[currentProj.month - 1]?.name || `ماه ${currentProj.month}`);
 
   return (
     <>
@@ -301,7 +378,7 @@ export const CalendarStructureModal: React.FC<CalendarStructureModalProps> = ({
                     </Button>
 
                     {showAddMenu && (
-                      <div className="absolute end-0 top-full mt-1.5 w-56 rounded-xl bg-surface-1 border border-border shadow-xl p-1 z-30 space-y-1">
+                      <div className="absolute end-0 top-full mt-1.5 w-56 rounded-xl bg-surface border border-border shadow-xl p-1 z-30 space-y-1">
                         <button
                           type="button"
                           onClick={() => handleAddCalendar(CALENDAR_TEMPLATES[0])}
@@ -325,6 +402,17 @@ export const CalendarStructureModal: React.FC<CalendarStructureModalProps> = ({
                         >
                           <span className="font-bold">گاه‌شمار ساده از صفر</span>
                           <span className="text-text-muted text-[11px]">۱۲ ماه ۳۰ روزه آماده تغییر</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleDuplicateCurrentCalendar}
+                          className="w-full text-start p-2 rounded-lg hover:bg-surface-2 text-xs text-text-primary flex flex-col gap-0.5 border-t border-border/60 pt-1.5"
+                        >
+                          <span className="font-bold flex items-center gap-1 text-accent-hover">
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>کپی از گاه‌شمار فعلی</span>
+                          </span>
+                          <span className="text-text-muted text-[11px]">نسخه‌برداری با تنظیمات مستقل</span>
                         </button>
                       </div>
                     )}
@@ -391,360 +479,17 @@ export const CalendarStructureModal: React.FC<CalendarStructureModalProps> = ({
             )}
           </div>
 
-          {/* Validation Errors */}
-          {!state.validation.valid && (
-            <div className="p-3 rounded-xl bg-danger/10 border border-danger/30 text-xs text-danger space-y-1">
-              <div className="font-bold flex items-center gap-1.5">
-                <AlertTriangle className="w-4 h-4 text-danger" />
-                <span>خطاهای اعتبارسنجی ساختار گاه‌شمار:</span>
-              </div>
-              <ul className="list-disc list-inside space-y-0.5 text-text-primary">
-                {state.validation.errors.map((err, i) => (
-                  <li key={i}>{err}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Section: Basic Info */}
-          <div className="p-3.5 rounded-xl bg-surface-2 border border-border space-y-3">
-            <h4 className="text-xs font-bold text-text-primary">مشخصات هویتی گاه‌شمار</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-text-muted mb-1">نام گاه‌شمار</label>
-                <Input
-                  noWrapper
-                  disabled={!isDm}
-                  value={state.calendar.name}
-                  onChange={e => dispatch({ type: 'UPDATE_BASIC', name: e.target.value })}
-                  className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-text-muted mb-1">برچسب دوره (Era)</label>
-                <Input
-                  noWrapper
-                  disabled={!isDm}
-                  value={state.calendar.eraLabel || ''}
-                  onChange={e => dispatch({ type: 'UPDATE_BASIC', eraLabel: e.target.value })}
-                  placeholder="مثلاً: پ.ر.ن، هجری، سال خورشید"
-                  className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-text-muted mb-1">سال آغازین لنگر (Start Year)</label>
-                <Input
-                  noWrapper
-                  type="number"
-                  disabled={!isDm}
-                  value={state.calendar.startYear ?? 1500}
-                  onChange={e => dispatch({ type: 'UPDATE_BASIC', startYear: Number(e.target.value) })}
-                  className="w-full bg-bg border border-border rounded-xl px-3 py-2 text-xs text-text-primary"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-border text-xs text-text-muted">
-              <span>تعداد روزهای سال: <strong className="text-text-primary">{state.totalDaysInYear} روز</strong></span>
-              <span>طول هفته: <strong className="text-text-primary">{state.weekLength} روز</strong></span>
-              <span>تعداد ماه‌ها: <strong className="text-text-primary">{state.calendar.months.length} ماه</strong></span>
-              <span>روزهای برون‌گاه: <strong className="text-text-primary">{state.calendar.offDays?.length || 0} روز</strong></span>
-            </div>
-          </div>
-
-          {/* Section: Today in this Calendar (Anchor Calculation) */}
-          <div className="p-3.5 rounded-xl bg-info/40 border border-border space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-bold text-accent-hover flex items-center gap-1.5">
-                <CalendarIcon className="w-4 h-4" />
-                <span>تنظیم تاریخ امروز در این گاه‌شمار (همگام‌سازی لنگر)</span>
-              </span>
-              <span className="text-xs text-text-muted">روز مطلق کمپین: {currentEpochDay}</span>
-            </div>
-
-            <p className="text-xs text-text-muted leading-relaxed">
-              با وارد کردن تاریخ امروز برای این تقویم، لنگر زمانی و روز هفته لنگر طوری محاسبه می‌شود که این تقویم با سایر گاه‌شمارهای کمپین در روز مطلق {currentEpochDay} همگام گردد.
-            </p>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-              <div>
-                <label className="block text-[11px] font-medium text-text-muted mb-1">سال جاری</label>
-                <Input
-                  noWrapper
-                  type="number"
-                  disabled={!isDm}
-                  value={alignYear}
-                  onChange={e => setAlignYear(Number(e.target.value))}
-                  className="w-full bg-bg border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-medium text-text-muted mb-1">ماه جاری</label>
-                <Select
-                  disabled={!isDm || alignIsOffDay}
-                  value={alignMonth}
-                  onChange={e => setAlignMonth(Number(e.target.value))}
-                  className="w-full bg-bg border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
-                >
-                  {state.calendar.months.map((m, idx) => (
-                    <option key={idx} value={idx + 1}>{m.name} ({idx + 1})</option>
-                  ))}
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-medium text-text-muted mb-1">روز ماه</label>
-                <Input
-                  noWrapper
-                  type="number"
-                  disabled={!isDm || alignIsOffDay}
-                  value={alignDay}
-                  onChange={e => setAlignDay(Number(e.target.value))}
-                  className="w-full bg-bg border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-medium text-text-muted mb-1">روز هفته امروز</label>
-                <Select
-                  disabled={!isDm}
-                  value={alignWeekdayIdx}
-                  onChange={e => setAlignWeekdayIdx(Number(e.target.value))}
-                  className="w-full bg-bg border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
-                >
-                  {(state.calendar.weekdays || []).map((w, idx) => (
-                    <option key={idx} value={idx}>{w}</option>
-                  ))}
-                </Select>
-              </div>
-            </div>
-
-            {isDm && (
-              <div className="flex justify-end pt-1">
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={handleApplyTodayAlignment}
-                  className="bg-accent/20 text-accent-hover border border-accent/40 text-xs font-bold"
-                >
-                  محاسبه لنگر و همگام‌سازی تاریخ امروز
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* Section: Weekdays */}
-          <div className="p-3.5 rounded-xl bg-surface-2 border border-border space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-bold text-text-primary">روزهای هفته ({state.weekLength} روز)</span>
-              {isDm && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => dispatch({ type: 'ADD_WEEKDAY', name: `روز ${state.weekLength + 1}` })}
-                  className="text-xs text-accent-hover flex items-center gap-1"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>افزودن روز هفته</span>
-                </Button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {(state.calendar.weekdays || []).map((w, idx) => (
-                <div key={idx} className="p-2 rounded-xl bg-bg border border-border flex items-center justify-between gap-2">
-                  <Input
-                    noWrapper
-                    disabled={!isDm}
-                    value={w}
-                    onChange={e => dispatch({ type: 'UPDATE_WEEKDAY', index: idx, name: e.target.value })}
-                    className="w-full bg-transparent border-0 text-xs text-text-primary p-0 focus:outline-none"
-                  />
-                  {isDm && state.weekLength > 1 && (
-                    <button
-                      type="button"
-                      aria-label="حذف روز هفته"
-                      onClick={() => dispatch({ type: 'REMOVE_WEEKDAY', index: idx })}
-                      className="text-text-muted hover:text-danger p-1"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Section: Months */}
-          <div className="p-3.5 rounded-xl bg-surface-2 border border-border space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-bold text-text-primary">ماه‌های سال ({state.calendar.months.length} ماه)</span>
-              {isDm && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => dispatch({ type: 'ADD_MONTH', month: { name: `ماه ${state.calendar.months.length + 1}`, days: 30 } })}
-                  className="text-xs text-accent-hover flex items-center gap-1"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>افزودن ماه</span>
-                </Button>
-              )}
-            </div>
-
-            <div className="space-y-2 max-h-72 overflow-y-auto p-1 scrollbar-none">
-              {state.calendar.months.map((m, idx) => (
-                <div key={idx} className="p-2.5 rounded-xl bg-bg border border-border flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                    <span className="text-xs font-bold text-text-muted w-5 shrink-0">{idx + 1}</span>
-                    <Input
-                      noWrapper
-                      disabled={!isDm}
-                      value={m.name}
-                      onChange={e => dispatch({ type: 'UPDATE_MONTH', index: idx, month: { name: e.target.value } })}
-                      placeholder="نام ماه"
-                      className="flex-1 bg-surface-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary"
-                    />
-                    <Input
-                      noWrapper
-                      type="number"
-                      disabled={!isDm}
-                      value={m.days}
-                      onChange={e => dispatch({ type: 'UPDATE_MONTH', index: idx, month: { days: Number(e.target.value) } })}
-                      className="w-16 bg-surface-2 border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary text-center"
-                    />
-                    <span className="text-xs text-text-muted">روز</span>
-                    <Input
-                      noWrapper
-                      disabled={!isDm}
-                      value={m.season || ''}
-                      onChange={e => dispatch({ type: 'UPDATE_MONTH', index: idx, month: { season: e.target.value } })}
-                      placeholder="فصل (اختیاری)"
-                      className="w-24 bg-surface-2 border border-border rounded-lg px-2 py-1.5 text-xs text-text-primary"
-                    />
-                  </div>
-
-                  {isDm && (
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        aria-label="انتقال به بالا"
-                        disabled={idx === 0}
-                        onClick={() => dispatch({ type: 'MOVE_MONTH', fromIndex: idx, toIndex: idx - 1 })}
-                        className="p-1.5 rounded text-text-muted hover:text-text-primary disabled:opacity-30"
-                      >
-                        <ChevronUp className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        aria-label="انتقال به پایین"
-                        disabled={idx === state.calendar.months.length - 1}
-                        onClick={() => dispatch({ type: 'MOVE_MONTH', fromIndex: idx, toIndex: idx + 1 })}
-                        className="p-1.5 rounded text-text-muted hover:text-text-primary disabled:opacity-30"
-                      >
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                      {state.calendar.months.length > 1 && (
-                        <button
-                          type="button"
-                          aria-label="حذف ماه"
-                          onClick={() => dispatch({ type: 'REMOVE_MONTH', index: idx })}
-                          className="p-1.5 rounded text-text-muted hover:text-danger"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Section: Off-Days */}
-          <div className="p-3.5 rounded-xl bg-surface-2 border border-border space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-bold text-text-primary">روزهای برون‌گاه / خارج از ماه ({state.calendar.offDays?.length || 0})</span>
-              {isDm && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => dispatch({ type: 'ADD_OFF_DAY', offDay: { name: `روز برون‌گاه ${(state.calendar.offDays?.length || 0) + 1}` } })}
-                  className="text-xs text-accent-hover flex items-center gap-1"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>افزودن روز برون‌گاه</span>
-                </Button>
-              )}
-            </div>
-
-            {(!state.calendar.offDays || state.calendar.offDays.length === 0) ? (
-              <p className="text-xs text-text-muted italic">این تقویم فاقد روز برون‌گاه است.</p>
-            ) : (
-              <div className="space-y-2 max-h-56 overflow-y-auto p-1 scrollbar-none">
-                {state.calendar.offDays.map((od, idx) => (
-                  <div key={idx} className="p-2.5 rounded-xl bg-bg border border-border flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                      <span className="text-xs font-bold text-role-codm w-5 shrink-0">{idx + 1}</span>
-                      <Input
-                        noWrapper
-                        disabled={!isDm}
-                        value={od.name}
-                        onChange={e => dispatch({ type: 'UPDATE_OFF_DAY', index: idx, offDay: { name: e.target.value } })}
-                        placeholder="نام روز برون‌گاه"
-                        className="flex-1 bg-surface-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary"
-                      />
-                      <Input
-                        noWrapper
-                        disabled={!isDm}
-                        value={od.folkBelief || od.note || ''}
-                        onChange={e => dispatch({ type: 'UPDATE_OFF_DAY', index: idx, offDay: { folkBelief: e.target.value } })}
-                        placeholder="باور اسطوره‌ای یا یادداشت"
-                        className="flex-1 bg-surface-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary"
-                      />
-                    </div>
-
-                    {isDm && (
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          aria-label="انتقال به بالا"
-                          disabled={idx === 0}
-                          onClick={() => dispatch({ type: 'MOVE_OFF_DAY', fromIndex: idx, toIndex: idx - 1 })}
-                          className="p-1.5 rounded text-text-muted hover:text-text-primary disabled:opacity-30"
-                        >
-                          <ChevronUp className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          aria-label="انتقال به پایین"
-                          disabled={idx === (state.calendar.offDays?.length || 1) - 1}
-                          onClick={() => dispatch({ type: 'MOVE_OFF_DAY', fromIndex: idx, toIndex: idx + 1 })}
-                          className="p-1.5 rounded text-text-muted hover:text-text-primary disabled:opacity-30"
-                        >
-                          <ChevronDown className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          aria-label="حذف روز برون‌گاه"
-                          onClick={() => dispatch({ type: 'REMOVE_OFF_DAY', index: idx })}
-                          className="p-1.5 rounded text-text-muted hover:text-danger"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Calendar Structure Form (Standalone & Pure) */}
+          <CalendarStructureForm
+            calendar={state.calendar}
+            onChange={(updated) => dispatch({ type: 'SET_CALENDAR', calendar: updated })}
+            isDm={isDm}
+            currentEpochDay={currentEpochDay}
+            initialProjectedDate={initialProjectedDate}
+            showTodayAlignment={true}
+            externalState={state}
+            externalDispatch={dispatch}
+          />
 
           {/* Bottom Action Bar */}
           {isDm && (

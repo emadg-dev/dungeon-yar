@@ -16,10 +16,12 @@ import {
   TEMPLATE_SIMPLE_STARTER, 
   createCampaignCalendarFromTemplate 
 } from '../../../shared/rules/calendarTemplates';
+import { validateCalendar } from '../../../shared/rules/calendar';
+import { CalendarStructureForm } from '../calendar/CalendarStructureForm';
 import { 
   Compass, Sparkles, BookOpen, Layers, ArrowRight, ArrowLeft, 
   Check, Save, AlertTriangle, Users, Shield, Calendar, MapPin, 
-  Swords, Scroll, Mail, CheckCircle2, ChevronRight, X, Plus, Trash2, 
+  Swords, Scroll, Mail, CheckCircle2, ChevronRight, ChevronDown, ChevronUp, X, Plus, Trash2, 
   Upload, HelpCircle, RefreshCw, Copy, ExternalLink 
 } from 'lucide-react';
 import { ScrollableRow } from '../ui/ScrollableRow';
@@ -91,6 +93,14 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
   const [calendarName, setCalendarName] = useState('گاه‌شمار شاه‌روزان (زروانیا)');
   const [calendarYear, setCalendarYear] = useState<number>(1500);
   const [calendarEra, setCalendarEra] = useState('پ.ر.ن');
+  const [calendarDraft, setCalendarDraft] = useState<GenericCalendarData>(() =>
+    createCampaignCalendarFromTemplate('wizard-draft', TEMPLATE_SHAHROOZAN_ZORVANIA, {
+      name: 'گاه‌شمار شاه‌روزان (زروانیا)',
+      startYear: 1500,
+      eraLabel: 'پ.ر.ن'
+    })
+  );
+  const [calendarStructureExpanded, setCalendarStructureExpanded] = useState(false);
   const [factionsList, setFactionsList] = useState<{ name: string; description: string; attitude: string; region: string }[]>([
     { name: 'موبدان آذرین', description: 'پاسداران آتش ابدی کویر', attitude: 'متحد', region: 'کویر خاموش' },
     { name: 'انجمن کنداوران', description: 'صنعتگران و معدن‌کاوان دیوان', attitude: 'بی‌طرف', region: 'سپیدارون' }
@@ -255,34 +265,57 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
     }
   };
 
+  // Handle template selection in Step 3
+  const handleSelectCalendarTemplate = (source: 'zorvania' | 'gathic' | 'scratch') => {
+    setCalendarSource(source);
+    const template = source === 'gathic'
+      ? TEMPLATE_GATHIC
+      : source === 'scratch'
+        ? TEMPLATE_SIMPLE_STARTER
+        : TEMPLATE_SHAHROOZAN_ZORVANIA;
+    const name = template.name;
+    const year = template.startYear;
+    const era = template.eraLabel;
+    setCalendarName(name);
+    setCalendarYear(year);
+    setCalendarEra(era);
+    const draft = createCampaignCalendarFromTemplate('wizard-draft', template, {
+      name,
+      startYear: year,
+      eraLabel: era
+    });
+    setCalendarDraft(draft);
+  };
+
   // Create or sync real campaign calendar for Step 3
   const createOrUpdateWizardCalendar = async (campaignId: string) => {
     const existingCals = await api.getCampaignCalendars(campaignId).catch(() => []);
     let cal = existingCals.find(c => c.scopeId === campaignId || c.scopeType === 'campaign');
-    const template = calendarSource === 'gathic'
-      ? TEMPLATE_GATHIC
-      : calendarSource === 'scratch'
-        ? TEMPLATE_SIMPLE_STARTER
-        : TEMPLATE_SHAHROOZAN_ZORVANIA;
 
-    const chosenName = calendarName.trim() || template.name;
-    const chosenYear = Number(calendarYear) || template.startYear;
-    const chosenEra = calendarEra.trim() || template.eraLabel;
+    const chosenName = calendarName.trim() || calendarDraft.name || 'گاه‌شمار کمپین';
+    const chosenYear = Number(calendarYear) || calendarDraft.startYear || 1500;
+    const chosenEra = calendarEra.trim() || calendarDraft.eraLabel || 'پ.ر.ن';
+
+    const fullCalendarToSave: GenericCalendarData = {
+      ...calendarDraft,
+      id: cal?.id || (calendarDraft.id !== 'wizard-draft' ? calendarDraft.id : undefined),
+      name: chosenName,
+      startYear: chosenYear,
+      eraLabel: chosenEra,
+      scopeType: 'campaign',
+      scopeId: campaignId
+    };
+
+    const validation = validateCalendar(fullCalendarToSave);
+    if (!validation.valid) {
+      throw new Error(`خطا در اعتبارسنجی ساختار گاه‌شمار: ${validation.errors.join('، ')}`);
+    }
 
     if (!cal || !cal.id) {
-      const calData = createCampaignCalendarFromTemplate(campaignId, template, {
-        name: chosenName,
-        startYear: chosenYear,
-        eraLabel: chosenEra
-      });
-      cal = await api.createCampaignCalendar(campaignId, calData);
+      cal = await api.createCampaignCalendar(campaignId, fullCalendarToSave);
       await api.setCampaignTime(campaignId, { epochDay: 0, calendarId: cal.id });
     } else {
-      await api.updateCampaignCalendar(campaignId, cal.id, {
-        name: chosenName,
-        startYear: chosenYear,
-        eraLabel: chosenEra
-      });
+      cal = await api.updateCampaignCalendar(campaignId, cal.id, fullCalendarToSave);
     }
     return cal;
   };
@@ -598,59 +631,50 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                 <Calendar className="w-4 h-4 text-accent-hover" />
                 <span>گاه‌شمار کمپین</span>
               </span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+              <div role="radiogroup" aria-label="انتخاب قالب گاه‌شمار" className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
                 <Button
                   type="button"
-                  onClick={() => {
-                    setCalendarSource('zorvania');
-                    setCalendarName('گاه‌شمار شاه‌روزان (زروانیا)');
-                    setCalendarYear(1500);
-                    setCalendarEra('پ.ر.ن');
-                  }}
-                  className={`p-2.5 rounded-xl border text-start transition ${
+                  role="radio"
+                  aria-checked={calendarSource === 'zorvania'}
+                  onClick={() => handleSelectCalendarTemplate('zorvania')}
+                  className={`option-card p-3 rounded-xl border text-start transition min-h-[44px] flex flex-col justify-start items-stretch gap-1 ${
                     calendarSource === 'zorvania'
-                      ? 'border-accent bg-accent/10 text-accent-hover font-bold'
-                      : 'border-border bg-bg text-text-muted'
+                      ? 'border-accent bg-accent/10 text-accent-hover font-bold ring-1 ring-accent/30'
+                      : 'border-border bg-bg text-text-muted hover:border-border-strong hover:text-text-primary'
                   }`}
                 >
-                  <div className="font-bold">شاه‌روزان زروانیا</div>
-                  <div className="text-xs text-text-muted mt-0.5">۱۲ ماه ۳۰ روزه + ۵ روز برون‌گاه اساطیری</div>
+                  <div className="font-bold text-text-primary text-xs">شاه‌روزان زروانیا</div>
+                  <div className="text-[11px] text-text-muted leading-relaxed line-clamp-2">۱۲ ماه ۳۰ روزه + ۵ روز برون‌گاه اساطیری</div>
                 </Button>
 
                 <Button
                   type="button"
-                  onClick={() => {
-                    setCalendarSource('gathic');
-                    setCalendarName('گاه‌شمار گاتایی (اوستایی کهن)');
-                    setCalendarYear(1000);
-                    setCalendarEra('گ.و');
-                  }}
-                  className={`p-2.5 rounded-xl border text-start transition ${
+                  role="radio"
+                  aria-checked={calendarSource === 'gathic'}
+                  onClick={() => handleSelectCalendarTemplate('gathic')}
+                  className={`option-card p-3 rounded-xl border text-start transition min-h-[44px] flex flex-col justify-start items-stretch gap-1 ${
                     calendarSource === 'gathic'
-                      ? 'border-accent bg-accent/10 text-accent-hover font-bold'
-                      : 'border-border bg-bg text-text-muted'
+                      ? 'border-accent bg-accent/10 text-accent-hover font-bold ring-1 ring-accent/30'
+                      : 'border-border bg-bg text-text-muted hover:border-border-strong hover:text-text-primary'
                   }`}
                 >
-                  <div className="font-bold">گاه‌شمار گاتایی</div>
-                  <div className="text-xs text-text-muted mt-0.5">۱۲ ماه ۳۰ روزه + ۵ گاه گاسان اوستایی</div>
+                  <div className="font-bold text-text-primary text-xs">گاه‌شمار گاتایی</div>
+                  <div className="text-[11px] text-text-muted leading-relaxed line-clamp-2">۱۲ ماه ۳۰ روزه + ۵ گاه گاسان اوستایی</div>
                 </Button>
 
                 <Button
                   type="button"
-                  onClick={() => {
-                    setCalendarSource('scratch');
-                    setCalendarName('گاه‌شمار کمپین');
-                    setCalendarYear(1);
-                    setCalendarEra('س.ت');
-                  }}
-                  className={`p-2.5 rounded-xl border text-start transition ${
+                  role="radio"
+                  aria-checked={calendarSource === 'scratch'}
+                  onClick={() => handleSelectCalendarTemplate('scratch')}
+                  className={`option-card p-3 rounded-xl border text-start transition min-h-[44px] flex flex-col justify-start items-stretch gap-1 ${
                     calendarSource === 'scratch'
-                      ? 'border-accent bg-accent/10 text-accent-hover font-bold'
-                      : 'border-border bg-bg text-text-muted'
+                      ? 'border-accent bg-accent/10 text-accent-hover font-bold ring-1 ring-accent/30'
+                      : 'border-border bg-bg text-text-muted hover:border-border-strong hover:text-text-primary'
                   }`}
                 >
-                  <div className="font-bold">گاه‌شمار از صفر</div>
-                  <div className="text-xs text-text-muted mt-0.5">استارتر پایه‌ای ۱۲ ماهه آماده شخصی‌سازی</div>
+                  <div className="font-bold text-text-primary text-xs">گاه‌شمار از صفر</div>
+                  <div className="text-[11px] text-text-muted leading-relaxed line-clamp-2">استارتر پایه‌ای ۱۲ ماهه آماده شخصی‌سازی</div>
                 </Button>
               </div>
 
@@ -660,7 +684,10 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                   <Input noWrapper
                     type="text"
                     value={calendarName}
-                    onChange={e => setCalendarName(e.target.value)}
+                    onChange={e => {
+                      setCalendarName(e.target.value);
+                      setCalendarDraft(prev => ({ ...prev, name: e.target.value }));
+                    }}
                     placeholder="نام گاه‌شمار..."
                     className="w-full bg-bg border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent"
                   />
@@ -670,7 +697,11 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                   <Input noWrapper
                     type="number"
                     value={calendarYear}
-                    onChange={e => setCalendarYear(Number(e.target.value) || 0)}
+                    onChange={e => {
+                      const val = Number(e.target.value) || 0;
+                      setCalendarYear(val);
+                      setCalendarDraft(prev => ({ ...prev, startYear: val }));
+                    }}
                     placeholder="1500"
                     className="w-full bg-bg border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent"
                   />
@@ -680,11 +711,48 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
                   <Input noWrapper
                     type="text"
                     value={calendarEra}
-                    onChange={e => setCalendarEra(e.target.value)}
+                    onChange={e => {
+                      setCalendarEra(e.target.value);
+                      setCalendarDraft(prev => ({ ...prev, eraLabel: e.target.value }));
+                    }}
                     placeholder="پ.ر.ن"
                     className="w-full bg-bg border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent"
                   />
                 </div>
+              </div>
+
+              {/* Collapsible Calendar Structure Editor Section */}
+              <div className="pt-2 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setCalendarStructureExpanded(!calendarStructureExpanded)}
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-surface hover:bg-surface-2 border border-border text-xs font-bold text-text-primary transition"
+                >
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-accent-hover shrink-0" />
+                    <span>ویرایش ساختار تقویم ({calendarDraft.months.length} ماه، {calendarDraft.offDays?.length || 0} روز برون‌گاه)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-accent-hover text-xs font-medium">
+                    <span>{calendarStructureExpanded ? 'بستن تنظیمات ساختار' : 'تنظیم ماه‌ها و روزها'}</span>
+                    {calendarStructureExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </div>
+                </button>
+
+                {calendarStructureExpanded && (
+                  <div className="mt-3 p-3.5 rounded-xl bg-surface border border-border space-y-3">
+                    <CalendarStructureForm
+                      calendar={calendarDraft}
+                      onChange={(updated) => {
+                        setCalendarDraft(updated);
+                        setCalendarName(updated.name);
+                        setCalendarYear(updated.startYear);
+                        setCalendarEra(updated.eraLabel);
+                      }}
+                      hideBasicInfo={true}
+                      isDm={true}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

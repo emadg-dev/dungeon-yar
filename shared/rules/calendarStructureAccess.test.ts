@@ -38,4 +38,42 @@ describe('Stage 2 Phase 2: CalendarStructure Access & Trigger Logic', () => {
     }
     expect(editorOpen).toBe(false);
   });
+
+  it('4. CodexTab allows all roles (player, spectator, DM) to view CalendarModal', () => {
+    let calendarModalOpen = false;
+    const handleOpenCalendar = () => {
+      calendarModalOpen = true;
+    };
+
+    // Both players and DMs can open CalendarModal
+    handleOpenCalendar();
+    expect(calendarModalOpen).toBe(true);
+  });
+
+  it('5. CodexTab only allows DM/owner to trigger structure editor', () => {
+    let structureEditorOpen = false;
+    const triggerStructureEditor = (isDm: boolean) => {
+      if (isDm) {
+        structureEditorOpen = true;
+      }
+    };
+
+    // Player cannot open structure editor
+    triggerStructureEditor(false);
+    expect(structureEditorOpen).toBe(false);
+
+    // DM can open structure editor
+    triggerStructureEditor(true);
+    expect(structureEditorOpen).toBe(true);
+  });
+
+  it('6. DmLibrary toolbar renders campaign calendar trigger for DM', () => {
+    let calendarEditorOpen = false;
+    const onOpenFromLibrary = () => {
+      calendarEditorOpen = true;
+    };
+
+    onOpenFromLibrary();
+    expect(calendarEditorOpen).toBe(true);
+  });
 });

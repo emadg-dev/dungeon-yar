@@ -595,6 +595,16 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
 
             <Button
               type="button"
+              onClick={() => setCalendarEditorOpen(true)}
+              className="px-3 py-1.5 rounded-xl bg-accent/15 border border-accent/30 text-accent-hover hover:bg-accent/25 text-xs font-bold transition inline-flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
+              title="ویرایش و مدیریت تقویم‌ها و گاه‌شمارهای کمپین"
+            >
+              <Calendar className="w-4 h-4 shrink-0" />
+              <span className="whitespace-nowrap shrink-0">تقویم‌های دنیا</span>
+            </Button>
+
+            <Button
+              type="button"
               onClick={() => setSaveTemplateModalOpen(true)}
               className="px-3 py-1.5 rounded-xl bg-accent/15 border border-accent/30 text-accent-hover hover:bg-accent/25 text-xs font-bold transition inline-flex items-center gap-1.5 min-h-[44px] whitespace-nowrap shrink-0 snap-start"
             >
