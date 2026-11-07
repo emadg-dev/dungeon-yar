@@ -1580,7 +1580,10 @@ export interface WizardAnswers {
 
   // Step 3: World
   calendarId?: string;
-  calendarSource?: 'library' | 'scratch' | 'campaign';
+  calendarSource?: 'library' | 'scratch' | 'campaign' | 'zorvania' | 'gathic';
+  calendarName?: string;
+  calendarYear?: number;
+  calendarEra?: string;
   calendarData?: any;
   locationIds?: string[];
   factionIds?: string[];

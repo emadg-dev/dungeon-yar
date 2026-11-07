@@ -15,7 +15,7 @@ import {
   TEMPLATE_GATHIC, 
   TEMPLATE_SIMPLE_STARTER, 
   createCampaignCalendarFromTemplate 
-} from '../../shared/rules/calendarTemplates';
+} from '../../../shared/rules/calendarTemplates';
 import { 
   Compass, Sparkles, BookOpen, Layers, ArrowRight, ArrowLeft, 
   Check, Save, AlertTriangle, Users, Shield, Calendar, MapPin, 
@@ -159,8 +159,9 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
         if (ans.toneTags) setToneTags(ans.toneTags);
         if (ans.units) setUnits(ans.units);
         if (ans.startingLevel) setStartingLevel(ans.startingLevel);
-        if (ans.maxEntryLevel) setMaxEntryLevel(ans.maxEntryLevel);
-        if (ans.calendarSource) setCalendarSource(ans.calendarSource);
+        if (ans.calendarSource && (ans.calendarSource === 'zorvania' || ans.calendarSource === 'gathic' || ans.calendarSource === 'scratch')) {
+          setCalendarSource(ans.calendarSource);
+        }
         if (ans.calendarName) setCalendarName(ans.calendarName);
         if (ans.calendarYear) setCalendarYear(ans.calendarYear);
         if (ans.calendarEra) setCalendarEra(ans.calendarEra);
@@ -268,7 +269,7 @@ export const CampaignWizardModal: React.FC<CampaignWizardModalProps> = ({
     const chosenYear = Number(calendarYear) || template.startYear;
     const chosenEra = calendarEra.trim() || template.eraLabel;
 
-    if (!cal) {
+    if (!cal || !cal.id) {
       const calData = createCampaignCalendarFromTemplate(campaignId, template, {
         name: chosenName,
         startYear: chosenYear,

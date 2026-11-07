@@ -2289,10 +2289,23 @@ export class LocalApi implements ApiClient {
       throw new Error('فقط دانجن مستر مجاز است.');
     }
     const current = await this.getCalendar();
+    const merged = { ...current, ...cal };
+    const res = await this.setCampaignTime(campId, {
+      year: merged.year,
+      month: merged.month,
+      day: merged.day,
+      isOffDay: merged.isOffDay,
+      offDayIndex: merged.offDayIndex
+    });
     const updated: WorldCalendar = {
-      ...current,
-      ...cal,
-      updatedAt: new Date().toISOString()
+      id: res.calendarId,
+      year: res.date.year,
+      month: res.date.month,
+      day: res.date.day,
+      isOffDay: res.date.isOffDay,
+      offDayIndex: res.date.offDayIndex || 0,
+      currentFestival: res.activeFestivals[0]?.name || '',
+      updatedAt: new Date(res.updatedAt).toISOString()
     };
     this.setItem('calendar', updated);
     return updated;

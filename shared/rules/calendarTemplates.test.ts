@@ -15,7 +15,7 @@ describe('Stage 2B-2: Calendar Templates, Clone, Lazy Init & Wizard', () => {
   describe('الف: Seed Templates Structure & Validity', () => {
     it('1. TEMPLATE_SHAHROOZAN_ZORVANIA conforms to 12x30 + 5 off-days and passes validateCalendar', () => {
       const v = validateCalendar(TEMPLATE_SHAHROOZAN_ZORVANIA);
-      expect(v.isValid).toBe(true);
+      expect(v.valid).toBe(true);
       expect(TEMPLATE_SHAHROOZAN_ZORVANIA.months).toHaveLength(12);
       expect(TEMPLATE_SHAHROOZAN_ZORVANIA.months.every(m => m.days === 30)).toBe(true);
       expect(TEMPLATE_SHAHROOZAN_ZORVANIA.offDays).toHaveLength(5);
@@ -27,7 +27,7 @@ describe('Stage 2B-2: Calendar Templates, Clone, Lazy Init & Wizard', () => {
 
     it('2. TEMPLATE_GATHIC conforms to 12x30 + 5 Gathic off-days and passes validateCalendar', () => {
       const v = validateCalendar(TEMPLATE_GATHIC);
-      expect(v.isValid).toBe(true);
+      expect(v.valid).toBe(true);
       expect(TEMPLATE_GATHIC.months).toHaveLength(12);
       expect(TEMPLATE_GATHIC.months.every(m => m.days === 30)).toBe(true);
       expect(TEMPLATE_GATHIC.offDays).toHaveLength(5);
@@ -40,7 +40,7 @@ describe('Stage 2B-2: Calendar Templates, Clone, Lazy Init & Wizard', () => {
 
     it('3. TEMPLATE_SIMPLE_STARTER provides clean 12x30 starter calendar for scratch creation', () => {
       const v = validateCalendar(TEMPLATE_SIMPLE_STARTER);
-      expect(v.isValid).toBe(true);
+      expect(v.valid).toBe(true);
       expect(TEMPLATE_SIMPLE_STARTER.months).toHaveLength(12);
       expect(TEMPLATE_SIMPLE_STARTER.months.every(m => m.days === 30)).toBe(true);
       expect(TEMPLATE_SIMPLE_STARTER.offDays).toHaveLength(0);
@@ -229,7 +229,7 @@ describe('Stage 2B-2: Calendar Templates, Clone, Lazy Init & Wizard', () => {
       // Import execution should succeed
       const targetCamp = { scopeType: 'campaign' as const, scopeId: 'camp-legacy-import-target' };
       const job = await api.runImportPack(legacyPackJson, targetCamp);
-      expect(job.status).toBe('completed');
+      expect(job.status).toBe('done');
     });
   });
 });

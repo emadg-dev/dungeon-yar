@@ -15,6 +15,8 @@ interface CalendarModalProps {
   timeResponse?: CampaignTimeResponse;
   activeCalendar?: GenericCalendarData;
   onAdvanceCampaignTime?: (days: number) => Promise<void>;
+  campaignId?: string;
+  onOpenStructureEditor?: () => void;
 }
 
 export const CalendarModal: React.FC<CalendarModalProps> = ({
@@ -26,7 +28,9 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
   onUpdateCalendar,
   timeResponse,
   activeCalendar,
-  onAdvanceCampaignTime
+  onAdvanceCampaignTime,
+  campaignId,
+  onOpenStructureEditor
 }) => {
   const currentYear = timeResponse?.date?.year ?? calendar?.year ?? 1500;
   const currentMonth = timeResponse?.date?.month ?? calendar?.month ?? 1;
@@ -89,8 +93,20 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
             <Clock className="w-4 h-4 text-accent-hover shrink-0" />
             <span>زمان جاری در جهان زروانیا</span>
           </div>
-          <div className="text-lg font-black text-accent-hover">
-            {formattedDate}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-lg font-black text-accent-hover">
+              {formattedDate}
+            </div>
+            {isDm && onOpenStructureEditor && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={onOpenStructureEditor}
+                className="bg-accent/20 hover:bg-accent/30 text-accent-hover border border-accent/40 text-xs font-bold flex items-center gap-1.5"
+              >
+                <span>ویرایش تقویم‌ها</span>
+              </Button>
+            )}
           </div>
           {activeFestival && (
             <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-accent/20 border border-accent/50 text-accent-hover text-xs font-bold animate-pulse">

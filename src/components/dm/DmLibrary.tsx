@@ -15,6 +15,7 @@ import { VirtualList } from '../common/VirtualList';
 import { LineageEditorSheet } from './LineageEditorSheet';
 import { BackgroundEditorSheet } from './BackgroundEditorSheet';
 import { ClassEditorSheet } from './ClassEditorSheet';
+import { CalendarStructureModal } from '../calendar/CalendarStructureModal';
 import { ScrollableRow } from '../ui/ScrollableRow';
 import { 
   Library, Search, Filter, Plus, CheckSquare, Square, Copy, Bookmark, 
@@ -1645,6 +1646,20 @@ export const DmLibrary: React.FC<DmLibraryProps> = ({
               } as any);
               showFeedback('کلاس جدید با موفقیت ایجاد شد');
             }
+            loadItems();
+          }}
+        />
+      )}
+
+      {/* Calendar Structure Editor Modal */}
+      {calendarEditorOpen && (
+        <CalendarStructureModal
+          isOpen={calendarEditorOpen}
+          onClose={() => setCalendarEditorOpen(false)}
+          campaignId={currentCampaignId}
+          userRole="owner"
+          onSaved={() => {
+            showFeedback('گاه‌شمار کمپین به‌روزرسانی شد');
             loadItems();
           }}
         />

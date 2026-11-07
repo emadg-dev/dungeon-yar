@@ -448,3 +448,132 @@ export async function createRealServerTestContext(campaignId = 'zorvania-c1') {
     dispatch
   };
 }
+
+/**
+ * Creates an extensible test server application instance for integration and lazy init testing.
+ * Directly routes requests through Cloudflare Pages Functions onRequest handler.
+ */
+export function createServerTestApp() {
+  const state: MockDbState = {
+    users: new Map(),
+    sessions: new Map(),
+    campaigns: new Map(),
+    campaignMembers: new Map(),
+    campaignTime: new Map(),
+    calendars: new Map(),
+    campaignCalendar: new Map()
+  };
+
+  const db = createMockD1(state);
+
+  const createUser = (id: string, email: string, displayName: string, platformRole: 'admin' | 'user' = 'user') => {
+    const now = Date.now();
+    const user = {
+      id,
+      email,
+      display_name: displayName,
+      role: 'player',
+      platform_role: platformRole,
+      status: 'active',
+      created_at: now
+    };
+    state.users.set(id, user);
+
+    const token = `token-${id}`;
+    // Pre-calculate sha256 of token to match route.ts authentication check
+    sha256Hex(token).then(tokenHash => {
+      state.sessions.set(id, {
+        id: `sess-${id}`,
+        user_id: id,
+        token_hash: tokenHash,
+        created_at: now,
+        expires_at: now + 7 * 24 * 3600 * 1000,
+        absolute_expires_at: now + 7 * 24 * 3600 * 1000,
+        revoked_at: null
+      });
+    });
+    return user;
+  };
+
+  const createCampaign = (id: string, name: string, ownerId: string) => {
+    const camp = {
+      id,
+      name,
+      status: 'active',
+      owner_id: ownerId
+    };
+    state.campaigns.set(id, camp);
+    return camp;
+  };
+
+  const addMember = (campaignId: string, userId: string, role: CampaignRole) => {
+    state.campaignMembers.set(`${campaignId}:${userId}`, {
+      campaign_id: campaignId,
+      user_id: userId,
+      role,
+      status: 'active'
+    });
+  };
+
+  const getAuthHeaders = (userId: string): Record<string, string> => {
+    return {
+      'Cookie': `__Host-zsession=token-${userId}`,
+      'X-Requested-With': 'zorvania',
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    };
+  };
+
+  const request = async (
+    pathWithQuery: string,
+    options: {
+      method?: string;
+      body?: any;
+      headers?: Record<string, string>;
+    } = {}
+  ): Promise<Response> => {
+    const method = (options.method || 'GET').toUpperCase();
+    const headers: Record<string, string> = {
+      'Host': 'localhost:3000',
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    };
+
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+      headers['X-Requested-With'] = headers['X-Requested-With'] || 'zorvania';
+    }
+
+    const url = new URL(`http://localhost:3000${pathWithQuery.startsWith('/api') ? pathWithQuery : '/api' + pathWithQuery}`);
+
+    const req = new Request(url.toString(), {
+      method,
+      headers,
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined
+    });
+
+    const env = {
+      DB: db,
+      IP_HASH_SALT: 'test-salt-secret',
+      DM_EMAILS: 'admin@zorvania.ir'
+    };
+
+    return await (onRequest as any)({
+      request: req,
+      env,
+      params: {},
+      waitUntil: () => {},
+      next: async () => new Response()
+    });
+  };
+
+  return {
+    dbState: state,
+    db,
+    createUser,
+    createCampaign,
+    addMember,
+    getAuthHeaders,
+    request
+  };
+}
