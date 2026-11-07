@@ -89,7 +89,7 @@ export const CampaignApprovalsModal: React.FC<CampaignApprovalsModalProps> = ({
                       <div className="flex items-center gap-2">
                         <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
                           item.type === 'create'
-                            ? 'bg-info/20 text-info border border-info/30'
+                            ? 'color-info/20 text-info border border-info/30'
                             : item.type === 'level_up'
                             ? 'bg-accent/20 text-accent-hover border border-accent/30'
                             : item.type === 'sheet_change'

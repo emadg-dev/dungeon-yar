@@ -305,19 +305,19 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
             {canPrivate && (
               <label className="min-h-[56px] p-3 rounded-lg bg-surface-2 border border-border flex items-center gap-3 cursor-pointer">
                 <Lock className={`w-4 h-4 shrink-0 ${isPrivateToDm ? 'text-accent-hover' : 'text-text-muted'}`} aria-hidden />
-                <span className="flex-1 min-w-0">
+                <span className="flex-1 min-w-80">
                   <span className="block text-sm font-medium text-text-primary">
                     {isDm ? 'پرتاب محرمانه' : 'ارسال فقط برای دانجن مستر'}
                   </span>
                   <span className="block text-xs text-text-muted">برای سایر بازیکنان پنهان می‌ماند.</span>
                 </span>
                 <Input noWrapper type="checkbox" checked={isPrivateToDm} onChange={e => setIsPrivateToDm(e.target.checked)}
-                  className="w-5 h-5 accent-accent rounded shrink-0 cursor-pointer" />
+                  className="w-5 h-5 accent-accent rounded cursor-pointer" />
               </label>
             )}
 
             <StickyFooter>
-              <Button type="button" onClick={handleRoll} className={`${primaryBtnCls} w-full min-h-[48px] text-base`}>
+              <Button type="button" onClick={handleRoll} className={`${primaryBtnCls} w-full min-h-[48px]  text-base`}>
                 <Dices className="w-5 h-5" />
                 <span dir="ltr">
                   {diceCount}d{selectedSides}{modifier !== 0 ? formatModifier(modifier) : ''}

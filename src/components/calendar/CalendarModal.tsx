@@ -99,7 +99,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
     >
       <div className="space-y-4 text-text-primary">
         {/* Current Date Banner */}
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-surface-2/60 via-info to-surface border border-accent/40 shadow-lg">
+        <div className="p-4 rounded-2xl color-info-rgb border border-accent/40 shadow-lg">
           <div className="flex items-center gap-2 text-accent-hover text-xs font-bold mb-1">
             <Clock className="w-4 h-4 text-accent-hover shrink-0" />
             <span>زمان جاری در جهان زروانیا</span>
@@ -140,7 +140,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
 
         {/* DM Controls: Advance Time */}
         {isDm && (
-          <div className="p-3.5 rounded-xl bg-info border border-border-strong/80 space-y-2.5">
+          <div className="p-3.5 rounded-xl color-info border border-border-strong/80 space-y-2.5">
             <span className="text-xs font-bold text-accent-hover block">پیشبرد زمان توسط دانجن مستر:</span>
             <div className="grid grid-cols-3 gap-2">
               <Button
@@ -187,7 +187,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
                   className={`p-2.5 rounded-xl border text-xs transition ${
                     isCurrent
                       ? 'bg-accent/20 border-accent text-accent-hover font-bold shadow-md'
-                      : 'bg-info border-border text-text-primary'
+                      : 'color-info border-border text-text-primary'
                   }`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
@@ -213,7 +213,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({
             {displayOffDays.map(off => (
               <div
                 key={off.id}
-                className="p-2.5 rounded-xl bg-info border border-role-codm/20 text-xs space-y-1"
+                className="p-2.5 rounded-xl color-info border border-role-codm/20 text-xs space-y-1"
               >
                 <div className="font-bold text-role-codm">{off.name}</div>
                 <div className="text-xs text-text-muted leading-relaxed">{off.folkBelief}</div>

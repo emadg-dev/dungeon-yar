@@ -276,7 +276,7 @@ export const CalendarStructureForm: React.FC<CalendarStructureFormProps> = ({
 
       {/* Section: Today in this Calendar (Anchor Calculation) */}
       {showTodayAlignment && currentEpochDay !== undefined && (
-        <div className="p-3.5 rounded-xl bg-info/40 border border-border space-y-3">
+        <div className="p-3.5 rounded-xl color-info/40 border border-border space-y-3">
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-bold text-accent-hover flex items-center gap-1.5">
               <CalendarIcon className="w-4 h-4" />
@@ -439,7 +439,7 @@ export const CalendarStructureForm: React.FC<CalendarStructureFormProps> = ({
                   value={m.name}
                   onChange={e => dispatchAndNotify({ type: 'UPDATE_MONTH', index: idx, month: { name: e.target.value } })}
                   placeholder="نام ماه"
-                  className={`flex-1 bg-surface-2 border rounded-lg px-2.5 py-1.5 text-xs text-text-primary min-h-[44px] ${
+                  className={`flex-1 bg-surface-2 border rounded-lg px-2.5 py-1.5 text-xs text-text-primary min-h-[44px] min-w-40 ${
                     !m.name?.trim() ? 'border-danger ring-1 ring-danger/30' : 'border-border'
                   }`}
                 />
@@ -449,7 +449,8 @@ export const CalendarStructureForm: React.FC<CalendarStructureFormProps> = ({
                   disabled={!isDm}
                   value={m.days}
                   onChange={e => dispatchAndNotify({ type: 'UPDATE_MONTH', index: idx, month: { days: Number(e.target.value) } })}
-                  className="w-16 bg-surface-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary text-center min-h-[44px]"
+                  className="w-16 bg-surface-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary
+                   text-center min-h-[44px] min-w-20"
                 />
                 <span className="text-xs text-text-muted">روز</span>
                 <Input
@@ -537,7 +538,8 @@ export const CalendarStructureForm: React.FC<CalendarStructureFormProps> = ({
                     value={od.name}
                     onChange={e => dispatchAndNotify({ type: 'UPDATE_OFF_DAY', index: idx, offDay: { name: e.target.value } })}
                     placeholder="نام روز برون‌گاه"
-                    className="flex-1 bg-surface-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary min-h-[44px]"
+                    className="flex-1 bg-surface-2 border border-border rounded-lg px-2.5 py-1.5
+                     text-xs text-text-primary min-h-[44px] "
                   />
                   <Input
                     noWrapper
@@ -545,7 +547,8 @@ export const CalendarStructureForm: React.FC<CalendarStructureFormProps> = ({
                     value={od.folkBelief || od.note || ''}
                     onChange={e => dispatchAndNotify({ type: 'UPDATE_OFF_DAY', index: idx, offDay: { folkBelief: e.target.value } })}
                     placeholder="باور اسطوره‌ای یا یادداشت"
-                    className="flex-1 bg-surface-2 border border-border rounded-lg px-2.5 py-1.5 text-xs text-text-primary min-h-[44px]"
+                    className="flex-1 bg-surface-2 border border-border rounded-lg px-2.5 py-1.5 text-xs
+                     text-text-primary min-h-[44px] min-w-80"
                   />
                 </div>
 

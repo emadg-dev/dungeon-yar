@@ -9,9 +9,9 @@ import { buildPageTitle, buildManifest } from '../../shared/branding.ts';
 export const APP_NAME_FA = 'دانجنیار';
 export const APP_NAME_LATIN = 'DungeonYar';
 export const APP_SHORT_NAME = 'دانجنیار'; // Maximum 12 characters for PWA
-export const APP_TAGLINE = 'پلتفرم همراه نقش‌آفرینی رومیزی D&D 5e و جهان‌های سفارشی';
-export const APP_VERSION = '0.13.1';
-export const APP_VERSION_FA = '0.13.1';
+export const APP_TAGLINE = 'پلتفرم همراه نقش‌آفرینی رومیزی ';
+export const APP_VERSION = '0.13.6';
+export const APP_VERSION_FA = '0.13.6';
 
 export function pageTitle(page?: string): string {
   return buildPageTitle(APP_NAME_FA, APP_NAME_LATIN, page);
