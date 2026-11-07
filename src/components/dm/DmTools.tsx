@@ -3,7 +3,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { Character, CharacterNote, NPC, ItemLibraryEntry, RewardPackage, CampaignNote, Encounter, User, WeaponTemplate, LocationEntry, Campaign, CharacterParticipation, Session, SessionRsvpChoice, SessionRecap } from '../../types';
 import { 
   LayoutDashboard, Swords, Library, Scroll, MoreHorizontal, 
-  Users, KeyRound, ShieldAlert, Sparkles, BookOpen, Compass, Award, Database, MapPin, Map as MapIcon, Flag, Coins, Settings as SettingsIcon 
+  Users, KeyRound, ShieldAlert, Sparkles, BookOpen, Compass, Award, Database, MapPin, Map as MapIcon, Flag, Coins, Settings as SettingsIcon, Calendar 
 } from 'lucide-react';
 import { Quest } from '../../types';
 
@@ -22,6 +22,7 @@ const DmInvites = React.lazy(() => import('./DmInvites').then(m => ({ default: m
 const DmAuditLog = React.lazy(() => import('./DmAuditLog').then(m => ({ default: m.DmAuditLog })));
 const DmHandoutManager = React.lazy(() => import('./DmHandoutManager').then(m => ({ default: m.DmHandoutManager })));
 const DmQuestManager = React.lazy(() => import('./DmQuestManager').then(m => ({ default: m.DmQuestManager })));
+const DmCalendarTab = React.lazy(() => import('./DmCalendarTab').then(m => ({ default: m.DmCalendarTab })));
 const FactionReputationManager = React.lazy(() => import('../campaign/FactionReputationManager').then(m => ({ default: m.FactionReputationManager })));
 const PartyTreasuryManager = React.lazy(() => import('../campaign/PartyTreasuryManager').then(m => ({ default: m.PartyTreasuryManager })));
 
@@ -40,7 +41,7 @@ const DmToolSkeleton: React.FC = () => (
 // ---------------------------------------------------------
 
 type DmTab = 'dashboard' | 'encounters' | 'library' | 'narrative' | 'more';
-type LibrarySubTab = 'library_hub' | 'npcs' | 'items' | 'locations' | 'handouts' | 'quests' | 'reputation' | 'treasury';
+type LibrarySubTab = 'library_hub' | 'npcs' | 'items' | 'locations' | 'handouts' | 'calendar' | 'quests' | 'reputation' | 'treasury';
 type NarrativeSubTab = 'notes' | 'endings';
 type MoreSubTab = 'users' | 'invites' | 'audit' | 'settings';
 
@@ -99,7 +100,7 @@ function SubTabBar<T extends string>({
 // The library area used to be eight tabs in one sideways scroller. Grouped by purpose instead.
 const LIBRARY_GROUPS: { id: string; label: string; tabs: LibrarySubTab[] }[] = [
   { id: 'content', label: 'محتوا', tabs: ['library_hub', 'npcs', 'items'] },
-  { id: 'world', label: 'دنیا', tabs: ['locations', 'handouts'] },
+  { id: 'world', label: 'دنیا', tabs: ['locations', 'handouts', 'calendar'] },
   { id: 'campaign', label: 'پیگیری کمپین', tabs: ['quests', 'reputation', 'treasury'] }
 ];
 
@@ -290,6 +291,7 @@ export const DmTools: React.FC<DmToolsProps> = ({
     items: { id: 'items', label: 'اشیاء', icon: Sparkles, count: items.length },
     locations: { id: 'locations', label: 'مکان‌ها', icon: MapPin, count: locations.length },
     handouts: { id: 'handouts', label: 'اسناد و نقشه‌ها', icon: MapIcon },
+    calendar: { id: 'calendar', label: 'گاه‌شمار کمپین', icon: Calendar },
     quests: { id: 'quests', label: 'مأموریت‌ها', icon: Scroll, count: quests.length },
     reputation: { id: 'reputation', label: 'شهرت جناح‌ها', icon: Flag },
     treasury: { id: 'treasury', label: 'خزانه گروه', icon: Coins }
@@ -484,6 +486,13 @@ export const DmTools: React.FC<DmToolsProps> = ({
               <DmHandoutManager
                 campaignId={campaignId}
                 campaignCharacters={characters.map(c => ({ id: c.id, name: c.name }))}
+              />
+            )}
+
+            {librarySubTab === 'calendar' && (
+              <DmCalendarTab
+                campaignId={campaignId}
+                userRole="owner"
               />
             )}
 

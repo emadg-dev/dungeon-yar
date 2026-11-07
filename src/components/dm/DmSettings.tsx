@@ -2,9 +2,10 @@ import { Button } from '../ui/Button';
 import { Select } from '../ui/Select';
 import React, { useState } from 'react';
 import { User } from '../../types';
-import { Database, Users, RefreshCw, CheckCircle2, AlertCircle, Server, Calendar as CalendarIcon, Edit } from 'lucide-react';
+import { Database, Users, RefreshCw, CheckCircle2, AlertCircle, Server, Calendar as CalendarIcon, Edit, Eye } from 'lucide-react';
 import { ConfirmSheet } from '../mobile/ConfirmSheet';
 import { CalendarStructureModal } from '../calendar/CalendarStructureModal';
+import { CalendarModal } from '../calendar/CalendarModal';
 import { Section, SectionStack, Badge, inputCls, secondaryBtnCls } from '../ui/FormLayout';
 
 interface DmSettingsProps {
@@ -32,7 +33,8 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
   // Result carries its type: the old code showed errors with success styling.
   const [importResult, setImportResult] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showConfirmSheet, setShowConfirmSheet] = useState(false);
-  const [calendarModalOpen, setCalendarModalOpen] = useState(false);
+  const [calendarViewOpen, setCalendarViewOpen] = useState(false);
+  const [calendarStructureOpen, setCalendarStructureOpen] = useState(false);
 
   const handleExecuteImport = async () => {
     setShowConfirmSheet(false);
@@ -105,16 +107,26 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
         <Section
           title="تقویم‌های دنیا"
           icon={CalendarIcon}
-          description="ماه‌ها، روزهای هفته، روزهای برون‌گاه و همگام‌سازی زمان جهان کمپین."
+          description="مشاهده تقویم و گاه‌شمار جهان، ماه‌ها، روزهای هفته، روزهای برون‌گاه و همگام‌سازی زمان جهان کمپین."
         >
-          <Button
-            type="button"
-            onClick={() => setCalendarModalOpen(true)}
-            className={`${secondaryBtnCls} w-full sm:w-auto`}
-          >
-            <Edit className="w-4 h-4 shrink-0" />
-            <span>ویرایش تقویم‌ها</span>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              onClick={() => setCalendarViewOpen(true)}
+              className={`${secondaryBtnCls} w-full sm:w-auto`}
+            >
+              <Eye className="w-4 h-4 shrink-0 text-accent" />
+              <span>دیدن گاه‌شمار</span>
+            </Button>
+            <Button
+              type="button"
+              onClick={() => setCalendarStructureOpen(true)}
+              className={`${secondaryBtnCls} w-full sm:w-auto`}
+            >
+              <Edit className="w-4 h-4 shrink-0" />
+              <span>ویرایش تقویم‌ها</span>
+            </Button>
+          </div>
         </Section>
 
         <Section title="وضعیت اتصال" icon={Server}>
@@ -184,10 +196,23 @@ export const DmSettings: React.FC<DmSettingsProps> = ({
         confirmLabel="تأیید و همگام‌سازی"
       />
 
-      {calendarModalOpen && (
+      {calendarViewOpen && (
+        <CalendarModal
+          isOpen={calendarViewOpen}
+          onClose={() => setCalendarViewOpen(false)}
+          isDm={true}
+          campaignId={campaignId}
+          onOpenStructureEditor={() => {
+            setCalendarViewOpen(false);
+            setCalendarStructureOpen(true);
+          }}
+        />
+      )}
+
+      {calendarStructureOpen && (
         <CalendarStructureModal
-          isOpen={calendarModalOpen}
-          onClose={() => setCalendarModalOpen(false)}
+          isOpen={calendarStructureOpen}
+          onClose={() => setCalendarStructureOpen(false)}
           campaignId={campaignId}
           userRole="owner"
         />

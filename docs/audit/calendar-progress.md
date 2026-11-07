@@ -6,7 +6,7 @@
 - [x] فرم ساختار (`CalendarStructureForm`): استفاده مشترک در ویزارد و مودال با دکمه‌های همیشگی افزودن ماه/روز برون‌گاه/روز هفته.
 - [x] گام ۳ ویزارد: ثبت پیش‌نویس ویرایش‌شده به جای قالب خام، و ممانعت قطعی پیش‌نویس نامعتبر از رفتن به مرحله بعد.
 - [x] دانشنامه (`CodexTab`): زیرتب گاه‌شمار با دکمه «ویرایش تقویم‌ها» منحصراً برای DM/Owner و نمایش ساختار برای بازیکن.
-- [x] مسیرهای DM: دسترسی مستقیم به «تقویم‌های دنیا» از `DmSettings` و `DmLibrary`.
+- [x] مسیرهای DM: دسترسی مستقیم به «دیدن گاه‌شمار» و «ویرایش گاه‌شمار» در داشبورد DM (`DmDashboard`)، تب اختصاصی «گاه‌شمار کمپین» در کتابخانه دنیا (`DmTools`/`DmCalendarTab`)، و تنظیمات (`DmSettings`).
 - [x] تست‌های یکپارچه جریان کاربر (`calendarIntegrationFlow.test.tsx`): پوشش مسیر DM و بازیکن در دانشنامه، ویرایش پیش‌نویس ویزارد و کارت‌های قالب.
 
 ## ویژگی‌های بعدی (فازهای آینده)
@@ -14,4 +14,4 @@
 - [ ] تب مدیریت و ویرایش رویدادها و جشن‌ها.
 - [ ] امکان rollback در ویزارد کمپین.
 
-فایل‌های تغییریافته: `theme.css`, `CalendarStructureForm.tsx`, `CalendarStructureModal.tsx`, `CampaignWizardModal.tsx`, `CodexTab.tsx`, `calendarStructureModal.test.tsx`, `calendarIntegrationFlow.test.tsx`
+فایل‌های تغییریافته: `DmDashboard.tsx`, `DmCalendarTab.tsx`, `DmTools.tsx`, `DmSettings.tsx`, `theme.css`, `CalendarStructureForm.tsx`, `CalendarStructureModal.tsx`, `CampaignWizardModal.tsx`, `CodexTab.tsx`

@@ -1300,7 +1300,7 @@ export const DmEncounterRunner: React.FC<DmEncounterRunnerProps> = ({
                     return (
                       <span
                         key={cond}
-                        className="inline-flex items-center gap-1 pr-2.5 pl-1 py-0.5 rounded-full bg-danger/15 text-danger border border-danger/30 text-xs font-bold"
+                        className="inline-flex items-center gap-1 pe-2.5 ps-1 py-0.5 rounded-full bg-danger/15 text-danger border border-danger/30 text-xs font-bold"
                       >
                         <span>{condFa}</span>
                         <Button

@@ -1,8 +1,9 @@
 import { Button } from '../ui/Button';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Campaign, Character, CharacterNote, CharacterParticipation,
-  Session, SessionRsvpChoice, User, SessionRecap, NPC, LocationEntry, CampaignNote
+  Session, SessionRsvpChoice, User, SessionRecap, NPC, LocationEntry, CampaignNote,
+  GenericCalendarData, CampaignTimeResponse
 } from '../../types';
 import {
   Moon, Sun, Calendar, Award, Plus, Eye, Dices, ChevronLeft, ChevronDown,
@@ -13,6 +14,8 @@ import { XpAwardModal } from './XpAwardModal';
 import { SnapshotRestoreModal } from './SnapshotRestoreModal';
 import { DmOverrideModal } from './DmOverrideModal';
 import { EditGrantModal } from './EditGrantModal';
+import { CalendarModal } from '../calendar/CalendarModal';
+import { CalendarStructureModal } from '../calendar/CalendarStructureModal';
 import { NextSessionCard } from '../session/NextSessionCard';
 import { PreviouslyOnCard } from '../session/PreviouslyOnCard';
 import { ConfirmSheet } from '../mobile/ConfirmSheet';
@@ -133,10 +136,44 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
   locations = [],
   campaignNotes = []
 }) => {
-  const [worldDay, setWorldDay] = useState(14);
-  const [worldMonth] = useState('آبان');
-  const [worldYear] = useState(412);
+  const campaignId = activeCampaign?.id || 'zorvania-c1';
+  const [calendarModalOpen, setCalendarModalOpen] = useState(false);
+  const [calendarStructureOpen, setCalendarStructureOpen] = useState(false);
+  const [campaignTime, setCampaignTime] = useState<CampaignTimeResponse | null>(null);
+  const [campaignCalendars, setCampaignCalendars] = useState<GenericCalendarData[]>([]);
+  const [loadingTime, setLoadingTime] = useState(false);
   const [secretCheckNotice, setSecretCheckNotice] = useState<string | null>(null);
+
+  const loadTimeData = useCallback(async () => {
+    if (!campaignId) return;
+    setLoadingTime(true);
+    try {
+      const [time, cals] = await Promise.all([
+        api.getCampaignTime(campaignId).catch(() => null),
+        api.getCampaignCalendars(campaignId).catch(() => [])
+      ]);
+      if (time) setCampaignTime(time);
+      if (cals) setCampaignCalendars(cals);
+    } catch (err) {
+      console.error('Failed to load campaign time:', err);
+    } finally {
+      setLoadingTime(false);
+    }
+  }, [campaignId]);
+
+  useEffect(() => {
+    loadTimeData();
+  }, [loadTimeData]);
+
+  const handleAdvanceDays = async (days: number) => {
+    try {
+      const updated = await api.advanceCampaignTime(campaignId, { days });
+      setCampaignTime(updated);
+      await loadTimeData();
+    } catch (err) {
+      console.error('Failed to advance time:', err);
+    }
+  };
 
   // Modals state
   const [xpModalOpen, setXpModalOpen] = useState(false);
@@ -183,7 +220,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
 
       {/* Everyday actions */}
       <section className="space-y-2" aria-label="اقدام‌های سریع">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {onAwardXp && (
             <Button type="button" onClick={() => setXpModalOpen(true)} className={primaryBtn}>
               <Award className="w-4 h-4" />
@@ -201,6 +238,10 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           <Button type="button" onClick={() => onApplyGroupRest('long')} className={secondaryBtn}>
             <Sun className="w-4 h-4 text-accent" />
             <span>استراحت بلند</span>
+          </Button>
+          <Button type="button" onClick={() => setCalendarModalOpen(true)} className={secondaryBtn}>
+            <Calendar className="w-4 h-4 text-accent" />
+            <span>گاه‌شمار کمپین</span>
           </Button>
         </div>
         {secretCheckNotice && (
@@ -405,27 +446,71 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
         )}
       </section>
 
-      {/* Quiet footer: world date + checklist link */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface px-3 py-2.5">
-        <div className="flex items-center gap-2 text-sm text-text-primary min-w-0">
-          <Calendar className="w-4 h-4 text-text-muted shrink-0" />
-          <span className="truncate">
-            {toPersianDigits(worldDay)} {worldMonth}، سال {toPersianDigits(worldYear)}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button type="button" onClick={() => setWorldDay(d => d + 1)} className={secondaryBtn}>
-            <span>روز بعد</span>
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          {!setupIncomplete && onOpenSetupChecklist && (
-            <Button type="button" onClick={onOpenSetupChecklist} className={secondaryBtn}>
-              <Sparkles className="w-4 h-4 text-accent" />
-              <span>چک‌لیست راه‌اندازی</span>
+      {/* Dedicated World Time & Campaign Calendar Card */}
+      <section className="surface-card rounded-2xl p-4 sm:p-5 border border-border space-y-3" aria-label="گاه‌شمار و زمان جهان کمپین">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent-hover flex items-center justify-center shrink-0">
+              <Calendar className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-text-muted font-bold">زمان جاری جهان کمپین</span>
+                {campaignTime?.activeFestivals?.[0] && (
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-accent/20 text-accent-hover">
+                    {campaignTime.activeFestivals[0].name}
+                  </span>
+                )}
+              </div>
+              <div className="text-base font-black text-text-primary truncate">
+                {campaignTime?.formattedDate || (loadingTime ? 'در حال دریافت گاه‌شمار...' : 'گاه‌شمار کمپین')}
+              </div>
+              {campaignTime?.epochDay !== undefined && (
+                <div className="text-xs text-text-muted flex items-center gap-2 mt-0.5">
+                  <span>روز مطلق کمپین: <strong className="text-text-primary">{toPersianDigits(campaignTime.epochDay)}</strong></span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              onClick={() => setCalendarModalOpen(true)}
+              className={secondaryBtn}
+            >
+              <Eye className="w-4 h-4 text-accent" />
+              <span>دیدن گاه‌شمار</span>
             </Button>
-          )}
+
+            <Button
+              type="button"
+              onClick={() => setCalendarStructureOpen(true)}
+              className={secondaryBtn}
+            >
+              <Edit3 className="w-4 h-4 text-accent" />
+              <span>ویرایش گاه‌شمار</span>
+            </Button>
+
+            <Button
+              type="button"
+              onClick={() => handleAdvanceDays(1)}
+              className={secondaryBtn}
+              title="پیشروی زمان جهان به اندازه ۱ روز"
+            >
+              <span>+۱ روز</span>
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+
+            {!setupIncomplete && onOpenSetupChecklist && (
+              <Button type="button" onClick={onOpenSetupChecklist} className={secondaryBtn}>
+                <Sparkles className="w-4 h-4 text-accent" />
+                <span>چک‌لیست راه‌اندازی</span>
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* Modals */}
       {xpModalOpen && onAwardXp && (
@@ -502,6 +587,32 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           if (undoTarget && onUndoLevelUp) onUndoLevelUp(undoTarget.participationId);
         }}
       />
+
+      {calendarModalOpen && (
+        <CalendarModal
+          isOpen={calendarModalOpen}
+          onClose={() => setCalendarModalOpen(false)}
+          isDm={true}
+          timeResponse={campaignTime || undefined}
+          activeCalendar={campaignCalendars[0]}
+          campaignId={campaignId}
+          onAdvanceCampaignTime={handleAdvanceDays}
+          onOpenStructureEditor={() => {
+            setCalendarModalOpen(false);
+            setCalendarStructureOpen(true);
+          }}
+        />
+      )}
+
+      {calendarStructureOpen && (
+        <CalendarStructureModal
+          isOpen={calendarStructureOpen}
+          onClose={() => setCalendarStructureOpen(false)}
+          campaignId={campaignId}
+          userRole="owner"
+          onSaved={loadTimeData}
+        />
+      )}
     </div>
   );
 };
