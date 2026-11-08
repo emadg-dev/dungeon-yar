@@ -333,11 +333,18 @@ describe('Server & Database Map System (Stage D Integration Tests)', () => {
       expect(stamp.id).toBeDefined();
       expect(stamp.name).toBe('نشان دژ پیروز');
 
-      // Check listing
-      const listRes = await dispatch(`/c/${campId}/map-stamps`, { asUserId: 'user-player' });
-      expect(listRes.status).toBe(200);
-      const list = await listRes.json();
-      expect(list.some((s: any) => s.name === 'نشان دژ پیروز')).toBe(true);
+      // Check listing: DM sees all stamps in library
+      const listResDm = await dispatch(`/c/${campId}/map-stamps`, { asUserId: 'user-owner' });
+      expect(listResDm.status).toBe(200);
+      const listDm = await listResDm.json();
+      expect(listDm.some((s: any) => s.name === 'نشان دژ پیروز')).toBe(true);
+
+      // Player only sees stamps that are actually placed in revealed features or fortress seed
+      const listResPlayer = await dispatch(`/c/${campId}/map-stamps`, { asUserId: 'user-player' });
+      expect(listResPlayer.status).toBe(200);
+      const listPlayer = await listResPlayer.json();
+      expect(listPlayer.some((s: any) => s.id === 'stamp-fortress-1')).toBe(true);
+      expect(listPlayer.some((s: any) => s.name === 'نشان دژ پیروز')).toBe(false);
 
       // Delete stamp
       const delRes = await dispatch(`/c/${campId}/map-stamps/${stamp.id}`, {
@@ -345,6 +352,79 @@ describe('Server & Database Map System (Stage D Integration Tests)', () => {
         asUserId: 'user-owner'
       });
       expect(delRes.status).toBe(200);
+    });
+  });
+
+  describe('6. Security & Anti-Leak Hardening (dm_notes, hidden entity links, revision on delete)', () => {
+    it('returns dmNotes to DM but completely strips it for Player', async () => {
+      const { dispatch, state } = await createRealServerTestContext(campId);
+
+      // Add a secret DM note to a revealed feature in DB state
+      const feat = state.mapFeatures.get('feat-forest-1');
+      if (feat) {
+        feat.dm_notes = 'یادداشت مخفی مستر: گنج پنهان در تنه درخت';
+      }
+
+      // 1. DM view
+      const resDm = await dispatch(`/c/${campId}/maps/${mainMapId}`, { asUserId: 'user-owner' });
+      expect(resDm.status).toBe(200);
+      const mapDm = await resDm.json();
+      const forestDm = mapDm.features.find((f: any) => f.id === 'feat-forest-1');
+      expect(forestDm.dmNotes).toBe('یادداشت مخفی مستر: گنج پنهان در تنه درخت');
+
+      // 2. Player view
+      const resPlayer = await dispatch(`/c/${campId}/maps/${mainMapId}`, { asUserId: 'user-player' });
+      expect(resPlayer.status).toBe(200);
+      const mapPlayer = await resPlayer.json();
+      const forestPlayer = mapPlayer.features.find((f: any) => f.id === 'feat-forest-1');
+      expect(forestPlayer.dmNotes).toBeUndefined();
+    });
+
+    it('strips linkType and linkId for player if linked location is not revealed', async () => {
+      const { dispatch, state } = await createRealServerTestContext(campId);
+
+      // Set linked location to unrevealed
+      state.locations.set('loc-fire-temple', {
+        id: 'loc-fire-temple',
+        scope_type: 'campaign',
+        scope_id: campId,
+        name: 'آتشکده مخفی',
+        revealed: 0
+      });
+
+      // Feature feat-forest-1 links to loc-fire-temple
+      const feat = state.mapFeatures.get('feat-forest-1');
+      if (feat) {
+        feat.link_type = 'location';
+        feat.link_id = 'loc-fire-temple';
+      }
+
+      // DM sees the link intact
+      const resDm = await dispatch(`/c/${campId}/maps/${mainMapId}`, { asUserId: 'user-owner' });
+      const mapDm = await resDm.json();
+      const forestDm = mapDm.features.find((f: any) => f.id === 'feat-forest-1');
+      expect(forestDm.linkId).toBe('loc-fire-temple');
+
+      // Player has the link stripped to prevent entity leakage
+      const resPlayer = await dispatch(`/c/${campId}/maps/${mainMapId}`, { asUserId: 'user-player' });
+      const mapPlayer = await resPlayer.json();
+      const forestPlayer = mapPlayer.features.find((f: any) => f.id === 'feat-forest-1');
+      expect(forestPlayer.linkId).toBeUndefined();
+      expect(forestPlayer.linkType).toBeUndefined();
+    });
+
+    it('rejects feature DELETE when expectedRevision mismatches with 409 Conflict', async () => {
+      const { dispatch, state } = await createRealServerTestContext(campId);
+      const currentRev = state.campaignMaps.get(mainMapId).revision;
+
+      // Stale delete request with mismatched expectedRevision
+      const delRes = await dispatch(`/c/${campId}/maps/${mainMapId}/features/feat-forest-1?expectedRevision=${currentRev + 10}`, {
+        method: 'DELETE',
+        asUserId: 'user-owner'
+      });
+      expect(delRes.status).toBe(409);
+      const err = await delRes.json();
+      expect(err.error).toBe(CONFLICT_ERROR_FA);
     });
   });
 });

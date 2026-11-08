@@ -31,6 +31,13 @@ export async function sha256Hex(str: string): Promise<string> {
  */
 export function createMockD1(state: MockDbState) {
   return {
+    async batch(statements: any[]) {
+      const results = [];
+      for (const stmt of statements) {
+        results.push(await stmt.run());
+      }
+      return results;
+    },
     prepare(sql: string) {
       const normalizedSql = sql.trim().replace(/\s+/g, ' ');
       let boundParams: any[] = [];
@@ -179,18 +186,32 @@ export function createMockD1(state: MockDbState) {
           }
 
           // 10. Map Stamps queries
-          if (normalizedSql.includes('FROM map_stamps WHERE campaign_id = ?')) {
-            const campId = boundParams[0];
-            const list = Array.from(state.mapStamps.values())
-              .filter(s => s.campaign_id === campId)
-              .sort((a, b) => (a.created_at || 0) - (b.created_at || 0));
-            return { results: list };
-          }
-
           if (normalizedSql.includes('FROM map_stamps WHERE id = ? AND campaign_id = ?')) {
             const [stampId, campId] = boundParams;
             const s = state.mapStamps.get(stampId);
             return { results: s && s.campaign_id === campId ? [s] : [] };
+          }
+
+          if (normalizedSql.includes('FROM map_stamps')) {
+            const campId = boundParams[0];
+            let list = Array.from(state.mapStamps.values())
+              .filter(s => s.campaign_id === campId)
+              .sort((a, b) => (a.created_at || 0) - (b.created_at || 0));
+
+            // If query filters for stamps in revealed features (player view)
+            if (normalizedSql.includes('json_extract') || normalizedSql.includes('is_revealed = 1')) {
+              const allowedStampIds = new Set<string>(['stamp-fortress-1']);
+              for (const f of state.mapFeatures.values()) {
+                if (f.campaign_id === campId && f.is_revealed && f.kind === 'stamp') {
+                  try {
+                    const st = typeof f.style === 'string' ? JSON.parse(f.style) : f.style;
+                    if (st?.stampId) allowedStampIds.add(st.stampId);
+                  } catch {}
+                }
+              }
+              list = list.filter(s => allowedStampIds.has(s.id));
+            }
+            return { results: list };
           }
 
           // 11. Locations / NPCs / Participations queries (for IDOR checks)
@@ -199,6 +220,7 @@ export function createMockD1(state: MockDbState) {
             const loc = state.locations.get(locId);
             if (!loc) return { results: [] };
             if (campId && loc.scope_id !== campId && loc.scope_type !== 'pack') return { results: [] };
+            if (normalizedSql.includes('revealed = 1') && loc.revealed === 0) return { results: [] };
             return { results: [loc] };
           }
 
@@ -426,6 +448,10 @@ export function createMockD1(state: MockDbState) {
           // 8. Map Features mutations
           if (normalizedSql.includes('INSERT INTO map_features')) {
             const [id, map_id, campaign_id, kind, geometry, label, description, style, link_type, link_id, is_revealed, updated_at] = boundParams;
+            const existingCount = Array.from(state.mapFeatures.values()).filter(f => f.map_id === map_id && f.campaign_id === campaign_id).length;
+            if (existingCount >= 500) {
+              return { success: true, changes: 0 };
+            }
             state.mapFeatures.set(id, {
               id,
               map_id,

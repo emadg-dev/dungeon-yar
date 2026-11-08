@@ -77,6 +77,8 @@ import { Badge } from '../ui/Badge';
 import { Spinner } from '../ui/Spinner';
 import { EmptyState } from '../ui/EmptyState';
 import { ErrorState } from '../ui/ErrorState';
+import { Dialog } from '../ui/Dialog';
+import { Input } from '../ui/Input';
 import { MapFeatureEditSheet } from './MapFeatureEditSheet';
 import { StampLibraryModal } from './StampLibraryModal';
 
@@ -452,11 +454,20 @@ export const CampaignMainMap: React.FC<CampaignMainMapProps> = ({
   // Panels & Modals
   const [selectedFeature, setSelectedFeature] = useState<MapFeature | null>(null);
   const [isStampLibraryOpen, setIsStampLibraryOpen] = useState(false);
+  const [isCreateMapModalOpen, setIsCreateMapModalOpen] = useState(false);
+  const [isCreatingMap, setIsCreatingMap] = useState(false);
+  const [newMapForm, setNewMapForm] = useState({
+    name: 'نقشه اصلی کمپین',
+    imageUrl: '/maps/zorvania-main.svg',
+    width: 1000,
+    height: 1000
+  });
 
   // Concurrency & Autosave
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [conflictError, setConflictError] = useState<string | null>(null);
   const saveTimeoutRef = useRef<any>(null);
+  const saveQueueRef = useRef<Promise<any>>(Promise.resolve());
 
   // Undo History
   const [history, setHistory] = useState<MapEditHistory>(createInitialHistory());
@@ -502,31 +513,34 @@ export const CampaignMainMap: React.FC<CampaignMainMapProps> = ({
     loadMapData();
   }, [loadMapData]);
 
-  // Debounced Autosave (700ms) with Optimistic Concurrency revision check
-  const scheduleSave = useCallback(
-    (newFeatures: MapFeature[]) => {
-      if (!isDm || !map) return;
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+  // Debounced Autosave (700ms) with sequential promise queue & optimistic revision check
+  const scheduleSave = useCallback(() => {
+    if (!isDm || !map) return;
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
-      setSaveStatus('saving');
-      setConflictError(null);
+    setSaveStatus('saving');
+    setConflictError(null);
 
-      saveTimeoutRef.current = setTimeout(async () => {
-        try {
-          // Update all modified features through LocalApi
-          // For optimistic concurrency, check map revision
-          await api.updateCampaignMap(campaignId, map.id, {
+    saveTimeoutRef.current = setTimeout(() => {
+      saveQueueRef.current = saveQueueRef.current
+        .then(async () => {
+          const updatedMap = await api.updateCampaignMap(campaignId, map.id, {
             expectedRevision: map.revision
           });
 
-          // Refresh map revision in local state
-          setMap(prev => (prev ? { ...prev, revision: (prev.revision || 1) + 1 } : null));
+          // Sync revision directly from response
+          if (updatedMap && typeof updatedMap.revision === 'number') {
+            setMap(prev => (prev ? { ...prev, revision: updatedMap.revision } : null));
+          } else {
+            setMap(prev => (prev ? { ...prev, revision: (prev.revision || 1) + 1 } : null));
+          }
           setSaveStatus('saved');
 
           setTimeout(() => {
             setSaveStatus(prev => (prev === 'saved' ? 'idle' : prev));
           }, 2000);
-        } catch (err: any) {
+        })
+        .catch((err: any) => {
           console.error('Autosave map error:', err);
           if (isConflictErrorMessage(err)) {
             setSaveStatus('conflict');
@@ -534,11 +548,9 @@ export const CampaignMainMap: React.FC<CampaignMainMapProps> = ({
           } else {
             setSaveStatus('error');
           }
-        }
-      }, 700);
-    },
-    [campaignId, isDm, map]
-  );
+        });
+    }, 700);
+  }, [campaignId, isDm, map]);
 
   // Feature Operations with Undo recording
   const handleFeatureCreated = useCallback(
@@ -554,14 +566,14 @@ export const CampaignMainMap: React.FC<CampaignMainMapProps> = ({
         const saved = await api.createMapFeature(campaignId, map.id, newFeature);
         const updated = [...features, saved];
         setFeatures(updated);
+        setMap(prev => (prev ? { ...prev, revision: (prev.revision || 1) + 1 } : null));
         setSelectedFeature(saved);
         setActiveTool('none');
-        scheduleSave(updated);
       } catch (err: any) {
         console.error('Failed to create map feature:', err);
       }
     },
-    [campaignId, map, features, scheduleSave]
+    [campaignId, map, features]
   );
 
   const handleUpdateFeature = useCallback(
@@ -577,8 +589,8 @@ export const CampaignMainMap: React.FC<CampaignMainMapProps> = ({
         });
         const updatedList = features.map(f => (f.id === saved.id ? saved : f));
         setFeatures(updatedList);
+        setMap(prev => (prev ? { ...prev, revision: (prev.revision || 1) + 1 } : null));
         setSelectedFeature(null);
-        scheduleSave(updatedList);
       } catch (err: any) {
         console.error('Failed to update map feature:', err);
         if (isConflictErrorMessage(err)) {
@@ -587,7 +599,7 @@ export const CampaignMainMap: React.FC<CampaignMainMapProps> = ({
         }
       }
     },
-    [campaignId, map, features, scheduleSave]
+    [campaignId, map, features]
   );
 
   const handleDeleteFeature = useCallback(
@@ -600,13 +612,13 @@ export const CampaignMainMap: React.FC<CampaignMainMapProps> = ({
         await api.deleteMapFeature(campaignId, map.id, featureId);
         const updated = features.filter(f => f.id !== featureId);
         setFeatures(updated);
+        setMap(prev => (prev ? { ...prev, revision: (prev.revision || 1) + 1 } : null));
         setSelectedFeature(null);
-        scheduleSave(updated);
       } catch (err: any) {
         console.error('Failed to delete map feature:', err);
       }
     },
-    [campaignId, map, features, scheduleSave]
+    [campaignId, map, features]
   );
 
   // Silent Geometry Editing (without destroying edit handles)
@@ -632,9 +644,9 @@ export const CampaignMainMap: React.FC<CampaignMainMapProps> = ({
         })
       );
       // Trigger debounced save
-      scheduleSave(features);
+      scheduleSave();
     },
-    [map, features, scheduleSave]
+    [map, scheduleSave]
   );
 
   // Undo Handler
@@ -643,8 +655,30 @@ export const CampaignMainMap: React.FC<CampaignMainMapProps> = ({
     const result = undoMapHistoryAction(history, features);
     setFeatures(result.features);
     setHistory(result.newHistory);
-    scheduleSave(result.features);
+    scheduleSave();
   }, [history, features, scheduleSave]);
+
+  const handleCreateMap = async () => {
+    if (!newMapForm.name.trim() || !newMapForm.imageUrl.trim()) return;
+    setIsCreatingMap(true);
+    try {
+      const created = await api.createCampaignMap(campaignId, {
+        name: newMapForm.name.trim(),
+        imageUrl: newMapForm.imageUrl.trim(),
+        width: newMapForm.width,
+        height: newMapForm.height,
+        isMain: true
+      });
+      setMap(created);
+      setFeatures(created.features || []);
+      setIsCreateMapModalOpen(false);
+    } catch (err: any) {
+      console.error('Failed to create campaign map:', err);
+      setError(err?.message || 'خطا در ایجاد نقشه کمپین.');
+    } finally {
+      setIsCreatingMap(false);
+    }
+  };
 
   // Bounds derived from map dimensions
   const bounds = useMemo<LeafletSimpleBounds>(() => {
@@ -695,18 +729,110 @@ export const CampaignMainMap: React.FC<CampaignMainMapProps> = ({
         dir="rtl"
       >
         <EmptyState
-          icon={<MapIcon className="w-8 h-8 text-text-muted" />}
-          title="نقشه‌ای برای این کمپین ثبت نشده است"
-          description="هنوز هیچ نقشه‌ی اصلی برای این کمپین بارگذاری یا انتخاب نشده است."
-          actionLabel={onClose ? 'بازگشت' : undefined}
-          onAction={onClose}
+          icon={<MapIcon className="w-8 h-8 text-accent" />}
+          title={isDm ? 'نقشه‌ای برای این کمپین ثبت نشده است' : 'نقشه‌ای منتشر نشده است'}
+          description={
+            isDm
+              ? 'برای شروع ترسیم قلمرو و نشانه‌گذاری عوارض جغرافیایی، نقشه اصلی کمپین را ایجاد یا بارگذاری کنید.'
+              : 'دانجن مستر هنوز نقشه‌ای برای این کمپین بارگذاری یا منتشر نکرده است.'
+          }
+          actionLabel={isDm ? 'ایجاد یا بارگذاری نقشه' : onClose ? 'بازگشت' : undefined}
+          onAction={isDm ? () => setIsCreateMapModalOpen(true) : onClose}
         />
+
+        {isDm && (
+          <Dialog
+            isOpen={isCreateMapModalOpen}
+            onClose={() => setIsCreateMapModalOpen(false)}
+            title="ایجاد نقشه‌ی اصلی کمپین"
+            description="مشخصات نقشه را وارد کنید تا بوم جغرافیایی کمپین راه‌اندازی شود."
+            confirmLabel="ایجاد نقشه"
+            cancelLabel="انصراف"
+            onConfirm={handleCreateMap}
+            isConfirmLoading={isCreatingMap}
+            maxWidth="md"
+          >
+            <div className="space-y-4 py-2" dir="rtl">
+              <div>
+                <label className="block text-xs font-semibold text-text-muted mb-1">
+                  نام نقشه
+                </label>
+                <Input
+                  value={newMapForm.name}
+                  onChange={e => setNewMapForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="مثال: نقشه قاره زروانیا"
+                  dir="rtl"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-text-muted mb-1">
+                  آدرس تصویر نقشه
+                </label>
+                <Input
+                  value={newMapForm.imageUrl}
+                  onChange={e => setNewMapForm(prev => ({ ...prev, imageUrl: e.target.value }))}
+                  placeholder="/maps/zorvania-main.svg یا آدرس تصویر"
+                  dir="ltr"
+                />
+                <p className="text-[11px] text-text-muted mt-1">
+                  می‌توانید از فایل پیش‌فرض <code>/maps/zorvania-main.svg</code> یا تصویر بارگذاری‌شده استفاده نمایید.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-text-muted mb-1">
+                    عرض (پیکسل)
+                  </label>
+                  <Input
+                    type="number"
+                    min={200}
+                    max={10000}
+                    value={newMapForm.width}
+                    onChange={e => setNewMapForm(prev => ({ ...prev, width: Number(e.target.value) || 1000 }))}
+                    dir="ltr"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-text-muted mb-1">
+                    ارتفاع (پیکسل)
+                  </label>
+                  <Input
+                    type="number"
+                    min={200}
+                    max={10000}
+                    value={newMapForm.height}
+                    onChange={e => setNewMapForm(prev => ({ ...prev, height: Number(e.target.value) || 1000 }))}
+                    dir="ltr"
+                  />
+                </div>
+              </div>
+            </div>
+          </Dialog>
+        )}
       </div>
     );
   }
 
   return (
     <div className={`relative w-full h-full min-h-[400px] overflow-hidden bg-surface-sunken select-none ${className}`}>
+      {/* Optional Floating Close Button */}
+      {onClose && (
+        <div className="absolute top-4 end-4 z-[1000] pointer-events-auto" dir="rtl">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onClose}
+            leftIcon={<X className="w-4 h-4" />}
+            aria-label="بستن نقشه"
+            className="bg-surface-2/95 backdrop-blur-md border-border shadow-lg text-text-primary hover:bg-surface-3 focus-visible:ring-2 focus-visible:ring-accent min-h-[44px]"
+          >
+            <span>بستن</span>
+          </Button>
+        </div>
+      )}
+
       {/* 
         Map Viewport Container (dir="ltr" required by Leaflet)
       */}
