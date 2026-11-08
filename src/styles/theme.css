@@ -99,6 +99,9 @@
   --color-border: rgb(var(--color-border-rgb));
   --color-border-strong: rgb(var(--color-border-strong-rgb));
   --color-border-subtle: rgb(var(--color-border-subtle-rgb));
+  /* --color-border: transparent;
+  --color-border-strong: transparent;
+  --color-border-subtle: transparent; */
 
   --color-text: rgb(var(--color-text-rgb));
   --color-text-primary: rgb(var(--color-text-rgb));
@@ -182,7 +185,7 @@
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
+  --radius-2xl: 1rem;
   --radius-pill: 9999px;
   --radius-card: 1rem;
 
@@ -665,7 +668,7 @@ body {
   touch-action: manipulation;
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
-  border: 1px solid transparent;
+  border: 0px solid transparent;
   outline: none;
   text-decoration: none;
 }
@@ -716,7 +719,7 @@ body {
 /* دکمه ثانویه سطحی (Secondary Button) */
 .btn-secondary {
   background: var(--color-surface-raised);
-  border: 1px solid var(--color-border);
+  border: 0cap solid var(--color-border);
   color: var(--color-text);
 }
 

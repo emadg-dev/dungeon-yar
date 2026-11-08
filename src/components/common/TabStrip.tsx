@@ -47,18 +47,18 @@ export function TabStrip<T extends string = string>({
             onClick={() => onSelectTab(tab.id)}
             className={`flex items-center gap-1.5 px-3.5 py-2 rounded-[12px] text-xs font-bold whitespace-nowrap transition-all duration-200 shrink-0 snap-start touch-target min-w-[44px] relative focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-accent/30 active:scale-[.98] ${
               isActive
-                ? 'bg-gradient-to-tr from-accent to-accent-hover text-on-accent shadow-glow-amber'
+                ? 'color-accent from-accent to-accent-hover text-accent '
                 : 'bg-surface-2/80 backdrop-blur-sm text-text-muted hover:text-text-primary hover:bg-surface-2 border border-border'
             }`}
           >
-            {Icon && <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-on-accent' : 'text-text-muted'}`} />}
+            {Icon && <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-accent' : 'text-text-muted'}`} />}
             <span className="whitespace-nowrap shrink-0">{tab.label}</span>
 
             {typeof tab.badge === 'number' && tab.badge > 0 && (
               <span
-                className={`text-xs px-1.5 py-0.2 rounded-full font-extrabold shrink-0 ${
+                className={`text-xs px-1.5 py-0.2 rounded-full shrink-0 ${
                   isActive
-                    ? 'bg-bg text-accent'
+                    ? 'text-accent '
                     : 'bg-accent/20 text-accent border border-accent/40'
                 }`}
               >
