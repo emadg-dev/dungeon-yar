@@ -10,7 +10,7 @@ import { deriveSheet } from '../../../shared/rules/engine';
 import { 
   Shield, Footprints, Zap, Dices, Moon, Sun, Sparkles, 
   Download, Upload, Flame, AlertTriangle, Edit3, Check, Heart,
-  Lock, ArrowUpCircle
+  Lock, ArrowUpCircle, Compass, ChevronLeft
 } from 'lucide-react';
 import { PipTracker } from '../common/PipTracker';
 import { StatCard } from '../common/StatCard';
@@ -359,6 +359,31 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           onToggleObjective={onToggleQuestObjective}
           canToggleObjective={canToggleQuestObjective}
         />
+      )}
+
+      {/* Campaign World Map Access Card */}
+      {campaign && (
+        <div className="surface-card rounded-[14px] p-4 border border-border flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-accent/15 border border-accent/30 text-accent flex items-center justify-center shrink-0">
+              <Compass className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-text-primary">نقشه جهان کمپین</h4>
+              <p className="text-xs text-text-muted">مشاهده عوارض اقلیمی، مرز قلمروها و نشانه‌های کشف‌شده</p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            onClick={() => {
+              window.location.hash = `#/c/${campaign.id}/map`;
+            }}
+            className="inline-flex items-center justify-center gap-1.5 h-10 px-3.5 rounded-lg border border-border bg-surface-2 hover:border-accent text-text-primary text-xs font-bold transition min-h-[44px]"
+          >
+            <span>مشاهده نقشه</span>
+            <ChevronLeft className="w-4 h-4 text-text-muted" />
+          </Button>
+        </div>
       )}
 
       {/* Identity Card */}

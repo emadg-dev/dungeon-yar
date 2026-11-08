@@ -137,9 +137,9 @@ export default function App() {
   // In-Campaign Play State
   const [characters, setCharacters] = useState<Character[]>([]);
   const [activeCharId, setActiveCharId] = useState<string | null>(null);
-  const [activePlayerTab, setActivePlayerTab] = useState<'overview' | 'abilities' | 'combat' | 'companions' | 'inventory' | 'notes' | 'codex' | 'features' | 'resources'>('overview');
+  const [activePlayerTab, setActivePlayerTab] = useState<'overview' | 'abilities' | 'combat' | 'companions' | 'inventory' | 'notes' | 'codex' | 'features' | 'resources' | 'map'>('overview');
   const [isDmView, setIsDmView] = useState<boolean>(false);
-  const [activeDmTab, setActiveDmTab] = useState<'dashboard' | 'encounters' | 'library' | 'narrative' | 'more'>('dashboard');
+  const [activeDmTab, setActiveDmTab] = useState<'dashboard' | 'encounters' | 'library' | 'narrative' | 'more' | 'map'>('dashboard');
 
   // Notes, NPCs, Items, Rewards, Encounters
   const [notes, setNotes] = useState<CharacterNote[]>([]);
@@ -662,12 +662,12 @@ export default function App() {
         if (sub === 'dm') {
           setIsDmView(true);
           const dmSub = parts[3] as any;
-          if (['dashboard', 'encounters', 'library', 'narrative', 'more'].includes(dmSub)) {
+          if (['dashboard', 'encounters', 'library', 'narrative', 'more', 'map'].includes(dmSub)) {
             setActiveDmTab(dmSub);
           }
         } else if (sub) {
           setIsDmView(false);
-          if (['overview', 'abilities', 'combat', 'companions', 'inventory', 'notes', 'codex'].includes(sub)) {
+          if (['overview', 'abilities', 'combat', 'companions', 'inventory', 'notes', 'codex', 'map'].includes(sub)) {
             setActivePlayerTab(sub as any);
           }
         }
@@ -1480,7 +1480,16 @@ export default function App() {
           {viewMode === 'campaign_space' && (
             <>
               {isDmView ? (
-                /* DM Tools Suite inside Campaign */
+                /* DM Tools Suite or Main Map inside Campaign */
+                activeDmTab === 'map' && activeCampaignId ? (
+                  <div className="h-[calc(100dvh-10.5rem)] sm:h-[calc(100dvh-11.5rem)] -mx-2.5 sm:-mx-4 rounded-2xl overflow-hidden border border-border shadow-md">
+                    <CampaignMainMap
+                      campaignId={activeCampaignId}
+                      isDm={true}
+                      onClose={() => handleSelectDmTab('dashboard')}
+                    />
+                  </div>
+                ) : (
                 <DmTools
                   characters={characters}
                   sharedNotes={notes.filter(n => n.sharedWithDm)}
@@ -1654,6 +1663,16 @@ export default function App() {
                   onDeleteQuest={handleDeleteQuest}
                   onCompleteQuest={handleCompleteQuest}
                 />
+                )
+              ) : activePlayerTab === 'map' && activeCampaignId ? (
+                /* Campaign Main Map for Players/Spectators */
+                <div className="h-[calc(100dvh-10.5rem)] sm:h-[calc(100dvh-11.5rem)] -mx-2.5 sm:-mx-4 rounded-2xl overflow-hidden border border-border shadow-md">
+                  <CampaignMainMap
+                    campaignId={activeCampaignId}
+                    isDm={activeCampaign?.myRole === 'owner' || activeCampaign?.myRole === 'co_dm' || currentUser?.role === 'dm'}
+                    onClose={() => handleSelectPlayerTab('overview')}
+                  />
+                </div>
               ) : activeCharacter ? (
                 /* Player Character Sheet */
                 <div className="space-y-4 sm:space-y-6">
@@ -1867,6 +1886,7 @@ export default function App() {
         onJump={tab => {
           setCampaignMoreOpen(false);
           if (tab === 'inventory') handleSelectPlayerTab('inventory');
+          else if (tab === 'map') handleSelectPlayerTab('map');
           else if (tab === 'companions') handleSelectPlayerTab('companions');
           else if (tab === 'rest') setRestModal({ isOpen: true, type: 'short' });
           else if (tab === 'sessions') setSessionListOpen(true);

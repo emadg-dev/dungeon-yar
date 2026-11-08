@@ -7,7 +7,8 @@ import {
 } from '../../types';
 import {
   Moon, Sun, Calendar, Award, Plus, Eye, Dices, ChevronLeft, ChevronDown,
-  ArrowUpCircle, RotateCcw, Edit3, Lock, Unlock, Clock, KeyRound, Sparkles
+  ArrowUpCircle, RotateCcw, Edit3, Lock, Unlock, Clock, KeyRound, Sparkles,
+  Map as MapIcon
 } from 'lucide-react';
 import { HPBar } from '../common/HPBar';
 import { XpAwardModal } from './XpAwardModal';
@@ -220,7 +221,7 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
 
       {/* Everyday actions */}
       <section className="space-y-2" aria-label="اقدام‌های سریع">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
           {onAwardXp && (
             <Button type="button" onClick={() => setXpModalOpen(true)} className={primaryBtn}>
               <Award className="w-4 h-4" />
@@ -242,6 +243,18 @@ export const DmDashboard: React.FC<DmDashboardProps> = ({
           <Button type="button" onClick={() => setCalendarModalOpen(true)} className={secondaryBtn}>
             <Calendar className="w-4 h-4 text-accent" />
             <span>گاه‌شمار کمپین</span>
+          </Button>
+          <Button
+            type="button"
+            onClick={() => {
+              if (activeCampaign) {
+                window.location.hash = `#/c/${activeCampaign.id}/dm/map`;
+              }
+            }}
+            className={secondaryBtn}
+          >
+            <MapIcon className="w-4 h-4 text-accent" />
+            <span>نقشه جهان</span>
           </Button>
         </div>
         {secretCheckNotice && (

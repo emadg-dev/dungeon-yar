@@ -10211,6 +10211,67 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // STEP 5.5: CAMPAIGN MAIN MAP & STAMP SYSTEM (Stage D)
   // ==============================================================
 
+  // Helper to map and sanitize map features based on viewer role
+  const mapAndSanitizeFeatures = async (rawRows: any[], isDm: boolean, campId: string): Promise<MapFeature[]> => {
+    const list: MapFeature[] = [];
+    for (const f of rawRows) {
+      let linkType = f.link_type || undefined;
+      let linkId = f.link_id || undefined;
+
+      // If viewer is not DM, prevent information leak by validating linked entity visibility
+      if (!isDm && linkType && linkId) {
+        if (linkType === 'location') {
+          const loc = await env.DB.prepare(
+            'SELECT 1 FROM locations WHERE id = ? AND (scope_id = ? OR scope_type = "pack") AND (revealed = 1 OR revealed IS NULL)'
+          ).bind(linkId, campId).first();
+          if (!loc) {
+            linkType = undefined;
+            linkId = undefined;
+          }
+        } else if (linkType === 'npc') {
+          const npc = await env.DB.prepare(
+            'SELECT 1 FROM npcs WHERE id = ? AND (scope_id = ? OR scope_type = "pack") AND (is_revealed = 1 OR is_revealed IS NULL)'
+          ).bind(linkId, campId).first();
+          if (!npc) {
+            linkType = undefined;
+            linkId = undefined;
+          }
+        } else if (linkType === 'participation') {
+          const part = await env.DB.prepare(
+            'SELECT 1 FROM character_participations WHERE id = ? AND campaign_id = ? AND status = "active"'
+          ).bind(linkId, campId).first();
+          if (!part) {
+            linkType = undefined;
+            linkId = undefined;
+          }
+        }
+      }
+
+      const feat: MapFeature = {
+        id: f.id,
+        mapId: f.map_id,
+        campaignId: f.campaign_id,
+        kind: f.kind,
+        geometry: parseBlob(f.geometry, { type: 'Point', coordinates: [0, 0] }),
+        label: f.label,
+        description: f.description || '',
+        style: parseBlob(f.style, {}),
+        linkType,
+        linkId,
+        isRevealed: Boolean(f.is_revealed),
+        updatedAt: Number(f.updated_at)
+      };
+
+      // Expose dmNotes ONLY to DM roles; strip completely for players/spectators
+      if (isDm && (f.dm_notes || f.dmNotes)) {
+        (feat as any).dmNotes = f.dm_notes || f.dmNotes;
+      }
+
+      list.push(feat);
+    }
+    return list;
+  };
+
   // GET /api/c/:id/maps — list campaign maps with member check and SQL-level visibility filtering
   if (path.match(/^\/c\/[^/]+\/maps$/) && method === 'GET') {
     const campId = path.split('/')[2];
@@ -10237,20 +10298,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         ).bind(m.id, campId).all();
       }
 
-      const features: MapFeature[] = (fRes.results || []).map((f: any) => ({
-        id: f.id,
-        mapId: f.map_id,
-        campaignId: f.campaign_id,
-        kind: f.kind,
-        geometry: parseBlob(f.geometry, { type: 'Point', coordinates: [0, 0] }),
-        label: f.label,
-        description: f.description || '',
-        style: parseBlob(f.style, {}),
-        linkType: f.link_type || undefined,
-        linkId: f.link_id || undefined,
-        isRevealed: Boolean(f.is_revealed),
-        updatedAt: Number(f.updated_at)
-      }));
+      const features = await mapAndSanitizeFeatures(fRes.results || [], isDm, campId);
 
       maps.push({
         id: m.id,
@@ -10294,20 +10342,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       ).bind(mapId, campId).all();
     }
 
-    const features: MapFeature[] = (fRes.results || []).map((f: any) => ({
-      id: f.id,
-      mapId: f.map_id,
-      campaignId: f.campaign_id,
-      kind: f.kind,
-      geometry: parseBlob(f.geometry, { type: 'Point', coordinates: [0, 0] }),
-      label: f.label,
-      description: f.description || '',
-      style: parseBlob(f.style, {}),
-      linkType: f.link_type || undefined,
-      linkId: f.link_id || undefined,
-      isRevealed: Boolean(f.is_revealed),
-      updatedAt: Number(f.updated_at)
-    }));
+    const features = await mapAndSanitizeFeatures(fRes.results || [], isDm, campId);
 
     return json({
       id: m.id,
@@ -10335,8 +10370,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     if (!validation.valid) return error(validation.error || 'داده‌های نقشه نامعتبر است.', 400);
 
     if (body.mediaId) {
-      const mediaRow = await env.DB.prepare('SELECT id FROM media WHERE id = ?').bind(body.mediaId).first();
+      const mediaRow = await env.DB.prepare('SELECT id, campaign_id, owner_id, mime_type FROM media WHERE id = ?').bind(body.mediaId).first();
       if (!mediaRow) return error('تصویر نقشه یافت نشد.', 400);
+      if (mediaRow.campaign_id && mediaRow.campaign_id !== campId && mediaRow.owner_id !== actor.id) {
+        return error('تصویر انتخاب شده متعلق به این کمپین نیست.', 400);
+      }
+      if (!mediaRow.mime_type || !['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'].includes(mediaRow.mime_type)) {
+        return error('فرمت فایل تصویر نقشه مجاز نیست.', 400);
+      }
     }
 
     const mapId = body.id || `map-${Date.now()}-${generateRandomToken(4)}`;
@@ -10384,6 +10425,17 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
     if (body.expectedRevision !== undefined && Number(body.expectedRevision) !== Number(map.revision)) {
       return error(CONFLICT_ERROR_FA, 409);
+    }
+
+    if (body.mediaId) {
+      const mediaRow = await env.DB.prepare('SELECT id, campaign_id, owner_id, mime_type FROM media WHERE id = ?').bind(body.mediaId).first();
+      if (!mediaRow) return error('تصویر نقشه یافت نشد.', 400);
+      if (mediaRow.campaign_id && mediaRow.campaign_id !== campId && mediaRow.owner_id !== actor.id) {
+        return error('تصویر انتخاب شده متعلق به این کمپین نیست.', 400);
+      }
+      if (!mediaRow.mime_type || !['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'].includes(mediaRow.mime_type)) {
+        return error('فرمت فایل تصویر نقشه مجاز نیست.', 400);
+      }
     }
 
     let name = map.name;
@@ -10507,9 +10559,16 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const linkId = body.linkId || null;
     const isRevealed = body.isRevealed ? 1 : 0;
 
-    await env.DB.prepare(
-      'INSERT INTO map_features (id, map_id, campaign_id, kind, geometry, label, description, style, link_type, link_id, is_revealed, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-    ).bind(featId, mapId, campId, body.kind, geomStr, label, description, styleStr, linkType, linkId, isRevealed, now).run();
+    // Enforce 500-feature ceiling atomically in SQL
+    const insertRes = await env.DB.prepare(`
+      INSERT INTO map_features (id, map_id, campaign_id, kind, geometry, label, description, style, link_type, link_id, is_revealed, updated_at)
+      SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+      WHERE (SELECT COUNT(*) FROM map_features WHERE map_id = ? AND campaign_id = ?) < 500
+    `).bind(featId, mapId, campId, body.kind, geomStr, label, description, styleStr, linkType, linkId, isRevealed, now, mapId, campId).run();
+
+    if (insertRes.changes === 0) {
+      return error('سقف مجاز تعداد عوارض این نقشه (۵۰۰ عارضه) تکمیل شده است.', 400);
+    }
 
     // Bump map revision atomically
     await env.DB.prepare('UPDATE campaign_maps SET revision = revision + 1 WHERE id = ? AND campaign_id = ?').bind(mapId, campId).run();
@@ -10659,6 +10718,18 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const feat = await env.DB.prepare('SELECT id FROM map_features WHERE id = ? AND map_id = ? AND campaign_id = ?').bind(featureId, mapId, campId).first();
     if (!feat) return error('عارضه مورد نظر یافت نشد.', 404);
 
+    const urlObj = new URL(request.url);
+    const expectedRevisionParam = urlObj.searchParams.get('expectedRevision') || request.headers.get('If-Match');
+    if (expectedRevisionParam !== null) {
+      const expectedRev = Number(expectedRevisionParam);
+      if (Number.isFinite(expectedRev)) {
+        const map = await env.DB.prepare('SELECT revision FROM campaign_maps WHERE id = ? AND campaign_id = ?').bind(mapId, campId).first();
+        if (map && Number(map.revision) !== expectedRev) {
+          return error(CONFLICT_ERROR_FA, 409);
+        }
+      }
+    }
+
     await env.DB.prepare('UPDATE campaign_maps SET revision = revision + 1 WHERE id = ? AND campaign_id = ?').bind(mapId, campId).run();
     await env.DB.prepare('DELETE FROM map_features WHERE id = ? AND map_id = ? AND campaign_id = ?').bind(featureId, mapId, campId).run();
 
@@ -10671,8 +10742,26 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const campId = path.split('/')[2];
     const myRole = await getMembershipRole(campId, actor.id);
     if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    const isDm = myRole === 'owner' || myRole === 'co_dm';
 
-    const stampsRes = await env.DB.prepare('SELECT * FROM map_stamps WHERE campaign_id = ? ORDER BY created_at ASC').bind(campId).all();
+    let stampsRes: any;
+    if (isDm) {
+      stampsRes = await env.DB.prepare('SELECT * FROM map_stamps WHERE campaign_id = ? ORDER BY created_at ASC').bind(campId).all();
+    } else {
+      // For players: only return stamps used in revealed features of this campaign, plus fortress default stamp
+      stampsRes = await env.DB.prepare(`
+        SELECT s.* FROM map_stamps s
+        WHERE s.campaign_id = ?
+          AND (
+            s.id IN (
+              SELECT json_extract(f.style, '$.stampId') FROM map_features f
+              WHERE f.campaign_id = ? AND f.is_revealed = 1 AND f.kind = 'stamp'
+            )
+            OR s.id = 'stamp-fortress-1'
+          )
+        ORDER BY s.created_at ASC
+      `).bind(campId, campId).all();
+    }
     const stamps: MapStamp[] = (stampsRes.results || []).map((s: any) => ({
       id: s.id,
       campaignId: s.campaign_id,

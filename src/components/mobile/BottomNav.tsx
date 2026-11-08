@@ -88,7 +88,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         <div className="liquid-dock__track flex justify-around">
           {dmItems.map(item => {
             const Icon = item.icon;
-            const isActive = dmTab === item.id || (item.id === 'sheet' && (dmTab === 'overview' || dmTab === 'abilities' || dmTab === 'combat'));
+            const isActive = dmTab === item.id || (item.id === 'sheet' && (dmTab === 'overview' || dmTab === 'abilities' || dmTab === 'combat')) || (item.id === 'world' && (dmTab === 'library' || dmTab === 'map'));
             return (
               <Button
                 key={item.id}
@@ -128,7 +128,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       <div className="liquid-dock__track flex justify-around items-center">
         {playerItems.map((item, i) => {
           const Icon = item.icon;
-          const isActive = playerTab === item.id || (item.id === 'sheet' && (playerTab === 'overview' || playerTab === 'abilities' || playerTab === 'combat' || playerTab === 'companions' || playerTab === 'inventory')) || (item.id === 'world' && (playerTab === 'codex'));
+          const isActive = playerTab === item.id || (item.id === 'sheet' && (playerTab === 'overview' || playerTab === 'abilities' || playerTab === 'combat' || playerTab === 'companions' || playerTab === 'inventory')) || (item.id === 'world' && (playerTab === 'codex' || playerTab === 'map'));
           const isCenter = i === 2; // Dice in center
           if (isCenter) {
             return (

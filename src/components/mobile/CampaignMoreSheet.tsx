@@ -7,7 +7,7 @@ import React from 'react';
 import { Button } from '../ui/Button';
 import { BottomSheet } from './BottomSheet';
 import {
-  Package, Users, Bot, Moon, CalendarDays, FileText, Settings, LogOut, ChevronLeft
+  Package, Users, Bot, Moon, CalendarDays, FileText, Settings, LogOut, ChevronLeft, Compass
 } from 'lucide-react';
 
 interface CampaignMoreSheetProps {
@@ -18,6 +18,7 @@ interface CampaignMoreSheetProps {
 
 const items = [
   { id: 'inventory', label: 'کوله‌پشتی', icon: Package },
+  { id: 'map', label: 'نقشه جهان', icon: Compass },
   { id: 'companions', label: 'یاران', icon: Bot },
   { id: 'rest', label: 'استراحت', icon: Moon },
   { id: 'sessions', label: 'جلسات', icon: CalendarDays },

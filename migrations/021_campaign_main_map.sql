@@ -61,9 +61,11 @@ CREATE INDEX IF NOT EXISTS idx_map_features_map ON map_features(map_id, is_revea
 CREATE INDEX IF NOT EXISTS idx_map_features_campaign ON map_features(campaign_id);
 
 -- 4. Seed Data for Zorvania Campaign (zorvania-c1)
+-- Guarded with WHERE EXISTS to prevent foreign key errors on remote databases without zorvania-c1
 INSERT OR IGNORE INTO campaign_maps (
   id, campaign_id, name, media_id, width, height, is_main, revision, created_at
-) VALUES (
+)
+SELECT
   'map-zorvania-main',
   'zorvania-c1',
   'نقشه جهان زروانیا',
@@ -73,11 +75,12 @@ INSERT OR IGNORE INTO campaign_maps (
   1,
   1,
   1714000000000
-);
+WHERE EXISTS (SELECT 1 FROM campaigns WHERE id = 'zorvania-c1');
 
 INSERT OR IGNORE INTO map_stamps (
   id, campaign_id, name, media_id, created_by, width, height, created_at
-) VALUES (
+)
+SELECT
   'stamp-fortress-1',
   'zorvania-c1',
   'دژ کهن کلاغ‌پر',
@@ -86,7 +89,7 @@ INSERT OR IGNORE INTO map_stamps (
   64,
   64,
   1714000000000
-);
+WHERE EXISTS (SELECT 1 FROM campaigns WHERE id = 'zorvania-c1');
 
 -- Seed Features for Zorvania
 INSERT OR IGNORE INTO map_features (
