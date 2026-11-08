@@ -812,7 +812,7 @@ body {
  * ---------------------------------------------------------------------------- */
 .card {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 0px solid var(--color-border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   color: var(--color-text);
@@ -822,7 +822,7 @@ body {
 
 .card-raised {
   background: var(--color-surface-raised);
-  border: 1px solid var(--color-border);
+  border: 0px solid var(--color-border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-sm);
 }
@@ -869,7 +869,7 @@ body {
   padding-block: var(--space-2);
   border-radius: var(--radius-md);
   background: var(--color-surface-raised);
-  border: 1px solid var(--color-border);
+  border: 0px solid var(--color-border);
   color: var(--color-text);
   font-family: var(--font-body);
   font-size: var(--text-md); /* حداقل ۱۶ پیکسل برای جلوگیری از زوم خودکار iOS Safari */
