@@ -18,14 +18,18 @@
     "audit:pwa": "node scripts/lighthouse-audit.mjs"
   },
   "dependencies": {
+    "@geoman-io/leaflet-geoman-free": "^2.20.6",
     "@tailwindcss/vite": "^4.3.3",
+    "@types/leaflet": "^1.9.22",
     "@vitejs/plugin-react": "^6.1.1",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "framer-motion": "^14.9.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.546.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
+    "react-leaflet": "^5.0.0",
     "vite": "^8.3.0"
   },
   "devDependencies": {

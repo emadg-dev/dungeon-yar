@@ -89,6 +89,12 @@ import {
   HandoutKind,
   HandoutVisibility,
   MapPin,
+  CampaignMap,
+  MapFeature,
+  MapStamp,
+  MapFeatureKind,
+  MapTerrainType,
+  MapMarkerType,
   Quest,
   QuestStatus,
   QuestObjective,
@@ -223,6 +229,14 @@ import {
 } from '../../shared/rules/calendar';
 import { APP_NAME_FA, APP_NAME_LATIN } from '../config/app';
 import {
+  validateCampaignMapPayload,
+  validateMapFeaturePayload,
+  validateMapStampPayload,
+  checkMapConflict,
+  filterMapFeaturesForRole,
+  CONFLICT_ERROR_FA
+} from '../../shared/rules/mapEngine';
+import {
   SEED_USERS,
   SEED_CHARACTERS,
   SEED_CHARACTER_NOTES,
@@ -251,7 +265,10 @@ import {
   SEED_RECAPS,
   SEED_HIGHLIGHTS,
   SEED_HANDOUTS,
-  SEED_QUESTS
+  SEED_QUESTS,
+  SEED_CAMPAIGN_MAPS,
+  SEED_MAP_STAMPS,
+  SEED_MAP_FEATURES
 } from '../data/seed';
 import {
   CloneRequest,
@@ -866,6 +883,18 @@ export interface ApiClient {
   createMapPin(campaignId: string, handoutId: string, pin: Omit<MapPin, 'id' | 'handoutId'>): Promise<MapPin>;
   updateMapPin(campaignId: string, handoutId: string, pinId: string, pin: Partial<MapPin>): Promise<MapPin>;
   deleteMapPin(campaignId: string, handoutId: string, pinId: string): Promise<void>;
+
+  // Campaign Main Map & Geography (Campaign World Map)
+  getCampaignMaps(campaignId: string): Promise<CampaignMap[]>;
+  getCampaignMap(campaignId: string, mapId: string): Promise<CampaignMap | null>;
+  createCampaignMap(campaignId: string, data: Partial<CampaignMap>): Promise<CampaignMap>;
+  updateCampaignMap(campaignId: string, mapId: string, patch: Partial<CampaignMap> & { expectedRevision?: number }): Promise<CampaignMap>;
+  createMapFeature(campaignId: string, mapId: string, feature: Partial<MapFeature>): Promise<MapFeature>;
+  updateMapFeature(campaignId: string, mapId: string, featureId: string, patch: Partial<MapFeature> & { expectedRevision?: number }): Promise<MapFeature>;
+  deleteMapFeature(campaignId: string, mapId: string, featureId: string): Promise<{ success: boolean; deletedId: string }>;
+  getMapStamps(campaignId: string): Promise<MapStamp[]>;
+  createMapStamp(campaignId: string, data: Partial<MapStamp>): Promise<MapStamp>;
+  deleteMapStamp(campaignId: string, stampId: string): Promise<{ success: boolean; deletedId: string }>;
 
   // Step 4.4: Quest Log & Narrative Objectives
   listQuests(campaignId: string, options?: { status?: QuestStatus; participationId?: string; search?: string }): Promise<Quest[]>;
@@ -6997,6 +7026,312 @@ export class LocalApi implements ApiClient {
     this.setItem('handouts', all);
   }
 
+  // --- Campaign Main Map & Geography (LocalApi) ---
+  private checkMapPermission(campaignId: string): { isDm: boolean; role: CampaignRole | null } {
+    const members = this.getItem<CampaignMember[]>('campaign_members', SEED_CAMPAIGN_MEMBERS);
+    const myMember = members.find(m => m.campaignId === campaignId && m.userId === (this.currentUser?.id || ''));
+    const role: CampaignRole | null = myMember?.role || (this.currentUser?.role === 'dm' ? 'owner' : null);
+    const isDm = canPermission(role, 'dm_tools:handouts_maps');
+    return { isDm, role };
+  }
+
+  async getCampaignMaps(campaignId: string): Promise<CampaignMap[]> {
+    const { role } = this.checkMapPermission(campaignId);
+    const allMaps = this.getItem<CampaignMap[]>('campaign_maps', SEED_CAMPAIGN_MAPS);
+    const allFeatures = this.getItem<MapFeature[]>('map_features', SEED_MAP_FEATURES);
+    const maps = allMaps.filter(m => m.campaignId === campaignId);
+
+    return maps.map(m => {
+      const feats = allFeatures.filter(f => f.mapId === m.id);
+      return {
+        ...m,
+        features: filterMapFeaturesForRole(feats, role)
+      };
+    });
+  }
+
+  async getCampaignMap(campaignId: string, mapId: string): Promise<CampaignMap | null> {
+    const { role } = this.checkMapPermission(campaignId);
+    const allMaps = this.getItem<CampaignMap[]>('campaign_maps', SEED_CAMPAIGN_MAPS);
+    const map = allMaps.find(m => m.id === mapId && m.campaignId === campaignId);
+    if (!map) return null;
+
+    const allFeatures = this.getItem<MapFeature[]>('map_features', SEED_MAP_FEATURES);
+    const feats = allFeatures.filter(f => f.mapId === map.id);
+
+    return {
+      ...map,
+      features: filterMapFeaturesForRole(feats, role)
+    };
+  }
+
+  async createCampaignMap(campaignId: string, data: Partial<CampaignMap>): Promise<CampaignMap> {
+    const { isDm } = this.checkMapPermission(campaignId);
+    if (!isDm) {
+      throw new Error('دسترسی غیرمجاز: فقط دانجن مستر مجاز به مدیریت نقشه کمپین است.');
+    }
+
+    const val = validateCampaignMapPayload(data);
+    if (!val.valid) {
+      throw new Error(val.error);
+    }
+
+    const allMaps = this.getItem<CampaignMap[]>('campaign_maps', SEED_CAMPAIGN_MAPS);
+    const isMain = data.isMain !== false;
+
+    // If setting as main map, reset any other main map for this campaign
+    if (isMain) {
+      for (const m of allMaps) {
+        if (m.campaignId === campaignId) {
+          m.isMain = false;
+        }
+      }
+    }
+
+    const mapId = `map-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
+    const now = Date.now();
+    const newMap: CampaignMap = {
+      id: mapId,
+      campaignId,
+      name: data.name!.trim(),
+      mediaId: data.mediaId || (data.imageUrl ? `media-${mapId}` : ''),
+      imageUrl: data.imageUrl || (data.mediaId ? `/api/media/${data.mediaId}` : undefined),
+      width: Number(data.width) || 2000,
+      height: Number(data.height) || 1400,
+      isMain,
+      revision: 1,
+      createdAt: now,
+      updatedAt: now,
+      features: []
+    };
+
+    allMaps.push(newMap);
+    this.setItem('campaign_maps', allMaps);
+    return newMap;
+  }
+
+  async updateCampaignMap(
+    campaignId: string,
+    mapId: string,
+    patch: Partial<CampaignMap> & { expectedRevision?: number }
+  ): Promise<CampaignMap> {
+    const { isDm } = this.checkMapPermission(campaignId);
+    if (!isDm) {
+      throw new Error('دسترسی غیرمجاز: فقط دانجن مستر مجاز به مدیریت نقشه کمپین است.');
+    }
+
+    const allMaps = this.getItem<CampaignMap[]>('campaign_maps', SEED_CAMPAIGN_MAPS);
+    const map = allMaps.find(m => m.id === mapId && m.campaignId === campaignId);
+    if (!map) {
+      throw new Error('نقشه مورد نظر یافت نشد.');
+    }
+
+    const conflict = checkMapConflict(map.revision, patch.expectedRevision);
+    if (conflict.hasConflict) {
+      throw new Error(conflict.error);
+    }
+
+    const merged: CampaignMap = {
+      ...map,
+      ...patch,
+      id: map.id,
+      campaignId: map.campaignId
+    };
+
+    const val = validateCampaignMapPayload(merged);
+    if (!val.valid) {
+      throw new Error(val.error);
+    }
+
+    if (patch.isMain) {
+      for (const m of allMaps) {
+        if (m.campaignId === campaignId && m.id !== mapId) {
+          m.isMain = false;
+        }
+      }
+    }
+
+    map.name = merged.name;
+    if (merged.mediaId) map.mediaId = merged.mediaId;
+    if (merged.imageUrl) map.imageUrl = merged.imageUrl;
+    if (merged.width) map.width = merged.width;
+    if (merged.height) map.height = merged.height;
+    if (patch.isMain !== undefined) map.isMain = patch.isMain;
+    map.revision = (map.revision || 1) + 1;
+    map.updatedAt = Date.now();
+
+    this.setItem('campaign_maps', allMaps);
+    return map;
+  }
+
+  async createMapFeature(campaignId: string, mapId: string, featureData: Partial<MapFeature>): Promise<MapFeature> {
+    const { isDm } = this.checkMapPermission(campaignId);
+    if (!isDm) {
+      throw new Error('دسترسی غیرمجاز: فقط دانجن مستر مجاز به افزودن عوارض نقشه است.');
+    }
+
+    const allMaps = this.getItem<CampaignMap[]>('campaign_maps', SEED_CAMPAIGN_MAPS);
+    const map = allMaps.find(m => m.id === mapId && m.campaignId === campaignId);
+    if (!map) throw new Error('نقشه مورد نظر یافت نشد.');
+
+    const val = validateMapFeaturePayload(featureData, { width: map.width, height: map.height });
+    if (!val.valid) throw new Error(val.error);
+
+    const allFeatures = this.getItem<MapFeature[]>('map_features', SEED_MAP_FEATURES);
+    const featId = `feat-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
+    const now = Date.now();
+
+    const newFeature: MapFeature = {
+      id: featId,
+      mapId,
+      campaignId,
+      kind: featureData.kind!,
+      geometry: featureData.geometry!,
+      label: featureData.label!.trim(),
+      description: featureData.description?.trim() || null,
+      style: featureData.style || {},
+      linkType: featureData.linkType || null,
+      linkId: featureData.linkId || null,
+      isRevealed: Boolean(featureData.isRevealed),
+      updatedAt: now
+    };
+
+    allFeatures.push(newFeature);
+    map.revision = (map.revision || 1) + 1;
+    map.updatedAt = now;
+
+    this.setItem('map_features', allFeatures);
+    this.setItem('campaign_maps', allMaps);
+    return newFeature;
+  }
+
+  async updateMapFeature(
+    campaignId: string,
+    mapId: string,
+    featureId: string,
+    patch: Partial<MapFeature> & { expectedRevision?: number }
+  ): Promise<MapFeature> {
+    const { isDm } = this.checkMapPermission(campaignId);
+    if (!isDm) {
+      throw new Error('دسترسی غیرمجاز: فقط دانجن مستر مجاز به ویرایش عوارض نقشه است.');
+    }
+
+    const allMaps = this.getItem<CampaignMap[]>('campaign_maps', SEED_CAMPAIGN_MAPS);
+    const map = allMaps.find(m => m.id === mapId && m.campaignId === campaignId);
+    if (!map) throw new Error('نقشه مورد نظر یافت نشد.');
+
+    if (patch.expectedRevision !== undefined) {
+      const conflict = checkMapConflict(map.revision, patch.expectedRevision);
+      if (conflict.hasConflict) throw new Error(conflict.error);
+    }
+
+    const allFeatures = this.getItem<MapFeature[]>('map_features', SEED_MAP_FEATURES);
+    const feat = allFeatures.find(f => f.id === featureId && f.mapId === mapId);
+    if (!feat) throw new Error('عارضه نقشه یافت نشد.');
+
+    const merged: MapFeature = {
+      ...feat,
+      ...patch,
+      style: {
+        ...feat.style,
+        ...(patch.style || {})
+      },
+      id: feat.id,
+      mapId: feat.mapId,
+      campaignId: feat.campaignId
+    };
+
+    const val = validateMapFeaturePayload(merged, { width: map.width, height: map.height });
+    if (!val.valid) throw new Error(val.error);
+
+    feat.label = merged.label;
+    feat.description = merged.description;
+    feat.kind = merged.kind;
+    feat.geometry = merged.geometry;
+    feat.style = merged.style;
+    feat.linkType = merged.linkType;
+    feat.linkId = merged.linkId;
+    feat.isRevealed = merged.isRevealed;
+    feat.updatedAt = Date.now();
+
+    map.revision = (map.revision || 1) + 1;
+    map.updatedAt = feat.updatedAt;
+
+    this.setItem('map_features', allFeatures);
+    this.setItem('campaign_maps', allMaps);
+    return feat;
+  }
+
+  async deleteMapFeature(campaignId: string, mapId: string, featureId: string): Promise<{ success: boolean; deletedId: string }> {
+    const { isDm } = this.checkMapPermission(campaignId);
+    if (!isDm) {
+      throw new Error('دسترسی غیرمجاز: فقط دانجن مستر مجاز به حذف عوارض نقشه است.');
+    }
+
+    const allMaps = this.getItem<CampaignMap[]>('campaign_maps', SEED_CAMPAIGN_MAPS);
+    const map = allMaps.find(m => m.id === mapId && m.campaignId === campaignId);
+    if (!map) throw new Error('نقشه مورد نظر یافت نشد.');
+
+    let allFeatures = this.getItem<MapFeature[]>('map_features', SEED_MAP_FEATURES);
+    const existing = allFeatures.find(f => f.id === featureId && f.mapId === mapId);
+    if (!existing) {
+      return { success: true, deletedId: featureId };
+    }
+
+    allFeatures = allFeatures.filter(f => f.id !== featureId);
+    map.revision = (map.revision || 1) + 1;
+    map.updatedAt = Date.now();
+
+    this.setItem('map_features', allFeatures);
+    this.setItem('campaign_maps', allMaps);
+    return { success: true, deletedId: featureId };
+  }
+
+  async getMapStamps(campaignId: string): Promise<MapStamp[]> {
+    const all = this.getItem<MapStamp[]>('map_stamps', SEED_MAP_STAMPS);
+    return all.filter(s => s.campaignId === campaignId || s.campaignId === 'global');
+  }
+
+  async createMapStamp(campaignId: string, data: Partial<MapStamp>): Promise<MapStamp> {
+    const { isDm } = this.checkMapPermission(campaignId);
+    if (!isDm) {
+      throw new Error('دسترسی غیرمجاز: فقط دانجن مستر مجاز به ثبت المان است.');
+    }
+
+    const val = validateMapStampPayload(data);
+    if (!val.valid) throw new Error(val.error);
+
+    const all = this.getItem<MapStamp[]>('map_stamps', SEED_MAP_STAMPS);
+    const stampId = `stamp-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
+    const newStamp: MapStamp = {
+      id: stampId,
+      campaignId,
+      name: data.name!.trim(),
+      mediaId: data.mediaId || (data.imageUrl ? `media-${stampId}` : ''),
+      imageUrl: data.imageUrl || (data.mediaId ? `/api/media/${data.mediaId}` : undefined),
+      width: data.width || 128,
+      height: data.height || 128,
+      createdBy: this.currentUser?.id,
+      createdAt: Date.now()
+    };
+
+    all.push(newStamp);
+    this.setItem('map_stamps', all);
+    return newStamp;
+  }
+
+  async deleteMapStamp(campaignId: string, stampId: string): Promise<{ success: boolean; deletedId: string }> {
+    const { isDm } = this.checkMapPermission(campaignId);
+    if (!isDm) {
+      throw new Error('دسترسی غیرمجاز: فقط دانجن مستر مجاز به حذف المان است.');
+    }
+
+    let all = this.getItem<MapStamp[]>('map_stamps', SEED_MAP_STAMPS);
+    all = all.filter(s => s.id !== stampId || (s.campaignId !== campaignId && s.campaignId !== 'global'));
+    this.setItem('map_stamps', all);
+    return { success: true, deletedId: stampId };
+  }
+
   // Step 4.4: Quests (LocalApi)
   async listQuests(campaignId: string, options?: { status?: QuestStatus; participationId?: string; search?: string }): Promise<Quest[]> {
     const all = this.getItem<Quest[]>('quests', SEED_QUESTS);
@@ -8115,7 +8450,9 @@ export class LocalApi implements ApiClient {
     }
 
     this.currentUser = null;
-    localStorage.removeItem(this.getKey('current_user'));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(this.getKey('current_user'));
+    }
     return { success: true, mode: options.mode };
   }
 
@@ -10059,6 +10396,66 @@ export class HttpApi implements ApiClient {
 
   async deleteMapPin(campaignId: string, handoutId: string, pinId: string): Promise<void> {
     await this.fetchJson(`/c/${campaignId}/handouts/${handoutId}/pins/${pinId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  // --- Campaign Main Map & Geography (HttpApi) ---
+  async getCampaignMaps(campaignId: string): Promise<CampaignMap[]> {
+    return this.fetchJson<CampaignMap[]>(`/c/${campaignId}/maps`);
+  }
+
+  async getCampaignMap(campaignId: string, mapId: string): Promise<CampaignMap | null> {
+    return this.fetchJson<CampaignMap>(`/c/${campaignId}/maps/${mapId}`);
+  }
+
+  async createCampaignMap(campaignId: string, data: Partial<CampaignMap>): Promise<CampaignMap> {
+    return this.fetchJson<CampaignMap>(`/c/${campaignId}/maps`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateCampaignMap(campaignId: string, mapId: string, patch: Partial<CampaignMap> & { expectedRevision?: number }): Promise<CampaignMap> {
+    return this.fetchJson<CampaignMap>(`/c/${campaignId}/maps/${mapId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patch)
+    });
+  }
+
+  async createMapFeature(campaignId: string, mapId: string, feature: Partial<MapFeature>): Promise<MapFeature> {
+    return this.fetchJson<MapFeature>(`/c/${campaignId}/maps/${mapId}/features`, {
+      method: 'POST',
+      body: JSON.stringify(feature)
+    });
+  }
+
+  async updateMapFeature(campaignId: string, mapId: string, featureId: string, patch: Partial<MapFeature> & { expectedRevision?: number }): Promise<MapFeature> {
+    return this.fetchJson<MapFeature>(`/c/${campaignId}/maps/${mapId}/features/${featureId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patch)
+    });
+  }
+
+  async deleteMapFeature(campaignId: string, mapId: string, featureId: string): Promise<{ success: boolean; deletedId: string }> {
+    return this.fetchJson<{ success: boolean; deletedId: string }>(`/c/${campaignId}/maps/${mapId}/features/${featureId}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async getMapStamps(campaignId: string): Promise<MapStamp[]> {
+    return this.fetchJson<MapStamp[]>(`/c/${campaignId}/map-stamps`);
+  }
+
+  async createMapStamp(campaignId: string, data: Partial<MapStamp>): Promise<MapStamp> {
+    return this.fetchJson<MapStamp>(`/c/${campaignId}/map-stamps`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteMapStamp(campaignId: string, stampId: string): Promise<{ success: boolean; deletedId: string }> {
+    return this.fetchJson<{ success: boolean; deletedId: string }>(`/c/${campaignId}/map-stamps/${stampId}`, {
       method: 'DELETE'
     });
   }

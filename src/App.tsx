@@ -92,6 +92,9 @@ const DevUiGallery = import.meta.env.DEV
   ? React.lazy(() => import('./components/dev/DevUiGallery').then(m => ({ default: m.DevUiGallery })))
   : null;
 
+// Stage B: Campaign Main Map preview route
+const CampaignMainMap = React.lazy(() => import('./components/map/CampaignMainMap').then(m => ({ default: m.CampaignMainMap })));
+
 // Loading skeleton fallback for tabs
 const TabSkeleton = () => (
   <div className="space-y-4 p-2 animate-pulse" dir="rtl">
@@ -108,7 +111,8 @@ const TabSkeleton = () => (
 
 export default function App() {
   // Top-level Navigation View Mode
-  const [viewMode, setViewMode] = useState<'home' | 'character_master' | 'campaign_space' | 'dev_ui'>('home');
+  const [viewMode, setViewMode] = useState<'home' | 'character_master' | 'campaign_space' | 'dev_ui' | 'dev_map'>('home');
+  const [devMapCampaignId, setDevMapCampaignId] = useState<string>('zorvania-c1');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [allUsers, setAllUsers] = useState<User[]>([]);
 
@@ -624,6 +628,13 @@ export default function App() {
     }
     if (clean === 'dev/ui' || clean === 'dev') {
       setViewMode('dev_ui');
+      return;
+    }
+    if (import.meta.env.DEV && (clean === 'dev/map' || clean.startsWith('dev/map/'))) {
+      const parts = routePart.split('/');
+      const cid = parts[2] || activeCampaignId || 'zorvania-c1';
+      setDevMapCampaignId(cid);
+      setViewMode('dev_map');
       return;
     }
 
@@ -1312,7 +1323,7 @@ export default function App() {
         // Multi-Campaign Props
         activeCampaignName={activeCampaign?.name}
         activeCampaignRole={activeCampaign?.myRole}
-        viewMode={viewMode === 'dev_ui' ? 'home' : viewMode}
+        viewMode={viewMode === 'dev_ui' || viewMode === 'dev_map' ? 'home' : viewMode}
         onOpenCampaignSwitcher={() => setCampaignSwitcherOpen(true)}
         onGoHome={() => {
           setViewMode('home');
