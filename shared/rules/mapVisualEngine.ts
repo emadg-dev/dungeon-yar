@@ -41,8 +41,16 @@ export interface TerrainPathOptions {
   className: string;
 }
 
-export function getTerrainStyle(terrainType?: MapTerrainType, customOpacity?: number): TerrainPathOptions {
-  const baseOpacity = typeof customOpacity === 'number' ? Math.max(0.1, Math.min(1, customOpacity)) : 0.35;
+export function getTerrainStyle(
+  terrainType?: MapTerrainType,
+  customOpacity?: number,
+  isRevealed = true,
+  isDm = false
+): TerrainPathOptions {
+  const isHiddenForPlayer = !isRevealed && isDm;
+  const rawOpacity = typeof customOpacity === 'number' ? Math.max(0.1, Math.min(1, customOpacity)) : 0.35;
+  const baseOpacity = isHiddenForPlayer ? rawOpacity * 0.5 : rawOpacity;
+  const hiddenClass = isHiddenForPlayer ? ' opacity-60' : '';
 
   switch (terrainType) {
     case 'forest':
@@ -51,7 +59,8 @@ export function getTerrainStyle(terrainType?: MapTerrainType, customOpacity?: nu
         fillColor: 'var(--color-terrain-forest)',
         fillOpacity: baseOpacity,
         weight: 2,
-        className: 'map-terrain-forest'
+        dashArray: isHiddenForPlayer ? '4, 4' : undefined,
+        className: `map-terrain-forest${hiddenClass}`
       };
     case 'water':
       return {
@@ -59,7 +68,8 @@ export function getTerrainStyle(terrainType?: MapTerrainType, customOpacity?: nu
         fillColor: 'var(--color-terrain-water)',
         fillOpacity: Math.min(0.6, baseOpacity + 0.05),
         weight: 2,
-        className: 'map-terrain-water'
+        dashArray: isHiddenForPlayer ? '4, 4' : undefined,
+        className: `map-terrain-water${hiddenClass}`
       };
     case 'mountain':
       return {
@@ -67,7 +77,8 @@ export function getTerrainStyle(terrainType?: MapTerrainType, customOpacity?: nu
         fillColor: 'var(--color-terrain-mountain)',
         fillOpacity: Math.min(0.6, baseOpacity + 0.05),
         weight: 2,
-        className: 'map-terrain-mountain'
+        dashArray: isHiddenForPlayer ? '4, 4' : undefined,
+        className: `map-terrain-mountain${hiddenClass}`
       };
     case 'desert':
       return {
@@ -75,7 +86,8 @@ export function getTerrainStyle(terrainType?: MapTerrainType, customOpacity?: nu
         fillColor: 'var(--color-terrain-desert)',
         fillOpacity: baseOpacity,
         weight: 2,
-        className: 'map-terrain-desert'
+        dashArray: isHiddenForPlayer ? '4, 4' : undefined,
+        className: `map-terrain-desert${hiddenClass}`
       };
     case 'swamp':
       return {
@@ -83,7 +95,8 @@ export function getTerrainStyle(terrainType?: MapTerrainType, customOpacity?: nu
         fillColor: 'var(--color-terrain-swamp)',
         fillOpacity: Math.min(0.6, baseOpacity + 0.05),
         weight: 2,
-        className: 'map-terrain-swamp'
+        dashArray: isHiddenForPlayer ? '4, 4' : undefined,
+        className: `map-terrain-swamp${hiddenClass}`
       };
     case 'road':
       return {
@@ -91,8 +104,8 @@ export function getTerrainStyle(terrainType?: MapTerrainType, customOpacity?: nu
         fillColor: 'var(--color-terrain-road)',
         fillOpacity: Math.max(0.15, baseOpacity - 0.1),
         weight: 3.5,
-        dashArray: '8, 4',
-        className: 'map-terrain-road'
+        dashArray: isHiddenForPlayer ? '4, 6' : '8, 4',
+        className: `map-terrain-road${hiddenClass}`
       };
     default:
       return {
@@ -100,7 +113,8 @@ export function getTerrainStyle(terrainType?: MapTerrainType, customOpacity?: nu
         fillColor: 'var(--color-terrain-road)',
         fillOpacity: baseOpacity,
         weight: 2,
-        className: 'map-terrain-default'
+        dashArray: isHiddenForPlayer ? '4, 4' : undefined,
+        className: `map-terrain-default${hiddenClass}`
       };
   }
 }
@@ -108,14 +122,21 @@ export function getTerrainStyle(terrainType?: MapTerrainType, customOpacity?: nu
 /**
  * Style mapping for region border polygons.
  */
-export function getRegionBorderStyle(style?: MapFeatureStyle): TerrainPathOptions {
+export function getRegionBorderStyle(
+  style?: MapFeatureStyle,
+  isRevealed = true,
+  isDm = false
+): TerrainPathOptions {
+  const isHiddenForPlayer = !isRevealed && isDm;
+  const hiddenClass = isHiddenForPlayer ? ' opacity-60' : '';
+
   return {
     color: 'var(--color-region-border)',
     fillColor: 'transparent',
     fillOpacity: 0,
     weight: style?.strokeWidth ?? 2.5,
-    dashArray: style?.strokeDasharray || '6, 6',
-    className: 'map-region-border'
+    dashArray: isHiddenForPlayer ? '3, 6' : style?.strokeDasharray || '6, 6',
+    className: `map-region-border${hiddenClass}`
   };
 }
 

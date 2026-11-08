@@ -1462,6 +1462,20 @@ export default function App() {
             <DevUiGallery />
           )}
 
+          {/* VIEW DEV: CAMPAIGN MAIN MAP PREVIEW (#/dev/map/:campaignId) */}
+          {viewMode === 'dev_map' && (
+            <div className="h-[calc(100dvh-5.5rem)] -mx-2.5 sm:-mx-4 -mt-3 sm:-mt-6 rounded-2xl overflow-hidden border border-border shadow-md">
+              <CampaignMainMap
+                campaignId={devMapCampaignId}
+                isDm={isDmView}
+                onClose={() => {
+                  setViewMode('home');
+                  window.location.hash = '#/';
+                }}
+              />
+            </div>
+          )}
+
           {/* VIEW 3: CAMPAIGN WORKSPACE */}
           {viewMode === 'campaign_space' && (
             <>
@@ -1863,7 +1877,7 @@ export default function App() {
         }}
       />
       <BottomNav
-        isHomeView={viewMode === 'home'}
+        isHomeView={viewMode === 'home' || viewMode === 'dev_map'}
         homeTab="campaigns"
         onSelectHomeTab={(tab) => {
           if (tab === 'campaigns') {

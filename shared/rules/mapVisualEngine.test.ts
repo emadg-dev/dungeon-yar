@@ -68,6 +68,15 @@ describe('MapVisualEngine Pure Logic', () => {
       expect(road.dashArray).toBeDefined();
     });
 
+    it('differentiates hidden terrain for DM with lower opacity and dash border', () => {
+      const revealed = getTerrainStyle('forest', 0.4, true, true);
+      const hidden = getTerrainStyle('forest', 0.4, false, true);
+
+      expect(hidden.fillOpacity).toBeLessThan(revealed.fillOpacity);
+      expect(hidden.dashArray).toBeDefined();
+      expect(hidden.className).toContain('opacity-60');
+    });
+
     it('handles region borders with stroke-dasharray and semantic border token', () => {
       const style = getRegionBorderStyle({ strokeWidth: 3, strokeDasharray: '4,4' });
       expect(style.color).toBe('var(--color-region-border)');
@@ -76,6 +85,12 @@ describe('MapVisualEngine Pure Logic', () => {
       expect(style.weight).toBe(3);
       expect(style.dashArray).toBe('4,4');
       expect(style.className).toBe('map-region-border');
+    });
+
+    it('differentiates hidden region borders for DM with custom dash and opacity', () => {
+      const hiddenBorder = getRegionBorderStyle({ strokeWidth: 3 }, false, true);
+      expect(hiddenBorder.className).toContain('opacity-60');
+      expect(hiddenBorder.dashArray).toBe('3, 6');
     });
   });
 

@@ -2041,10 +2041,18 @@ export type MapMarkerType = 'location' | 'npc' | 'enemy' | 'character' | 'player
 
 export type MapPoint = [number, number]; // [y, x] in image pixel coordinates
 
-export interface MapGeometry {
-  type: 'Point' | 'Polygon';
-  coordinates: MapPoint | MapPoint[]; // [y, x] for Point, [ [y, x], ... ] for Polygon
+export interface MapPointGeometry {
+  type: 'Point';
+  coordinates: MapPoint; // [y, x]
 }
+
+export interface MapPolygonGeometry {
+  type: 'Polygon';
+  coordinates: MapPoint[]; // [ [y, x], ... ]
+}
+
+export type MapGeometry = MapPointGeometry | MapPolygonGeometry;
+
 
 export interface MapFeatureStyle {
   terrainType?: MapTerrainType;

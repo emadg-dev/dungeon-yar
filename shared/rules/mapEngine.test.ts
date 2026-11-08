@@ -5,6 +5,14 @@ import {
   validateMapStampPayload,
   checkMapConflict,
   filterMapFeaturesForRole,
+  clampCoordinate,
+  clampPolygonCoordinates,
+  detectImageMimeFromBytes,
+  validateStampUploadFile,
+  createInitialHistory,
+  recordMapHistoryAction,
+  undoMapHistoryAction,
+  isConflictErrorMessage,
   CONFLICT_ERROR_FA,
   ALLOWED_TERRAIN_TYPES,
   ALLOWED_MARKER_TYPES
@@ -254,4 +262,80 @@ describe('shared/rules/mapEngine', () => {
       expect(anonList[0].id).toBe('f1');
     });
   });
+
+  describe('6. Coordinate Clamping', () => {
+    it('clamps coordinates strictly within image bounds [0..height, 0..width]', () => {
+      expect(clampCoordinate([-50, 1500], 1000, 800)).toEqual([0, 1000]);
+      expect(clampCoordinate([900, -10], 1000, 800)).toEqual([800, 0]);
+      expect(clampCoordinate([450.45, 600.22], 1000, 800)).toEqual([450.5, 600.2]);
+
+      const poly = [[-10, -20], [500, 500], [900, 1200]] as [number, number][];
+      const clamped = clampPolygonCoordinates(poly, 1000, 800);
+      expect(clamped).toEqual([[0, 0], [500, 500], [800, 1000]]);
+    });
+  });
+
+  describe('7. Stamp File Validation & Magic Bytes', () => {
+    it('identifies PNG, JPEG, and WebP via binary magic bytes', () => {
+      const pngBytes = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+      expect(detectImageMimeFromBytes(pngBytes)).toBe('image/png');
+
+      const jpegBytes = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10]);
+      expect(detectImageMimeFromBytes(jpegBytes)).toBe('image/jpeg');
+
+      // RIFF....WEBP
+      const webpBytes = new Uint8Array([
+        0x52, 0x49, 0x46, 0x46, // 'RIFF'
+        0x00, 0x00, 0x00, 0x00,
+        0x57, 0x45, 0x42, 0x50  // 'WEBP'
+      ]);
+      expect(detectImageMimeFromBytes(webpBytes)).toBe('image/webp');
+    });
+
+    it('strictly rejects SVG uploads', () => {
+      const res = validateStampUploadFile('castle.svg', 1024);
+      expect(res.valid).toBe(false);
+      expect(res.error).toContain('SVG');
+    });
+
+    it('rejects files larger than 150 KB cap', () => {
+      const res = validateStampUploadFile('huge.png', 160 * 1024);
+      expect(res.valid).toBe(false);
+      expect(res.error).toContain('۱۵۰ کیلوبایت');
+    });
+
+    it('rejects corrupt or invalid image bytes', () => {
+      const corruptBytes = new Uint8Array([0x00, 0x01, 0x02, 0x03]);
+      const res = validateStampUploadFile('valid-name.png', 5000, corruptBytes);
+      expect(res.valid).toBe(false);
+      expect(res.error).toContain('نامعتبر');
+    });
+  });
+
+  describe('8. Single-step Undo History', () => {
+    it('records action and successfully reverts to previous feature state', () => {
+      const initialFeatures = [{ id: 'f1', label: 'اول' }];
+      let history = createInitialHistory();
+      expect(history.canUndo).toBe(false);
+
+      // Record before adding f2
+      history = recordMapHistoryAction(initialFeatures as any);
+      expect(history.canUndo).toBe(true);
+
+      const modifiedFeatures = [{ id: 'f1', label: 'اول' }, { id: 'f2', label: 'دوم' }];
+      const undoResult = undoMapHistoryAction(history, modifiedFeatures as any);
+
+      expect(undoResult.features).toEqual(initialFeatures);
+      expect(undoResult.newHistory.canUndo).toBe(false);
+    });
+  });
+
+  describe('9. isConflictErrorMessage', () => {
+    it('recognizes conflict errors accurately', () => {
+      expect(isConflictErrorMessage('خطای همزمانی (Conflict): نقشه تغییر کرده است.')).toBe(true);
+      expect(isConflictErrorMessage(new Error('revision mismatch'))).toBe(true);
+      expect(isConflictErrorMessage('خطای عمومی شبکه')).toBe(false);
+    });
+  });
 });
+

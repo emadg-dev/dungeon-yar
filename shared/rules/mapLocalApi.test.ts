@@ -212,4 +212,52 @@ describe('LocalApi Campaign Maps & Permissions', () => {
       expect(del.success).toBe(true);
     });
   });
+
+  describe('6. Non-DM Permission Rejection on Mutation APIs', () => {
+    it('throws unauthorized error when a player attempts to create/update/delete features or stamps', async () => {
+      // Login as regular player (Pardis - player role)
+      await api.login('pardis@zorvania.ir', 'player123').catch(() => {});
+
+      // 1. Attempt to create map feature
+      await expect(
+        api.createMapFeature(campaignId, mainMapId, {
+          kind: 'marker',
+          label: 'نشانه غیرمجاز بازیکن',
+          geometry: { type: 'Point', coordinates: [100, 100] },
+          style: { markerType: 'location' }
+        })
+      ).rejects.toThrow('دسترسی غیرمجاز');
+
+      // 2. Attempt to update map feature
+      await expect(
+        api.updateMapFeature(campaignId, mainMapId, 'feat-marker-capital', {
+          label: 'تغییر نام غیرمجاز'
+        })
+      ).rejects.toThrow('دسترسی غیرمجاز');
+
+      // 3. Attempt to delete map feature
+      await expect(
+        api.deleteMapFeature(campaignId, mainMapId, 'feat-marker-capital')
+      ).rejects.toThrow('دسترسی غیرمجاز');
+
+      // 4. Attempt to create stamp
+      await expect(
+        api.createMapStamp(campaignId, {
+          name: 'استمپ غیرمجاز',
+          mediaId: 'm1'
+        })
+      ).rejects.toThrow('دسترسی غیرمجاز');
+
+      // 5. Attempt to delete stamp
+      await expect(
+        api.deleteMapStamp(campaignId, 'stamp-fortress-1')
+      ).rejects.toThrow('دسترسی غیرمجاز');
+
+      // 6. Attempt to update campaign map metadata
+      await expect(
+        api.updateCampaignMap(campaignId, mainMapId, { name: 'نام نقشه تغییریافته' })
+      ).rejects.toThrow('دسترسی غیرمجاز');
+    });
+  });
 });
+

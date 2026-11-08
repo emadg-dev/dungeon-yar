@@ -251,3 +251,138 @@ export function filterMapFeaturesForRole(
   }
   return features.filter(f => Boolean(f.isRevealed));
 }
+
+/**
+ * Clamps coordinates [y, x] to image boundaries [0, height] and [0, width].
+ */
+export function clampCoordinate(
+  coord: [number, number],
+  width: number,
+  height: number
+): [number, number] {
+  const y = Math.max(0, Math.min(height, coord[0]));
+  const x = Math.max(0, Math.min(width, coord[1]));
+  return [Math.round(y * 10) / 10, Math.round(x * 10) / 10];
+}
+
+/**
+ * Clamps all vertices of a polygon to image boundaries.
+ */
+export function clampPolygonCoordinates(
+  coords: [number, number][],
+  width: number,
+  height: number
+): [number, number][] {
+  if (!Array.isArray(coords)) return [];
+  return coords.map(pt => clampCoordinate(pt, width, height));
+}
+
+export type AllowedStampMime = 'image/png' | 'image/jpeg' | 'image/webp';
+export const MAX_STAMP_BYTES = 150 * 1024; // 150 KB cap for stamps
+
+/**
+ * Detects image MIME type from binary magic bytes.
+ */
+export function detectImageMimeFromBytes(bytes: Uint8Array): AllowedStampMime | null {
+  if (!bytes || bytes.length < 4) return null;
+  // PNG: 89 50 4E 47 (0x89 'P' 'N' 'G')
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
+    return 'image/png';
+  }
+  // JPEG: FF D8 FF
+  if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
+    return 'image/jpeg';
+  }
+  // WebP: RIFF ... WEBP
+  if (bytes.length >= 12) {
+    const isRiff = bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
+    const isWebp = bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
+    if (isRiff && isWebp) {
+      return 'image/webp';
+    }
+  }
+  return null;
+}
+
+/**
+ * Validates an uploaded stamp file: size, extension, and magic bytes.
+ * Strictly rejects SVG uploads.
+ */
+export function validateStampUploadFile(
+  fileName: string,
+  sizeBytes: number,
+  bytes?: Uint8Array
+): { valid: boolean; error?: string; detectedMime?: AllowedStampMime } {
+  const lowerName = (fileName || '').toLowerCase();
+  if (lowerName.endsWith('.svg')) {
+    return {
+      valid: false,
+      error: 'فقط فایل‌های تصویری PNG، JPEG و WebP مجاز هستند. امکان آپلود فایل SVG وجود ندارد.'
+    };
+  }
+
+  if (sizeBytes > MAX_STAMP_BYTES) {
+    return {
+      valid: false,
+      error: `حجم فایل المان (${Math.round(sizeBytes / 1024)} کیلوبایت) بیش از سقف مجاز ۱۵۰ کیلوبایت است.`
+    };
+  }
+
+  if (bytes && bytes.length > 0) {
+    const detected = detectImageMimeFromBytes(bytes);
+    if (!detected) {
+      return {
+        valid: false,
+        error: 'قالب فایل ارسالی نامعتبر است. فقط تصویر واقعی با فرمت PNG، JPEG یا WebP پذیرفته می‌شود.'
+      };
+    }
+    return { valid: true, detectedMime: detected };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Single-step Undo state tracker for DM map operations.
+ */
+export interface MapEditHistory {
+  previousFeatures: MapFeature[] | null;
+  canUndo: boolean;
+}
+
+export function createInitialHistory(): MapEditHistory {
+  return { previousFeatures: null, canUndo: false };
+}
+
+export function recordMapHistoryAction(currentFeatures: MapFeature[]): MapEditHistory {
+  return {
+    previousFeatures: JSON.parse(JSON.stringify(currentFeatures)),
+    canUndo: true
+  };
+}
+
+export function undoMapHistoryAction(
+  history: MapEditHistory,
+  currentFeatures: MapFeature[]
+): { features: MapFeature[]; newHistory: MapEditHistory } {
+  if (!history.canUndo || !history.previousFeatures) {
+    return { features: currentFeatures, newHistory: history };
+  }
+  return {
+    features: history.previousFeatures,
+    newHistory: {
+      previousFeatures: null,
+      canUndo: false
+    }
+  };
+}
+
+/**
+ * Detects whether an error message or error instance signifies an optimistic concurrency conflict.
+ */
+export function isConflictErrorMessage(err: unknown): boolean {
+  if (!err) return false;
+  const msg = typeof err === 'string' ? err : (err as any).message || '';
+  return msg.includes('Conflict') || msg.includes('همزمانی') || msg.includes('revision');
+}
+
