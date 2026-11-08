@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1400" width="2000" height="1400">
+  <defs>
+    <radialGradient id="mapVignette" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="#141210" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0a0908" stop-opacity="0.8"/>
+    </radialGradient>
+  </defs>
+  <rect width="2000" height="1400" fill="#12100f"/>
+  <path d="M200 0 V1400 M400 0 V1400 M600 0 V1400 M800 0 V1400 M1000 0 V1400 M1200 0 V1400 M1400 0 V1400 M1600 0 V1400 M1800 0 V1400 M0 200 H2000 M0 400 H2000 M0 600 H2000 M0 800 H2000 M0 1000 H2000 M0 1200 H2000" stroke="#2a241e" stroke-width="1" stroke-dasharray="4,8" opacity="0.4"/>
+  <path d="M120 220 Q400 80 820 180 T1520 140 T1920 480 Q1950 820 1820 1120 T1240 1340 T540 1280 T80 920 Z" fill="#1c1916" stroke="#463c30" stroke-width="4"/>
+  <path d="M1000 200 Q1120 380 1250 560 T1450 900 T1600 1150" fill="none" stroke="#554b3c" stroke-width="6" stroke-dasharray="12,6"/>
+  <path d="M1100 320 Q820 450 680 720 T420 1050 T280 1240" fill="none" stroke="#23415f" stroke-width="5"/>
+  <g transform="translate(1820, 180)">
+    <circle r="70" fill="none" stroke="#786446" stroke-width="2"/>
+    <path d="M0 -65 L10 -15 L60 0 L15 10 L0 65 L-10 15 L-60 0 L-15 -10 Z" fill="#d6b25e" opacity="0.8"/>
+    <text y="-75" text-anchor="middle" fill="#d6b25e" font-size="18">N</text>
+  </g>
+  <rect width="2000" height="1400" fill="url(#mapVignette)"/>
+  <rect x="760" y="30" width="480" height="60" rx="8" fill="#1a1714" stroke="#d6b25e" stroke-width="2"/>
+  <text x="1000" y="68" text-anchor="middle" fill="#d6b25e" font-size="24" font-weight="bold">نقشه جهان زروانیا — گاه باستان</text>
+</svg>

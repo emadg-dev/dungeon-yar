@@ -105,8 +105,22 @@ import type {
   NotificationPayload,
   NotificationItem,
   NotificationPref,
-  PushSubscriptionRecord
+  PushSubscriptionRecord,
+  CampaignMap,
+  MapFeature,
+  MapStamp
 } from '../../src/types';
+import {
+  validateCampaignMapPayload,
+  validateMapFeaturePayload,
+  validateMapStampPayload,
+  clampCoordinate,
+  clampPolygonCoordinates,
+  detectImageMimeFromBytes,
+  validateStampUploadFile,
+  CONFLICT_ERROR_FA,
+  MAX_STAMP_BYTES
+} from '../../shared/rules/mapEngine';
 
 interface Env {
   DB: any; // Cloudflare D1Database binding
@@ -1958,7 +1972,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       headers: {
         'Content-Type': row.mime_type || 'image/webp',
         'Content-Length': String(row.size_bytes),
-        'Cache-Control': 'private, max-age=86400'
+        'Cache-Control': 'private, max-age=86400',
+        'X-Content-Type-Options': 'nosniff'
       }
     });
   }
@@ -10190,6 +10205,579 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     }));
 
     return json(items);
+  }
+
+  // ==============================================================
+  // STEP 5.5: CAMPAIGN MAIN MAP & STAMP SYSTEM (Stage D)
+  // ==============================================================
+
+  // GET /api/c/:id/maps — list campaign maps with member check and SQL-level visibility filtering
+  if (path.match(/^\/c\/[^/]+\/maps$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    const isDm = myRole === 'owner' || myRole === 'co_dm';
+
+    const mapsRes = await env.DB.prepare(
+      'SELECT * FROM campaign_maps WHERE campaign_id = ? ORDER BY is_main DESC, created_at ASC'
+    ).bind(campId).all();
+    const mapRows = mapsRes.results || [];
+
+    const maps: CampaignMap[] = [];
+    for (const m of mapRows) {
+      let fRes: any;
+      if (isDm) {
+        fRes = await env.DB.prepare(
+          'SELECT * FROM map_features WHERE map_id = ? AND campaign_id = ? ORDER BY updated_at ASC'
+        ).bind(m.id, campId).all();
+      } else {
+        // Enforce SQL-level filtering for player/spectator (never in JS)
+        fRes = await env.DB.prepare(
+          'SELECT id, map_id, campaign_id, kind, geometry, label, description, style, link_type, link_id, is_revealed, updated_at FROM map_features WHERE map_id = ? AND campaign_id = ? AND is_revealed = 1 ORDER BY updated_at ASC'
+        ).bind(m.id, campId).all();
+      }
+
+      const features: MapFeature[] = (fRes.results || []).map((f: any) => ({
+        id: f.id,
+        mapId: f.map_id,
+        campaignId: f.campaign_id,
+        kind: f.kind,
+        geometry: parseBlob(f.geometry, { type: 'Point', coordinates: [0, 0] }),
+        label: f.label,
+        description: f.description || '',
+        style: parseBlob(f.style, {}),
+        linkType: f.link_type || undefined,
+        linkId: f.link_id || undefined,
+        isRevealed: Boolean(f.is_revealed),
+        updatedAt: Number(f.updated_at)
+      }));
+
+      maps.push({
+        id: m.id,
+        campaignId: m.campaign_id,
+        name: m.name,
+        mediaId: m.media_id || undefined,
+        width: Number(m.width || 1000),
+        height: Number(m.height || 1000),
+        isMain: Boolean(m.is_main),
+        revision: Number(m.revision || 1),
+        features,
+        createdAt: Number(m.created_at)
+      });
+    }
+
+    return json(maps);
+  }
+
+  // GET /api/c/:id/maps/:mapId — single map with features
+  if (path.match(/^\/c\/[^/]+\/maps\/[^/]+$/) && method === 'GET') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const mapId = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    const isDm = myRole === 'owner' || myRole === 'co_dm';
+
+    const m = await env.DB.prepare(
+      'SELECT * FROM campaign_maps WHERE id = ? AND campaign_id = ?'
+    ).bind(mapId, campId).first();
+    if (!m) return error('نقشه مورد نظر یافت نشد.', 404);
+
+    let fRes: any;
+    if (isDm) {
+      fRes = await env.DB.prepare(
+        'SELECT * FROM map_features WHERE map_id = ? AND campaign_id = ? ORDER BY updated_at ASC'
+      ).bind(mapId, campId).all();
+    } else {
+      fRes = await env.DB.prepare(
+        'SELECT id, map_id, campaign_id, kind, geometry, label, description, style, link_type, link_id, is_revealed, updated_at FROM map_features WHERE map_id = ? AND campaign_id = ? AND is_revealed = 1 ORDER BY updated_at ASC'
+      ).bind(mapId, campId).all();
+    }
+
+    const features: MapFeature[] = (fRes.results || []).map((f: any) => ({
+      id: f.id,
+      mapId: f.map_id,
+      campaignId: f.campaign_id,
+      kind: f.kind,
+      geometry: parseBlob(f.geometry, { type: 'Point', coordinates: [0, 0] }),
+      label: f.label,
+      description: f.description || '',
+      style: parseBlob(f.style, {}),
+      linkType: f.link_type || undefined,
+      linkId: f.link_id || undefined,
+      isRevealed: Boolean(f.is_revealed),
+      updatedAt: Number(f.updated_at)
+    }));
+
+    return json({
+      id: m.id,
+      campaignId: m.campaign_id,
+      name: m.name,
+      mediaId: m.media_id || undefined,
+      width: Number(m.width || 1000),
+      height: Number(m.height || 1000),
+      isMain: Boolean(m.is_main),
+      revision: Number(m.revision || 1),
+      features,
+      createdAt: Number(m.created_at)
+    });
+  }
+
+  // POST /api/c/:id/maps — create map (DM only)
+  if (path.match(/^\/c\/[^/]+\/maps$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'dm_tools:handouts_maps')) return error('دسترسی مجاز نیست.', 403);
+
+    const body = await request.json() as any;
+    const validation = validateCampaignMapPayload(body);
+    if (!validation.valid) return error(validation.error || 'داده‌های نقشه نامعتبر است.', 400);
+
+    if (body.mediaId) {
+      const mediaRow = await env.DB.prepare('SELECT id FROM media WHERE id = ?').bind(body.mediaId).first();
+      if (!mediaRow) return error('تصویر نقشه یافت نشد.', 400);
+    }
+
+    const mapId = body.id || `map-${Date.now()}-${generateRandomToken(4)}`;
+    const isMain = Boolean(body.isMain);
+    if (isMain) {
+      await env.DB.prepare('UPDATE campaign_maps SET is_main = 0 WHERE campaign_id = ?').bind(campId).run();
+    }
+
+    const width = Math.max(100, Math.min(10000, Number(body.width || 1000)));
+    const height = Math.max(100, Math.min(10000, Number(body.height || 1000)));
+
+    await env.DB.prepare(
+      'INSERT INTO campaign_maps (id, campaign_id, name, media_id, width, height, is_main, revision, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)'
+    ).bind(mapId, campId, String(body.name).trim(), body.mediaId || null, width, height, isMain ? 1 : 0, now).run();
+
+    await audit('map-create', mapId, { campaignId: campId, name: body.name, isMain });
+
+    return json({
+      id: mapId,
+      campaignId: campId,
+      name: String(body.name).trim(),
+      mediaId: body.mediaId || undefined,
+      width,
+      height,
+      isMain,
+      revision: 1,
+      features: [],
+      createdAt: now
+    }, 201);
+  }
+
+  // PATCH /api/c/:id/maps/:mapId — update map metadata & atomic revision check (DM only)
+  if (path.match(/^\/c\/[^/]+\/maps\/[^/]+$/) && method === 'PATCH') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const mapId = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'dm_tools:handouts_maps')) return error('دسترسی مجاز نیست.', 403);
+
+    const map = await env.DB.prepare('SELECT * FROM campaign_maps WHERE id = ? AND campaign_id = ?').bind(mapId, campId).first();
+    if (!map) return error('نقشه مورد نظر یافت نشد.', 404);
+
+    const body = await request.json() as any;
+
+    if (body.expectedRevision !== undefined && Number(body.expectedRevision) !== Number(map.revision)) {
+      return error(CONFLICT_ERROR_FA, 409);
+    }
+
+    let name = map.name;
+    if (body.name !== undefined) {
+      name = String(body.name).trim();
+      if (!name) return error('نام نقشه نمی‌تواند خالی باشد.', 400);
+      if (name.length > 100) return error('نام نقشه نمی‌تواند بیش از ۱۰۰ نویسه باشد.', 400);
+    }
+    const mediaId = body.mediaId !== undefined ? (body.mediaId || null) : map.media_id;
+    const width = body.width !== undefined ? Math.max(100, Math.min(10000, Number(body.width))) : map.width;
+    const height = body.height !== undefined ? Math.max(100, Math.min(10000, Number(body.height))) : map.height;
+    let isMain = map.is_main;
+    if (body.isMain !== undefined) {
+      isMain = body.isMain ? 1 : 0;
+      if (isMain) {
+        await env.DB.prepare('UPDATE campaign_maps SET is_main = 0 WHERE campaign_id = ? AND id != ?').bind(campId, mapId).run();
+      }
+    }
+
+    if (body.expectedRevision !== undefined) {
+      const updateRes = await env.DB.prepare(
+        'UPDATE campaign_maps SET name = ?, media_id = ?, width = ?, height = ?, is_main = ?, revision = revision + 1 WHERE id = ? AND campaign_id = ? AND revision = ?'
+      ).bind(name, mediaId, width, height, isMain, mapId, campId, Number(body.expectedRevision)).run();
+      if (updateRes.changes === 0) {
+        return error(CONFLICT_ERROR_FA, 409);
+      }
+    } else {
+      await env.DB.prepare(
+        'UPDATE campaign_maps SET name = ?, media_id = ?, width = ?, height = ?, is_main = ?, revision = revision + 1 WHERE id = ? AND campaign_id = ?'
+      ).bind(name, mediaId, width, height, isMain, mapId, campId).run();
+    }
+
+    await audit('map-update', mapId, { campaignId: campId });
+
+    const updated = await env.DB.prepare('SELECT * FROM campaign_maps WHERE id = ?').bind(mapId).first();
+    return json({
+      id: updated.id,
+      campaignId: updated.campaign_id,
+      name: updated.name,
+      mediaId: updated.media_id || undefined,
+      width: Number(updated.width),
+      height: Number(updated.height),
+      isMain: Boolean(updated.is_main),
+      revision: Number(updated.revision),
+      createdAt: Number(updated.created_at)
+    });
+  }
+
+  // POST /api/c/:id/maps/:mapId/features — add feature to map (DM only)
+  if (path.match(/^\/c\/[^/]+\/maps\/[^/]+\/features$/) && method === 'POST') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const mapId = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'dm_tools:handouts_maps')) return error('دسترسی مجاز نیست.', 403);
+
+    const map = await env.DB.prepare('SELECT * FROM campaign_maps WHERE id = ? AND campaign_id = ?').bind(mapId, campId).first();
+    if (!map) return error('نقشه مورد نظر یافت نشد.', 404);
+
+    const countRes = await env.DB.prepare('SELECT COUNT(*) as cnt FROM map_features WHERE map_id = ? AND campaign_id = ?').bind(mapId, campId).first();
+    if ((countRes?.cnt || 0) >= 500) {
+      return error('سقف مجاز تعداد عوارض این نقشه (۵۰۰ عارضه) تکمیل شده است.', 400);
+    }
+
+    const body = await request.json() as any;
+
+    // Coordinate clamping to map dimensions before validation
+    let clampedGeom = { ...body.geometry };
+    if (clampedGeom.type === 'Point' && Array.isArray(clampedGeom.coordinates)) {
+      clampedGeom.coordinates = clampCoordinate(clampedGeom.coordinates as [number, number], map.width, map.height);
+    } else if (clampedGeom.type === 'Polygon' && Array.isArray(clampedGeom.coordinates)) {
+      clampedGeom.coordinates = clampPolygonCoordinates(clampedGeom.coordinates as [number, number][], map.width, map.height);
+    }
+
+    const candidate = {
+      ...body,
+      geometry: clampedGeom
+    };
+
+    const validation = validateMapFeaturePayload(candidate, { width: map.width, height: map.height });
+    if (!validation.valid) {
+      return error(validation.error || 'داده‌های عارضه نقشه نامعتبر است.', 400);
+    }
+
+    // Vertex limit for polygon (max 100 vertices)
+    if (clampedGeom.type === 'Polygon' && Array.isArray(clampedGeom.coordinates)) {
+      if (clampedGeom.coordinates.length > 100) {
+        return error('تعداد رأس‌های چندضلعی نمی‌تواند بیش از ۱۰۰ نقطه باشد.', 400);
+      }
+    }
+
+    // IDOR prevention for entity links
+    if (body.linkType && body.linkId) {
+      if (body.linkType === 'location') {
+        const loc = await env.DB.prepare('SELECT id FROM locations WHERE id = ? AND (scope_id = ? OR scope_type = "pack")').bind(body.linkId, campId).first();
+        if (!loc) return error('مکان انتخاب شده در این کمپین یافت نشد.', 400);
+      } else if (body.linkType === 'npc') {
+        const npc = await env.DB.prepare('SELECT id FROM npcs WHERE id = ? AND (scope_id = ? OR scope_type = "pack")').bind(body.linkId, campId).first();
+        if (!npc) return error('شخصیت انتخاب شده در این کمپین یافت نشد.', 400);
+      } else if (body.linkType === 'participation') {
+        const part = await env.DB.prepare('SELECT id FROM character_participations WHERE id = ? AND campaign_id = ?').bind(body.linkId, campId).first();
+        if (!part) return error('کاراکتر انتخاب شده در این کمپین یافت نشد.', 400);
+      }
+    }
+
+    // IDOR prevention for stamp reference
+    if (body.kind === 'stamp' && body.style?.stampId) {
+      const stamp = await env.DB.prepare('SELECT id FROM map_stamps WHERE id = ? AND campaign_id = ?').bind(body.style.stampId, campId).first();
+      if (!stamp && body.style.stampId !== 'stamp-fortress-1') {
+        return error('المان انتخاب شده در این کمپین یافت نشد.', 400);
+      }
+    }
+
+    const featId = body.id || `feat-${Date.now()}-${generateRandomToken(4)}`;
+    const label = String(body.label).trim();
+    const description = body.description ? String(body.description).trim() : null;
+    const styleStr = JSON.stringify(body.style || {});
+    const geomStr = JSON.stringify(clampedGeom);
+    const linkType = body.linkType || null;
+    const linkId = body.linkId || null;
+    const isRevealed = body.isRevealed ? 1 : 0;
+
+    await env.DB.prepare(
+      'INSERT INTO map_features (id, map_id, campaign_id, kind, geometry, label, description, style, link_type, link_id, is_revealed, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(featId, mapId, campId, body.kind, geomStr, label, description, styleStr, linkType, linkId, isRevealed, now).run();
+
+    // Bump map revision atomically
+    await env.DB.prepare('UPDATE campaign_maps SET revision = revision + 1 WHERE id = ? AND campaign_id = ?').bind(mapId, campId).run();
+
+    await audit('map-feature-create', featId, { campaignId: campId, mapId, kind: body.kind, label });
+
+    return json({
+      id: featId,
+      mapId,
+      campaignId: campId,
+      kind: body.kind,
+      geometry: clampedGeom,
+      label,
+      description: description || '',
+      style: body.style || {},
+      linkType: linkType || undefined,
+      linkId: linkId || undefined,
+      isRevealed: Boolean(isRevealed),
+      updatedAt: now
+    }, 201);
+  }
+
+  // PATCH /api/c/:id/maps/:mapId/features/:featureId — update feature (DM only)
+  if (path.match(/^\/c\/[^/]+\/maps\/[^/]+\/features\/[^/]+$/) && method === 'PATCH') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const mapId = parts[4];
+    const featureId = parts[6];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'dm_tools:handouts_maps')) return error('دسترسی مجاز نیست.', 403);
+
+    const map = await env.DB.prepare('SELECT * FROM campaign_maps WHERE id = ? AND campaign_id = ?').bind(mapId, campId).first();
+    if (!map) return error('نقشه مورد نظر یافت نشد.', 404);
+
+    const feat = await env.DB.prepare('SELECT * FROM map_features WHERE id = ? AND map_id = ? AND campaign_id = ?').bind(featureId, mapId, campId).first();
+    if (!feat) return error('عارضه مورد نظر یافت نشد.', 404);
+
+    const body = await request.json() as any;
+
+    if (body.expectedRevision !== undefined && Number(body.expectedRevision) !== Number(map.revision)) {
+      return error(CONFLICT_ERROR_FA, 409);
+    }
+
+    const existingGeom = parseBlob(feat.geometry, { type: 'Point', coordinates: [0, 0] });
+    const existingStyle = parseBlob(feat.style, {});
+
+    let nextGeom = body.geometry !== undefined ? body.geometry : existingGeom;
+    let nextKind = body.kind !== undefined ? body.kind : feat.kind;
+    let nextLabel = body.label !== undefined ? String(body.label).trim() : feat.label;
+    let nextDesc = body.description !== undefined ? String(body.description).trim() : feat.description;
+    let nextStyle = body.style !== undefined ? body.style : existingStyle;
+    let nextLinkType = body.linkType !== undefined ? body.linkType : feat.link_type;
+    let nextLinkId = body.linkId !== undefined ? body.linkId : feat.link_id;
+    let nextIsRevealed = body.isRevealed !== undefined ? (body.isRevealed ? 1 : 0) : feat.is_revealed;
+
+    const candidate = {
+      id: featureId,
+      mapId,
+      campaignId: campId,
+      kind: nextKind,
+      geometry: nextGeom,
+      label: nextLabel,
+      description: nextDesc,
+      style: nextStyle,
+      linkType: nextLinkType,
+      linkId: nextLinkId,
+      isRevealed: Boolean(nextIsRevealed)
+    };
+
+    const validation = validateMapFeaturePayload(candidate, { width: map.width, height: map.height });
+    if (!validation.valid) {
+      return error(validation.error || 'داده‌های عارضه نامعتبر است.', 400);
+    }
+
+    if (nextGeom?.type === 'Polygon' && Array.isArray(nextGeom.coordinates) && nextGeom.coordinates.length > 100) {
+      return error('تعداد رأس‌های چندضلعی نمی‌تواند بیش از ۱۰۰ نقطه باشد.', 400);
+    }
+
+    // IDOR checks if link changed
+    if (nextLinkType && nextLinkId) {
+      if (nextLinkType === 'location') {
+        const loc = await env.DB.prepare('SELECT id FROM locations WHERE id = ? AND (scope_id = ? OR scope_type = "pack")').bind(nextLinkId, campId).first();
+        if (!loc) return error('مکان انتخاب شده در این کمپین یافت نشد.', 400);
+      } else if (nextLinkType === 'npc') {
+        const npc = await env.DB.prepare('SELECT id FROM npcs WHERE id = ? AND (scope_id = ? OR scope_type = "pack")').bind(nextLinkId, campId).first();
+        if (!npc) return error('شخصیت انتخاب شده در این کمپین یافت نشد.', 400);
+      } else if (nextLinkType === 'participation') {
+        const part = await env.DB.prepare('SELECT id FROM character_participations WHERE id = ? AND campaign_id = ?').bind(nextLinkId, campId).first();
+        if (!part) return error('کاراکتر انتخاب شده در این کمپین یافت نشد.', 400);
+      }
+    }
+
+    if (nextKind === 'stamp' && nextStyle?.stampId) {
+      const stamp = await env.DB.prepare('SELECT id FROM map_stamps WHERE id = ? AND campaign_id = ?').bind(nextStyle.stampId, campId).first();
+      if (!stamp && nextStyle.stampId !== 'stamp-fortress-1') {
+        return error('المان انتخاب شده در این کمپین یافت نشد.', 400);
+      }
+    }
+
+    // Coordinate clamping
+    if (nextGeom.type === 'Point' && Array.isArray(nextGeom.coordinates)) {
+      nextGeom.coordinates = clampCoordinate(nextGeom.coordinates as [number, number], map.width, map.height);
+    } else if (nextGeom.type === 'Polygon' && Array.isArray(nextGeom.coordinates)) {
+      nextGeom.coordinates = clampPolygonCoordinates(nextGeom.coordinates as [number, number][], map.width, map.height);
+    }
+
+    if (body.expectedRevision !== undefined) {
+      const bump = await env.DB.prepare('UPDATE campaign_maps SET revision = revision + 1 WHERE id = ? AND campaign_id = ? AND revision = ?').bind(mapId, campId, Number(body.expectedRevision)).run();
+      if (bump.changes === 0) return error(CONFLICT_ERROR_FA, 409);
+    } else {
+      await env.DB.prepare('UPDATE campaign_maps SET revision = revision + 1 WHERE id = ? AND campaign_id = ?').bind(mapId, campId).run();
+    }
+
+    await env.DB.prepare(
+      'UPDATE map_features SET kind = ?, geometry = ?, label = ?, description = ?, style = ?, link_type = ?, link_id = ?, is_revealed = ?, updated_at = ? WHERE id = ? AND map_id = ? AND campaign_id = ?'
+    ).bind(nextKind, JSON.stringify(nextGeom), nextLabel, nextDesc, JSON.stringify(nextStyle), nextLinkType || null, nextLinkId || null, nextIsRevealed, now, featureId, mapId, campId).run();
+
+    await audit('map-feature-update', featureId, { campaignId: campId, mapId });
+
+    return json({
+      id: featureId,
+      mapId,
+      campaignId: campId,
+      kind: nextKind,
+      geometry: nextGeom,
+      label: nextLabel,
+      description: nextDesc || '',
+      style: nextStyle,
+      linkType: nextLinkType || undefined,
+      linkId: nextLinkId || undefined,
+      isRevealed: Boolean(nextIsRevealed),
+      updatedAt: now
+    });
+  }
+
+  // DELETE /api/c/:id/maps/:mapId/features/:featureId — delete feature (DM only)
+  if (path.match(/^\/c\/[^/]+\/maps\/[^/]+\/features\/[^/]+$/) && method === 'DELETE') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const mapId = parts[4];
+    const featureId = parts[6];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'dm_tools:handouts_maps')) return error('دسترسی مجاز نیست.', 403);
+
+    const feat = await env.DB.prepare('SELECT id FROM map_features WHERE id = ? AND map_id = ? AND campaign_id = ?').bind(featureId, mapId, campId).first();
+    if (!feat) return error('عارضه مورد نظر یافت نشد.', 404);
+
+    await env.DB.prepare('UPDATE campaign_maps SET revision = revision + 1 WHERE id = ? AND campaign_id = ?').bind(mapId, campId).run();
+    await env.DB.prepare('DELETE FROM map_features WHERE id = ? AND map_id = ? AND campaign_id = ?').bind(featureId, mapId, campId).run();
+
+    await audit('map-feature-delete', featureId, { campaignId: campId, mapId });
+    return json({ success: true, deletedId: featureId });
+  }
+
+  // GET /api/c/:id/map-stamps — list stamps
+  if (path.match(/^\/c\/[^/]+\/map-stamps$/) && method === 'GET') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+
+    const stampsRes = await env.DB.prepare('SELECT * FROM map_stamps WHERE campaign_id = ? ORDER BY created_at ASC').bind(campId).all();
+    const stamps: MapStamp[] = (stampsRes.results || []).map((s: any) => ({
+      id: s.id,
+      campaignId: s.campaign_id,
+      name: s.name,
+      mediaId: s.media_id || undefined,
+      mediaUrl: s.media_id ? `/api/media/${s.media_id}` : (s.id === 'stamp-fortress-1' ? '/stamps/fortress.svg' : undefined),
+      createdBy: s.created_by || undefined,
+      width: Number(s.width || 128),
+      height: Number(s.height || 128),
+      createdAt: Number(s.created_at)
+    }));
+
+    return json(stamps);
+  }
+
+  // POST /api/c/:id/map-stamps — upload/create stamp (DM only)
+  if (path.match(/^\/c\/[^/]+\/map-stamps$/) && method === 'POST') {
+    const campId = path.split('/')[2];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'dm_tools:handouts_maps')) return error('دسترسی مجاز نیست.', 403);
+
+    const body = await request.json() as any;
+    const name = String(body.name || '').trim();
+    if (!name) return error('نام المان نمی‌تواند خالی باشد.', 400);
+    if (name.length > 100) return error('نام المان نمی‌تواند بیش از ۱۰۰ نویسه باشد.', 400);
+
+    let mediaId = body.mediaId || null;
+
+    if (body.dataBase64) {
+      const bytes = decodeBase64(String(body.dataBase64));
+      const fileCheck = validateStampUploadFile(body.fileName || 'stamp.png', bytes.length, bytes);
+      if (!fileCheck.valid || !fileCheck.detectedMime) {
+        return error(fileCheck.error || 'فایل تصویری المان نامعتبر است.', 400);
+      }
+
+      const quota = await env.DB.prepare('SELECT SUM(size_bytes) AS total FROM media WHERE owner_id = ?').bind(actor.id).first();
+      if (Number(quota?.total || 0) + bytes.length > 5 * 1024 * 1024) {
+        return error('سهمیه ذخیره‌سازی شما (۵ مگابایت) پر است.', 400);
+      }
+
+      mediaId = `media-${Date.now()}-${generateRandomToken(3)}`;
+      try {
+        await env.DB.prepare(
+          'INSERT INTO media (id, owner_id, campaign_id, mime_type, size_bytes, data, width, height, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        ).bind(mediaId, actor.id, campId, fileCheck.detectedMime, bytes.length, bytes, body.width || 128, body.height || 128, now).run();
+      } catch {
+        await env.DB.prepare(
+          'INSERT INTO media (id, owner_id, mime_type, size_bytes, data, width, height, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+        ).bind(mediaId, actor.id, fileCheck.detectedMime, bytes.length, bytes, body.width || 128, body.height || 128, now).run();
+      }
+    } else if (mediaId) {
+      const mediaRow = await env.DB.prepare('SELECT id, mime_type FROM media WHERE id = ?').bind(mediaId).first();
+      if (!mediaRow) return error('فایل تصویر المان یافت نشد.', 400);
+      if (mediaRow.mime_type === 'image/svg+xml') {
+        return error('آپلود استمپ SVG مجاز نیست.', 400);
+      }
+    } else {
+      return error('تصویر المان الزامی است.', 400);
+    }
+
+    const stampId = body.id || `stamp-${Date.now()}-${generateRandomToken(4)}`;
+    const width = Math.max(16, Math.min(1024, Number(body.width || 128)));
+    const height = Math.max(16, Math.min(1024, Number(body.height || 128)));
+
+    await env.DB.prepare(
+      'INSERT INTO map_stamps (id, campaign_id, name, media_id, created_by, width, height, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    ).bind(stampId, campId, name, mediaId, actor.id, width, height, now).run();
+
+    await audit('map-stamp-create', stampId, { campaignId: campId, name });
+
+    return json({
+      id: stampId,
+      campaignId: campId,
+      name,
+      mediaId,
+      mediaUrl: `/api/media/${mediaId}`,
+      createdBy: actor.id,
+      width,
+      height,
+      createdAt: now
+    }, 201);
+  }
+
+  // DELETE /api/c/:id/map-stamps/:stampId — delete stamp (DM only)
+  if (path.match(/^\/c\/[^/]+\/map-stamps\/[^/]+$/) && method === 'DELETE') {
+    const parts = path.split('/');
+    const campId = parts[2];
+    const stampId = parts[4];
+    const myRole = await getMembershipRole(campId, actor.id);
+    if (!myRole) return error('کمپین مورد نظر یافت نشد یا شما عضو آن نیستید.', 404);
+    if (!can(myRole, 'dm_tools:handouts_maps')) return error('دسترسی مجاز نیست.', 403);
+
+    const stamp = await env.DB.prepare('SELECT * FROM map_stamps WHERE id = ? AND campaign_id = ?').bind(stampId, campId).first();
+    if (!stamp) return error('المان مورد نظر یافت نشد.', 404);
+
+    await env.DB.prepare('DELETE FROM map_stamps WHERE id = ? AND campaign_id = ?').bind(stampId, campId).run();
+    if (stamp.media_id) {
+      try {
+        await env.DB.prepare('DELETE FROM media WHERE id = ? AND owner_id = ?').bind(stamp.media_id, actor.id).run();
+      } catch {}
+    }
+
+    await audit('map-stamp-delete', stampId, { campaignId: campId });
+    return json({ success: true, deletedId: stampId });
   }
 
   // ==============================================================

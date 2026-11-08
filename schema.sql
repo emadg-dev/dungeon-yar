@@ -1260,3 +1260,65 @@ CREATE TABLE IF NOT EXISTS change_requests (
 );
 CREATE INDEX IF NOT EXISTS idx_change_requests_part ON change_requests(participation_id);
 CREATE INDEX IF NOT EXISTS idx_change_requests_status ON change_requests(status);
+
+-- Migration 020: Multi-calendar and Campaign Time
+CREATE TABLE IF NOT EXISTS campaign_time (
+  campaign_id TEXT PRIMARY KEY,
+  calendar_id TEXT NOT NULL,
+  epoch_day INTEGER NOT NULL DEFAULT 0,
+  updated_at INTEGER NOT NULL,
+  FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_campaign_time_cal ON campaign_time(calendar_id);
+
+-- Migration 021: Campaign Main Map, Map Stamps, and Map Features
+CREATE TABLE IF NOT EXISTS campaign_maps (
+  id TEXT PRIMARY KEY,
+  campaign_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  media_id TEXT,
+  width INTEGER NOT NULL DEFAULT 1000,
+  height INTEGER NOT NULL DEFAULT 1000,
+  is_main INTEGER NOT NULL DEFAULT 0,
+  revision INTEGER NOT NULL DEFAULT 1,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+  FOREIGN KEY (media_id) REFERENCES media(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_campaign_maps_campaign ON campaign_maps(campaign_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_campaign_maps_main_unique ON campaign_maps(campaign_id) WHERE is_main = 1;
+
+CREATE TABLE IF NOT EXISTS map_stamps (
+  id TEXT PRIMARY KEY,
+  campaign_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  media_id TEXT,
+  created_by TEXT,
+  width INTEGER NOT NULL DEFAULT 128,
+  height INTEGER NOT NULL DEFAULT 128,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+  FOREIGN KEY (media_id) REFERENCES media(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_map_stamps_campaign ON map_stamps(campaign_id);
+
+CREATE TABLE IF NOT EXISTS map_features (
+  id TEXT PRIMARY KEY,
+  map_id TEXT NOT NULL,
+  campaign_id TEXT NOT NULL,
+  kind TEXT CHECK (kind IN ('terrain', 'region', 'marker', 'stamp')) NOT NULL,
+  geometry TEXT NOT NULL,
+  label TEXT NOT NULL,
+  description TEXT,
+  style TEXT NOT NULL DEFAULT '{}',
+  link_type TEXT CHECK (link_type IN ('location', 'npc', 'participation') OR link_type IS NULL),
+  link_id TEXT,
+  is_revealed INTEGER NOT NULL DEFAULT 0,
+  updated_at INTEGER NOT NULL,
+  FOREIGN KEY (map_id) REFERENCES campaign_maps(id) ON DELETE CASCADE,
+  FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_map_features_map ON map_features(map_id, is_revealed);
+CREATE INDEX IF NOT EXISTS idx_map_features_campaign ON map_features(campaign_id);
+

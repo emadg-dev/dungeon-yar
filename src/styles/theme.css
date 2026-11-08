@@ -166,6 +166,14 @@
   --color-region-shanshin: var(--region-shanshin);
   --color-region-common: var(--region-common);
 
+  --color-terrain-forest: var(--terrain-forest);
+  --color-terrain-water: var(--terrain-water);
+  --color-terrain-mountain: var(--terrain-mountain);
+  --color-terrain-desert: var(--terrain-desert);
+  --color-terrain-swamp: var(--terrain-swamp);
+  --color-terrain-road: var(--terrain-road);
+  --color-region-border: var(--region-border);
+
   --color-class-farhadar: var(--class-farhadar);
   --color-class-azarin: var(--class-azarin);
   --color-class-divanzad: var(--class-divanzad);
@@ -319,6 +327,15 @@
   --region-mahestan: #9AA3AD;         /* مهستان - مه نقره‌ای */
   --region-shanshin: #D6B25E;         /* شانشین - طلای زرد */
   --region-common: #8C8576;           /* مشترک - برنز کهن */
+
+  /* عوارض نقشه و زمین‌ها (Campaign Map Terrain & Regions) */
+  --terrain-forest: #22543D;           /* جنگل - سبز تیره زمردی */
+  --terrain-water: #1A365D;            /* آب / دریاچه - آبی تیره دریا */
+  --terrain-mountain: #4A5568;         /* کوهستان - خاکستری سنگی */
+  --terrain-desert: #7B341E;           /* بیابان - قهوه‌ای خاکی سوخته */
+  --terrain-swamp: #2D3748;            /* مرداب - سبز کدر تیره */
+  --terrain-road: #8C6D46;             /* جاده - خاکی کهربایی */
+  --region-border: #D6B25E;            /* مرز منطقه - طلایی خطچین */
 
   /* رنگ‌های کلاس‌های بازی (Class Accents) */
   --class-farhadar: #D6B25E;          /* فرهدار - طلای کهن */
@@ -612,6 +629,15 @@ body {
   --region-mahestan: #334155;
   --region-shanshin: #854D0E;
   --region-common: #57534E;
+
+  /* عوارض نقشه و زمین‌ها در تم روشن */
+  --terrain-forest: #2F855A;
+  --terrain-water: #2B6CB0;
+  --terrain-mountain: #718096;
+  --terrain-desert: #C05621;
+  --terrain-swamp: #4A5568;
+  --terrain-road: #975A16;
+  --region-border: #854D0E;
 
   /* رنگ‌های کلاس‌های بازی در تم روشن (کنتراست AA حداقل ۴.۵:۱) */
   --class-farhadar: #854D0E;
@@ -1099,4 +1125,35 @@ button.option-card *,
   overflow-wrap: break-word !important;
   word-break: normal !important;
 }
+
+/* ============================================================================
+ * بخش ۴: نگاشت و استایل‌های نقشه‌ی اصلی کمپین (Campaign Main Map)
+ * ============================================================================ */
+.leaflet-container {
+  background-color: var(--color-surface-sunken);
+  outline: 0;
+}
+
+.leaflet-container .map-feature-tooltip {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  direction: rtl;
+}
+
+.leaflet-container .map-feature-tooltip::before {
+  border-top-color: var(--color-border);
+}
+
+.leaflet-container .map-marker-icon-wrapper,
+.leaflet-container .map-stamp-icon-wrapper {
+  background: transparent;
+  border: 0;
+}
+
 

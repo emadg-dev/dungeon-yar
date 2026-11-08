@@ -29,7 +29,10 @@ import {
   SessionRecap,
   SessionHighlight,
   Handout,
-  Quest
+  Quest,
+  CampaignMap,
+  MapFeature,
+  MapStamp
 } from '../types';
 
 export const DEFAULT_5E_SKILLS: SkillDefinition[] = [
@@ -3916,3 +3919,226 @@ export const SEED_QUESTS: Quest[] = [
     updatedAt: Date.now() - 7 * 86400000
   }
 ];
+
+// ============================================================================
+// Campaign Main Map, Stamps & Features (Step 4.3 Phase A)
+// ============================================================================
+
+export const SAMPLE_MAP_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1400" width="2000" height="1400">
+  <defs>
+    <radialGradient id="mapVignette" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="var(--color-surface-sunken)" stop-opacity="0"/>
+      <stop offset="100%" stop-color="var(--color-surface-sunken)" stop-opacity="0.8"/>
+    </radialGradient>
+  </defs>
+  <rect width="2000" height="1400" fill="var(--color-surface-sunken)"/>
+  <path d="M200 0 V1400 M400 0 V1400 M600 0 V1400 M800 0 V1400 M1000 0 V1400 M1200 0 V1400 M1400 0 V1400 M1600 0 V1400 M1800 0 V1400 M0 200 H2000 M0 400 H2000 M0 600 H2000 M0 800 H2000 M0 1000 H2000 M0 1200 H2000" stroke="var(--color-border)" stroke-width="1" stroke-dasharray="4,8" opacity="0.4"/>
+  <path d="M120 220 Q400 80 820 180 T1520 140 T1920 480 Q1950 820 1820 1120 T1240 1340 T540 1280 T80 920 Z" fill="var(--color-surface)" stroke="var(--color-border-strong)" stroke-width="4"/>
+  <path d="M1000 200 Q1120 380 1250 560 T1450 900 T1600 1150" fill="none" stroke="var(--color-terrain-road)" stroke-width="6" stroke-dasharray="12,6"/>
+  <path d="M1100 320 Q820 450 680 720 T420 1050 T280 1240" fill="none" stroke="var(--color-terrain-water)" stroke-width="5"/>
+  <g transform="translate(1820, 180)">
+    <circle r="70" fill="none" stroke="var(--color-border-strong)" stroke-width="2"/>
+    <path d="M0 -65 L10 -15 L60 0 L15 10 L0 65 L-10 15 L-60 0 L-15 -10 Z" fill="var(--color-accent)" opacity="0.8"/>
+    <text y="-75" text-anchor="middle" fill="var(--color-accent)" font-size="18">N</text>
+  </g>
+  <rect width="2000" height="1400" fill="url(#mapVignette)"/>
+  <rect x="760" y="30" width="480" height="60" rx="8" fill="var(--color-surface-2)" stroke="var(--color-accent)" stroke-width="2"/>
+  <text x="1000" y="68" text-anchor="middle" fill="var(--color-accent)" font-size="24" font-weight="bold">نقشه جهان زروانیا — گاه باستان</text>
+</svg>`;
+
+export const SAMPLE_MAP_DATA_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent(SAMPLE_MAP_SVG);
+
+export const SAMPLE_STAMP_FORTRESS_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <rect width="128" height="128" rx="16" fill="var(--color-surface-2)" stroke="var(--color-accent)" stroke-width="3"/>
+  <path d="M24 104 L24 48 L40 48 L40 60 L52 60 L52 48 L76 48 L76 60 L88 60 L88 48 L104 48 L104 104 Z" fill="var(--color-surface)" stroke="var(--color-accent)" stroke-width="2"/>
+  <path d="M52 104 L52 80 Q64 72 76 80 L76 104 Z" fill="var(--color-surface-sunken)"/>
+  <path d="M64 48 L64 24 L80 32 L64 40" fill="var(--color-danger)"/>
+</svg>`;
+
+export const SAMPLE_STAMP_FORTRESS_DATA_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent(SAMPLE_STAMP_FORTRESS_SVG);
+
+export const SEED_CAMPAIGN_MAPS: CampaignMap[] = [
+  {
+    id: 'map-zorvania-main',
+    campaignId: 'zorvania-c1',
+    name: 'نقشه جهان زروانیا (اقلیم باستان)',
+    mediaId: 'media-map-zorvania',
+    imageUrl: '/maps/zorvania-main.svg',
+    width: 2000,
+    height: 1400,
+    isMain: true,
+    revision: 1,
+    createdAt: 1700000000000,
+    updatedAt: 1700000000000
+  }
+];
+
+export const SEED_MAP_STAMPS: MapStamp[] = [
+  {
+    id: 'stamp-fortress-1',
+    campaignId: 'zorvania-c1',
+    name: 'دژ دیده‌بانی کهن',
+    mediaId: 'media-stamp-fortress',
+    imageUrl: '/stamps/fortress.svg',
+    width: 128,
+    height: 128,
+    createdBy: 'u1',
+    createdAt: 1700000000000
+  }
+];
+
+export const SEED_MAP_FEATURES: MapFeature[] = [
+  // ۱. زمین جنگل (آشکار)
+  {
+    id: 'feat-terrain-forest-1',
+    mapId: 'map-zorvania-main',
+    campaignId: 'zorvania-c1',
+    kind: 'terrain',
+    geometry: {
+      type: 'Polygon',
+      coordinates: [[320, 450], [380, 780], [620, 850], [680, 520], [500, 380]]
+    },
+    label: 'بیشه ورنا',
+    description: 'جنگل‌های بارانی کهن ورنا؛ مأمن درختان سپیدار و روح‌های نگهبان گیاهی.',
+    style: {
+      terrainType: 'forest',
+      fillOpacity: 0.35
+    },
+    isRevealed: true,
+    updatedAt: 1700000000000
+  },
+  // ۲. زمین آب / دریاچه (آشکار)
+  {
+    id: 'feat-terrain-water-1',
+    mapId: 'map-zorvania-main',
+    campaignId: 'zorvania-c1',
+    kind: 'terrain',
+    geometry: {
+      type: 'Polygon',
+      coordinates: [[780, 950], [840, 1350], [1150, 1450], [1200, 1100], [980, 880]]
+    },
+    label: 'دریاچه زمان زروان',
+    description: 'دریاچه‌ای وسیع با آب‌های فیروزه‌ای که گفته می‌شود آینه‌ی زمان‌های پیشین است.',
+    style: {
+      terrainType: 'water',
+      fillOpacity: 0.4
+    },
+    isRevealed: true,
+    updatedAt: 1700000000000
+  },
+  // ۳. مرز قلمرو منطقه (آشکار)
+  {
+    id: 'feat-region-border-1',
+    mapId: 'map-zorvania-main',
+    campaignId: 'zorvania-c1',
+    kind: 'region',
+    geometry: {
+      type: 'Polygon',
+      coordinates: [[200, 300], [200, 1200], [750, 1200], [750, 300]]
+    },
+    label: 'قلمرو حفاظت‌شده ورنا',
+    description: 'مرزهای رسمی پادشاهی ورنا و قلمروهای متحد که تحت پیمان صلح قرار دارند.',
+    style: {
+      strokeWidth: 3,
+      strokeDasharray: '6,6'
+    },
+    isRevealed: true,
+    updatedAt: 1700000000000
+  },
+  // ۴. نشانه نوع مکان (آشکار)
+  {
+    id: 'feat-marker-loc-1',
+    mapId: 'map-zorvania-main',
+    campaignId: 'zorvania-c1',
+    kind: 'marker',
+    geometry: {
+      type: 'Point',
+      coordinates: [480, 620]
+    },
+    label: 'دروازه باختری ورنا',
+    description: 'پایتخت شرقی و پایگاه اصلی ماجراجویان با دیوارهای سنگی کهن.',
+    style: {
+      markerType: 'location'
+    },
+    linkType: 'location',
+    linkId: 'loc-verna',
+    isRevealed: true,
+    updatedAt: 1700000000000
+  },
+  // ۵. نشانه نوع NPC (آشکار)
+  {
+    id: 'feat-marker-npc-1',
+    mapId: 'map-zorvania-main',
+    campaignId: 'zorvania-c1',
+    kind: 'marker',
+    geometry: {
+      type: 'Point',
+      coordinates: [520, 680]
+    },
+    label: 'فرخداد مهتر',
+    description: 'راوی کتیبه‌ها و سرپرست معبد باستان در میدان مرکزی ورنا.',
+    style: {
+      markerType: 'npc'
+    },
+    linkType: 'npc',
+    linkId: 'npc-1',
+    isRevealed: true,
+    updatedAt: 1700000000000
+  },
+  // ۶. نشانه نوع دشمن (آشکار)
+  {
+    id: 'feat-marker-enemy-1',
+    mapId: 'map-zorvania-main',
+    campaignId: 'zorvania-c1',
+    kind: 'marker',
+    geometry: {
+      type: 'Point',
+      coordinates: [920, 1150]
+    },
+    label: 'اردوگاه راهزنان کویر',
+    description: 'گروهی از شورشیان و دیوان سرگردان که جاده‌های کاروانی را تهدید می‌کنند.',
+    style: {
+      markerType: 'enemy'
+    },
+    isRevealed: true,
+    updatedAt: 1700000000000
+  },
+  // ۷. المان / استمپ روی نقشه (آشکار)
+  {
+    id: 'feat-stamp-1',
+    mapId: 'map-zorvania-main',
+    campaignId: 'zorvania-c1',
+    kind: 'stamp',
+    geometry: {
+      type: 'Point',
+      coordinates: [300, 1400]
+    },
+    label: 'دژ دیده‌بانی سنگی',
+    description: 'قلعه مستقر بر گردنه کوهستان برای رصد جابه‌جایی دیوان.',
+    style: {
+      stampId: 'stamp-fortress-1',
+      scale: 1.2
+    },
+    isRevealed: true,
+    updatedAt: 1700000000000
+  },
+  // ۸. آیتم مخفی برای آزمون فیلتر امنیتی نقش‌ها (مخفی برای بازیکنان)
+  {
+    id: 'feat-marker-hidden-vault',
+    mapId: 'map-zorvania-main',
+    campaignId: 'zorvania-c1',
+    kind: 'marker',
+    geometry: {
+      type: 'Point',
+      coordinates: [820, 520]
+    },
+    label: 'خزانه مخفی فرقه رهامان (سری DM)',
+    description: 'محل اختفای گنجینه فرقه که هنوز توسط ماجراجویان کشف نشده است.',
+    style: {
+      markerType: 'enemy'
+    },
+    isRevealed: false,
+    updatedAt: 1700000000000
+  }
+];
+

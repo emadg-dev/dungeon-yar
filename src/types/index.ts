@@ -2034,6 +2034,83 @@ export interface Handout {
   pins?: MapPin[];
 }
 
+// Campaign Main Map & Geography (Campaign World Map)
+export type MapFeatureKind = 'terrain' | 'region' | 'marker' | 'stamp';
+export type MapTerrainType = 'forest' | 'water' | 'mountain' | 'desert' | 'swamp' | 'road';
+export type MapMarkerType = 'location' | 'npc' | 'enemy' | 'character' | 'player';
+
+export type MapPoint = [number, number]; // [y, x] in image pixel coordinates
+
+export interface MapPointGeometry {
+  type: 'Point';
+  coordinates: MapPoint; // [y, x]
+}
+
+export interface MapPolygonGeometry {
+  type: 'Polygon';
+  coordinates: MapPoint[]; // [ [y, x], ... ]
+}
+
+export type MapGeometry = MapPointGeometry | MapPolygonGeometry;
+
+
+export interface MapFeatureStyle {
+  terrainType?: MapTerrainType;
+  markerType?: MapMarkerType;
+  stampId?: string;
+  color?: string; // Semantic token name or CSS variable
+  fillColor?: string;
+  fillOpacity?: number;
+  strokeColor?: string;
+  strokeWidth?: number;
+  strokeDasharray?: string;
+  scale?: number; // 0.1 to 5.0 for stamps/markers
+  rotation?: number; // in degrees
+  iconName?: string; // Lucide icon name
+}
+
+export interface MapFeature {
+  id: string;
+  mapId: string;
+  campaignId: string;
+  kind: MapFeatureKind;
+  geometry: MapGeometry;
+  label: string;
+  description?: string | null;
+  style: MapFeatureStyle;
+  linkType?: 'location' | 'npc' | 'participation' | null;
+  linkId?: string | null;
+  isRevealed: boolean;
+  updatedAt: number;
+}
+
+export interface MapStamp {
+  id: string;
+  campaignId: string;
+  name: string;
+  mediaId: string;
+  imageUrl?: string;
+  width?: number;
+  height?: number;
+  createdBy?: string;
+  createdAt: number;
+}
+
+export interface CampaignMap {
+  id: string;
+  campaignId: string;
+  name: string;
+  mediaId: string;
+  imageUrl?: string;
+  width: number;
+  height: number;
+  isMain: boolean;
+  revision: number;
+  createdAt: number;
+  updatedAt?: number;
+  features?: MapFeature[];
+}
+
 // Step 4.4: Quest Log & Narrative Objectives
 export type QuestStatus = 'hidden' | 'active' | 'completed' | 'failed' | 'abandoned';
 

@@ -9,6 +9,14 @@ export interface MockDbState {
   campaignTime: Map<string, any>; // key: campaignId
   calendars: Map<string, any>; // key: calendarId
   campaignCalendar: Map<string, any>; // key: id
+  campaignMaps: Map<string, any>; // key: mapId
+  mapStamps: Map<string, any>; // key: stampId
+  mapFeatures: Map<string, any>; // key: featureId
+  locations: Map<string, any>; // key: locId
+  npcs: Map<string, any>; // key: npcId
+  characterParticipations: Map<string, any>; // key: partId
+  media: Map<string, any>; // key: mediaId
+  auditLog: any[];
 }
 
 export async function sha256Hex(str: string): Promise<string> {
@@ -125,9 +133,108 @@ export function createMockD1(state: MockDbState) {
             return { results: camp ? [camp] : [] };
           }
 
+          // 8. Campaign Maps queries
+          if (normalizedSql.includes('FROM campaign_maps WHERE campaign_id = ?')) {
+            const campId = boundParams[0];
+            const list = Array.from(state.campaignMaps.values())
+              .filter(m => m.campaign_id === campId)
+              .sort((a, b) => (b.is_main || 0) - (a.is_main || 0) || (a.created_at || 0) - (b.created_at || 0));
+            return { results: list };
+          }
+
+          if (normalizedSql.includes('FROM campaign_maps WHERE id = ? AND campaign_id = ?')) {
+            const [mapId, campId] = boundParams;
+            const m = state.campaignMaps.get(mapId);
+            return { results: m && m.campaign_id === campId ? [m] : [] };
+          }
+
+          if (normalizedSql.includes('FROM campaign_maps WHERE id = ?')) {
+            const [mapId] = boundParams;
+            const m = state.campaignMaps.get(mapId);
+            return { results: m ? [m] : [] };
+          }
+
+          // 9. Map Features queries
+          if (normalizedSql.includes('SELECT COUNT(*) as cnt FROM map_features WHERE map_id = ?')) {
+            const [mapId, campId] = boundParams;
+            const list = Array.from(state.mapFeatures.values()).filter(f => f.map_id === mapId && f.campaign_id === campId);
+            return { results: [{ cnt: list.length }] };
+          }
+
+          if (normalizedSql.includes('FROM map_features WHERE id = ? AND map_id = ? AND campaign_id = ?')) {
+            const [featId, mapId, campId] = boundParams;
+            const f = state.mapFeatures.get(featId);
+            return { results: f && f.map_id === mapId && f.campaign_id === campId ? [f] : [] };
+          }
+
+          if (normalizedSql.includes('FROM map_features WHERE map_id = ? AND campaign_id = ?')) {
+            const [mapId, campId] = boundParams;
+            const onlyRevealed = normalizedSql.includes('is_revealed = 1');
+            let list = Array.from(state.mapFeatures.values()).filter(f => f.map_id === mapId && f.campaign_id === campId);
+            if (onlyRevealed) {
+              list = list.filter(f => Boolean(f.is_revealed));
+            }
+            list.sort((a, b) => (a.updated_at || 0) - (b.updated_at || 0));
+            return { results: list };
+          }
+
+          // 10. Map Stamps queries
+          if (normalizedSql.includes('FROM map_stamps WHERE campaign_id = ?')) {
+            const campId = boundParams[0];
+            const list = Array.from(state.mapStamps.values())
+              .filter(s => s.campaign_id === campId)
+              .sort((a, b) => (a.created_at || 0) - (b.created_at || 0));
+            return { results: list };
+          }
+
+          if (normalizedSql.includes('FROM map_stamps WHERE id = ? AND campaign_id = ?')) {
+            const [stampId, campId] = boundParams;
+            const s = state.mapStamps.get(stampId);
+            return { results: s && s.campaign_id === campId ? [s] : [] };
+          }
+
+          // 11. Locations / NPCs / Participations queries (for IDOR checks)
+          if (normalizedSql.includes('FROM locations WHERE id = ?')) {
+            const [locId, campId] = boundParams;
+            const loc = state.locations.get(locId);
+            if (!loc) return { results: [] };
+            if (campId && loc.scope_id !== campId && loc.scope_type !== 'pack') return { results: [] };
+            return { results: [loc] };
+          }
+
+          if (normalizedSql.includes('FROM npcs WHERE id = ?')) {
+            const [npcId, campId] = boundParams;
+            const npc = state.npcs.get(npcId);
+            if (!npc) return { results: [] };
+            if (campId && npc.scope_id !== campId && npc.scope_type !== 'pack') return { results: [] };
+            return { results: [npc] };
+          }
+
+          if (normalizedSql.includes('FROM character_participations WHERE id = ? AND campaign_id = ?')) {
+            const [partId, campId] = boundParams;
+            const part = state.characterParticipations.get(partId);
+            return { results: part && part.campaign_id === campId ? [part] : [] };
+          }
+
+          // 12. Media queries
+          if (normalizedSql.includes('FROM media WHERE id = ?')) {
+            const [mediaId] = boundParams;
+            const m = state.media.get(mediaId);
+            return { results: m ? [m] : [] };
+          }
+
+          if (normalizedSql.includes('SELECT SUM(size_bytes) AS total FROM media WHERE owner_id = ?')) {
+            const [ownerId] = boundParams;
+            let sum = 0;
+            for (const m of state.media.values()) {
+              if (m.owner_id === ownerId) sum += Number(m.size_bytes || 0);
+            }
+            return { results: [{ total: sum }] };
+          }
+
           return { results: [] };
         },
-        async run(): Promise<{ success: boolean }> {
+        async run(): Promise<{ success: boolean; changes?: number }> {
           // 1. INSERT / UPDATE campaign_time
           if (normalizedSql.includes('INTO campaign_time')) {
             const [campaign_id, calendar_id, epoch_day, updated_at] = boundParams;
@@ -241,7 +348,185 @@ export function createMockD1(state: MockDbState) {
             return { success: true };
           }
 
-          return { success: true };
+          // 7. Campaign Maps mutations
+          if (normalizedSql.includes('UPDATE campaign_maps SET is_main = 0 WHERE campaign_id = ?')) {
+            const campId = boundParams[0];
+            const excludeId = boundParams[1];
+            for (const m of state.campaignMaps.values()) {
+              if (m.campaign_id === campId && (!excludeId || m.id !== excludeId)) {
+                m.is_main = 0;
+              }
+            }
+            return { success: true, changes: 1 };
+          }
+
+          if (normalizedSql.includes('INSERT INTO campaign_maps')) {
+            const [id, campaign_id, name, media_id, width, height, is_main, created_at] = boundParams;
+            state.campaignMaps.set(id, {
+              id,
+              campaign_id,
+              name,
+              media_id,
+              width: Number(width),
+              height: Number(height),
+              is_main: Number(is_main),
+              revision: 1,
+              created_at: Number(created_at)
+            });
+            return { success: true, changes: 1 };
+          }
+
+          if (normalizedSql.includes('UPDATE campaign_maps SET name = ?') && normalizedSql.includes('revision = ?')) {
+            const [name, media_id, width, height, is_main, mapId, campId, expectedRevision] = boundParams;
+            const m = state.campaignMaps.get(mapId);
+            if (!m || m.campaign_id !== campId || Number(m.revision) !== Number(expectedRevision)) {
+              return { success: true, changes: 0 };
+            }
+            m.name = name;
+            m.media_id = media_id;
+            m.width = Number(width);
+            m.height = Number(height);
+            m.is_main = Number(is_main);
+            m.revision = (m.revision || 1) + 1;
+            return { success: true, changes: 1 };
+          }
+
+          if (normalizedSql.includes('UPDATE campaign_maps SET name = ?') && !normalizedSql.includes('revision = ?')) {
+            const [name, media_id, width, height, is_main, mapId, campId] = boundParams;
+            const m = state.campaignMaps.get(mapId);
+            if (!m || m.campaign_id !== campId) return { success: true, changes: 0 };
+            m.name = name;
+            m.media_id = media_id;
+            m.width = Number(width);
+            m.height = Number(height);
+            m.is_main = Number(is_main);
+            m.revision = (m.revision || 1) + 1;
+            return { success: true, changes: 1 };
+          }
+
+          if (normalizedSql.includes('UPDATE campaign_maps SET revision = revision + 1') && normalizedSql.includes('revision = ?')) {
+            const [mapId, campId, expectedRevision] = boundParams;
+            const m = state.campaignMaps.get(mapId);
+            if (!m || m.campaign_id !== campId || Number(m.revision) !== Number(expectedRevision)) {
+              return { success: true, changes: 0 };
+            }
+            m.revision = (m.revision || 1) + 1;
+            return { success: true, changes: 1 };
+          }
+
+          if (normalizedSql.includes('UPDATE campaign_maps SET revision = revision + 1')) {
+            const [mapId, campId] = boundParams;
+            const m = state.campaignMaps.get(mapId);
+            if (m && m.campaign_id === campId) {
+              m.revision = (m.revision || 1) + 1;
+            }
+            return { success: true, changes: 1 };
+          }
+
+          // 8. Map Features mutations
+          if (normalizedSql.includes('INSERT INTO map_features')) {
+            const [id, map_id, campaign_id, kind, geometry, label, description, style, link_type, link_id, is_revealed, updated_at] = boundParams;
+            state.mapFeatures.set(id, {
+              id,
+              map_id,
+              campaign_id,
+              kind,
+              geometry,
+              label,
+              description,
+              style,
+              link_type,
+              link_id,
+              is_revealed: Number(is_revealed),
+              updated_at: Number(updated_at)
+            });
+            return { success: true, changes: 1 };
+          }
+
+          if (normalizedSql.includes('UPDATE map_features SET')) {
+            const [kind, geometry, label, description, style, link_type, link_id, is_revealed, updated_at, featureId, mapId, campId] = boundParams;
+            const f = state.mapFeatures.get(featureId);
+            if (f && f.map_id === mapId && f.campaign_id === campId) {
+              f.kind = kind;
+              f.geometry = geometry;
+              f.label = label;
+              f.description = description;
+              f.style = style;
+              f.link_type = link_type;
+              f.link_id = link_id;
+              f.is_revealed = Number(is_revealed);
+              f.updated_at = Number(updated_at);
+            }
+            return { success: true, changes: 1 };
+          }
+
+          if (normalizedSql.includes('DELETE FROM map_features WHERE id = ?')) {
+            const [featureId, mapId, campId] = boundParams;
+            const f = state.mapFeatures.get(featureId);
+            if (f && f.map_id === mapId && f.campaign_id === campId) {
+              state.mapFeatures.delete(featureId);
+            }
+            return { success: true, changes: 1 };
+          }
+
+          // 9. Map Stamps mutations
+          if (normalizedSql.includes('INSERT INTO map_stamps')) {
+            const [id, campaign_id, name, media_id, created_by, width, height, created_at] = boundParams;
+            state.mapStamps.set(id, {
+              id,
+              campaign_id,
+              name,
+              media_id,
+              created_by,
+              width: Number(width),
+              height: Number(height),
+              created_at: Number(created_at)
+            });
+            return { success: true, changes: 1 };
+          }
+
+          if (normalizedSql.includes('DELETE FROM map_stamps WHERE id = ?')) {
+            const [stampId, campId] = boundParams;
+            const s = state.mapStamps.get(stampId);
+            if (s && s.campaign_id === campId) {
+              state.mapStamps.delete(stampId);
+            }
+            return { success: true, changes: 1 };
+          }
+
+          // 10. Media mutations
+          if (normalizedSql.includes('INSERT INTO media')) {
+            const [id, owner_id, campaign_id, mime_type, size_bytes, data, width, height, created_at] = boundParams;
+            state.media.set(id, {
+              id,
+              owner_id,
+              campaign_id,
+              mime_type,
+              size_bytes,
+              data,
+              width,
+              height,
+              created_at
+            });
+            return { success: true, changes: 1 };
+          }
+
+          if (normalizedSql.includes('DELETE FROM media WHERE id = ?')) {
+            const [mediaId, ownerId] = boundParams;
+            const m = state.media.get(mediaId);
+            if (m && (!ownerId || m.owner_id === ownerId)) {
+              state.media.delete(mediaId);
+            }
+            return { success: true, changes: 1 };
+          }
+
+          // 11. Audit log
+          if (normalizedSql.includes('INTO audit_log')) {
+            state.auditLog.push(boundParams);
+            return { success: true, changes: 1 };
+          }
+
+          return { success: true, changes: 1 };
         }
       };
     }
@@ -259,7 +544,15 @@ export async function createRealServerTestContext(campaignId = 'zorvania-c1') {
     campaignMembers: new Map(),
     campaignTime: new Map(),
     calendars: new Map(),
-    campaignCalendar: new Map()
+    campaignCalendar: new Map(),
+    campaignMaps: new Map(),
+    mapStamps: new Map(),
+    mapFeatures: new Map(),
+    locations: new Map(),
+    npcs: new Map(),
+    characterParticipations: new Map(),
+    media: new Map(),
+    auditLog: []
   };
 
   const db = createMockD1(state);
@@ -393,6 +686,89 @@ export async function createRealServerTestContext(campaignId = 'zorvania-c1') {
     updated_at: now
   });
 
+  // Pre-seed locations, npcs, and participations for link & IDOR tests
+  state.locations.set('loc-fire-temple', {
+    id: 'loc-fire-temple',
+    scope_type: 'campaign',
+    scope_id: campaignId,
+    name: 'آتشکده مرکزی زروان'
+  });
+  state.locations.set('loc-foreign', {
+    id: 'loc-foreign',
+    scope_type: 'campaign',
+    scope_id: 'camp-foreign-diff',
+    name: 'مکان متعلق به کمپین دیگر'
+  });
+
+  state.npcs.set('npc-zohak-emissary', {
+    id: 'npc-zohak-emissary',
+    scope_type: 'campaign',
+    scope_id: campaignId,
+    name: 'فرستاده ضحاک'
+  });
+
+  state.characterParticipations.set('part-hero-1', {
+    id: 'part-hero-1',
+    campaign_id: campaignId,
+    character_id: 'char-1'
+  });
+
+  // Pre-seed map and stamp
+  const mainMapId = `map-${campaignId}-main`;
+  state.campaignMaps.set(mainMapId, {
+    id: mainMapId,
+    campaign_id: campaignId,
+    name: 'نقشه جهان زروانیا',
+    media_id: null,
+    width: 2000,
+    height: 1400,
+    is_main: 1,
+    revision: 1,
+    created_at: now
+  });
+
+  state.mapStamps.set('stamp-fortress-1', {
+    id: 'stamp-fortress-1',
+    campaign_id: campaignId,
+    name: 'دژ کهن کلاغ‌پر',
+    media_id: null,
+    created_by: 'user-owner',
+    width: 64,
+    height: 64,
+    created_at: now
+  });
+
+  // Pre-seed revealed and unrevealed features
+  state.mapFeatures.set('feat-forest-1', {
+    id: 'feat-forest-1',
+    map_id: mainMapId,
+    campaign_id: campaignId,
+    kind: 'terrain',
+    geometry: JSON.stringify({ type: 'Polygon', coordinates: [[200, 300], [250, 550], [420, 600]] }),
+    label: 'بیشه سیاه ورنا',
+    description: 'جنگل کهن',
+    style: JSON.stringify({ terrainType: 'forest', fillOpacity: 0.35 }),
+    link_type: null,
+    link_id: null,
+    is_revealed: 1,
+    updated_at: now
+  });
+
+  state.mapFeatures.set('feat-secret-1', {
+    id: 'feat-secret-1',
+    map_id: mainMapId,
+    campaign_id: campaignId,
+    kind: 'marker',
+    geometry: JSON.stringify({ type: 'Point', coordinates: [520, 310] }),
+    label: 'سرداب مخفی منشور پیوند',
+    description: 'گنجینه پنهان دانجن مستر',
+    style: JSON.stringify({ markerType: 'location' }),
+    link_type: null,
+    link_id: null,
+    is_revealed: 0,
+    updated_at: now
+  });
+
   // Helper dispatcher to invoke onRequest handler directly
   const dispatch = async (
     pathWithQuery: string,
@@ -461,7 +837,15 @@ export function createServerTestApp() {
     campaignMembers: new Map(),
     campaignTime: new Map(),
     calendars: new Map(),
-    campaignCalendar: new Map()
+    campaignCalendar: new Map(),
+    campaignMaps: new Map(),
+    mapStamps: new Map(),
+    mapFeatures: new Map(),
+    locations: new Map(),
+    npcs: new Map(),
+    characterParticipations: new Map(),
+    media: new Map(),
+    auditLog: []
   };
 
   const db = createMockD1(state);
