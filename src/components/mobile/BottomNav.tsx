@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '../ui/Button';
 import {
   Heart, Dices, FileText, Compass, MoreHorizontal,
-  Shield, UserCheck, LayoutDashboard, User
+  Shield, UserCheck, LayoutDashboard, User, Map as MapIcon
 } from 'lucide-react';
 
 interface BottomNavProps {
@@ -78,7 +78,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   if (isDmView) {
     const dmItems = [
       { id: 'dm', label: 'میز مستر', icon: LayoutDashboard },
-      { id: 'sheet', label: 'برگه', icon: Heart },
+      { id: 'map', label: 'نقشه', icon: MapIcon },
       { id: 'dice', label: 'تاس', icon: Dices },
       { id: 'notes', label: 'یادداشت', icon: FileText },
       { id: 'world', label: 'جهان', icon: Compass },
@@ -88,7 +88,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         <div className="liquid-dock__track flex justify-around">
           {dmItems.map(item => {
             const Icon = item.icon;
-            const isActive = dmTab === item.id || (item.id === 'sheet' && (dmTab === 'overview' || dmTab === 'abilities' || dmTab === 'combat')) || (item.id === 'world' && (dmTab === 'library' || dmTab === 'map'));
+            const isActive =
+              dmTab === item.id ||
+              (item.id === 'map' && dmTab === 'map') ||
+              (item.id === 'dm' && dmTab === 'dashboard') ||
+              (item.id === 'notes' && dmTab === 'narrative') ||
+              (item.id === 'world' && dmTab === 'library');
             return (
               <Button
                 key={item.id}
@@ -97,7 +102,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 aria-pressed={isActive}
                 onClick={() => {
                   if (item.id === 'dm') onSelectDmTab('dashboard');
-                  else if (item.id === 'sheet') onSelectDmTab('dashboard');
+                  else if (item.id === 'map') onSelectDmTab('map');
                   else if (item.id === 'dice' && onOpenDice) { onOpenDice(); }
                   else if (item.id === 'notes') onSelectDmTab('narrative');
                   else if (item.id === 'world') onSelectDmTab('library');
